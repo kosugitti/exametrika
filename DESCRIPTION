@@ -1,6 +1,6 @@
-Package: Exametrika
+Package: exametrika
 Type: Package
-Title: Exametrika
+Title: exametrika
 Version: 1.1.0
 Authors@R: person("Koji Kosugi",role=c("aut","cre"),
                   email="kosugitti@gmail.com",

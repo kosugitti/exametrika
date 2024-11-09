@@ -2,3 +2,8 @@
 ^\.Rproj\.user$
 ^LICENSE\.md$
 ^develop$
+^README\.Rmd$
+^README_files$
+^cran-comments\.md$
+^tests$
+^inst$

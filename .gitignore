@@ -44,6 +44,5 @@ vignettes/*.pdf
 # develop
 /develop/
 
-# ?
-
-NULL
+# .gitignoreに追加
+Readme_files/

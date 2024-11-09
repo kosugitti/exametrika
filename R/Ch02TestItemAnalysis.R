@@ -1216,7 +1216,7 @@ Dimensionality <- function(U, na = NULL, Z = NULL, w = NULL) {
 
 #' @title Simple Item Statistics
 #' @description
-#' This function calculates statistics for each item。
+#' This function calculates statistics for each item.
 #' @param U U is a data matrix of the type matrix or data.frame.
 #' @param Z Z is a missing indicator matrix of the type matrix or data.frame
 #' @param w w is item weight vector

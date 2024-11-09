@@ -50,6 +50,7 @@
 #'  \item{RMD}{Rank Membership Distribution.}
 #'  \item{TestFitIndices}{Overall fit index for the test.See also [TestFit]}
 #' }
+#' @importFrom stats rmultinom
 #' @export
 
 IRM <- function(U, Z = NULL, w = NULL, na = NULL,

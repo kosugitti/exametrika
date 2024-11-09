@@ -70,6 +70,7 @@
 #' @importFrom graphics title
 #' @importFrom utils tail
 #' @importFrom graphics axis barplot mtext par text lines rect
+#' @importFrom stats runif
 #' @export
 
 plot.Exametrika <- function(x,

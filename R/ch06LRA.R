@@ -44,6 +44,7 @@
 #'  \item{ItemFitIndices}{Fit index for each item.See also [ItemFit]}
 #'  \item{TestFitIndices}{Overall fit index for the test.See also [TestFit]}
 #' }
+#' @importFrom stats runif
 #' @export
 #'
 

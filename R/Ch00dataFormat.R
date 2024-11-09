@@ -31,6 +31,7 @@
 #' \item{categories}{Numeric vector containing the number of response categories for each item.
 #'  For binary data, all elements are 2.}
 #' }
+#' @importFrom stats sd
 #' @export
 #'
 dataFormat <- function(data, na = NULL, id = 1, Z = NULL, w = NULL) {

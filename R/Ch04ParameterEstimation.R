@@ -158,6 +158,7 @@ PSD_item_params <- function(model, Lambda, quadrature, marginal_posttheta) {
 #' \item{TestFitIndices}{Overall fit index for the test.See also \code{\link{TestFit}}}
 #' }
 #' @references Yen, W. M. (1984) Applied Psychological Measurement, 8, 125-145.
+#' @importFrom stats rnorm
 #' @export
 #'
 

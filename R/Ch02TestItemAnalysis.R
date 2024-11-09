@@ -1137,6 +1137,7 @@ StudentAnalysis <- function(U, na = NULL, Z = NULL, w = NULL) {
 #' \item{IQR}{Interquartile range. It is calculated by subtracting the first quartile from the third quartile.}
 #' \item{Stanine}{see [stanine]}
 #' }
+#' @importFrom stats sd var
 #' @export
 
 TestStatistics <- function(U, na = NULL, Z = NULL, w = NULL) {

@@ -98,7 +98,7 @@ AlphaIfDel <- function(x, delItem = NULL, na = NULL, Z = NULL, w = NULL) {
 #' @param Z This parameter represents a missing indicator matrix. It is only needed if 'x' is a data matrix.
 #' @param w This parameter is an item weight vector. It is only required if 'x' is a data matrix.
 #' @param na This parameter identifies the numbers or characters that should be treated as missing values when 'x' is a data matrix.
-#' @importFrom stats cov
+#' @importFrom stats cov runif
 #' @export
 
 OmegaCoefficient <- function(x, na = NULL, Z = NULL, w = NULL) {

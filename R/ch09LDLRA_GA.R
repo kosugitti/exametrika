@@ -58,6 +58,7 @@
 #' @references Fukuda, S., Yamanaka, Y., & Yoshihiro, T. (2014). A Probability-based evolutionary
 #'  algorithm with mutations to learn Bayesian networks. International Journal of Artificial
 #'  Intelligence and Interactive Multimedia, 3, 7–13. DOI: 10.9781/ijimai.2014.311
+#' @importFrom stats runif rbinom
 #' @export
 #'
 

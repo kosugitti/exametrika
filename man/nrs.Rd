@@ -14,6 +14,9 @@ nrs(U, na = NULL, Z = NULL, w = NULL, ...)
 \item{Z}{Z is a missing indicator matrix of the type matrix or data.frame}
 
 \item{w}{w is item weight vector}
+
+\item{...}{Internal parameters for maintaining compatibility with the binary data
+processing system. Not intended for direct use.}
 }
 \value{
 A numeric vector containing the Number-Right Score for each examinee.
@@ -37,6 +40,10 @@ where:
 \item \eqn{u_{ij}} is the response (0/1)
 \item \eqn{w_j} is the item weight
 }
+}
+\note{
+This function is implemented using a binary data compatibility wrapper and
+will raise an error if used with polytomous data.
 }
 \examples{
 \dontrun{

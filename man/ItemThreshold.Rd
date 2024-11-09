@@ -14,6 +14,9 @@ ItemThreshold(U, na = NULL, Z = NULL, w = NULL, ...)
 \item{Z}{Z is a missing indicator matrix of the type matrix or data.frame}
 
 \item{w}{w is item weight vector}
+
+\item{...}{Internal parameters for maintaining compatibility with the binary data
+processing system. Not intended for direct use.}
 }
 \value{
 A numeric vector of threshold values for each item on the standard normal scale.
@@ -35,6 +38,10 @@ and \eqn{p_j} is the correct response rate for item j.
 
 Higher threshold values indicate more difficult items, as they represent the
 point on the standard normal scale above which examinees tend to answer incorrectly.
+}
+\note{
+This function is implemented using a binary data compatibility wrapper and
+will raise an error if used with polytomous data.
 }
 \examples{
 \dontrun{

@@ -14,6 +14,9 @@ ItemLift(U, na = NULL, Z = NULL, w = NULL, ...)
 \item{Z}{Z is a missing indicator matrix of the type matrix or data.frame}
 
 \item{w}{w is item weight vector}
+
+\item{...}{Internal parameters for maintaining compatibility with the binary data
+processing system. Not intended for direct use.}
 }
 \value{
 A matrix of item lift values with Exametrika class.
@@ -26,6 +29,10 @@ The lift is a commonly used index in a POS data analysis.
 The item lift of Item k to Item j is defined as follow:
 \eqn{ l_{jk} = \frac{p_{k\mid j}}{p_k} }
 This function is applicable only to binary response data.
+}
+\note{
+This function is implemented using a binary data compatibility wrapper and
+will raise an error if used with polytomous data.
 }
 \references{
 Brin, S., Motwani, R., Ullman, J., & Tsur, S. (1997). Dynamic itemset counting and

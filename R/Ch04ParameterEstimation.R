@@ -170,8 +170,8 @@ IRT <- function(U, model = 2, na = NULL, Z = NULL, w = NULL) {
   }
   U <- tmp$U * tmp$Z
 
-  rho <- Exametrika::ItemTotalCorr(U)
-  tau <- Exametrika::ItemThreshold(U)
+  rho <- exametrika::ItemTotalCorr(U)
+  tau <- exametrika::ItemThreshold(U)
 
   # initialize
   testlength <- NCOL(U)

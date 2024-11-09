@@ -6,6 +6,10 @@
 #' @param Z Z is a missing indicator matrix of the type matrix or data.frame
 #' @param w w is item weight vector
 #' @param na na argument specifies the numbers or characters to be treated as missing values.
+#' @param ... Internal parameters for maintaining compatibility with the binary data
+#'            processing system. Not intended for direct use.
+#' @note This function is implemented using a binary data compatibility wrapper and
+#'       will raise an error if used with polytomous data.
 #' @export
 
 JointSampleSize <- createBinaryFunction(
@@ -24,6 +28,10 @@ JointSampleSize <- createBinaryFunction(
 #' @param Z Z is a missing indicator matrix of the type matrix or data.frame
 #' @param w w is item weight vector
 #' @param na na argument specifies the numbers or characters to be treated as missing values.
+#' @param ... Internal parameters for maintaining compatibility with the binary data
+#'            processing system. Not intended for direct use.
+#' @note This function is implemented using a binary data compatibility wrapper and
+#'       will raise an error if used with polytomous data.
 #' @return A matrix of joint correct response rates with Exametrika class.
 #' Each element (i,j) represents the proportion of students who correctly
 #' answered both items i and j.
@@ -45,6 +53,10 @@ JCRR <- createBinaryFunction(
 #' @param Z Z is a missing indicator matrix of the type matrix or data.frame
 #' @param w w is item weight vector
 #' @param na na argument specifies the numbers or characters to be treated as missing values.
+#' @param ... Internal parameters for maintaining compatibility with the binary data
+#'            processing system. Not intended for direct use.
+#' @note This function is implemented using a binary data compatibility wrapper and
+#'       will raise an error if used with polytomous data.
 #' @return A matrix of conditional correct response rates with Exametrika class.
 #' Each element (i,j) represents the probability of correctly answering item j
 #' given that item i was answered correctly.
@@ -71,6 +83,10 @@ CCRR <- createBinaryFunction(
 #' @param Z Z is a missing indicator matrix of the type matrix or data.frame
 #' @param w w is item weight vector
 #' @param na na argument specifies the numbers or characters to be treated as missing values.
+#' @param ... Internal parameters for maintaining compatibility with the binary data
+#'            processing system. Not intended for direct use.
+#' @note This function is implemented using a binary data compatibility wrapper and
+#'       will raise an error if used with polytomous data.
 #' @return A matrix of item lift values with Exametrika class.
 #' Each element (j,k) represents the lift value of item k given item j,
 #' which indicates how much more likely item k is to be correct given that
@@ -100,6 +116,10 @@ ItemLift <- createBinaryFunction(
 #' @param Z Z is a missing indicator matrix of the type matrix or data.frame
 #' @param w w is item weight vector
 #' @param na na argument specifies the numbers or characters to be treated as missing values.
+#' @param ... Internal parameters for maintaining compatibility with the binary data
+#'            processing system. Not intended for direct use.
+#' @note This function is implemented using a binary data compatibility wrapper and
+#'       will raise an error if used with polytomous data.
 #' @return A matrix of mutual information values with Exametrika class.
 #' Each element (i,j) represents the mutual information between items i and j,
 #' measured in bits. Higher values indicate stronger interdependence between items.
@@ -150,6 +170,10 @@ MutualInformation <- createBinaryFunction(
 #' @param Z Z is a missing indicator matrix of the type matrix or data.frame
 #' @param w w is item weight vector
 #' @param na na argument specifies the numbers or characters to be treated as missing values.
+#' @param ... Internal parameters for maintaining compatibility with the binary data
+#'            processing system. Not intended for direct use.
+#' @note This function is implemented using a binary data compatibility wrapper and
+#'       will raise an error if used with polytomous data.
 #' @return A matrix of phi coefficients with Exametrika class.
 #' Each element (i,j) represents the phi coefficient between items i and j.
 #' The matrix is symmetric with ones on the diagonal.
@@ -260,6 +284,10 @@ tetrachoric <- function(x, y) {
 #' @param Z Z is a missing indicator matrix of the type matrix or data.frame
 #' @param w w is item weight vector
 #' @param na na argument specifies the numbers or characters to be treated as missing values.
+#' @param ... Internal parameters for maintaining compatibility with the binary data
+#'            processing system. Not intended for direct use.
+#' @note This function is implemented using a binary data compatibility wrapper and
+#'       will raise an error if used with polytomous data.
 #' @return A matrix of tetrachoric correlations with Exametrika class.
 #' Each element (i,j) represents the tetrachoric correlation between items i and j.
 #' The matrix is symmetric with ones on the diagonal.
@@ -305,6 +333,10 @@ TetrachoricCorrelationMatrix <- createBinaryFunction(
 #' @param Z Z is a missing indicator matrix of the type matrix or data.frame
 #' @param w w is item weight vector
 #' @param na na argument specifies the numbers or characters to be treated as missing values.
+#' @param ... Internal parameters for maintaining compatibility with the binary data
+#'            processing system. Not intended for direct use.
+#' @note This function is implemented using a binary data compatibility wrapper and
+#'       will raise an error if used with polytomous data.
 #' @return A list of class "Exametrika" and "IIAnalysis" containing the following matrices:
 #' \describe{
 #'   \item{JSS}{Joint Sample Size matrix}
@@ -355,6 +387,10 @@ InterItemAnalysis <- createBinaryFunction(
 #' @param Z Z is a missing indicator matrix of the type matrix or data.frame
 #' @param w w is item weight vector
 #' @param na na argument specifies the numbers or characters to be treated as missing values.
+#' @param ... Internal parameters for maintaining compatibility with the binary data
+#'            processing system. Not intended for direct use.
+#' @note This function is implemented using a binary data compatibility wrapper and
+#'       will raise an error if used with polytomous data.
 #' @return A numeric vector of weighted correct response rates for each item.
 #' Values range from 0 to 1, where higher values indicate easier items
 #' (more students answered correctly).
@@ -401,6 +437,10 @@ crr <- createBinaryFunction(
 #' @param Z Z is a missing indicator matrix of the type matrix or data.frame
 #' @param w w is item weight vector
 #' @param na na argument specifies the numbers or characters to be treated as missing values.
+#' @param ... Internal parameters for maintaining compatibility with the binary data
+#'            processing system. Not intended for direct use.
+#' @note This function is implemented using a binary data compatibility wrapper and
+#'       will raise an error if used with polytomous data.
 #' @return A numeric vector of odds values for each item. Values range from 0 to infinity,
 #' where:
 #' \itemize{
@@ -448,6 +488,10 @@ ItemOdds <- createBinaryFunction(
 #' @param Z Z is a missing indicator matrix of the type matrix or data.frame
 #' @param w w is item weight vector
 #' @param na na argument specifies the numbers or characters to be treated as missing values.
+#' @param ... Internal parameters for maintaining compatibility with the binary data
+#'            processing system. Not intended for direct use.
+#' @note This function is implemented using a binary data compatibility wrapper and
+#'       will raise an error if used with polytomous data.
 #' @return A numeric vector of threshold values for each item on the standard normal scale.
 #' Typical values range from about -3 to 3, where:
 #' \itemize{
@@ -504,6 +548,10 @@ ItemThreshold <- createBinaryFunction(
 #' @param Z Z is a missing indicator matrix of the type matrix or data.frame
 #' @param w w is item weight vector
 #' @param na na argument specifies the numbers or characters to be treated as missing values.
+#' @param ... Internal parameters for maintaining compatibility with the binary data
+#'            processing system. Not intended for direct use.
+#' @note This function is implemented using a binary data compatibility wrapper and
+#'       will raise an error if used with polytomous data.
 #' @return A numeric vector of entropy values for each item, measured in bits.
 #' Values range from 0 to 1, where:
 #' \itemize{
@@ -558,6 +606,10 @@ ItemEntropy <- createBinaryFunction(
 #' @param Z Z is a missing indicator matrix of the type matrix or data.frame
 #' @param w w is item weight vector
 #' @param na na argument specifies the numbers or characters to be treated as missing values.
+#' @param ... Internal parameters for maintaining compatibility with the binary data
+#'            processing system. Not intended for direct use.
+#' @note This function is implemented using a binary data compatibility wrapper and
+#'       will raise an error if used with polytomous data.
 #' @return A numeric vector of item-total correlations. Values typically range
 #' from -1 to 1, where:
 #' \itemize{
@@ -658,6 +710,10 @@ Biserial_Correlation <- function(i, t) {
 #' @param Z Z is a missing indicator matrix of the type matrix or data.frame
 #' @param w w is item weight vector
 #' @param na na argument specifies the numbers or characters to be treated as missing values.
+#' @param ... Internal parameters for maintaining compatibility with the binary data
+#'            processing system. Not intended for direct use.
+#' @note This function is implemented using a binary data compatibility wrapper and
+#'       will raise an error if used with polytomous data.
 #' @return A numeric vector of item-total biserial correlations. Values range
 #' from -1 to 1, where:
 #' \itemize{
@@ -707,6 +763,10 @@ ITBiserial <- createBinaryFunction(
 #' @param Z Z is a missing indicator matrix of the type matrix or data.frame
 #' @param w w is item weight vector
 #' @param na na argument specifies the numbers or characters to be treated as missing values.
+#' @param ... Internal parameters for maintaining compatibility with the binary data
+#'            processing system. Not intended for direct use.
+#' @note This function is implemented using a binary data compatibility wrapper and
+#'       will raise an error if used with polytomous data.
 #' @return A numeric vector containing the Number-Right Score for each examinee.
 #' The score represents the weighted sum of correct answers, where:
 #' \itemize{
@@ -755,6 +815,10 @@ nrs <- createBinaryFunction(
 #' @param Z Z is a missing indicator matrix of the type matrix or data.frame
 #' @param w w is item weight vector
 #' @param na na argument specifies the numbers or characters to be treated as missing values.
+#' @param ... Internal parameters for maintaining compatibility with the binary data
+#'            processing system. Not intended for direct use.
+#' @note This function is implemented using a binary data compatibility wrapper and
+#'       will raise an error if used with polytomous data.
 #' @return A numeric vector containing the passage rate for each student.
 #' Values range from 0 to 1 (or maximum weight) where:
 #' \itemize{
@@ -812,6 +876,10 @@ passage <- createBinaryFunction(
 #' @param Z Z is a missing indicator matrix of the type matrix or data.frame
 #' @param w w is item weight vector
 #' @param na na argument specifies the numbers or characters to be treated as missing values.
+#' @param ... Internal parameters for maintaining compatibility with the binary data
+#'            processing system. Not intended for direct use.
+#' @note This function is implemented using a binary data compatibility wrapper and
+#'       will raise an error if used with polytomous data.
 #' @return A numeric vector of standardized scores for each student. The scores follow
 #' a standard normal distribution with:
 #' \itemize{
@@ -876,6 +944,10 @@ sscore <- createBinaryFunction(
 #' @param Z Z is a missing indicator matrix of the type matrix or data.frame
 #' @param w w is item weight vector
 #' @param na na argument specifies the numbers or characters to be treated as missing values.
+#' @param ... Internal parameters for maintaining compatibility with the binary data
+#'            processing system. Not intended for direct use.
+#' @note This function is implemented using a binary data compatibility wrapper and
+#'       will raise an error if used with polytomous data.
 #' @return A numeric vector of percentile ranks (1-100) for each student, where:
 #' \itemize{
 #'   \item 100: Highest performing student(s)
@@ -937,6 +1009,10 @@ percentile <- createBinaryFunction(
 #' @param Z Z is a missing indicator matrix of the type matrix or data.frame
 #' @param w w is item weight vector
 #' @param na na argument specifies the numbers or characters to be treated as missing values.
+#' @param ... Internal parameters for maintaining compatibility with the binary data
+#'            processing system. Not intended for direct use.
+#' @note This function is implemented using a binary data compatibility wrapper and
+#'       will raise an error if used with polytomous data.
 #' @return A list containing two elements:
 #' \describe{
 #'   \item{stanine}{The score boundaries for each stanine level}

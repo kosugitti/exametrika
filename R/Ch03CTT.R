@@ -24,8 +24,8 @@ AlphaCoefficient <- function(x, na = NULL, Z = NULL, w = NULL) {
     } else {
       tmp <- x
     }
-    V2 <- Exametrika::PhiCoefficient(tmp)
-    V3 <- Exametrika::TetrachoricCorrelationMatrix(tmp)
+    V2 <- exametrika::PhiCoefficient(tmp)
+    V3 <- exametrika::TetrachoricCorrelationMatrix(tmp)
     tmp$U[tmp$Z == 0] <- NA
     V1 <- stats::cov(tmp$U, use = "pairwise")
     alpha1 <- calcs(V1)
@@ -75,8 +75,8 @@ AlphaIfDel <- function(x, delItem = NULL, na = NULL, Z = NULL, w = NULL) {
   }
 
   if (NROW(x) != NCOL(x)) {
-    V2 <- Exametrika::PhiCoefficient(tmp)
-    V3 <- Exametrika::TetrachoricCorrelationMatrix(tmp)
+    V2 <- exametrika::PhiCoefficient(tmp)
+    V3 <- exametrika::TetrachoricCorrelationMatrix(tmp)
     tmp$U[tmp$Z == 0] <- NA
     V1 <- stats::cov(tmp$U, use = "pairwise")
     alpha1 <- calcs(V1, delItem)
@@ -130,8 +130,8 @@ OmegaCoefficient <- function(x, na = NULL, Z = NULL, w = NULL) {
     } else {
       tmp <- x
     }
-    V2 <- Exametrika::PhiCoefficient(tmp)
-    V3 <- Exametrika::TetrachoricCorrelationMatrix(tmp)
+    V2 <- exametrika::PhiCoefficient(tmp)
+    V3 <- exametrika::TetrachoricCorrelationMatrix(tmp)
     tmp$U[tmp$Z == 0] <- NA
     V1 <- stats::cov(tmp$U, use = "pairwise")
     omega1 <- calcs(V1)

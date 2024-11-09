@@ -14,6 +14,9 @@ TetrachoricCorrelationMatrix(U, na = NULL, Z = NULL, w = NULL, ...)
 \item{Z}{Z is a missing indicator matrix of the type matrix or data.frame}
 
 \item{w}{w is item weight vector}
+
+\item{...}{Internal parameters for maintaining compatibility with the binary data
+processing system. Not intended for direct use.}
 }
 \value{
 A matrix of tetrachoric correlations with Exametrika class.
@@ -24,4 +27,8 @@ The matrix is symmetric with ones on the diagonal.
 Calculates the matrix of tetrachoric correlations between all pairs of items.
 Tetrachoric Correlation is superior to the phi coefficient as a measure of the
 relation of an item pair. This function is applicable only to binary response data.
+}
+\note{
+This function is implemented using a binary data compatibility wrapper and
+will raise an error if used with polytomous data.
 }

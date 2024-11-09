@@ -411,18 +411,18 @@ plot.Exametrika <- function(x,
       params <- x$params[plotItemID, ]
       if (type == "ICC") {
         plotIRTCurve(
-          params, Exametrika::LogisticModel,
+          params, exametrika::LogisticModel,
           "Item Characteristic Curve", "probability"
         )
       }
       if (type == "IIC") {
         plotIRTCurve(
-          params, Exametrika::ItemInformationFunc,
+          params, exametrika::ItemInformationFunc,
           "Item Information Curve", "information"
         )
       }
       if (type == "TIC") {
-        curve(Exametrika::TestInformationFunc(params, theta = x),
+        curve(exametrika::TestInformationFunc(params, theta = x),
           from = -4,
           to = 4,
           xlab = "ability", ylab = "Information",

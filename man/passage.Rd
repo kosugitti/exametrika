@@ -14,6 +14,9 @@ passage(U, na = NULL, Z = NULL, w = NULL, ...)
 \item{Z}{Z is a missing indicator matrix of the type matrix or data.frame}
 
 \item{w}{w is item weight vector}
+
+\item{...}{Internal parameters for maintaining compatibility with the binary data
+processing system. Not intended for direct use.}
 }
 \value{
 A numeric vector containing the passage rate for each student.
@@ -39,6 +42,9 @@ where:
 }
 }
 \note{
+This function is implemented using a binary data compatibility wrapper and
+will raise an error if used with polytomous data.
+
 The passage rate accounts for missing responses by only considering items that
 were actually presented to each student. This provides a fair comparison
 between students who attempted different numbers of items.

@@ -14,6 +14,9 @@ sscore(U, na = NULL, Z = NULL, w = NULL, ...)
 \item{Z}{Z is a missing indicator matrix of the type matrix or data.frame}
 
 \item{w}{w is item weight vector}
+
+\item{...}{Internal parameters for maintaining compatibility with the binary data
+processing system. Not intended for direct use.}
 }
 \value{
 A numeric vector of standardized scores for each student. The scores follow
@@ -41,6 +44,9 @@ where:
 }
 }
 \note{
+This function is implemented using a binary data compatibility wrapper and
+will raise an error if used with polytomous data.
+
 The standardization allows for comparing student performance across different
 tests or groups. A positive score indicates above-average performance, while
 a negative score indicates below-average performance.

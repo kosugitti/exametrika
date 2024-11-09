@@ -14,6 +14,9 @@ ItemOdds(U, na = NULL, Z = NULL, w = NULL, ...)
 \item{Z}{Z is a missing indicator matrix of the type matrix or data.frame}
 
 \item{w}{w is item weight vector}
+
+\item{...}{Internal parameters for maintaining compatibility with the binary data
+processing system. Not intended for direct use.}
 }
 \value{
 A numeric vector of odds values for each item. Values range from 0 to infinity,
@@ -34,6 +37,10 @@ This function is applicable only to binary response data.
 The odds value represents how many times more likely a correct response is
 compared to an incorrect response. For example, an odds of 2 means students
 are twice as likely to answer correctly as incorrectly.
+}
+\note{
+This function is implemented using a binary data compatibility wrapper and
+will raise an error if used with polytomous data.
 }
 \examples{
 \dontrun{

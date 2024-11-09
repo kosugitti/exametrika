@@ -14,6 +14,9 @@ MutualInformation(U, na = NULL, Z = NULL, w = NULL, ...)
 \item{Z}{Z is a missing indicator matrix of the type matrix or data.frame}
 
 \item{w}{w is item weight vector}
+
+\item{...}{Internal parameters for maintaining compatibility with the binary data
+processing system. Not intended for direct use.}
 }
 \value{
 A matrix of mutual information values with Exametrika class.
@@ -25,4 +28,8 @@ Mutual Information is a measure that represents the degree of interdependence
 between two items. This function is applicable only to binary response data.
 The measure is calculated using the joint probability distribution of responses
 between item pairs and their marginal probabilities.
+}
+\note{
+This function is implemented using a binary data compatibility wrapper and
+will raise an error if used with polytomous data.
 }

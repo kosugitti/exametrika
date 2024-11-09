@@ -14,6 +14,9 @@ percentile(U, na = NULL, Z = NULL, w = NULL, ...)
 \item{Z}{Z is a missing indicator matrix of the type matrix or data.frame}
 
 \item{w}{w is item weight vector}
+
+\item{...}{Internal parameters for maintaining compatibility with the binary data
+processing system. Not intended for direct use.}
 }
 \value{
 A numeric vector of percentile ranks (1-100) for each student, where:
@@ -33,6 +36,9 @@ that fall below a given score. For example, a percentile rank of 75 means
 the student performed better than 75\% of the group.
 }
 \note{
+This function is implemented using a binary data compatibility wrapper and
+will raise an error if used with polytomous data.
+
 Percentile ranks are calculated using the empirical cumulative distribution
 function of standardized scores. Tied scores receive the same percentile rank.
 The values are rounded up to the nearest integer to provide ranks from 1 to 100.

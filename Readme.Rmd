@@ -430,7 +430,7 @@ The most significant difference is that in LDB, the nodes represent the fields, 
 
 To execute this analysis, in addition to the dataset, the same field correspondence file used during exploratory Biclustering is required, as well as an adjacency matrix between classes. 
 
-```{r BINET setting}
+```{r BINETsetting}
 fieldFile <- "develop/mtmk15forVer13/FixFieldBINET.csv"
 edgeFile <- "develop/mtmk15forVer13/EdgesBINET.csv"
 FieldData <- read.csv(fieldFile)
@@ -444,7 +444,7 @@ conf
 
 The adjacency matrix between classes can be provided in a CSV file like as follow:
 
-```{r BINET conf}
+```{r BINETconf}
 lines <- readLines(edgeFile)
 for (line in lines) {
   cat(line)
@@ -466,7 +466,7 @@ result.BINET
 
 Of course, it also supports various types of plots.
 
-```{r BINET plot}
+```{r BINETplot}
 plot(result.BINET, type = "Array")
 plot(result.BINET, type = "TRP")
 plot(result.BINET, type = "LRD")

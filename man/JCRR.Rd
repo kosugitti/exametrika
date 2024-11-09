@@ -14,6 +14,9 @@ JCRR(U, na = NULL, Z = NULL, w = NULL, ...)
 \item{Z}{Z is a missing indicator matrix of the type matrix or data.frame}
 
 \item{w}{w is item weight vector}
+
+\item{...}{Internal parameters for maintaining compatibility with the binary data
+processing system. Not intended for direct use.}
 }
 \value{
 A matrix of joint correct response rates with Exametrika class.
@@ -23,4 +26,8 @@ answered both items i and j.
 \description{
 The joint correct response rate (JCRR) is the rate of students who passed
 both items. This function is applicable only to binary response data.
+}
+\note{
+This function is implemented using a binary data compatibility wrapper and
+will raise an error if used with polytomous data.
 }

@@ -14,6 +14,9 @@ crr(U, na = NULL, Z = NULL, w = NULL, ...)
 \item{Z}{Z is a missing indicator matrix of the type matrix or data.frame}
 
 \item{w}{w is item weight vector}
+
+\item{...}{Internal parameters for maintaining compatibility with the binary data
+processing system. Not intended for direct use.}
 }
 \value{
 A numeric vector of weighted correct response rates for each item.
@@ -29,6 +32,10 @@ responded to it. This function is applicable only to binary response data.
 The CRR for each item is calculated as:
 \deqn{p_j = \frac{\sum_{i=1}^n z_{ij}u_{ij}}{\sum_{i=1}^n z_{ij}}}
 where \eqn{z_{ij}} is the missing indicator and \eqn{u_{ij}} is the response.
+}
+\note{
+This function is implemented using a binary data compatibility wrapper and
+will raise an error if used with polytomous data.
 }
 \examples{
 \dontrun{

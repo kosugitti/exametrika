@@ -14,6 +14,9 @@ ItemEntropy(U, na = NULL, Z = NULL, w = NULL, ...)
 \item{Z}{Z is a missing indicator matrix of the type matrix or data.frame}
 
 \item{w}{w is item weight vector}
+
+\item{...}{Internal parameters for maintaining compatibility with the binary data
+processing system. Not intended for direct use.}
 }
 \value{
 A numeric vector of entropy values for each item, measured in bits.
@@ -45,6 +48,10 @@ The entropy value has the following properties:
 \item Higher values indicate more balanced response patterns
 \item Lower values indicate more predictable response patterns
 }
+}
+\note{
+This function is implemented using a binary data compatibility wrapper and
+will raise an error if used with polytomous data.
 }
 \examples{
 \dontrun{

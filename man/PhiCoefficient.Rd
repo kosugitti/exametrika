@@ -14,6 +14,9 @@ PhiCoefficient(U, na = NULL, Z = NULL, w = NULL, ...)
 \item{Z}{Z is a missing indicator matrix of the type matrix or data.frame}
 
 \item{w}{w is item weight vector}
+
+\item{...}{Internal parameters for maintaining compatibility with the binary data
+processing system. Not intended for direct use.}
 }
 \value{
 A matrix of phi coefficients with Exametrika class.
@@ -25,4 +28,8 @@ The phi coefficient is the Pearson's product moment correlation coefficient
 between two binary items. This function is applicable only to binary response data.
 The coefficient ranges from -1 to 1, where 1 indicates perfect positive correlation,
 -1 indicates perfect negative correlation, and 0 indicates no correlation.
+}
+\note{
+This function is implemented using a binary data compatibility wrapper and
+will raise an error if used with polytomous data.
 }

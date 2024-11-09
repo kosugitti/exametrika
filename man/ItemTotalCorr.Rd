@@ -14,6 +14,9 @@ ItemTotalCorr(U, na = NULL, Z = NULL, w = NULL, ...)
 \item{Z}{Z is a missing indicator matrix of the type matrix or data.frame}
 
 \item{w}{w is item weight vector}
+
+\item{...}{Internal parameters for maintaining compatibility with the binary data
+processing system. Not intended for direct use.}
 }
 \value{
 A numeric vector of item-total correlations. Values typically range
@@ -43,6 +46,9 @@ Higher positive correlations indicate items that better discriminate between
 high and low ability examinees.
 }
 \note{
+This function is implemented using a binary data compatibility wrapper and
+will raise an error if used with polytomous data.
+
 Values below 0.2 might indicate problematic items that should be reviewed.
 Values above 0.3 are generally considered acceptable.
 }

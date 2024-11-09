@@ -14,6 +14,9 @@ ITBiserial(U, na = NULL, Z = NULL, w = NULL, ...)
 \item{Z}{Z is a missing indicator matrix of the type matrix or data.frame}
 
 \item{w}{w is item weight vector}
+
+\item{...}{Internal parameters for maintaining compatibility with the binary data
+processing system. Not intended for direct use.}
 }
 \value{
 A numeric vector of item-total biserial correlations. Values range
@@ -33,6 +36,9 @@ This correlation provides a measure of item discrimination, indicating how well
 each item distinguishes between high and low performing examinees.
 }
 \note{
+This function is implemented using a binary data compatibility wrapper and
+will raise an error if used with polytomous data.
+
 The biserial correlation is generally preferred over the point-biserial
 correlation when the dichotomization is artificial (i.e., when the underlying
 trait is continuous).

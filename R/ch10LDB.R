@@ -1,4 +1,4 @@
-#' @title Local Dependence Biclustring
+#' @title Local Dependence Biclustering
 #' @description
 #' Latent dependence Biclustering, which incorporates biclustering and a Bayesian
 #' network model.

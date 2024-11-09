@@ -1,9 +1,9 @@
 #' @title print.exametrika
 #' @description
-#' Output format for Exametria Class
+#' Output format for Exametrika Class
 #' @param x Exametrika Class object
 #' @param digits printed digits
-#' @param ... othre options
+#' @param ... other options
 #' @importFrom utils tail
 #' @importFrom igraph plot.igraph
 #' @importFrom igraph layout_on_grid
@@ -102,7 +102,7 @@ print.Exametrika <- function(x, digits = 3, ...) {
       rownames(y) <- c(
         "Test Reference Profile",
         "Latent Class Ditribution",
-        "Class Membership Distribuiton"
+        "Class Membership Distribution"
       )
       colnames(y) <- paste("Class", 1:x$Nclass)
       print(round(y, digits))
@@ -132,7 +132,7 @@ print.Exametrika <- function(x, digits = 3, ...) {
       rownames(y) <- c(
         "Test Reference Profile",
         "Latent Class Ditribution",
-        "Class Membership Distribuiton"
+        "Class Membership Distribution"
       )
       colnames(y) <- paste("Class", 1:x$Nclass)
       print(round(y, digits))
@@ -172,7 +172,7 @@ print.Exametrika <- function(x, digits = 3, ...) {
       rownames(y) <- c(
         "Test Reference Profile",
         paste("Latent", msg2, "Ditribution"),
-        paste(msg2, "Membership Distribuiton")
+        paste(msg2, "Membership Distribution")
       )
       colnames(y) <- paste(msg2, 1:x$Nclass)
       print(round(y, digits))
@@ -343,7 +343,7 @@ print.Exametrika <- function(x, digits = 3, ...) {
       rownames(y) <- c(
         "Test Reference Profile",
         paste("Latent", msg, "Ditribution"),
-        paste(msg, "Membership Distribuiton")
+        paste(msg, "Membership Distribution")
       )
       colnames(y) <- paste(msg, 1:x$Nclass)
       print(round(y, digits))

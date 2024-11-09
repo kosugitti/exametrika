@@ -40,7 +40,7 @@
 #'  It indicates which path was obtained from which parent node(class) to
 #'  which child node(class), held by `parent`, `child`, and `field`. The item
 #'  Items contained in the field is in `fld`. Named `chap` includes the
-#'  conditonal correct response answer rate of the child node, while `pap`
+#'  conditional correct response answer rate of the child node, while `pap`
 #'  contains the pass rate of the parent node.}
 #'  \item{PSRP}{Response pattern by the students belonging to the parent
 #'  classes of Class c. A more comprehensible arrangement of `params.`}
@@ -61,7 +61,7 @@
 #' belonging to the respective latent classes. }
 #' \item{NextStage}{The next class that easiest for students to move to,
 #' its membership probability, class-up odds, and the field required for
-#' mobe.}
+#' more.}
 #'  \item{MG_FitIndices}{Multigroup as Null model.See also [TestFit]}
 #'  \item{SM_FitIndices}{Saturated Model as Null model.See also [TestFit]}
 #' }

@@ -39,7 +39,7 @@ it is converted to the Exametrika class with the \link{dataFormat} function.}
 
 \item{ncls}{number of latent class(rank). The default is 2.}
 
-\item{method}{specify the model to analyze the data.Lcal dependence latent
+\item{method}{specify the model to analyze the data.Local dependence latent
 class model is set to "C", latent rank model is set "R". The default is "R".}
 
 \item{population}{Population size. The default is 20}
@@ -63,7 +63,7 @@ the next generation.}
 \item{estimate}{In PBIL for estimating the adjacency matrix, specify by number from the
 following four methods: 1. Optimal adjacency matrix, 2. Rounded average of individuals in
 the last generation, 3. Rounded average of survivors in the last generation, 4. Rounded
-ggenerational gene of the last generation. The default is 1.}
+generational gene of the last generation. The default is 1.}
 
 \item{filename}{Specify the filename when saving the generated adjacency matrix in CSV format.
 The default is null, and no output is written to the file.}
@@ -92,7 +92,7 @@ membership, probability of class membership, RUO, and RDO.}
 }
 }
 \description{
-Generating DAG list from data using Population-Basede Incremental learning
+Generating DAG list from data using Population-Based Incremental learning
 }
 \details{
 This function performs structural learning for each classes by using

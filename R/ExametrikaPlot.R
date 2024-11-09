@@ -36,7 +36,7 @@
 #'   and the latent class/rank. It represents the expected correct answer rate of members belonging to
 #'   a particular latent class/rank using a line graph.}
 #'   \item{Array}{Array plot for Biclustering/Ranklustering.An Array plot is a diagram coloring the
-#'   matrix cells, in which the larger the cell value, the daker the cell color. In this plot of the binary
+#'   matrix cells, in which the larger the cell value, the darker the cell color. In this plot of the binary
 #'   raw data, the corrected responses are shaded in black, and the black-and-white pattern appears to be
 #'   random.However, after being classified by biclustering, students' answer patterns and items' answer
 #'   patterns are each sorted based on similarity. Thus, the divisions made by the clustering are visually

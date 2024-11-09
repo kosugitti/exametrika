@@ -11,8 +11,8 @@
 
 \item{digits}{printed digits}
 
-\item{...}{othre options}
+\item{...}{other options}
 }
 \description{
-Output format for Exametria Class
+Output format for Exametrika Class
 }

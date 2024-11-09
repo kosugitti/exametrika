@@ -13,6 +13,6 @@ RaschModel(b, theta)
 }
 \description{
 The one-parameter logistic model is a model with only one parameter b.
-This model is a 2PLM model in which a is constarind to 1.
+This model is a 2PLM model in which a is constrained to 1.
 This model is also called the Rasch model.
 }

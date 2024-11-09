@@ -2,7 +2,7 @@
 % Please edit documentation in R/ch08GA_utils.R
 \name{maxParents_penalty}
 \alias{maxParents_penalty}
-\title{Utility function for serching DAG}
+\title{Utility function for searching DAG}
 \usage{
 maxParents_penalty(vec, testlength, maxParents)
 }

@@ -141,7 +141,7 @@ LD_param_est <- function(tmp, adj_list, classRefMat, ncls, smoothpost) {
 #' @param w w is item weight vector
 #' @param na na argument specifies the numbers or characters to be treated as missing values.
 #' @param ncls number of latent class(rank). The default is 2.
-#' @param method specify the model to analyze the data.Lcal dependence latent
+#' @param method specify the model to analyze the data.Local dependence latent
 #' class model is set to "C", latent rank model is set "R". The default is "R".
 #' @param g_list A list compiling graph-type objects for each rank/class.
 #' @param adj_list A list compiling matrix-type adjacency matrices for each rank/class.

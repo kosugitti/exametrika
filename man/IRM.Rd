@@ -72,7 +72,7 @@ rank membership profile of Student s, namely the posterior probability distribut
 belonging to the respective latent classes. It also includes the rank with the maximum estimated membership probability,
 as well as the rank-up odds and rank-down odds.}
 \item{LRD}{Latent Rank Distribution. see also \link{plot.Exametrika}}
-\item{LFD}{Latent Field Distribuiton. see also \link{plot.Exametrika}}
+\item{LFD}{Latent Field Distribution. see also \link{plot.Exametrika}}
 \item{RMD}{Rank Membership Distribution.}
 \item{TestFitIndices}{Overall fit index for the test.See also \link{TestFit}}
 }

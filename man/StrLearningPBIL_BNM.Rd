@@ -2,7 +2,7 @@
 % Please edit documentation in R/ch08BNM_GA.R
 \name{StrLearningPBIL_BNM}
 \alias{StrLearningPBIL_BNM}
-\title{Structure Learning fot BNM by PBIL}
+\title{Structure Learning for BNM by PBIL}
 \usage{
 StrLearningPBIL_BNM(
   U,
@@ -56,7 +56,7 @@ the next generation.}
 \item{estimate}{In PBIL for estimating the adjacency matrix, specify by number from the
 following four methods: 1. Optimal adjacency matrix, 2. Rounded average of individuals in
 the last generation, 3. Rounded average of survivors in the last generation, 4. Rounded
-ggenerational gene of the last generation. The default is 1.}
+generational gene of the last generation. The default is 1.}
 
 \item{filename}{Specify the filename when saving the generated adjacency matrix in CSV format.
 The default is null, and no output is written to the file.}
@@ -77,7 +77,7 @@ The default is null, and no output is written to the file.}
 }
 }
 \description{
-Genearging a DAG from data using a Population-Based Incremental Learning
+Generating a DAG from data using a Population-Based Incremental Learning
 }
 \details{
 This function performs structural learning using the Population-Based

@@ -12,7 +12,7 @@ softmax <- function(x) {
 
 #' @title Biclustering and Ranklustering
 #' @description
-#' performs biclustering, rankclustering, and their confirmative models.
+#' performs biclustering, rankclustering, and their confirmatory models.
 #' @param U U is either a data class of Exametrika, or raw data. When raw data is given,
 #' it is converted to the Exametrika class with the [dataFormat] function.
 #' @param ncls number of classes
@@ -28,7 +28,9 @@ softmax <- function(x) {
 #' The default is NULL, and the field membership
 #' matrix will be estimated according to the specified number of classes(ncls) and fields(nfld).
 #' @param mic Monotonic increasing IRP option. The default is FALSE.
-#' @param method Specify either "B"iclustering or "R"unklustering.
+#' @param method One of:
+#'   * "B": Biclustering
+#'   * "R": Ranklustering
 #' @param maxiter Maximum number of iterations. default is 100.
 #' @param verbose verbose output Flag. default is TRUE
 #'
@@ -49,7 +51,7 @@ softmax <- function(x) {
 #' as well as the rank-up odds and rank-down odds.}
 #'  \item{LRD}{Latent Rank Distribution. see also [plot.Exametrika]}
 #'  \item{LCD}{Latent Class Distribution. see also [plot.Exametrika]}
-#'  \item{LFD}{Latent Field Distribuiton. see also [plot.Exametrika]}
+#'  \item{LFD}{Latent Field Distribution. see also [plot.Exametrika]}
 #'  \item{RMD}{Rank Membership Distribution.}
 #'  \item{TestFitIndices}{Overall fit index for the test.See also [TestFit]}
 #' }

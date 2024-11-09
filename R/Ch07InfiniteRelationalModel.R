@@ -46,7 +46,7 @@
 #' belonging to the respective latent classes. It also includes the rank with the maximum estimated membership probability,
 #' as well as the rank-up odds and rank-down odds.}
 #'  \item{LRD}{Latent Rank Distribution. see also [plot.Exametrika]}
-#'  \item{LFD}{Latent Field Distribuiton. see also [plot.Exametrika]}
+#'  \item{LFD}{Latent Field Distribution. see also [plot.Exametrika]}
 #'  \item{RMD}{Rank Membership Distribution.}
 #'  \item{TestFitIndices}{Overall fit index for the test.See also [TestFit]}
 #' }

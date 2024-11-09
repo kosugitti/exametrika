@@ -25,7 +25,7 @@ Initial Release
 * bug fix for LCD/LRD for IRM
 
 
-# Exametrika 0.11.3 on Decenber 15, 2023.
+# Exametrika 0.11.3 on December 15, 2023.
 
 * bug fix for item information curve
 

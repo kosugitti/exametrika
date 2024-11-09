@@ -29,7 +29,7 @@ it is converted to the Exametrika class with the \link{dataFormat} function.}
 
 \item{ncls}{number of latent class(rank). The default is 2.}
 
-\item{method}{specify the model to analyze the data.Lcal dependence latent
+\item{method}{specify the model to analyze the data.Local dependence latent
 class model is set to "C", latent rank model is set "R". The default is "R".}
 
 \item{g_list}{A list compiling graph-type objects for each rank/class.}

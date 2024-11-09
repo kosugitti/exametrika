@@ -18,11 +18,11 @@ ItemStatistics(U, na = NULL, Z = NULL, w = NULL)
 \value{
 \describe{
 \item{NR}{Number of Respondents}
-\item{CRR}{Correct Response Rate dnoted as $p_j$.}
+\item{CRR}{Correct Response Rate denoted as $p_j$.}
 \item{ODDs}{Item Odds is the ratio of the correct response rate to the incorrect response rate.
 Defined as \eqn{o_j = \frac{p_j}{1-p_j}}}
 \item{Threshold}{Item Threshold is a measure of difficulty based on a standard normal distribution.}
-\item{Entropy}{Item Entropy is an indicator of the variablitiry or randomness of the responses.
+\item{Entropy}{Item Entropy is an indicator of the variability or randomness of the responses.
 Defined as \eqn{e_j=-p_j \log_2 p_j - (1-p_j)\log_2(1-p_j)}}
 \item{ITCrr}{Item-total Correlation is a Pearson's correlation fo an item with the number of Number-Right score.}
 }

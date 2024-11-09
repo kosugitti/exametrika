@@ -17,7 +17,7 @@ The Exametrika package is designed for test data engineering and corresponds to 
 + Local Dependence Latent Rank Analysis
 + Structure Learning for LDLRA by PBIL
 + Local Dependence Biclustering
-+ Biclister Network Model
++ Bicluster Network Model
 
 Exametrika is originally implemented and published as a Mathematica and Excel Add-in. Please refer to the following website for more information.
 
@@ -237,7 +237,7 @@ result.BNM <- BNM(J5S10, adj_matrix = adj_mat)
 result.BNM
 ```
 
-### Structure Larning for Bayesian network with GA
+### Structure Learning for Bayesian network with GA
 
 The function searches for a DAG suitable for the data using a genetic algorithm. A best DAG is not necessarily identified. Instead of exploring all combinations of nodes and edges, only the space topologically sorted by the pass rate, namely the upper triangular matrix of the adjacency matrix, is explored. For interpretability, the number of parent nodes should be limited. A null model is not proposed. Utilize the content of the items and the experience of the questioner to aid in interpreting the results. For more details, please refer to Section 8.5 of the text(Shojima,2022).
 
@@ -346,7 +346,7 @@ plot(result.LDLRA, type = "LRD")
 ```
 
 
-### Structure Larning for LDLRA with GA(PBIL)
+### Structure Learning for LDLRA with GA(PBIL)
 
 You can learn item-interaction graphs for each rank using the PBIL algorithm. In addition to various options, the learning process requires a very long computation time. It's also important to note that the result is merely one of the feasible solutions, and it's not necessarily the optimal solution.
 
@@ -361,7 +361,7 @@ result.LDLRA.PBIL <- StrLearningPBIL_LDLRA(J35S515,
 result.LDLRA.PBIL
 ```
 
-## Local Dependence Biclustring
+## Local Dependence Biclustering
 
 Latent dependence Biclustering, which incorporates biclustering and a Bayesian network model.
 
@@ -474,7 +474,7 @@ plot(result.BINET, type = "RMP", students = 1:9, nc = 3, nr = 3)
 plot(result.BINET, type = "FRP", nc = 3, nr = 2)
 ```
 
-LDPSR plot shows all Passing Student Rates for all locallyu dependent classes compared with their respective parents.
+LDPSR plot shows all Passing Student Rates for all locally dependent classes compared with their respective parents.
 
 
 ```{r LDPSRplot}

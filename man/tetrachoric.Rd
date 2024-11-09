@@ -12,7 +12,7 @@ tetrachoric(x, y)
 \item{y}{binary vector y}
 }
 \description{
-Tetrachoric Correlation is superiror to the phi coefficient as a measure of the
+Tetrachoric Correlation is superior to the phi coefficient as a measure of the
 relation of an item pair. See Divgi, 1979; Olsson, 1979;Harris, 1988.
 }
 \references{

@@ -2,7 +2,7 @@
 % Please edit documentation in R/ch08BNM_GA.R
 \name{StrLearningGA_BNM}
 \alias{StrLearningGA_BNM}
-\title{Structure Learning fot BNM by simple GA}
+\title{Structure Learning for BNM by simple GA}
 \usage{
 StrLearningGA_BNM(
   U,
@@ -75,7 +75,7 @@ The default is null, and no output is written to the file.}
 }
 }
 \description{
-Genearging a DAG from data using a genetic algorithm.
+Generating a DAG from data using a genetic algorithm.
 }
 \details{
 This function generates a DAG from data using a genetic algorithm.

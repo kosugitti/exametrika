@@ -32,7 +32,11 @@ it is converted to the Exametrika class with the \link{dataFormat} function.}
 
 \item{na}{na argument specifies the numbers or characters to be treated as missing values.}
 
-\item{method}{Specify either "B"iclustering or "R"unklustering.}
+\item{method}{One of:
+\itemize{
+\item "B": Biclustering
+\item "R": Ranklustering
+}}
 
 \item{conf}{For the confirmatory parameter, you can input either a vector with
 items and corresponding fields in sequence, or a field membership profile
@@ -65,11 +69,11 @@ belonging to the respective latent classes. It also includes the rank with the m
 as well as the rank-up odds and rank-down odds.}
 \item{LRD}{Latent Rank Distribution. see also \link{plot.Exametrika}}
 \item{LCD}{Latent Class Distribution. see also \link{plot.Exametrika}}
-\item{LFD}{Latent Field Distribuiton. see also \link{plot.Exametrika}}
+\item{LFD}{Latent Field Distribution. see also \link{plot.Exametrika}}
 \item{RMD}{Rank Membership Distribution.}
 \item{TestFitIndices}{Overall fit index for the test.See also \link{TestFit}}
 }
 }
 \description{
-performs biclustering, rankclustering, and their confirmative models.
+performs biclustering, rankclustering, and their confirmatory models.
 }

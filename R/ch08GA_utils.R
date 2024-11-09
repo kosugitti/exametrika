@@ -1,4 +1,4 @@
-#' @title Utility function for serching DAG
+#' @title Utility function for searching DAG
 #' @description
 #' Function to limit the number of parent nodes
 #' @details

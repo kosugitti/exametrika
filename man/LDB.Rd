@@ -2,7 +2,7 @@
 % Please edit documentation in R/ch10LDB.R
 \name{LDB}
 \alias{LDB}
-\title{Local Dependence Biclustring}
+\title{Local Dependence Biclustering}
 \usage{
 LDB(
   U,

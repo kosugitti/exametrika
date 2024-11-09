@@ -202,7 +202,7 @@ PhiCoefficient <- createBinaryFunction(
 
 #'@title Tetrachoric Correlation
 #' @description
-#' Tetrachoric Correlation is superiror to the phi coefficient as a measure of the
+#' Tetrachoric Correlation is superior to the phi coefficient as a measure of the
 #' relation of an item pair. See Divgi, 1979; Olsson, 1979;Harris, 1988.
 #' @references Divgi, D. R. (1979). Calculation of the tetrachoric correlation coefficient.
 #' Psychometrika, 44, 169–172.
@@ -1030,7 +1030,7 @@ percentile <- createBinaryFunction(
 #' Angoff, W. H. (1984). Scales, norms, and equivalent scores. Educational Testing Service.
 #' (Reprint of chapter in R. L. Thorndike (Ed.) (1971) Educational Measurement (2nd Ed.).
 #' American Council on Education.
-#' @importFrom stats quantile cut
+#' @importFrom stats quantile
 #' @examples
 #' \dontrun{
 #' # Calculate stanine scores
@@ -1224,11 +1224,11 @@ Dimensionality <- function(U, na = NULL, Z = NULL, w = NULL) {
 #' @return
 #' \describe{
 #' \item{NR}{Number of Respondents}
-#' \item{CRR}{Correct Response Rate dnoted as $p_j$.}
+#' \item{CRR}{Correct Response Rate denoted as $p_j$.}
 #' \item{ODDs}{Item Odds is the ratio of the correct response rate to the incorrect response rate.
 #' Defined as \eqn{o_j = \frac{p_j}{1-p_j}}}
 #' \item{Threshold}{Item Threshold is a measure of difficulty based on a standard normal distribution.}
-#' \item{Entropy}{Item Entropy is an indicator of the variablitiry or randomness of the responses.
+#' \item{Entropy}{Item Entropy is an indicator of the variability or randomness of the responses.
 #' Defined as \eqn{e_j=-p_j \log_2 p_j - (1-p_j)\log_2(1-p_j)}}
 #' \item{ITCrr}{Item-total Correlation is a Pearson's correlation fo an item with the number of Number-Right score.}
 #' }

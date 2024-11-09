@@ -18,7 +18,7 @@ models.
 - Local Dependence Latent Rank Analysis
 - Structure Learning for LDLRA by PBIL
 - Local Dependence Biclustering
-- Biclister Network Model
+- Bicluster Network Model
 
 Exametrika is originally implemented and published as a Mathematica and
 Excel Add-in. Please refer to the following website for more
@@ -934,7 +934,7 @@ result.BNM
     ## CAIC           -13.005
     ## BIC            -11.099
 
-### Structure Larning for Bayesian network with GA
+### Structure Learning for Bayesian network with GA
 
 The function searches for a DAG suitable for the data using a genetic
 algorithm. A best DAG is not necessarily identified. Instead of
@@ -1696,7 +1696,7 @@ plot(result.LDLRA, type = "LRD")
 
 ![](Readme_files/figure-gfm/LDLRA%20plot-3.png)<!-- -->
 
-### Structure Larning for LDLRA with GA(PBIL)
+### Structure Learning for LDLRA with GA(PBIL)
 
 You can learn item-interaction graphs for each rank using the PBIL
 algorithm. In addition to various options, the learning process requires
@@ -3008,7 +3008,7 @@ result.LDLRA.PBIL
     ## CAIC           -1942.680
     ## BIC            -1940.893
 
-## Local Dependence Biclustring
+## Local Dependence Biclustering
 
 Latent dependence Biclustering, which incorporates biclustering and a
 Bayesian network model.
@@ -3886,7 +3886,7 @@ plot(result.BINET, type = "FRP", nc = 3, nr = 2)
 
 ![](Readme_files/figure-gfm/BINETplot-5.png)<!-- -->![](Readme_files/figure-gfm/BINETplot-6.png)<!-- -->
 
-LDPSR plot shows all Passing Student Rates for all locallyu dependent
+LDPSR plot shows all Passing Student Rates for all locally dependent
 classes compared with their respective parents.
 
 ``` r

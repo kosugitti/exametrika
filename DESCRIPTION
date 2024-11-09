@@ -1,13 +1,13 @@
 Package: exametrika
 Type: Package
-Title: exametrika
+Title: Tools for Test Theory Analysis and Biclustering
 Version: 1.1.0
 Authors@R: person("Koji Kosugi",role=c("aut","cre"),
                   email="kosugitti@gmail.com",
                   comment = c(ORCID = "0000-0001-5816-0099"))
-Description: This package is for Test Data Engineering and 
-    allows for various analyses such as 1PL, 2PL, 3PL, 4PL-IRT, 
-    Latent Rank Analysis, Biclustering, and Bayesian Network.
+Description: A collection of tools for statistical analysis in test theory, 
+    including Item Response Theory (IRT), Classical Test Theory (CTT), 
+    and Biclustering Analysis of response-pattern data.
 License: MIT + file LICENSE
 Language: en-US
 Encoding: UTF-8

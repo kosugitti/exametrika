@@ -7,6 +7,7 @@
 * win-builder (devel)
 
 ## R CMD check results
+
 ### Local, GitHub Actions
 0 errors ✔ | 0 warnings ✔ | 0 notes ✔
 

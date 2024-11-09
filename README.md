@@ -204,7 +204,7 @@ model, which can be specified using the `model` option. It supports 2PL,
 result.IRT <- IRT(J15S500, model = 3)
 ```
 
-    ## iter 1 LogLik -3960.28101333645 iter 2 LogLik -3938.35086193618 iter 3 LogLik -3931.82430517051 iter 4 LogLik -3928.67995294246 iter 5 LogLik -3926.99352035001 iter 6 LogLik -3926.04833795971 iter 7 LogLik -3925.50637737826 iter 8 LogLik -3925.19162623128 iter 9 LogLik -3925.00736205515 iter 10 LogLik -3924.89895183983 iter 11 LogLik -3924.83475630749 iter 12 LogLik -3924.79717907474 iter 13 LogLik -3924.77437995037 
+    ## iter 1 LogLik -3960.28101333627 iter 2 LogLik -3938.3508777679 iter 3 LogLik -3931.82430523618 iter 4 LogLik -3928.67999262432 iter 5 LogLik -3926.99351717393 iter 6 LogLik -3926.04836430971 iter 7 LogLik -3925.50640627683 iter 8 LogLik -3925.19153183635 iter 9 LogLik -3925.00732430908 iter 10 LogLik -3924.89901044496 iter 11 LogLik -3924.83500888573 iter 12 LogLik -3924.79730703898 iter 13 LogLik -3924.77475538415 
 
 ``` r
 result.IRT
@@ -234,13 +234,13 @@ result.IRT
     ## Item02       -253.405       -235.436      -278.949       35.937      87.025
     ## Item03       -280.640       -260.906      -293.598       39.468      65.383
     ## Item04       -204.884       -192.072      -265.962       25.623     147.780
-    ## Item05       -232.135       -206.537      -247.403       51.197      81.732
+    ## Item05       -232.135       -206.537      -247.403       51.196      81.732
     ## Item06       -173.669       -153.940      -198.817       39.459      89.755
-    ## Item07       -250.905       -228.379      -298.345       45.053     139.933
+    ## Item07       -250.905       -228.379      -298.345       45.052     139.933
     ## Item08       -314.781       -293.225      -338.789       43.111      91.127
     ## Item09       -321.920       -300.492      -327.842       42.856      54.700
     ## Item10       -309.318       -288.198      -319.850       42.240      63.303
-    ## Item11       -248.409       -224.085      -299.265       48.646     150.360
+    ## Item11       -248.409       -224.085      -299.265       48.647     150.360
     ## Item12       -238.877       -214.797      -293.598       48.161     157.603
     ## Item13       -293.472       -262.031      -328.396       62.882     132.730
     ## Item14       -223.473       -204.953      -273.212       37.040     136.519
@@ -250,13 +250,13 @@ result.IRT
     ## Item02       11      13 0.587 0.512 0.672 0.602 0.663 0.067 13.937 -32.446
     ## Item03       11      13 0.396 0.287 0.477 0.358 0.457 0.072 17.468 -28.915
     ## Item04       11      13 0.827 0.795 0.893 0.872 0.892 0.052  3.623 -42.759
-    ## Item05       11      13 0.374 0.260 0.432 0.309 0.415 0.086 29.197 -17.186
+    ## Item05       11      13 0.374 0.260 0.432 0.309 0.415 0.086 29.196 -17.186
     ## Item06       11      13 0.560 0.480 0.639 0.562 0.629 0.072 17.459 -28.924
-    ## Item07       11      13 0.678 0.620 0.736 0.683 0.732 0.079 23.053 -23.330
+    ## Item07       11      13 0.678 0.620 0.736 0.683 0.732 0.079 23.052 -23.330
     ## Item08       11      13 0.527 0.441 0.599 0.514 0.589 0.076 21.111 -25.272
     ## Item09       11      13 0.217 0.074 0.271 0.097 0.236 0.076 20.856 -25.527
     ## Item10       11      13 0.333 0.211 0.403 0.266 0.379 0.075 20.240 -26.143
-    ## Item11       11      13 0.676 0.618 0.730 0.676 0.726 0.083 26.646 -19.736
+    ## Item11       11      13 0.676 0.618 0.730 0.676 0.726 0.083 26.647 -19.735
     ## Item12       11      13 0.694 0.639 0.747 0.696 0.743 0.082 26.161 -20.222
     ## Item13       11      13 0.526 0.440 0.574 0.488 0.567 0.097 40.882  -5.501
     ## Item14       11      13 0.729 0.679 0.793 0.751 0.789 0.069 15.040 -31.343
@@ -272,7 +272,7 @@ result.IRT
     ## Item08 -25.250
     ## Item09 -25.505
     ## Item10 -26.121
-    ## Item11 -19.714
+    ## Item11 -19.713
     ## Item12 -20.200
     ## Item13  -5.479
     ## Item14 -31.321
@@ -283,7 +283,7 @@ result.IRT
     ## model_log_like -3880.769
     ## bench_log_like -3560.005
     ## null_log_like  -4350.217
-    ## model_Chi_sq     641.527
+    ## model_Chi_sq     641.528
     ## null_Chi_sq     1580.424
     ## model_df         165.000
     ## null_df          195.000
@@ -293,9 +293,9 @@ result.IRT
     ## TLI                0.594
     ## CFI                0.656
     ## RMSEA              0.076
-    ## AIC              311.527
-    ## CAIC            -384.213
-    ## BIC             -383.883
+    ## AIC              311.528
+    ## CAIC            -384.212
+    ## BIC             -383.882
 
 The estimated population of subjects is included in the returned object.
 
@@ -304,12 +304,12 @@ head(result.IRT$ability)
 ```
 
     ##       tmp$ID         EAP       PSD
-    ## 1 Student001 -0.75526466 0.5805701
-    ## 2 Student002 -0.17398928 0.5473601
-    ## 3 Student003  0.01382112 0.5530498
-    ## 4 Student004  0.57627794 0.5749100
-    ## 5 Student005 -0.97449608 0.5915602
-    ## 6 Student006  0.85233305 0.5820541
+    ## 1 Student001 -0.75526773 0.5805704
+    ## 2 Student002 -0.17398676 0.5473606
+    ## 3 Student003  0.01382401 0.5530504
+    ## 4 Student004  0.57628075 0.5749112
+    ## 5 Student005 -0.97449469 0.5915605
+    ## 6 Student006  0.85233183 0.5820548
 
 The plots offer options for Item Characteristic Curves (ICC), Item
 Information Curves (IIC), and Test Information Curves (TIC), which can
@@ -830,24 +830,15 @@ g <- igraph::graph_from_data_frame(DAG)
 g
 ```
 
-    ## IGRAPH 65d14d6 DN-- 5 5 -- 
+    ## IGRAPH 21e0288 DN-- 5 5 -- 
     ## + attr: name (v/c)
-    ## + edges from 65d14d6 (vertex names):
+    ## + edges from 21e0288 (vertex names):
     ## [1] Item01->Item02 Item02->Item03 Item02->Item04 Item03->Item05 Item04->Item05
 
 ``` r
 ## Adj mmatrix
 adj_mat <- as.matrix(igraph::get.adjacency(g))
-```
-
-    ## Warning: `get.adjacency()` was deprecated in igraph 2.0.0.
-    ## ℹ Please use `as_adjacency_matrix()` instead.
-    ## This warning is displayed once every 8 hours.
-    ## Call `lifecycle::last_lifecycle_warnings()` to see where this warning was
-    ## generated.
-
-``` r
-adj_mat
+print(adj_mat)
 ```
 
     ##        Item01 Item02 Item03 Item04 Item05
@@ -861,12 +852,13 @@ A CSV file with the same information as the graph above in the following
 format. The first line contains column names (headers) and will not be
 read as data.
 
-    ## "V1","V2"
-    ## "Item01","Item02"
-    ## "Item02","Item03"
-    ## "Item02","Item04"
-    ## "Item03","Item05"
-    ## "Item04","Item05"
+    ## From,To
+
+    ## Item01,Item02
+    ## Item02,Item03
+    ## Item02,Item04
+    ## Item03,Item05
+    ## Item04,Item05
 
 While only one specification is sufficient, if multiple specifications
 are provided, they will be prioritized in the order of file, matrix, and
@@ -1192,36 +1184,36 @@ g_list
 ```
 
     ## [[1]]
-    ## IGRAPH 68a1281 DN-- 4 2 -- 
+    ## IGRAPH cba90dc DN-- 4 2 -- 
     ## + attr: name (v/c)
-    ## + edges from 68a1281 (vertex names):
+    ## + edges from cba90dc (vertex names):
     ## [1] Item01->Item02 Item04->Item05
     ## 
     ## [[2]]
-    ## IGRAPH b19860b DN-- 9 7 -- 
+    ## IGRAPH a47adfe DN-- 9 7 -- 
     ## + attr: name (v/c)
-    ## + edges from b19860b (vertex names):
+    ## + edges from a47adfe (vertex names):
     ## [1] Item01->Item02 Item02->Item03 Item04->Item05 Item08->Item09 Item08->Item10
     ## [6] Item09->Item10 Item08->Item11
     ## 
     ## [[3]]
-    ## IGRAPH 77fe461 DN-- 9 7 -- 
+    ## IGRAPH 75b1431 DN-- 9 7 -- 
     ## + attr: name (v/c)
-    ## + edges from 77fe461 (vertex names):
+    ## + edges from 75b1431 (vertex names):
     ## [1] Item01->Item02 Item02->Item03 Item04->Item05 Item08->Item09 Item08->Item10
     ## [6] Item09->Item10 Item08->Item11
     ## 
     ## [[4]]
-    ## IGRAPH ed935b5 DN-- 10 8 -- 
+    ## IGRAPH 706a2ea DN-- 10 8 -- 
     ## + attr: name (v/c)
-    ## + edges from ed935b5 (vertex names):
+    ## + edges from 706a2ea (vertex names):
     ## [1] Item02->Item03 Item04->Item06 Item04->Item07 Item05->Item06 Item05->Item07
     ## [6] Item08->Item10 Item08->Item11 Item09->Item11
     ## 
     ## [[5]]
-    ## IGRAPH c56858d DN-- 10 8 -- 
+    ## IGRAPH d424146 DN-- 10 8 -- 
     ## + attr: name (v/c)
-    ## + edges from c56858d (vertex names):
+    ## + edges from d424146 (vertex names):
     ## [1] Item02->Item03 Item04->Item06 Item04->Item07 Item05->Item06 Item05->Item07
     ## [6] Item09->Item11 Item10->Item11 Item10->Item12
 

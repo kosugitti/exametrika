@@ -8,3 +8,4 @@
 ^tests$
 ^inst$
 ^\.github$
+^_config\.yml$

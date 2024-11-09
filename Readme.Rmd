@@ -194,7 +194,7 @@ There are three ways to specify the graph. You can either pass a matrix-type DAG
 
 The methods to create the matrix-type adj_matrix and the graph object g are as follows:
 
-```{r igraph}
+```{r igraph, eval=TRUE, message=FALSE, warning=FALSE}
 library(igraph)
 DAG <-
   matrix(
@@ -212,19 +212,15 @@ g <- igraph::graph_from_data_frame(DAG)
 g
 ## Adj mmatrix
 adj_mat <- as.matrix(igraph::get.adjacency(g))
-adj_mat
+print(adj_mat)
 ```
 
 A CSV file with the same information as the graph above in the following format. The first line contains column names (headers) and will not be read as data.
 
 ```{r echo=FALSE}
-# save csv file
-write.csv(DAG, "develop/DAG_file.csv", row.names = FALSE, quote = TRUE)
-
-lines <- readLines("develop/DAG_file.csv")
-for (line in lines) {
-  cat(line)
-  cat("\n")
+cat("From,To\n")
+for(i in 1:nrow(DAG)) {
+    cat(sprintf("%s,%s\n", DAG[i,1], DAG[i,2]))
 }
 ```
 
@@ -323,6 +319,7 @@ for (i in 1:5) {
 ## Example of graph list
 g_list
 ```
+
 ```{r example of adj list}
 ### Example of adj list
 adj_list

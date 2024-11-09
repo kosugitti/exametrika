@@ -3010,7 +3010,7 @@ result.LDLRA.PBIL
 
 ## Local Dependence Biclustring
 
-Latent dependece Biclustering, which incorporates biclustering and a
+Latent dependence Biclustering, which incorporates biclustering and a
 Bayesian network model.
 
 To execute this, you need to determine the number of ranks, the

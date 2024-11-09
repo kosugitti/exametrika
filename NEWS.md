@@ -9,7 +9,7 @@ ready for polytomous response
 # Exametrika 1.0.1 on July 31, 2024.
 
 * bug fix for Item Total Correlation
-* bug fix for Fit indecies
+* bug fix for Fit indices
 * New function called ItemStatistics
 
 # Exametrika 1.0.0 on June 9, 2024.
@@ -27,7 +27,7 @@ Initial Release
 
 # Exametrika 0.11.3 on Decenber 15, 2023.
 
-* bug fix for item infromation curve
+* bug fix for item information curve
 
 # Exametrika 0.11.2 on October 27, 2023.
 

@@ -5,7 +5,7 @@
 #' answering item j, using both a slope parameter and a
 #' location parameter.
 #' @param a slope parameter
-#' @param b locaiton parameter
+#' @param b location parameter
 #' @param theta ability parameter
 #' @export
 
@@ -19,7 +19,7 @@ TwoPLM <- function(a, b, theta) {
 #' The three-parameter logistic model is a model where the lower
 #' asymptote parameter c is added to the 2PLM
 #' @param a slope parameter
-#' @param b locaiton parameter
+#' @param b location parameter
 #' @param c lower asymptote parameter
 #' @param theta ability parameter
 #' @export
@@ -35,7 +35,7 @@ ThreePLM <- function(a, b, c, theta) {
 #' parameter d, called the upper asymptote parameter, is added to the
 #' 3PLM.
 #' @param a slope parameter
-#' @param b locaiton parameter
+#' @param b location parameter
 #' @param c lower asymptote parameter
 #' @param d upper asymptote parameter
 #' @param theta ability parameter
@@ -64,7 +64,7 @@ RaschModel <- function(b, theta) {
 #' @description
 #' Item Information Function for 2PLM
 #' @param a slope parameter
-#' @param b locaiton parameter
+#' @param b location parameter
 #' @param theta ability parameter
 #' @export
 
@@ -76,7 +76,7 @@ IIF2PLM <- function(a, b, theta) {
 #' @description
 #' Item Information Function for 3PLM
 #' @param a slope parameter
-#' @param b locaiton parameter
+#' @param b location parameter
 #' @param c lower asymptote parameter
 #' @param theta ability parameter
 #' @export
@@ -92,7 +92,7 @@ IIF3PLM <- function(a, b, c, theta) {
 #' @description
 #' Item Information Function for 4PLM
 #' @param a slope parameter
-#' @param b locaiton parameter
+#' @param b location parameter
 #' @param c lower asymptote parameter
 #' @param d upper asymptote parameter
 #' @param theta ability parameter

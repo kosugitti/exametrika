@@ -9,7 +9,7 @@ TwoPLM(a, b, theta)
 \arguments{
 \item{a}{slope parameter}
 
-\item{b}{locaiton parameter}
+\item{b}{location parameter}
 
 \item{theta}{ability parameter}
 }

@@ -1,6 +1,6 @@
 #' @title Local Dependence Biclustring
 #' @description
-#' Latent dependece Biclustering, which incorporates biclustering and a Bayesian
+#' Latent dependence Biclustering, which incorporates biclustering and a Bayesian
 #' network model.
 #' @param U U is either a data class of Exametrika, or raw data. When raw data is given,
 #' it is converted to the Exametrika class with the [dataFormat] function.
@@ -31,7 +31,7 @@
 #'  \item{FieldLabel}{Label of Fields}
 #'  \item{adj_list}{List of Adjacency matrix used in the model}
 #'  \item{g_list}{List of graph object used in the model}
-#'  \item{IRP}{List of Estimated Parameters. This objetct is three-dimensional
+#'  \item{IRP}{List of Estimated Parameters. This object is three-dimensional
 #'  PIRP array, where each dimension represents the number of rank,number
 #'  of field, and Dmax. Dmax denotes the maximum number of correct response
 #'  patterns for each field.}

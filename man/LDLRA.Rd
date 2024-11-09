@@ -54,9 +54,9 @@ item x rank x pattern.}
 \item{IRPIndex}{IRP Indices which include Alpha, Beta, Gamma.}
 \item{TRP}{Test Reference Profile matrix.}
 \item{LRD}{latent Rank/Class Distribution}
-\item{RMD}{Rank/Class Membersip Distribution}
+\item{RMD}{Rank/Class Membership Distribution}
 \item{TestFitIndices}{Overall fit index for the test.See also \link{TestFit}}
-\item{Estimation_table}{Esitated parameters tables.}
+\item{Estimation_table}{Estimated parameters tables.}
 \item{CCRR_table}{Correct Response Rate tables}
 \item{Studens}{Student information. It includes estimated class
 membership, probability of class membership, RUO, and RDO.}

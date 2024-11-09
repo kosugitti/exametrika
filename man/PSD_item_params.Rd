@@ -9,7 +9,7 @@ PSD_item_params(model, Lambda, quadrature, marginal_posttheta)
 \arguments{
 \item{model}{2,3,or 4PL}
 
-\item{Lambda}{item paramters Matrix}
+\item{Lambda}{item parameters Matrix}
 
 \item{quadrature}{quads}
 

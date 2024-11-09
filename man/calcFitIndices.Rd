@@ -23,7 +23,7 @@ calcFitIndices(chi_A, chi_B, df_A, df_B, nobs)
 \item{RFI}{Relative Fit Index. Lager values closer to 1.0 indicate a better fit.}
 \item{IFI}{Incremental Fit Index. Lager values closer to 1.0 indicate a better fit.}
 \item{TLI}{Tucker-Lewis Index. Lager values closer to 1.0 indicate a better fit.}
-\item{CFI}{Comparative Fit Inderx. Lager values closer to 1.0 indicate a better fit.}
+\item{CFI}{Comparative Fit Index. Lager values closer to 1.0 indicate a better fit.}
 \item{RMSEA}{Root Mean Square Error of Approximation. Smaller values closer to 0.0 indicate a better fit.}
 \item{AIC}{Akaike Information Criterion. A lower value indicates a better fit.}
 \item{CAIC}{Consistent AIC.A lower value indicates a better fit.}

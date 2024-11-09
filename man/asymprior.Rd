@@ -7,7 +7,7 @@
 asymprior(c, alp, bet)
 }
 \arguments{
-\item{c}{guessing parmaeter}
+\item{c}{guessing parameter}
 
 \item{alp}{prior to be set}
 

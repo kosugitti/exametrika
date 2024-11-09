@@ -26,7 +26,7 @@ fill_adj <- function(g, ItemLabel) {
 
 #' @title Bayesian Network Model
 #' @description
-#' performs Bayseia Network Model with specified graph stracture
+#' performs Bayesian Network Model with specified graph structure
 #' @details
 #' This function performs a Bayesian network analysis on the relationships
 #' between items. This corresponds to Chapter 8 of the text. It uses the igraph

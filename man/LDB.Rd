@@ -59,7 +59,7 @@ listed in the order of starting point, ending point, and rank(class).}
 \item{FieldLabel}{Label of Fields}
 \item{adj_list}{List of Adjacency matrix used in the model}
 \item{g_list}{List of graph object used in the model}
-\item{IRP}{List of Estimated Parameters. This objetct is three-dimensional
+\item{IRP}{List of Estimated Parameters. This object is three-dimensional
 PIRP array, where each dimension represents the number of rank,number
 of field, and Dmax. Dmax denotes the maximum number of correct response
 patterns for each field.}
@@ -84,6 +84,6 @@ as well as the rank-up odds and rank-down odds.}
 }
 }
 \description{
-Latent dependece Biclustering, which incorporates biclustering and a Bayesian
+Latent dependence Biclustering, which incorporates biclustering and a Bayesian
 network model.
 }

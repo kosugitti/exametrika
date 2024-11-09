@@ -9,7 +9,7 @@ slopeprior <- function(a, m, s, const = 1e-15) {
 }
 
 #' @title Prior distribution function with guessing parameter
-#' @param c guessing parmaeter
+#' @param c guessing parameter
 #' @param alp prior to be set
 #' @param bet prior to be set
 #'
@@ -50,7 +50,7 @@ objective_function_IRT <- function(lambda, model, qjtrue, qjfalse, quadrature) {
 
 #' @title internal functions for PSD of Item parameters
 #' @param model 2,3,or 4PL
-#' @param Lambda item paramters Matrix
+#' @param Lambda item parameters Matrix
 #' @param quadrature quads
 #' @param marginal_posttheta marginal post theta
 
@@ -124,7 +124,7 @@ PSD_item_params <- function(model, Lambda, quadrature, marginal_posttheta) {
 
 
 
-#' @title Estimating Item parmateres using EM algorithm
+#' @title Estimating Item parameters using EM algorithm
 #' @description
 #' A function for estimating item parameters using the EM algorithm.
 #' @param model This argument takes the number of item parameters to be
@@ -142,7 +142,7 @@ PSD_item_params <- function(model, Lambda, quadrature, marginal_posttheta) {
 #' \eqn{a_j, b_j, c_j}, and \eqn{d_j} are parameters related to item j, and are parameters that
 #' adjust the logistic curve.
 #' \eqn{a_j} is called the slope parameter, \eqn{b_j} is the location, \eqn{c_j} is the lower asymptote,
-#' and \eqn{d_j} is the upper asymptote paramter.
+#' and \eqn{d_j} is the upper asymptote parameter.
 #' The model includes lower models, and among the 4PL models, the case where \eqn{d=1} is the 3PL model,
 #' and among the 3PL models, the case where \eqn{c=0} is the 2PL model.
 #' @return

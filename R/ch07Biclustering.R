@@ -1,7 +1,7 @@
 #' @title softmax function
 #' @description
 #' to avoid overflow
-#' @param x nummeric vector
+#' @param x numericvector
 #'
 
 softmax <- function(x) {

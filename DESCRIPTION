@@ -9,6 +9,7 @@ Description: This package is for Test Data Engineering and
     allows for various analyses such as 1PL, 2PL, 3PL, 4PL-IRT, 
     Latent Rank Analysis, Biclustering, and Bayesian Network.
 License: MIT + file LICENSE
+Language: en-US
 Encoding: UTF-8
 LazyData: true
 BuildVignettes: true

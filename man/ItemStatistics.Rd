@@ -28,5 +28,5 @@ Defined as \eqn{e_j=-p_j \log_2 p_j - (1-p_j)\log_2(1-p_j)}}
 }
 }
 \description{
-This function calculates statistics for each item。
+This function calculates statistics for each item.
 }

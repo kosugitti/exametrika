@@ -363,7 +363,7 @@ result.LDLRA.PBIL
 
 ## Local Dependence Biclustring
 
-Latent dependece Biclustering, which incorporates biclustering and a Bayesian network model.
+Latent dependence Biclustering, which incorporates biclustering and a Bayesian network model.
 
 To execute this, you need to determine the number of ranks, the correspondence between items and fields, and the network structure for each rank in advance. For confirmatory Rankclustering, the correspondence between items and fields is provided in the form of a matrix or vector.
 

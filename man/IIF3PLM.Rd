@@ -9,7 +9,7 @@ IIF3PLM(a, b, c, theta)
 \arguments{
 \item{a}{slope parameter}
 
-\item{b}{locaiton parameter}
+\item{b}{location parameter}
 
 \item{c}{lower asymptote parameter}
 

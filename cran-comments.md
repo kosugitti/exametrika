@@ -1,8 +1,10 @@
 ## Test environments
-
 * local macOS install: R 4.4.2
-* ubuntu-gcc-release (on rhub)
-* windows-x86_64-devel (on rhub)
+* GitHub Actions (ubuntu-latest): R-devel
+* GitHub Actions (windows-latest): R-devel
+* GitHub Actions (macOS-13): R-devel
+* GitHub Actions (macOS-latest, ARM64): R-devel
+
 
 ## R CMD check results
 0 errors ✔ | 0 warnings ✔ | 0 notes ✔

@@ -9,7 +9,7 @@ ItemInformationFunc(a = 1, b, c = 0, d = 1, theta)
 \arguments{
 \item{a}{slope parameter}
 
-\item{b}{locaiton parameter}
+\item{b}{location parameter}
 
 \item{c}{lower asymptote parameter}
 

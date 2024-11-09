@@ -42,7 +42,7 @@ it is converted to the Exametrika class with the \link{dataFormat} function.}
 }
 }
 \description{
-performs Bayseia Network Model with specified graph stracture
+performs Bayesian Network Model with specified graph structure
 }
 \details{
 This function performs a Bayesian network analysis on the relationships

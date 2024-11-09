@@ -3912,7 +3912,7 @@ plot(result.BINET, type = "LDPSR", nc = 3, nr = 2)
 
 Shojima, Kojiro (2022) Test Data Engineering: Latent Rank Analysis,
 Biclustering, and Bayesian Network (Behaviormetrics: Quantitative
-Approaches to Human Behavior, 13),Springer, <https://amzn.to/42eNArd>
+Approaches to Human Behavior, 13),Springer.
 
 ## Citation
 

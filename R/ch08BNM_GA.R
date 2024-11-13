@@ -109,8 +109,10 @@ StrLearningGA_BNM <- function(U, Z = NULL, w = NULL, na = NULL,
   while (GA_FLG) {
     generation <- generation + 1
     if (verbose) {
-      message("gen. ", generation, " best BIC ", format(bestfit, digits = 6),
-              " limit count ", limit_count)
+      message(
+        "gen. ", generation, " best BIC ", format(bestfit, digits = 6),
+        " limit count ", limit_count
+      )
     }
     fitness <- numeric(population)
     for (i in 1:population) {
@@ -349,8 +351,10 @@ StrLearningPBIL_BNM <- function(U, Z = NULL, w = NULL, na = NULL,
   while (GA_FLG) {
     generation <- generation + 1
     if (verbose) {
-      message("gen. ", generation, " best BIC ", format(bestfit, digits = 6),
-              " limit count ", limit_count)
+      message(
+        "gen. ", generation, " best BIC ", format(bestfit, digits = 6),
+        " limit count ", limit_count
+      )
     }
     fitness <- numeric(population)
     for (i in 1:population) {

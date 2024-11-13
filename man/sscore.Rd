@@ -54,11 +54,11 @@ a negative score indicates below-average performance.
 \examples{
 \donttest{
 # Simple binary data
-U <- matrix(c(1,0,1,1,0,1), ncol=2)
+U <- matrix(c(1, 0, 1, 1, 0, 1), ncol = 2)
 sscore(U)
 
 # With missing values
-U[1,1] <- NA
-sscore(U, na=NA)
+U[1, 1] <- NA
+sscore(U, na = NA)
 }
 }

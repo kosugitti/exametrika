@@ -19,7 +19,7 @@ createBinaryFunction <- function(fun, fun_name = NULL) {
     if (U$response.type != "binary") {
       stop(sprintf(
         "Function %s is only applicable to binary response data.",
-        fun_name %||% deparse(sys.calls()[[sys.nframe()-1]][[1]])
+        fun_name %||% deparse(sys.calls()[[sys.nframe() - 1]][[1]])
       ))
     }
 

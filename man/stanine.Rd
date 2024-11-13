@@ -58,6 +58,7 @@ Stanine scores provide a normalized scale with:
 \examples{
 \donttest{
 # Calculate stanine scores
+U <- J15S500
 result <- stanine(U)
 
 # View score boundaries

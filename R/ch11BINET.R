@@ -199,9 +199,11 @@ BINET <- function(U, Z = NULL, w = NULL, na = NULL,
   maxna_position <- which(add_mat == max(add_mat), arr.ind = TRUE)
   maxadj <- max(add_mat)
   if (maxadj > maxnpa) {
-    warning("[Caution!] The maximum number of fields per edge is ",
-            maxnpa, ". Please check the edge from Class ",
-            maxna_position[1], " to Class ", maxna_position[2])
+    warning(
+      "[Caution!] The maximum number of fields per edge is ",
+      maxnpa, ". Please check the edge from Class ",
+      maxna_position[1], " to Class ", maxna_position[2]
+    )
   }
 
   ### Estimation of parameter set

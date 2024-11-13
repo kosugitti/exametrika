@@ -46,10 +46,10 @@ will raise an error if used with polytomous data.
 \donttest{
 # Easy item (80\% correct)
 p1 <- 0.8
-o1 <- p1/(1-p1)  # odds = 4
+o1 <- p1 / (1 - p1) # odds = 4
 
 # Hard item (20\% correct)
 p2 <- 0.2
-o2 <- p2/(1-p2)  # odds = 0.25
+o2 <- p2 / (1 - p2) # odds = 0.25
 }
 }

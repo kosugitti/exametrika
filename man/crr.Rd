@@ -40,11 +40,11 @@ will raise an error if used with polytomous data.
 \examples{
 \donttest{
 # Simple binary data
-U <- matrix(c(1,0,1,1,0,1), ncol=2)
+U <- matrix(c(1, 0, 1, 1, 0, 1), ncol = 2)
 crr(U)
 
 # With missing values
-U[1,1] <- NA
-crr(U, na = NA)
+U[1, 1] <- NA
+crr(U)
 }
 }

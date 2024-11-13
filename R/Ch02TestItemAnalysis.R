@@ -156,7 +156,7 @@ MutualInformation <- createBinaryFunction(
 
     # Adjust diagonal elements
     diag(MI) <- diag(P$S_00 * log(L$L_00, base = 2) +
-                       P$S_11 * log(L$L_11, base = 2))
+      P$S_11 * log(L$L_11, base = 2))
 
     structure(MI, class = c("Exametrika", "matrix"))
   },
@@ -203,7 +203,7 @@ PhiCoefficient <- createBinaryFunction(
   "PhiCoefficient"
 )
 
-#'@title Tetrachoric Correlation
+#' @title Tetrachoric Correlation
 #' @description
 #' Tetrachoric Correlation is superior to the phi coefficient as a measure of the
 #' relation of an item pair. See Divgi, 1979; Olsson, 1979;Harris, 1988.
@@ -219,8 +219,8 @@ PhiCoefficient <- createBinaryFunction(
 #' @importFrom stats qnorm
 #' @importFrom stats pnorm
 #' @importFrom stats optimize
-#' @return Returns a single numeric value of class "Exametrika" representing the 
-#'   tetrachoric correlation coefficient between the two binary variables. The value 
+#' @return Returns a single numeric value of class "Exametrika" representing the
+#'   tetrachoric correlation coefficient between the two binary variables. The value
 #'   ranges from -1 to 1, where:
 #'   \itemize{
 #'     \item 1 indicates perfect positive correlation
@@ -408,12 +408,12 @@ InterItemAnalysis <- createBinaryFunction(
 #' @examples
 #' \donttest{
 #' # Simple binary data
-#' U <- matrix(c(1,0,1,1,0,1), ncol=2)
+#' U <- matrix(c(1, 0, 1, 1, 0, 1), ncol = 2)
 #' crr(U)
 #'
 #' # With missing values
-#' U[1,1] <- NA
-#' crr(U, na = NA)
+#' U[1, 1] <- NA
+#' crr(U)
 #' }
 #' @export
 crr <- createBinaryFunction(
@@ -463,11 +463,11 @@ crr <- createBinaryFunction(
 #' \donttest{
 #' # Easy item (80% correct)
 #' p1 <- 0.8
-#' o1 <- p1/(1-p1)  # odds = 4
+#' o1 <- p1 / (1 - p1) # odds = 4
 #'
 #' # Hard item (20% correct)
 #' p2 <- 0.2
-#' o2 <- p2/(1-p2)  # odds = 0.25
+#' o2 <- p2 / (1 - p2) # odds = 0.25
 #' }
 #' @export
 ItemOdds <- createBinaryFunction(
@@ -515,11 +515,11 @@ ItemOdds <- createBinaryFunction(
 #' \donttest{
 #' # Easy item (80% correct)
 #' p1 <- 0.8
-#' tau1 <- qnorm(1 - p1)  # negative threshold
+#' tau1 <- qnorm(1 - p1) # negative threshold
 #'
 #' # Hard item (20% correct)
 #' p2 <- 0.2
-#' tau2 <- qnorm(1 - p2)  # positive threshold
+#' tau2 <- qnorm(1 - p2) # positive threshold
 #' }
 #' @export
 ItemThreshold <- createBinaryFunction(
@@ -575,11 +575,11 @@ ItemThreshold <- createBinaryFunction(
 #' \donttest{
 #' # Balanced item (50% correct)
 #' p1 <- 0.5
-#' e1 <- -p1 * log2(p1) - (1-p1) * log2(1-p1)  # maximum entropy
+#' e1 <- -p1 * log2(p1) - (1 - p1) * log2(1 - p1) # maximum entropy
 #'
 #' # Extreme item (90% correct)
 #' p2 <- 0.9
-#' e2 <- -p2 * log2(p2) - (1-p2) * log2(1-p2)  # low entropy
+#' e2 <- -p2 * log2(p2) - (1 - p2) * log2(1 - p2) # low entropy
 #' }
 #' @export
 ItemEntropy <- createBinaryFunction(
@@ -643,8 +643,9 @@ ItemTotalCorr <- createBinaryFunction(
 
     # Create probability matrix (repeating p for each student)
     TBL <- matrix(rep(p, each = NROW(U$U)),
-                  nrow = NROW(U$U),
-                  byrow = FALSE)
+      nrow = NROW(U$U),
+      byrow = FALSE
+    )
 
     # Handle missing values in response matrix
     Una <- ifelse(is.na(U$U), 0, U$U)
@@ -788,12 +789,12 @@ ITBiserial <- createBinaryFunction(
 #' @examples
 #' \donttest{
 #' # Simple binary data
-#' U <- matrix(c(1,0,1,1,0,1), ncol=2)
+#' U <- matrix(c(1, 0, 1, 1, 0, 1), ncol = 2)
 #' nrs(U)
 #'
 #' # With item weights
-#' w <- c(2,1)  # first item worth 2 points
-#' nrs(U, w=w)
+#' w <- c(2, 1) # first item worth 2 points
+#' nrs(U, w = w)
 #' }
 #' @export
 nrs <- createBinaryFunction(
@@ -844,12 +845,12 @@ nrs <- createBinaryFunction(
 #' @examples
 #' \donttest{
 #' # Simple binary data
-#' U <- matrix(c(1,0,1,1,0,1), ncol=2)
+#' U <- matrix(c(1, 0, 1, 1, 0, 1), ncol = 2)
 #' passage(U)
 #'
 #' # With missing responses
-#' U[1,1] <- NA
-#' passage(U, na=NA)
+#' U[1, 1] <- NA
+#' passage(U, na = NA)
 #' }
 #' @export
 passage <- createBinaryFunction(
@@ -907,12 +908,12 @@ passage <- createBinaryFunction(
 #' @examples
 #' \donttest{
 #' # Simple binary data
-#' U <- matrix(c(1,0,1,1,0,1), ncol=2)
+#' U <- matrix(c(1, 0, 1, 1, 0, 1), ncol = 2)
 #' sscore(U)
 #'
 #' # With missing values
-#' U[1,1] <- NA
-#' sscore(U, na=NA)
+#' U[1, 1] <- NA
+#' sscore(U, na = NA)
 #' }
 #' @export
 sscore <- createBinaryFunction(
@@ -972,12 +973,12 @@ sscore <- createBinaryFunction(
 #' @examples
 #' \donttest{
 #' # Simple binary data
-#' U <- matrix(c(1,0,1,1,0,1), ncol=2)
+#' U <- matrix(c(1, 0, 1, 1, 0, 1), ncol = 2)
 #' percentile(U)
 #'
 #' # With missing values
-#' U[1,1] <- NA
-#' percentile(U, na=NA)
+#' U[1, 1] <- NA
+#' percentile(U)
 #' }
 #' @importFrom stats ecdf
 #' @export
@@ -1045,6 +1046,7 @@ percentile <- createBinaryFunction(
 #' @examples
 #' \donttest{
 #' # Calculate stanine scores
+#' U <- J15S500
 #' result <- stanine(U)
 #'
 #' # View score boundaries
@@ -1064,21 +1066,24 @@ stanine <- createBinaryFunction(
 
     # Calculate score boundaries using raw scores
     stanine_boundaries <- quantile(raw_scores,
-                                   probs = stanine_bounds,
-                                   na.rm = TRUE)
+      probs = stanine_bounds,
+      na.rm = TRUE
+    )
 
     # Calculate percentile scores
     percentile_scores <- percentile(U)
 
     # Calculate stanine boundaries using percentile scores
     stanine_percentile_bounds <- quantile(percentile_scores,
-                                          probs = stanine_bounds)
+      probs = stanine_bounds
+    )
 
     # Assign stanine scores
     stanine_scores <- cut(percentile_scores,
-                          breaks = c(-Inf, stanine_percentile_bounds, Inf),
-                          right = FALSE,
-                          labels = 1:9)
+      breaks = c(-Inf, stanine_percentile_bounds, Inf),
+      right = FALSE,
+      labels = 1:9
+    )
 
     # Return results
     list(

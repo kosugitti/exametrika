@@ -4,7 +4,7 @@
 \alias{IRT}
 \title{Estimating Item parameters using EM algorithm}
 \usage{
-IRT(U, model = 2, na = NULL, Z = NULL, w = NULL)
+IRT(U, model = 2, na = NULL, Z = NULL, w = NULL, verbose = TRUE)
 }
 \arguments{
 \item{U}{U is either a data class of Exametrika, or raw data. When raw data is given,
@@ -18,6 +18,8 @@ estimated in the logistic model. It is limited to values 2, 3, or 4.}
 \item{Z}{Z is a missing indicator matrix of the type matrix or data.frame}
 
 \item{w}{w is item weight vector}
+
+\item{verbose}{logical; if TRUE, shows progress of iterations (default: TRUE)}
 }
 \value{
 \describe{

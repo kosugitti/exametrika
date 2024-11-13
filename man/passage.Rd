@@ -52,11 +52,11 @@ between students who attempted different numbers of items.
 \examples{
 \donttest{
 # Simple binary data
-U <- matrix(c(1,0,1,1,0,1), ncol=2)
+U <- matrix(c(1, 0, 1, 1, 0, 1), ncol = 2)
 passage(U)
 
 # With missing responses
-U[1,1] <- NA
-passage(U, na=NA)
+U[1, 1] <- NA
+passage(U, na = NA)
 }
 }

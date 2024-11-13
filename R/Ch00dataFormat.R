@@ -39,6 +39,9 @@ dataFormat <- function(data, na = NULL, id = 1, Z = NULL, w = NULL) {
   if (inherits(data, "Exametrika")) {
     return(data)
   }
+  if (!is.null(na) && is.na(na)) {
+    na <- NULL
+  }
 
   # Detect response type if not specified
   # Function to check if data is binary
@@ -69,7 +72,7 @@ dataFormat <- function(data, na = NULL, id = 1, Z = NULL, w = NULL) {
   response.type <- if (is_all_binary) "binary" else "polytomous"
 
   data <- as.data.frame(unclass(data))
-  data[data==na] <- NA
+  data[data == na] <- NA
   # Store factor labels if exists
   factor_labels <- list()
   for (col in names(data)) {
@@ -175,8 +178,10 @@ dataFormat <- function(data, na = NULL, id = 1, Z = NULL, w = NULL) {
   sd.check <- apply(response.matrix, 2, function(x) sd(x, na.rm = TRUE))
   if (sum(is.na(sd.check)) != 0) {
     excluded_items <- ItemLabel[is.na(sd.check)]
-    message("The following items with no variance.Excluded from the data:\n",
-            paste(excluded_items, collapse = ", "), "\n")
+    message(
+      "The following items with no variance.Excluded from the data:\n",
+      paste(excluded_items, collapse = ", "), "\n"
+    )
     response.matrix <- response.matrix[, !is.na(sd.check)]
     Z <- Z[, !is.na(sd.check)]
     ItemLabel <- ItemLabel[!is.na(sd.check)]
@@ -380,6 +385,7 @@ dataFormat.long <- function(data, na = NULL,
 
   # Return with appropriate class structure
   ret <- structure(ret_list,
-                   class = c("Exametrika", "exametrikaData"))
+    class = c("Exametrika", "exametrikaData")
+  )
   return(ret)
 }

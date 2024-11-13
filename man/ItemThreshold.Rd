@@ -47,10 +47,10 @@ will raise an error if used with polytomous data.
 \donttest{
 # Easy item (80\% correct)
 p1 <- 0.8
-tau1 <- qnorm(1 - p1)  # negative threshold
+tau1 <- qnorm(1 - p1) # negative threshold
 
 # Hard item (20\% correct)
 p2 <- 0.2
-tau2 <- qnorm(1 - p2)  # positive threshold
+tau2 <- qnorm(1 - p2) # positive threshold
 }
 }

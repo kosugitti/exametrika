@@ -46,11 +46,11 @@ The values are rounded up to the nearest integer to provide ranks from 1 to 100.
 \examples{
 \donttest{
 # Simple binary data
-U <- matrix(c(1,0,1,1,0,1), ncol=2)
+U <- matrix(c(1, 0, 1, 1, 0, 1), ncol = 2)
 percentile(U)
 
 # With missing values
-U[1,1] <- NA
-percentile(U, na=NA)
+U[1, 1] <- NA
+percentile(U)
 }
 }

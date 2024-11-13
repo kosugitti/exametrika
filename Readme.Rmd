@@ -219,8 +219,8 @@ A CSV file with the same information as the graph above in the following format.
 
 ```{r echo=FALSE}
 cat("From,To\n")
-for(i in 1:nrow(DAG)) {
-    cat(sprintf("%s,%s\n", DAG[i,1], DAG[i,2]))
+for (i in 1:nrow(DAG)) {
+  cat(sprintf("%s,%s\n", DAG[i, 1], DAG[i, 2]))
 }
 ```
 

@@ -48,11 +48,11 @@ will raise an error if used with polytomous data.
 \examples{
 \donttest{
 # Simple binary data
-U <- matrix(c(1,0,1,1,0,1), ncol=2)
+U <- matrix(c(1, 0, 1, 1, 0, 1), ncol = 2)
 nrs(U)
 
 # With item weights
-w <- c(2,1)  # first item worth 2 points
-nrs(U, w=w)
+w <- c(2, 1) # first item worth 2 points
+nrs(U, w = w)
 }
 }

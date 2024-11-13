@@ -57,10 +57,10 @@ will raise an error if used with polytomous data.
 \donttest{
 # Balanced item (50\% correct)
 p1 <- 0.5
-e1 <- -p1 * log2(p1) - (1-p1) * log2(1-p1)  # maximum entropy
+e1 <- -p1 * log2(p1) - (1 - p1) * log2(1 - p1) # maximum entropy
 
 # Extreme item (90\% correct)
 p2 <- 0.9
-e2 <- -p2 * log2(p2) - (1-p2) * log2(1-p2)  # low entropy
+e2 <- -p2 * log2(p2) - (1 - p2) * log2(1 - p2) # low entropy
 }
 }

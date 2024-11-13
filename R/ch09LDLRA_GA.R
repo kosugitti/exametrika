@@ -85,13 +85,11 @@ StrLearningPBIL_LDLRA <- function(U, Z = NULL, w = NULL, na = NULL,
   }
 
   if (method == "C" | method == "Class") {
-    print("local dependence latent Class model is chosen.")
+    if (verbose) message("local dependence latent Class model is chosen.")
     model <- 1
   } else if (method == "R" | method == "Rank") {
-    print("local dependence latent Rank model is chosen.")
+    if (verbose) message("local dependence latent Rank model is chosen.")
     model <- 2
-  } else {
-    stop("The method must be selected as either LD-LCA or LD-LRA.")
   }
 
   # estimate type
@@ -105,7 +103,7 @@ StrLearningPBIL_LDLRA <- function(U, Z = NULL, w = NULL, na = NULL,
     RsI <- 0
   } else if (RsI > population * Rs * 0.5) {
     RsI <- round(population * Rs * 0.5)
-    print(paste("Too many survivers. Limit to ", RsI))
+    warning("Too many survivers. Limit to ", RsI)
   }
 
   # Elitism check
@@ -113,7 +111,7 @@ StrLearningPBIL_LDLRA <- function(U, Z = NULL, w = NULL, na = NULL,
     elitism <- 0
   } else if (elitism > population * Rs * 0.5) {
     elitism <- round(population * Rs * 0.5)
-    print(paste("Too many elites. Limit to ", elitism))
+    warning("Too many elites. Limit to ", elitism)
   }
 
   # Initialize ------------------------------------------------------
@@ -197,14 +195,13 @@ StrLearningPBIL_LDLRA <- function(U, Z = NULL, w = NULL, na = NULL,
         # fitness
         ret.LDparam <- LD_param_est(tmp, adj_list, ret.emclus$classRefMat, ncls, smoothpost)
         if (verbose) {
-          cat(paste(
-            "Gen", generation, "ID.", i,
-            "BIC", round(ret.LDparam$FitIndices$BIC, 3),
-            "BEST", round(bestfit, 3),
-            "limit count", limit_count,
-            "\r"
-          ))
-          # show.progress(pos = i, len = population, msg = msg)
+          message(
+            "\rGen ", generation, " ID.", i,
+            " BIC ", format(round(ret.LDparam$FitIndices$BIC, 3), nsmall = 3),
+            " BEST ", format(round(bestfit, 3), nsmall = 3),
+            " limit count ", limit_count,
+            appendLF = FALSE
+          )
         }
         fitness[i] <- ret.LDparam$FitIndices$BIC
       }
@@ -223,7 +220,7 @@ StrLearningPBIL_LDLRA <- function(U, Z = NULL, w = NULL, na = NULL,
 
     # Termination check
     if (generation > maxGeneration) {
-      print("The maximum generation has been reached")
+      if (verbose) message("The maximum generation has been reached")
       GA_FLG <- FALSE
     }
     if (all(best_individual == adj_t[1, , ])) {
@@ -235,7 +232,7 @@ StrLearningPBIL_LDLRA <- function(U, Z = NULL, w = NULL, na = NULL,
       best_individual <- adj_t[1, , ]
     }
     if (limit_count >= successiveLimit) {
-      print(paste("The BIC has not changed for", successiveLimit, " times."))
+      if (verbose) message("The BIC has not changed for ", successiveLimit, " times.")
       GA_FLG <- FALSE
     }
   }

@@ -366,10 +366,8 @@ IRM <- function(U, Z = NULL, w = NULL, na = NULL,
       limit_count <- 0
     }
     if (verbose) {
-      print(paste(
-        "iter", iter, "Exact match count of field elements.",
-        limit_count, "nfld", nfld, "ncls", ncls
-      ))
+      message("iter ", iter, " Exact match count of field elements. ",
+              limit_count, " nfld ", nfld, " ncls ", ncls)
     }
     if (limit_count == stable_limit || iter == max_iter) {
       IRM_FLG <- FALSE
@@ -431,8 +429,8 @@ IRM <- function(U, Z = NULL, w = NULL, na = NULL,
     if (minclass[1] < minSize) {
       delt <- delt + 1
       if (verbose) {
-        print("The minimum class member count is under the setting value.")
-        print(paste("bic", bic, "nclass", ncls))
+        message("The minimum class member count is under the setting value.\n",
+                "bic ", format(bic, digits = 6), " nclass ", ncls)
       }
     } else {
       DelRepFLG <- FALSE

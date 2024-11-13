@@ -96,7 +96,7 @@ StrLearningGA_BNM <- function(U, Z = NULL, w = NULL, na = NULL,
     elitism <- 0
   } else if (elitism > population * Rs * 0.5) {
     elitism <- round(population * Rs * 0.5)
-    print(paste("Too many elites. Limit to ", elitism))
+    warning("Too many elites. Limit to ", elitism)
   }
 
   bestfit <- 1e+100
@@ -109,7 +109,8 @@ StrLearningGA_BNM <- function(U, Z = NULL, w = NULL, na = NULL,
   while (GA_FLG) {
     generation <- generation + 1
     if (verbose) {
-      print(paste("gen.", generation, "best BIC", bestfit, "limit count", limit_count))
+      message("gen. ", generation, " best BIC ", format(bestfit, digits = 6),
+              " limit count ", limit_count)
     }
     fitness <- numeric(population)
     for (i in 1:population) {
@@ -123,7 +124,7 @@ StrLearningGA_BNM <- function(U, Z = NULL, w = NULL, na = NULL,
     # Termination check
     if (generation > maxGeneration) {
       if (verbose) {
-        print("The maximum generation has been reached")
+        message("The maximum generation has been reached")
       }
       GA_FLG <- FALSE
     }
@@ -135,7 +136,7 @@ StrLearningGA_BNM <- function(U, Z = NULL, w = NULL, na = NULL,
     }
     if (limit_count >= successiveLimit) {
       if (verbose) {
-        print(paste("The BIC has not changed for", successiveLimit, " times."))
+        message("The BIC has not changed for ", successiveLimit, " times.")
       }
       GA_FLG <- FALSE
     }
@@ -308,7 +309,7 @@ StrLearningPBIL_BNM <- function(U, Z = NULL, w = NULL, na = NULL,
     RsI <- 0
   } else if (RsI > population * Rs * 0.5) {
     RsI <- round(population * Rs * 0.5)
-    print(paste("Too many survivers. Limit to ", RsI))
+    warning("Too many survivers. Limit to ", RsI)
   }
 
   # Elitism check
@@ -316,7 +317,7 @@ StrLearningPBIL_BNM <- function(U, Z = NULL, w = NULL, na = NULL,
     elitism <- 0
   } else if (elitism > population * Rs * 0.5) {
     elitism <- round(population * Rs * 0.5)
-    print(paste("Too many elites. Limit to ", elitism))
+    warning("Too many elites. Limit to ", elitism)
   }
 
   # Initialize ------------------------------------------------------
@@ -348,7 +349,8 @@ StrLearningPBIL_BNM <- function(U, Z = NULL, w = NULL, na = NULL,
   while (GA_FLG) {
     generation <- generation + 1
     if (verbose) {
-      print(paste("gen.", generation, "best BIC", bestfit, "limit count", limit_count))
+      message("gen. ", generation, " best BIC ", format(bestfit, digits = 6),
+              " limit count ", limit_count)
     }
     fitness <- numeric(population)
     for (i in 1:population) {
@@ -382,7 +384,7 @@ StrLearningPBIL_BNM <- function(U, Z = NULL, w = NULL, na = NULL,
     # Termination check
     if (generation > maxGeneration) {
       if (verbose) {
-        print("The maximum generation has been reached")
+        message("The maximum generation has been reached")
       }
       GA_FLG <- FALSE
     }
@@ -396,7 +398,7 @@ StrLearningPBIL_BNM <- function(U, Z = NULL, w = NULL, na = NULL,
     }
     if (limit_count >= successiveLimit) {
       if (verbose) {
-        print(paste("The BIC has not changed for", successiveLimit, " times."))
+        message("The BIC has not changed for ", successiveLimit, " times.")
       }
       GA_FLG <- FALSE
     }

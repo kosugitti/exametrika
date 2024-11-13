@@ -31,10 +31,7 @@ LD_param_est <- function(tmp, adj_list, classRefMat, ncls, smoothpost) {
   }
 
   if (max(nparent) > maxnpa) {
-    print(paste(
-      "[Caution!] The maximum number of parents per item is",
-      maxnpa, ", Please check."
-    ))
+    warning("[Caution!] The maximum number of parents per item is ", maxnpa, ", Please check.")
   }
 
   # PIRP  --------------------------------------------------------------
@@ -196,12 +193,12 @@ LDLRA <- function(U, Z = NULL, w = NULL, na = NULL,
 
   if (method == "C" | method == "Class") {
     if (verbose) {
-      print("local dependence latent Class model is chosen.")
+      message("local dependence latent Class model is chosen.")
     }
     model <- 1
   } else if (method == "R" | method == "Rank") {
     if (verbose) {
-      print("local dependence latent Rank model is chosen.")
+      message("local dependence latent Rank model is chosen.")
     }
     model <- 2
   } else {

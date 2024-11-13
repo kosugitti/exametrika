@@ -78,17 +78,17 @@ Biclustering <- function(U, ncls = 2, nfld = 2,
 
   if (method == "B" | method == "Biclustering") {
     if (verbose) {
-      print("Biclustering is chosen.")
+      message("Biclustering is chosen.")
     }
     model <- 1
   } else if (method == "R" | method == "Ranklustering") {
     if (verbose) {
-      print("Ranklustering is chosen.")
+      message("Ranklustering is chosen.")
     }
     model <- 2
   } else if (method == "BINET") {
     if (verbose) {
-      print("BINET is chosen.")
+      message("BINET is chosen.")
     }
     model <- 3
   } else {
@@ -98,7 +98,7 @@ Biclustering <- function(U, ncls = 2, nfld = 2,
   # set conf_mat for confirmatory clustering
   if (!is.null(conf)) {
     if (verbose) {
-      print("Confirmatory Clustering is chosen.")
+      message("Confirmatory Clustering is chosen.")
     }
     if (is.vector(conf)) {
       # check size
@@ -251,7 +251,7 @@ Biclustering <- function(U, ncls = 2, nfld = 2,
 
     testell <- sum(cfr * log(PiFR + const) + ffr * log(1 - PiFR + const))
     if (verbose) {
-      cat(paste("iter", emt, " logLik", testell, "\r"))
+      message("\riter ", emt, " logLik ", format(testell, digits = 6), appendLF = FALSE)
     }
     if (testell - oldtestell <= 0) {
       PiFR <- oldPiFR
@@ -259,7 +259,7 @@ Biclustering <- function(U, ncls = 2, nfld = 2,
     }
   }
   if (verbose) {
-    cat(paste("iter", emt, " logLik", testell, "\n"))
+    message("iter ", emt, " logLik ", format(testell, digits = 6))
   }
   #### OUTPUT
 
@@ -368,7 +368,7 @@ Biclustering <- function(U, ncls = 2, nfld = 2,
 #' @param digits printed digits
 #' @return Returns a list of class c("Exametrika", "Biclustering", "FieldAnalysis") containing:
 #'   \describe{
-#'     \item{FieldAnalysisMatrix}{A matrix showing field analysis results with rows 
+#'     \item{FieldAnalysisMatrix}{A matrix showing field analysis results with rows
 #'       representing items and columns showing:
 #'       \itemize{
 #'         \item CRR: Correct Response Rate

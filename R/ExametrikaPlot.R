@@ -95,6 +95,8 @@ plot.Exametrika <- function(x,
                             nc = 1,
                             nr = 1, ...) {
   value <- if (length(class(x)) > 1) tail(class(x), 1) else "None"
+  old_par <- par(no.readonly = TRUE)
+  on.exit(par(old_par))
   par(mfrow = c(nr, nc))
   testlength <- x$testlength
   nobs <- x$nobs
@@ -166,6 +168,7 @@ plot.Exametrika <- function(x,
     if (type == "TRP") {
       # Test Reference Profile ----------------------------------------
       old_par <- par(no.readonly = TRUE)
+      on.exit(par(old_par), add = TRUE)
       par(mar = c(5, 4, 4, 4) + 0.1)
       if (value == "LCA" | value == "LRA" | value == "IRM" | value == "BINET") {
         target <- x$LCD
@@ -193,11 +196,11 @@ plot.Exametrika <- function(x,
       )
       axis(4, at = pretty(range(0, testlength)))
       mtext("Expected Score", side = 4, line = 3)
-      par(old_par)
     }
     if (type == "LCD" | type == "LRD") {
       # Latent Class Distribution ----------------------------------------
       old_par <- par(no.readonly = TRUE)
+      on.exit(par(old_par), add = TRUE)
       par(mar = c(5, 4, 4, 4) + 0.1)
       if (value == "LCA" | value == "LRA" | value == "BINET") {
         target1 <- x$LCD
@@ -231,7 +234,6 @@ plot.Exametrika <- function(x,
       )
       axis(4, at = pretty(range(0, max(target2) + 10)))
       mtext("Frequency", side = 4, line = 3)
-      par(old_par)
     }
     if (type == "CMP" | type == "RMP") {
       # Class Membership Profile ----------------------------------------
@@ -274,6 +276,8 @@ plot.Exametrika <- function(x,
   }
 
   array_plot <- function() {
+    old_par <- par(no.readonly = TRUE)
+    on.exit(par(old_par))
     par(mfrow = c(1, 2))
     stepx <- 300 / x$testlength
     stepy <- 600 / x$nobs

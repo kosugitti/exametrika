@@ -50,7 +50,7 @@ were actually presented to each student. This provides a fair comparison
 between students who attempted different numbers of items.
 }
 \examples{
-\dontrun{
+\donttest{
 # Simple binary data
 U <- matrix(c(1,0,1,1,0,1), ncol=2)
 passage(U)

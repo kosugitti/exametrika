@@ -17,6 +17,11 @@ ItemInformationFunc(a = 1, b, c = 0, d = 1, theta)
 
 \item{theta}{ability parameter}
 }
+\value{
+Returns a numeric vector representing the item information at each ability
+level theta. The information is calculated based on the first derivative of
+the log-likelihood of the 4PL model with respect to theta.
+}
 \description{
 Item Information Function for 4PLM
 }

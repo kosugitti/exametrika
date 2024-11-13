@@ -7,6 +7,9 @@
 #' @param a slope parameter
 #' @param b location parameter
 #' @param theta ability parameter
+#' @return Returns a numeric vector of probabilities between 0 and 1, representing
+#'   the probability of a correct response given the ability level theta. The probability
+#'   is calculated using the formula: \eqn{P(\theta) = \frac{1}{1 + e^{-a(\theta-b)}}}
 #' @export
 
 TwoPLM <- function(a, b, theta) {
@@ -22,6 +25,9 @@ TwoPLM <- function(a, b, theta) {
 #' @param b location parameter
 #' @param c lower asymptote parameter
 #' @param theta ability parameter
+#' @return Returns a numeric vector of probabilities between c and 1, representing
+#'   the probability of a correct response given the ability level theta. The probability
+#'   is calculated using the formula: \eqn{P(\theta) = c + \frac{1-c}{1 + e^{-a(\theta-b)}}}
 #' @export
 
 ThreePLM <- function(a, b, c, theta) {
@@ -39,6 +45,9 @@ ThreePLM <- function(a, b, c, theta) {
 #' @param c lower asymptote parameter
 #' @param d upper asymptote parameter
 #' @param theta ability parameter
+#' @return Returns a numeric vector of probabilities between c and d, representing
+#'   the probability of a correct response given the ability level theta. The probability
+#'   is calculated using the formula: \eqn{P(\theta) = c + \frac{(d-c)}{1 + e^{-a(\theta-b)}}}
 #' @export
 
 LogisticModel <- function(a = 1, b, c = 0, d = 1, theta) {
@@ -53,6 +62,9 @@ LogisticModel <- function(a = 1, b, c = 0, d = 1, theta) {
 #' This model is also called the Rasch model.
 #' @param b slope parameter
 #' @param theta ability parameter
+#' @return Returns a numeric vector of probabilities between 0 and 1, representing
+#'   the probability of a correct response given the ability level theta. The probability
+#'   is calculated using the formula: \eqn{P(\theta) = \frac{1}{1 + e^{-(\theta-b)}}}
 #' @export
 
 RaschModel <- function(b, theta) {
@@ -66,6 +78,9 @@ RaschModel <- function(b, theta) {
 #' @param a slope parameter
 #' @param b location parameter
 #' @param theta ability parameter
+#' @return Returns a numeric vector representing the item information at each ability
+#'   level theta. The information is calculated as:
+#'   \eqn{I(\theta) = a^2P(\theta)(1-P(\theta))}
 #' @export
 
 IIF2PLM <- function(a, b, theta) {
@@ -79,6 +94,9 @@ IIF2PLM <- function(a, b, theta) {
 #' @param b location parameter
 #' @param c lower asymptote parameter
 #' @param theta ability parameter
+#' @return Returns a numeric vector representing the item information at each ability
+#'   level theta. The information is calculated as:
+#'   \eqn{I(\theta) = \frac{a^2(1-P(\theta))(P(\theta)-c)^2}{(1-c)^2P(\theta)}}
 #' @export
 
 IIF3PLM <- function(a, b, c, theta) {
@@ -96,6 +114,9 @@ IIF3PLM <- function(a, b, c, theta) {
 #' @param c lower asymptote parameter
 #' @param d upper asymptote parameter
 #' @param theta ability parameter
+#' @return Returns a numeric vector representing the item information at each ability
+#'   level theta. The information is calculated based on the first derivative of
+#'   the log-likelihood of the 4PL model with respect to theta.
 #' @export
 
 ItemInformationFunc <- function(a = 1, b, c = 0, d = 1, theta) {
@@ -112,6 +133,9 @@ ItemInformationFunc <- function(a = 1, b, c = 0, d = 1, theta) {
 #' Test Information Function for 4PLM
 #' @param params parameter matrix
 #' @param theta ability parameter
+#' @return Returns a numeric vector representing the test information at each ability
+#'   level theta. The test information is the sum of item information functions for
+#'   all items in the test: \eqn{I_{test}(\theta) = \sum_{j=1}^n I_j(\theta)}
 #' @export
 
 TestInformationFunc <- function(params, theta) {

@@ -13,6 +13,11 @@ IIF2PLM(a, b, theta)
 
 \item{theta}{ability parameter}
 }
+\value{
+Returns a numeric vector representing the item information at each ability
+level theta. The information is calculated as:
+\eqn{I(\theta) = a^2P(\theta)(1-P(\theta))}
+}
 \description{
 Item Information Function for 2PLM
 }

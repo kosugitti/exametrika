@@ -1,7 +1,7 @@
 library(tidyverse)
 ### GOALS
 library(readxl)
-library(Exametrika)
+library(exametrika)
 test <- read_excel("../../develop/Chapter05LCA.xlsx", sheet = "Test")
 class <- read_excel("../../develop/Chapter05LCA.xlsx", sheet = "Class")
 items <- read_excel("../../develop/Chapter05LCA.xlsx", sheet = "Item")

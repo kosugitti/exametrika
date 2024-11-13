@@ -15,6 +15,15 @@ Dimensionality(U, na = NULL, Z = NULL, w = NULL)
 
 \item{w}{w is item weight vector}
 }
+\value{
+Returns a list of class c("Exametrika", "Dimensionality") containing:
+\itemize{
+\item Component: Sequence of component numbers
+\item Eigenvalue: Eigenvalues of the tetrachoric correlation matrix
+\item PerOfVar: Percentage of variance explained by each component
+\item CumOfPer: Cumulative percentage of variance explained
+}
+}
 \description{
 The dimensionality is the number of components
 the test is measuring.

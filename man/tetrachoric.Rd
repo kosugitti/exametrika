@@ -11,6 +11,16 @@ tetrachoric(x, y)
 
 \item{y}{binary vector y}
 }
+\value{
+Returns a single numeric value of class "Exametrika" representing the
+tetrachoric correlation coefficient between the two binary variables. The value
+ranges from -1 to 1, where:
+\itemize{
+\item 1 indicates perfect positive correlation
+\item -1 indicates perfect negative correlation
+\item 0 indicates no correlation
+}
+}
 \description{
 Tetrachoric Correlation is superior to the phi coefficient as a measure of the
 relation of an item pair. See Divgi, 1979; Olsson, 1979;Harris, 1988.

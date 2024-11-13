@@ -52,7 +52,7 @@ tests or groups. A positive score indicates above-average performance, while
 a negative score indicates below-average performance.
 }
 \examples{
-\dontrun{
+\donttest{
 # Simple binary data
 U <- matrix(c(1,0,1,1,0,1), ncol=2)
 sscore(U)

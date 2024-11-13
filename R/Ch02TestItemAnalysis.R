@@ -10,6 +10,9 @@
 #'            processing system. Not intended for direct use.
 #' @note This function is implemented using a binary data compatibility wrapper and
 #'       will raise an error if used with polytomous data.
+#' @return Returns a matrix of class c("Exametrika", "matrix") where each element (i,j)
+#'   represents the number of students who responded to both item i and item j. The
+#'   diagonal elements represent the total number of responses for each item.
 #' @export
 
 JointSampleSize <- createBinaryFunction(
@@ -216,6 +219,14 @@ PhiCoefficient <- createBinaryFunction(
 #' @importFrom stats qnorm
 #' @importFrom stats pnorm
 #' @importFrom stats optimize
+#' @return Returns a single numeric value of class "Exametrika" representing the 
+#'   tetrachoric correlation coefficient between the two binary variables. The value 
+#'   ranges from -1 to 1, where:
+#'   \itemize{
+#'     \item 1 indicates perfect positive correlation
+#'     \item -1 indicates perfect negative correlation
+#'     \item 0 indicates no correlation
+#'   }
 #' @export
 
 tetrachoric <- function(x, y) {
@@ -395,7 +406,7 @@ InterItemAnalysis <- createBinaryFunction(
 #' Values range from 0 to 1, where higher values indicate easier items
 #' (more students answered correctly).
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' # Simple binary data
 #' U <- matrix(c(1,0,1,1,0,1), ncol=2)
 #' crr(U)
@@ -449,7 +460,7 @@ crr <- createBinaryFunction(
 #'   \item odds < 1: incorrect response more likely than correct
 #' }
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' # Easy item (80% correct)
 #' p1 <- 0.8
 #' o1 <- p1/(1-p1)  # odds = 4
@@ -501,7 +512,7 @@ ItemOdds <- createBinaryFunction(
 #' }
 #' @importFrom stats qnorm
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' # Easy item (80% correct)
 #' p1 <- 0.8
 #' tau1 <- qnorm(1 - p1)  # negative threshold
@@ -561,7 +572,7 @@ ItemThreshold <- createBinaryFunction(
 #'   \item Values near 0 indicate items with extreme response patterns
 #' }
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' # Balanced item (50% correct)
 #' p1 <- 0.5
 #' e1 <- -p1 * log2(p1) - (1-p1) * log2(1-p1)  # maximum entropy
@@ -775,7 +786,7 @@ ITBiserial <- createBinaryFunction(
 #'   \item Missing responses do not contribute to the score
 #' }
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' # Simple binary data
 #' U <- matrix(c(1,0,1,1,0,1), ncol=2)
 #' nrs(U)
@@ -831,7 +842,7 @@ nrs <- createBinaryFunction(
 #' were actually presented to each student. This provides a fair comparison
 #' between students who attempted different numbers of items.
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' # Simple binary data
 #' U <- matrix(c(1,0,1,1,0,1), ncol=2)
 #' passage(U)
@@ -894,7 +905,7 @@ passage <- createBinaryFunction(
 #' tests or groups. A positive score indicates above-average performance, while
 #' a negative score indicates below-average performance.
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' # Simple binary data
 #' U <- matrix(c(1,0,1,1,0,1), ncol=2)
 #' sscore(U)
@@ -959,7 +970,7 @@ sscore <- createBinaryFunction(
 #' function of standardized scores. Tied scores receive the same percentile rank.
 #' The values are rounded up to the nearest integer to provide ranks from 1 to 100.
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' # Simple binary data
 #' U <- matrix(c(1,0,1,1,0,1), ncol=2)
 #' percentile(U)
@@ -1032,7 +1043,7 @@ percentile <- createBinaryFunction(
 #' American Council on Education.
 #' @importFrom stats quantile
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' # Calculate stanine scores
 #' result <- stanine(U)
 #'
@@ -1088,6 +1099,25 @@ stanine <- createBinaryFunction(
 #' @param Z Z is a missing indicator matrix of the type matrix or data.frame
 #' @param w w is item weight vector
 #' @param na na argument specifies the numbers or characters to be treated as missing values.
+#'   \itemize{
+#'     \item ID: Student identifier
+#'     \item NR: Number of responses
+#'     \item NRS: Number-right score (total correct answers)
+#'     \item PR: Passage rate (proportion correct)
+#'     \item SS: Standardized score (z-score)
+#'     \item Percentile: Student's percentile rank
+#'     \item Stanine: Student's stanine score (1-9)
+#'   }
+#' @return Returns a data frame containing the following columns for each student:
+#'   \itemize{
+#'     \item ID: Student identifier
+#'     \item NR: Number of responses
+#'     \item NRS: Number-right score (total correct answers)
+#'     \item PR: Passage rate (proportion correct)
+#'     \item SS: Standardized score (z-score)
+#'     \item Percentile: Student's percentile rank
+#'     \item Stanine: Student's stanine score (1-9)
+#'   }
 #' @export
 #'
 
@@ -1191,6 +1221,13 @@ TestStatistics <- function(U, na = NULL, Z = NULL, w = NULL) {
 #' @param Z Z is a missing indicator matrix of the type matrix or data.frame
 #' @param w w is item weight vector
 #' @param na na argument specifies the numbers or characters to be treated as missing values.
+#' @return Returns a list of class c("Exametrika", "Dimensionality") containing:
+#'   \itemize{
+#'     \item Component: Sequence of component numbers
+#'     \item Eigenvalue: Eigenvalues of the tetrachoric correlation matrix
+#'     \item PerOfVar: Percentage of variance explained by each component
+#'     \item CumOfPer: Cumulative percentage of variance explained
+#'   }
 #' @export
 
 Dimensionality <- function(U, na = NULL, Z = NULL, w = NULL) {

@@ -1,7 +1,7 @@
 library(tidyverse)
 ### GOALS
 library(readxl)
-library(Exametrika)
+library(exametrika)
 Test <- read_excel("../../develop/Chapter10LDR.xlsx", sheet = "Test")
 CCRR <- read_excel("../../develop/Chapter10LDR.xlsx", sheet = "CCRR")
 MR <- read_excel("../../develop/Chapter10LDR.xlsx", sheet = "Marginal Rankluster")

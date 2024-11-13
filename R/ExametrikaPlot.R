@@ -71,6 +71,16 @@
 #' @importFrom utils tail
 #' @importFrom graphics axis barplot mtext par text lines rect
 #' @importFrom stats runif
+#' @return Produces different types of plots depending on the class of the input object and the specified type:
+#'   \itemize{
+#'     \item For IRT models: ICC (Item Characteristic Curves), IIC (Item Information Curves),
+#'           or TIC (Test Information Curves)
+#'     \item For LCA/LRA models: IRP (Item Reference Profile), TRP (Test Reference Profile),
+#'           LCD/LRD (Latent Class/Rank Distribution), CMP/RMP (Class/Rank Membership Profile)
+#'     \item For Biclustering/IRM models: Array plots showing clustering patterns
+#'     \item For LDLRA/LDB/BINET models: Various network and profile plots specific to each model
+#'   }
+#'   The function returns NULL invisibly.
 #' @export
 
 plot.Exametrika <- function(x,
@@ -473,7 +483,7 @@ plot.Exametrika <- function(x,
       }
     },
     none = {
-      cat("Sorry, this is not an object that can be plotted.")
+      stop("This object cannot be plotted. The object must be of class 'Exametrika' with a valid model type.")
     }
   )
 }

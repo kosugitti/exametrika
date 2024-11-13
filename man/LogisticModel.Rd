@@ -17,6 +17,11 @@ LogisticModel(a = 1, b, c = 0, d = 1, theta)
 
 \item{theta}{ability parameter}
 }
+\value{
+Returns a numeric vector of probabilities between c and d, representing
+the probability of a correct response given the ability level theta. The probability
+is calculated using the formula: \eqn{P(\theta) = c + \frac{(d-c)}{1 + e^{-a(\theta-b)}}}
+}
 \description{
 The four-parameter logistic model is a model where one additional
 parameter d, called the upper asymptote parameter, is added to the

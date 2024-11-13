@@ -1,7 +1,7 @@
 library(tidyverse)
 ### GOALS
 library(readxl)
-library(Exametrika)
+library(exametrika)
 test <- read_excel("../../develop/Chapter06LRA(GTMmic1).xlsx", sheet = "Test")
 class <- read_excel("../../develop/Chapter06LRA(GTMmic1).xlsx", sheet = "Rank")
 items <- read_excel("../../develop/Chapter06LRA(GTMmic1).xlsx", sheet = "Item")

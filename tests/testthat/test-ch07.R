@@ -1,7 +1,7 @@
 library(tidyverse)
 ### GOALS
 library(readxl)
-library(Exametrika)
+library(exametrika)
 test <- read_excel("../../develop/Chapter07Biclustering.xlsx", sheet = "Test")
 Bicluster <- read_excel("../../develop/Chapter07Biclustering.xlsx", sheet = "Bicluster")
 items <- read_excel("../../develop/Chapter07Biclustering.xlsx", sheet = "Item")

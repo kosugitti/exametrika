@@ -134,6 +134,7 @@ PSD_item_params <- function(model, Lambda, quadrature, marginal_posttheta) {
 #' @param Z Z is a missing indicator matrix of the type matrix or data.frame
 #' @param w w is item weight vector
 #' @param na na argument specifies the numbers or characters to be treated as missing values.
+#' @param verbose logical; if TRUE, shows progress of iterations (default: TRUE)
 #' @importFrom stats optim
 #' @details
 #' Apply the 2, 3, and 4 parameter logistic models to estimate the item and subject populations.
@@ -162,7 +163,7 @@ PSD_item_params <- function(model, Lambda, quadrature, marginal_posttheta) {
 #' @export
 #'
 
-IRT <- function(U, model = 2, na = NULL, Z = NULL, w = NULL) {
+IRT <- function(U, model = 2, na = NULL, Z = NULL, w = NULL, verbose = TRUE) {
   # data format
   if (class(U)[1] != "Exametrika") {
     tmp <- dataFormat(data = U, na = na, Z = Z, w = w)
@@ -297,9 +298,13 @@ IRT <- function(U, model = 2, na = NULL, Z = NULL, w = NULL) {
       paramset[j, ] <- newparams
     }
     loglike <- totalLogLike
-    cat(paste("iter", emt, "LogLik", totalLogLike, "\r"))
+    if (verbose) {
+      message("\riter ", emt, " LogLik ", format(totalLogLike, digits = 6), appendLF = FALSE)
+    }
   }
-  cat("\n")
+  if (verbose) {
+    message("")
+  }
 
   #### Warning
   if (sum(paramset[, 1] > 10) > 0) {

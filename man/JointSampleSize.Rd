@@ -18,6 +18,11 @@ JointSampleSize(U, na = NULL, Z = NULL, w = NULL, ...)
 \item{...}{Internal parameters for maintaining compatibility with the binary data
 processing system. Not intended for direct use.}
 }
+\value{
+Returns a matrix of class c("Exametrika", "matrix") where each element (i,j)
+represents the number of students who responded to both item i and item j. The
+diagonal elements represent the total number of responses for each item.
+}
 \description{
 The joint sample size is a matrix whose elements are the number of
 individuals who responded to each pair of items.

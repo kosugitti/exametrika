@@ -11,6 +11,19 @@ FieldAnalysis(x, digits = 4)
 
 \item{digits}{printed digits}
 }
+\value{
+Returns a list of class c("Exametrika", "Biclustering", "FieldAnalysis") containing:
+\describe{
+\item{FieldAnalysisMatrix}{A matrix showing field analysis results with rows
+representing items and columns showing:
+\itemize{
+\item CRR: Correct Response Rate
+\item LFE: Latent Field Estimation
+\item Field1...FieldN: Field membership values
+}
+}
+}
+}
 \description{
 output for Field Analysis
 }

@@ -73,6 +73,18 @@ If not specifically designated, all students will be included.}
 
 \item{...}{other options}
 }
+\value{
+Produces different types of plots depending on the class of the input object and the specified type:
+\itemize{
+\item For IRT models: ICC (Item Characteristic Curves), IIC (Item Information Curves),
+or TIC (Test Information Curves)
+\item For LCA/LRA models: IRP (Item Reference Profile), TRP (Test Reference Profile),
+LCD/LRD (Latent Class/Rank Distribution), CMP/RMP (Class/Rank Membership Profile)
+\item For Biclustering/IRM models: Array plots showing clustering patterns
+\item For LDLRA/LDB/BINET models: Various network and profile plots specific to each model
+}
+The function returns NULL invisibly.
+}
 \description{
 The calculation results of the Exametrika package have an Exametrika class attribute.
 In addition, the class name of the analysis model is also assigned.

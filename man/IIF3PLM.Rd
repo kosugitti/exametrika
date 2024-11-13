@@ -15,6 +15,11 @@ IIF3PLM(a, b, c, theta)
 
 \item{theta}{ability parameter}
 }
+\value{
+Returns a numeric vector representing the item information at each ability
+level theta. The information is calculated as:
+\eqn{I(\theta) = \frac{a^2(1-P(\theta))(P(\theta)-c)^2}{(1-c)^2P(\theta)}}
+}
 \description{
 Item Information Function for 3PLM
 }

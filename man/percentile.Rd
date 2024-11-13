@@ -44,7 +44,7 @@ function of standardized scores. Tied scores receive the same percentile rank.
 The values are rounded up to the nearest integer to provide ranks from 1 to 100.
 }
 \examples{
-\dontrun{
+\donttest{
 # Simple binary data
 U <- matrix(c(1,0,1,1,0,1), ncol=2)
 percentile(U)

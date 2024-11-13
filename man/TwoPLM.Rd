@@ -13,6 +13,11 @@ TwoPLM(a, b, theta)
 
 \item{theta}{ability parameter}
 }
+\value{
+Returns a numeric vector of probabilities between 0 and 1, representing
+the probability of a correct response given the ability level theta. The probability
+is calculated using the formula: \eqn{P(\theta) = \frac{1}{1 + e^{-a(\theta-b)}}}
+}
 \description{
 The two-parameter logistic model is a classic model that defines
 the probability of a student with ability theta successfully

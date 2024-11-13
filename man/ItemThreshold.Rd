@@ -44,7 +44,7 @@ This function is implemented using a binary data compatibility wrapper and
 will raise an error if used with polytomous data.
 }
 \examples{
-\dontrun{
+\donttest{
 # Easy item (80\% correct)
 p1 <- 0.8
 tau1 <- qnorm(1 - p1)  # negative threshold

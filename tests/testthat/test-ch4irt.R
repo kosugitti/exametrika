@@ -1,5 +1,5 @@
 library(tidyverse)
-library(Exametrika)
+library(exametrika)
 
 ### GOALS
 library(readxl)

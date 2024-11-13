@@ -50,7 +50,7 @@ emclus <- function(U, Z, ncls, Fil, beta1, beta2, maxiter = 100, mic = FALSE, ve
     itemEll <- colSums(correct_cls * log(classRefMat + const) + incorrect_cls * log(1 - classRefMat + const))
     testEll <- sum(itemEll)
     if (verbose) {
-      cat(paste("iter", emt, "LogLik", testEll, "\r"))
+      message(paste("iter", emt, "LogLik", testEll, "\r"))
     }
     if (testEll - oldtestEll <= 0) {
       classRefMat <- old_classRefMat

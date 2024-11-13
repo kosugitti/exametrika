@@ -11,6 +11,11 @@ TestInformationFunc(params, theta)
 
 \item{theta}{ability parameter}
 }
+\value{
+Returns a numeric vector representing the test information at each ability
+level theta. The test information is the sum of item information functions for
+all items in the test: \eqn{I_{test}(\theta) = \sum_{j=1}^n I_j(\theta)}
+}
 \description{
 Test Information Function for 4PLM
 }

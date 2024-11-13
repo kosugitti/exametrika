@@ -1,13 +1,23 @@
 Package: exametrika
 Type: Package
-Title: Tools for Test Theory Analysis and Biclustering
+Title: Test Theory Analysis and Biclustering
 Version: 1.1.0
 Authors@R: person("Koji Kosugi",role=c("aut","cre"),
                   email="kosugitti@gmail.com",
                   comment = c(ORCID = "0000-0001-5816-0099"))
-Description: A collection of tools for statistical analysis in test theory, 
-    including Item Response Theory (IRT), Classical Test Theory (CTT), 
-    and Biclustering Analysis of response-pattern data.
+Description: Implements comprehensive test data engineering methods as described in 
+    Shojima (2022, ISBN:978-9811699856). Provides statistical techniques for 
+    engineering and processing test data: Classical Test Theory (CTT) with 
+    reliability coefficients for continuous ability assessment; Item Response 
+    Theory (IRT) including Rasch, 2PL, and 3PL models with item/test information 
+    functions; Latent Class Analysis (LCA) for nominal clustering; Latent Rank 
+    Analysis (LRA) for ordinal clustering with automatic determination of cluster 
+    numbers; Biclustering methods including infinite relational models for 
+    simultaneous clustering of examinees and items without predefined cluster 
+    numbers; and Bayesian Network Models (BNM) for visualizing inter-item 
+    dependencies. Features local dependence analysis through LRA and biclustering, 
+    parameter estimation, dimensionality assessment, and network structure 
+    visualization for educational, psychological, and social science research.
 License: MIT + file LICENSE
 Language: en-US
 Encoding: UTF-8

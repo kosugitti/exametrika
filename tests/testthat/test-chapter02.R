@@ -1,7 +1,7 @@
 ### Read Output of Mathematica
 library(tidyverse)
 library(readxl)
-library(Exametrika)
+library(exametrika)
 
 Ch03CTT <- suppressMessages(read_excel("../../develop/Chapter03CTT.xlsx",
   sheet = "Student"

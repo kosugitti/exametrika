@@ -9,11 +9,32 @@ StudentAnalysis(U, na = NULL, Z = NULL, w = NULL)
 \arguments{
 \item{U}{U is a data matrix of the type matrix or data.frame.}
 
-\item{na}{na argument specifies the numbers or characters to be treated as missing values.}
+\item{na}{na argument specifies the numbers or characters to be treated as missing values.
+\itemize{
+\item ID: Student identifier
+\item NR: Number of responses
+\item NRS: Number-right score (total correct answers)
+\item PR: Passage rate (proportion correct)
+\item SS: Standardized score (z-score)
+\item Percentile: Student's percentile rank
+\item Stanine: Student's stanine score (1-9)
+}}
 
 \item{Z}{Z is a missing indicator matrix of the type matrix or data.frame}
 
 \item{w}{w is item weight vector}
+}
+\value{
+Returns a data frame containing the following columns for each student:
+\itemize{
+\item ID: Student identifier
+\item NR: Number of responses
+\item NRS: Number-right score (total correct answers)
+\item PR: Passage rate (proportion correct)
+\item SS: Standardized score (z-score)
+\item Percentile: Student's percentile rank
+\item Stanine: Student's stanine score (1-9)
+}
 }
 \description{
 The StudentAnalysis function returns descriptive statistics for each individual student.

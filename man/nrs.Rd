@@ -46,7 +46,7 @@ This function is implemented using a binary data compatibility wrapper and
 will raise an error if used with polytomous data.
 }
 \examples{
-\dontrun{
+\donttest{
 # Simple binary data
 U <- matrix(c(1,0,1,1,0,1), ncol=2)
 nrs(U)

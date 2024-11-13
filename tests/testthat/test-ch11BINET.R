@@ -1,7 +1,7 @@
 library(tidyverse)
 ### GOALS
 library(readxl)
-library(Exametrika)
+library(exametrika)
 Test <- read_excel("../../develop/Chapter11BINET.xlsx", sheet = "Test")
 CCRR <- read_excel("../../develop/Chapter11BINET.xlsx", sheet = "CCRR")
 LDPSR <- read_excel("../../develop/Chapter11BINET.xlsx", sheet = "LDPSR")

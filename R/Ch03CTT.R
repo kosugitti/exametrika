@@ -5,6 +5,14 @@
 #' @param Z This parameter represents a missing indicator matrix. It is only needed if 'x' is a data matrix.
 #' @param w This parameter is an item weight vector. It is only required if 'x' is a data matrix.
 #' @param na This parameter identifies the numbers or characters that should be treated as missing values when 'x' is a data matrix.
+#' @return For a correlation/covariance matrix input, returns a single numeric value
+#'   representing the alpha coefficient. For a data matrix input, returns a list with
+#'   three components:
+#'   \itemize{
+#'     \item AlphaCov: Alpha coefficient calculated from covariance matrix
+#'     \item AlphaPhi: Alpha coefficient calculated from phi coefficient matrix
+#'     \item AlphaTetrachoric: Alpha coefficient calculated from tetrachoric correlation matrix
+#'   }
 #' @references Cronbach, L. J. (1951). Coefficient alpha and the internal structure of a test. Psychometrika, 16,297–334.
 #' @importFrom stats cov
 #' @export
@@ -98,6 +106,14 @@ AlphaIfDel <- function(x, delItem = NULL, na = NULL, Z = NULL, w = NULL) {
 #' @param Z This parameter represents a missing indicator matrix. It is only needed if 'x' is a data matrix.
 #' @param w This parameter is an item weight vector. It is only required if 'x' is a data matrix.
 #' @param na This parameter identifies the numbers or characters that should be treated as missing values when 'x' is a data matrix.
+#' @return For a correlation/covariance matrix input, returns a single numeric value
+#'   representing the omega coefficient. For a data matrix input, returns a list with
+#'   three components:
+#'   \itemize{
+#'     \item OmegaCov: Omega coefficient calculated from covariance matrix
+#'     \item OmegaPhi: Omega coefficient calculated from phi coefficient matrix
+#'     \item OmegaTetrachoric: Omega coefficient calculated from tetrachoric correlation matrix
+#'   }
 #' @importFrom stats cov runif
 #' @export
 
@@ -157,6 +173,14 @@ OmegaCoefficient <- function(x, na = NULL, Z = NULL, w = NULL) {
 #' @param Z Z is a missing indicator matrix of the type matrix or data.frame
 #' @param w w is item weight vector
 #' @param na na argument specifies the numbers or characters to be treated as missing values.
+#' @return Returns a list of class c("Exametrika", "CTT") containing two data frames:
+#'   \itemize{
+#'     \item Reliability: A data frame with overall reliability coefficients
+#'       (Alpha and Omega) calculated using different correlation matrices
+#'       (Covariance, Phi, and Tetrachoric)
+#'     \item ReliabilityExcludingItem: A data frame showing alpha coefficients
+#'       when each item is excluded, calculated using different correlation matrices
+#'   }
 #' @export
 
 CTT <- function(U, na = NULL, Z = NULL, w = NULL) {

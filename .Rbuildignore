@@ -9,3 +9,4 @@
 ^inst$
 ^\.github$
 ^_config\.yml$
+^CRAN-SUBMISSION$

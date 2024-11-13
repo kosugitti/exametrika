@@ -174,9 +174,9 @@ dataFormat <- function(data, na = NULL, id = 1, Z = NULL, w = NULL) {
   # check sd for each items
   sd.check <- apply(response.matrix, 2, function(x) sd(x, na.rm = TRUE))
   if (sum(is.na(sd.check)) != 0) {
-    message("The following items with no variance.Excluded from the data.")
-    cat(ItemLabel[is.na(sd.check)])
-    cat("\n\n")
+    excluded_items <- ItemLabel[is.na(sd.check)]
+    message("The following items with no variance.Excluded from the data:\n",
+            paste(excluded_items, collapse = ", "), "\n")
     response.matrix <- response.matrix[, !is.na(sd.check)]
     Z <- Z[, !is.na(sd.check)]
     ItemLabel <- ItemLabel[!is.na(sd.check)]

@@ -42,7 +42,7 @@ library(exametrika)
 
 ## Example and Sample Data
 
-This package includes the same sample data that is distributed on the original site. The number of test-takers is represented by \( S \), and the number of test items is represented by \( J \). The data is named in a format like JxxSxxx.
+This package includes the same sample data that is distributed on the original site. The number of test-takers is represented by S, and the number of test items is represented by J. The data is named in a format like JxxSxxx.
 
 #### Exametrika Data Format
 

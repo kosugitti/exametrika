@@ -54,7 +54,7 @@ This function is implemented using a binary data compatibility wrapper and
 will raise an error if used with polytomous data.
 }
 \examples{
-\dontrun{
+\donttest{
 # Balanced item (50\% correct)
 p1 <- 0.5
 e1 <- -p1 * log2(p1) - (1-p1) * log2(1-p1)  # maximum entropy

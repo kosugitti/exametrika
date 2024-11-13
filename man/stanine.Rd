@@ -56,7 +56,7 @@ Stanine scores provide a normalized scale with:
 }
 }
 \examples{
-\dontrun{
+\donttest{
 # Calculate stanine scores
 result <- stanine(U)
 

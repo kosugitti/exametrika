@@ -15,6 +15,16 @@ AlphaCoefficient(x, na = NULL, Z = NULL, w = NULL)
 
 \item{w}{This parameter is an item weight vector. It is only required if 'x' is a data matrix.}
 }
+\value{
+For a correlation/covariance matrix input, returns a single numeric value
+representing the alpha coefficient. For a data matrix input, returns a list with
+three components:
+\itemize{
+\item AlphaCov: Alpha coefficient calculated from covariance matrix
+\item AlphaPhi: Alpha coefficient calculated from phi coefficient matrix
+\item AlphaTetrachoric: Alpha coefficient calculated from tetrachoric correlation matrix
+}
+}
 \description{
 This function computes Tau-Equivalent Measurement, also known as Cronbach's alpha coefficient, for a given data set.
 }

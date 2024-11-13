@@ -15,6 +15,11 @@ ThreePLM(a, b, c, theta)
 
 \item{theta}{ability parameter}
 }
+\value{
+Returns a numeric vector of probabilities between c and 1, representing
+the probability of a correct response given the ability level theta. The probability
+is calculated using the formula: \eqn{P(\theta) = c + \frac{1-c}{1 + e^{-a(\theta-b)}}}
+}
 \description{
 The three-parameter logistic model is a model where the lower
 asymptote parameter c is added to the 2PLM

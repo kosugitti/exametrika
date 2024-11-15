@@ -19,7 +19,7 @@ JointSampleSize(U, na = NULL, Z = NULL, w = NULL, ...)
 processing system. Not intended for direct use.}
 }
 \value{
-Returns a matrix of class c("Exametrika", "matrix") where each element (i,j)
+Returns a matrix of class c("exametrika", "matrix") where each element (i,j)
 represents the number of students who responded to both item i and item j. The
 diagonal elements represent the total number of responses for each item.
 }

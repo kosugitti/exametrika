@@ -12,7 +12,7 @@ tetrachoric(x, y)
 \item{y}{binary vector y}
 }
 \value{
-Returns a single numeric value of class "Exametrika" representing the
+Returns a single numeric value of class "exametrika" representing the
 tetrachoric correlation coefficient between the two binary variables. The value
 ranges from -1 to 1, where:
 \itemize{

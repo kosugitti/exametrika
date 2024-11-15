@@ -19,8 +19,8 @@ LDB(
 )
 }
 \arguments{
-\item{U}{U is either a data class of Exametrika, or raw data. When raw data is given,
-it is converted to the Exametrika class with the \link{dataFormat} function.}
+\item{U}{U is either a data class of exametrika, or raw data. When raw data is given,
+it is converted to the exametrika class with the \link{dataFormat} function.}
 
 \item{Z}{Z is a missing indicator matrix of the type matrix or data.frame}
 
@@ -63,8 +63,8 @@ listed in the order of starting point, ending point, and rank(class).}
 PIRP array, where each dimension represents the number of rank,number
 of field, and Dmax. Dmax denotes the maximum number of correct response
 patterns for each field.}
-\item{LFD}{Latent Field Distribution. see also \link{plot.Exametrika}}
-\item{LRD}{Latent Rank Distribution. see also \link{plot.Exametrika}}
+\item{LFD}{Latent Field Distribution. see also \link{plot.exametrika}}
+\item{LRD}{Latent Rank Distribution. see also \link{plot.exametrika}}
 \item{FRP}{Marginal Field Reference Matrix}
 \item{FRPIndex}{Index of FFP includes the item location parameters B and Beta,
 the slope parameters A and Alpha, and the monotonicity indices C and Gamma.}

@@ -7,8 +7,8 @@
 IRT(U, model = 2, na = NULL, Z = NULL, w = NULL, verbose = TRUE)
 }
 \arguments{
-\item{U}{U is either a data class of Exametrika, or raw data. When raw data is given,
-it is converted to the Exametrika class with the \code{\link{dataFormat}} function.}
+\item{U}{U is either a data class of exametrika, or raw data. When raw data is given,
+it is converted to the exametrika class with the \code{\link{dataFormat}} function.}
 
 \item{model}{This argument takes the number of item parameters to be
 estimated in the logistic model. It is limited to values 2, 3, or 4.}

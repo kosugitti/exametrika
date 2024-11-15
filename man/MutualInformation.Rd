@@ -19,7 +19,7 @@ MutualInformation(U, na = NULL, Z = NULL, w = NULL, ...)
 processing system. Not intended for direct use.}
 }
 \value{
-A matrix of mutual information values with Exametrika class.
+A matrix of mutual information values with exametrika class.
 Each element (i,j) represents the mutual information between items i and j,
 measured in bits. Higher values indicate stronger interdependence between items.
 }

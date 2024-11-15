@@ -57,5 +57,5 @@ For binary data, all elements are 2.}
 }
 }
 \description{
-A function to reshape long data into a dataset suitable for Exametrika.
+A function to reshape long data into a dataset suitable for exametrika.
 }

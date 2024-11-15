@@ -19,7 +19,7 @@ ItemLift(U, na = NULL, Z = NULL, w = NULL, ...)
 processing system. Not intended for direct use.}
 }
 \value{
-A matrix of item lift values with Exametrika class.
+A matrix of item lift values with exametrika class.
 Each element (j,k) represents the lift value of item k given item j,
 which indicates how much more likely item k is to be correct given that
 item j was answered correctly.

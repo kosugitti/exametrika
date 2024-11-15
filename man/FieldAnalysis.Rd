@@ -12,7 +12,7 @@ FieldAnalysis(x, digits = 4)
 \item{digits}{printed digits}
 }
 \value{
-Returns a list of class c("Exametrika", "Biclustering", "FieldAnalysis") containing:
+Returns a list of class c("exametrika", "Biclustering", "FieldAnalysis") containing:
 \describe{
 \item{FieldAnalysisMatrix}{A matrix showing field analysis results with rows
 representing items and columns showing:

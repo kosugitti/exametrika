@@ -16,7 +16,7 @@ Dimensionality(U, na = NULL, Z = NULL, w = NULL)
 \item{w}{w is item weight vector}
 }
 \value{
-Returns a list of class c("Exametrika", "Dimensionality") containing:
+Returns a list of class c("exametrika", "Dimensionality") containing:
 \itemize{
 \item Component: Sequence of component numbers
 \item Eigenvalue: Eigenvalues of the tetrachoric correlation matrix

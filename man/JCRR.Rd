@@ -19,7 +19,7 @@ JCRR(U, na = NULL, Z = NULL, w = NULL, ...)
 processing system. Not intended for direct use.}
 }
 \value{
-A matrix of joint correct response rates with Exametrika class.
+A matrix of joint correct response rates with exametrika class.
 Each element (i,j) represents the proportion of students who correctly
 answered both items i and j.
 }

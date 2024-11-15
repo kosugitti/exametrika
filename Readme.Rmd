@@ -189,7 +189,7 @@ head(result.LCA$Students)
 
 The plots offer options for IRP, CMP, TRP, and LCD. For more details on each, please refer to Shojima (2022).
 
-```{r plot-lca, fig.width=7, fig.height=5, message=FALSE, warning=FALSE}
+```{r plot-lca, message=FALSE, warning=FALSE}
 plot(result.LCA, type = "IRP", items = 1:6, nc = 2, nr = 3)
 plot(result.LCA, type = "CMP", students = 1:9, nc = 3, nr = 3)
 plot(result.LCA, type = "TRP")
@@ -211,7 +211,7 @@ result.LRA <- LRA(J15S500, nrank = 6)
 head(result.LRA$Students)
 ```
 
-```{r plot-lra, fig.width=7, fig.height=5, message=FALSE, warning=FALSE}
+```{r plot-lra, message=FALSE, warning=FALSE}
 plot(result.LRA, type = "IRP", items = 1:6, nc = 2, nr = 3)
 plot(result.LRA, type = "RMP", students = 1:9, nc = 3, nr = 3)
 plot(result.LRA, type = "TRP")
@@ -397,7 +397,7 @@ result.LDLRA
 ```
 
 Of course, it also supports various types of plots.
-```{r plot-ldlra, fig.width=7, fig.height=5, message=FALSE, warning=FALSE}
+```{r plot-ldlra, message=FALSE, warning=FALSE}
 plot(result.LDLRA, type = "IRP", nc = 4, nr = 3)
 plot(result.LDLRA, type = "TRP")
 plot(result.LDLRA, type = "LRD")
@@ -492,7 +492,7 @@ unlink(edgeFile)
 
 Of course, it also supports various types of plots.
 
-```{r plot-ldb, fig.width=7, fig.height=5, message=FALSE, warning=FALSE}
+```{r plot-ldb, message=FALSE, warning=FALSE}
 # Show bicluster structure
 plot(result.LDB, type = "Array")
 # Test Response Profile
@@ -575,7 +575,7 @@ unlink(edgeFile)
 
 Of course, it also supports various types of plots.
 
-```{r plot-binet, fig.width=7, fig.height=5, message=FALSE, warning=FALSE}
+```{r plot-binet, message=FALSE, warning=FALSE}
 # Show bicluster structure
 plot(result.BINET, type = "Array")
 # Test Response Profile
@@ -591,7 +591,7 @@ plot(result.BINET, type = "FRP", nc = 3, nr = 2)
 LDPSR plot shows all Passing Student Rates for all locally dependent classes compared with their respective parents.
 
 
-```{r plot-binet-ldpsr, fig.width=7, fig.height=5, message=FALSE, warning=FALSE}
+```{r plot-binet-ldpsr, message=FALSE, warning=FALSE}
 # Locally Dependent Passing Student Rates
 plot(result.BINET, type = "LDPSR", nc = 3, nr = 2)
 ```

@@ -12,7 +12,7 @@ createBinaryFunction(fun, fun_name = NULL)
 \item{fun_name}{Optional character string specifying the function name for error messages}
 }
 \description{
-This function was introduced in Exametrika version 1.1 to handle the possibility
+This function was introduced in exametrika version 1.1 to handle the possibility
 of polytomous data input. Since functions prior to v1.1 were designed exclusively
 for binary data, this factory function serves as a filter and recursively generates
 functions that maintain backward compatibility by ensuring binary data input.

@@ -19,7 +19,7 @@ InterItemAnalysis(U, na = NULL, Z = NULL, w = NULL, ...)
 processing system. Not intended for direct use.}
 }
 \value{
-A list of class "Exametrika" and "IIAnalysis" containing the following matrices:
+A list of class "exametrika" and "IIAnalysis" containing the following matrices:
 \describe{
 \item{JSS}{Joint Sample Size matrix}
 \item{JCRR}{Joint Correct Response Rate matrix}

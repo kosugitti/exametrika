@@ -19,7 +19,7 @@ PhiCoefficient(U, na = NULL, Z = NULL, w = NULL, ...)
 processing system. Not intended for direct use.}
 }
 \value{
-A matrix of phi coefficients with Exametrika class.
+A matrix of phi coefficients with exametrika class.
 Each element (i,j) represents the phi coefficient between items i and j.
 The matrix is symmetric with ones on the diagonal.
 }

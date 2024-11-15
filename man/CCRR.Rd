@@ -19,7 +19,7 @@ CCRR(U, na = NULL, Z = NULL, w = NULL, ...)
 processing system. Not intended for direct use.}
 }
 \value{
-A matrix of conditional correct response rates with Exametrika class.
+A matrix of conditional correct response rates with exametrika class.
 Each element (i,j) represents the probability of correctly answering item j
 given that item i was answered correctly.
 }

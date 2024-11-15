@@ -19,8 +19,8 @@ Biclustering(
 )
 }
 \arguments{
-\item{U}{U is either a data class of Exametrika, or raw data. When raw data is given,
-it is converted to the Exametrika class with the \link{dataFormat} function.}
+\item{U}{U is either a data class of exametrika, or raw data. When raw data is given,
+it is converted to the exametrika class with the \link{dataFormat} function.}
 
 \item{ncls}{number of classes}
 
@@ -67,9 +67,9 @@ the slope parameters A and Alpha, and the monotonicity indices C and Gamma.}
 rank membership profile of Student s, namely the posterior probability distribution representing the student's
 belonging to the respective latent classes. It also includes the rank with the maximum estimated membership probability,
 as well as the rank-up odds and rank-down odds.}
-\item{LRD}{Latent Rank Distribution. see also \link{plot.Exametrika}}
-\item{LCD}{Latent Class Distribution. see also \link{plot.Exametrika}}
-\item{LFD}{Latent Field Distribution. see also \link{plot.Exametrika}}
+\item{LRD}{Latent Rank Distribution. see also \link{plot.exametrika}}
+\item{LCD}{Latent Class Distribution. see also \link{plot.exametrika}}
+\item{LFD}{Latent Field Distribution. see also \link{plot.exametrika}}
 \item{RMD}{Rank Membership Distribution.}
 \item{TestFitIndices}{Overall fit index for the test.See also \link{TestFit}}
 }

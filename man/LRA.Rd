@@ -18,8 +18,8 @@ LRA(
 )
 }
 \arguments{
-\item{U}{U is either a data class of Exametrika, or raw data. When raw data is given,
-it is converted to the Exametrika class with the \link{dataFormat} function.}
+\item{U}{U is either a data class of exametrika, or raw data. When raw data is given,
+it is converted to the exametrika class with the \link{dataFormat} function.}
 
 \item{nrank}{number of latent rank}
 
@@ -58,8 +58,8 @@ the original data will be automatically assigned.}
 \item{Nclass}{number of classes you set}
 \item{TRP}{Test Reference Profile matrix. The TRP is the column sum vector of estimated class reference matrix,
 \eqn{\hat{\Pi}_c}}
-\item{LCD}{Latent Class Distribution table.see also \link{plot.Exametrika}}
-\item{CMD}{Class Membership Distribution table. see also \link{plot.Exametrika}}
+\item{LCD}{Latent Class Distribution table.see also \link{plot.exametrika}}
+\item{CMD}{Class Membership Distribution table. see also \link{plot.exametrika}}
 \item{Students}{Class Membership Profile matrix.The s-th row vector of \eqn{\hat{M}_c}, \eqn{\hat{m}_c}, is the
 class membership profile of Student s, namely the posterior probability distribution representing the student's
 belonging to the respective latent classes. It also includes the rank with the maximum estimated membership probability,

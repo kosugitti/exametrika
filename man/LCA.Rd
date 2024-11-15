@@ -7,8 +7,8 @@
 LCA(U, ncls = 2, na = NULL, Z = NULL, w = NULL, maxiter = 100)
 }
 \arguments{
-\item{U}{U is either a data class of Exametrika, or raw data. When raw data is given,
-it is converted to the Exametrika class with the \link{dataFormat} function.}
+\item{U}{U is either a data class of exametrika, or raw data. When raw data is given,
+it is converted to the exametrika class with the \link{dataFormat} function.}
 
 \item{ncls}{number of latent class}
 
@@ -27,8 +27,8 @@ it is converted to the Exametrika class with the \link{dataFormat} function.}
 \item{Nclass}{number of classes you set}
 \item{TRP}{Test Reference Profile matrix. The TRP is the column sum vector of estimated class reference matrix,
 \eqn{\hat{\Pi}_c}}
-\item{LCD}{Latent Class Distribution table.see also \link{plot.Exametrika}}
-\item{CMD}{Class Membership Distribution table. see also \link{plot.Exametrika}}
+\item{LCD}{Latent Class Distribution table.see also \link{plot.exametrika}}
+\item{CMD}{Class Membership Distribution table. see also \link{plot.exametrika}}
 \item{Students}{Class Membership Profile matrix.The s-th row vector of \eqn{\hat{M}_c}, \eqn{\hat{m}_c}, is the
 class membership profile of Student s, namely the posterior probability distribution representing the student's
 belonging to the respective latent classes. The last column indicates the latent class estimate.}

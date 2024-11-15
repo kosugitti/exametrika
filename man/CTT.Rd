@@ -16,7 +16,7 @@ CTT(U, na = NULL, Z = NULL, w = NULL)
 \item{w}{w is item weight vector}
 }
 \value{
-Returns a list of class c("Exametrika", "CTT") containing two data frames:
+Returns a list of class c("exametrika", "CTT") containing two data frames:
 \itemize{
 \item Reliability: A data frame with overall reliability coefficients
 (Alpha and Omega) calculated using different correlation matrices

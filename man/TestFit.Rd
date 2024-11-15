@@ -7,8 +7,8 @@
 TestFit(U, Z, ell_A, nparam)
 }
 \arguments{
-\item{U}{U is either a data class of Exametrika, or raw data. When raw data is given,
-it is converted to the Exametrika class with the \link{dataFormat} function.}
+\item{U}{U is either a data class of exametrika, or raw data. When raw data is given,
+it is converted to the exametrika class with the \link{dataFormat} function.}
 
 \item{Z}{Z is a missing indicator matrix of the type matrix or data.frame}
 

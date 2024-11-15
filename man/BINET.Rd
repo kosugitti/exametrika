@@ -19,8 +19,8 @@ BINET(
 )
 }
 \arguments{
-\item{U}{U is either a data class of Exametrika, or raw data. When raw data is given,
-it is converted to the Exametrika class with the \link{dataFormat} function.}
+\item{U}{U is either a data class of exametrika, or raw data. When raw data is given,
+it is converted to the exametrika class with the \link{dataFormat} function.}
 
 \item{Z}{Z is a missing indicator matrix of the type matrix or data.frame}
 
@@ -58,7 +58,7 @@ listed in the order of starting point, ending point, and rank(class).}
 \item{FieldLabel}{Label of Fields}
 \item{all_adj}{Integrated Adjacency matrix used to plot graph.}
 \item{all_g}{Integrated graph object used to plot graph.see also
-\link{plot.Exametrika}}
+\link{plot.exametrika}}
 \item{adj_list}{List of Adjacency matrix used in the model}
 \item{params}{A list of the estimated conditional probabilities.
 It indicates which path was obtained from which parent node(class) to
@@ -68,8 +68,8 @@ conditional correct response answer rate of the child node, while \code{pap}
 contains the pass rate of the parent node.}
 \item{PSRP}{Response pattern by the students belonging to the parent
 classes of Class c. A more comprehensible arrangement of \code{params.}}
-\item{LCD}{Latent Class Distribution. see also \link{plot.Exametrika}}
-\item{LFD}{Latent Field Distribution. see also \link{plot.Exametrika}}
+\item{LCD}{Latent Class Distribution. see also \link{plot.exametrika}}
+\item{LFD}{Latent Field Distribution. see also \link{plot.exametrika}}
 \item{CMD}{Class Membership Distribution.}
 \item{FRP}{Marginal bicluster reference matrix.}
 \item{FRPIndex}{Index of FFP includes the item location parameters B and Beta,

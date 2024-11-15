@@ -107,8 +107,8 @@ The `dataFormat` function preprocesses input data for analysis:
 Example:
 ```{r example-data-format}
 # Format raw data for analysis
-data <- dataFormat(J15S500)  # Using sample dataset
-str(data)  # View structure of formatted data
+data <- dataFormat(J15S500) # Using sample dataset
+str(data) # View structure of formatted data
 ```
 
 ### Sample Datasets
@@ -359,13 +359,14 @@ DAG_dat <- matrix(c(
 ), ncol = 3, byrow = TRUE)
 
 # save csv file
-write.csv(DAG_dat, "develop/DAG_file.csv", row.names = FALSE, quote = TRUE)
+edgeFile <- tempfile(fileext = ".csv")
+write.csv(DAG_dat, edgeFile, row.names = FALSE, quote = TRUE)
 ```
 
 Here, it is shown an example of specifying with matrix-type and graph objects using the aforementioned CSV file. While only one specification is sufficient, if multiple specifications are provided, they will be prioritized in the order of file, matrix, and graph object.
 
 ```{r setup-graph-conversion, message=FALSE, warning=FALSE}
-g_csv <- read.csv("develop/DAG_file.csv")
+g_csv <- read.csv(edgeFile)
 colnames(g_csv) <- c("From", "To", "Rank")
 adj_list <- list()
 g_list <- list()
@@ -402,6 +403,10 @@ plot(result.LDLRA, type = "TRP")
 plot(result.LDLRA, type = "LRD")
 ```
 
+```{r,include=FALSE}
+# Clean up temporary file
+unlink(edgeFile)
+```
 
 ### Structure Learning for LDLRA with GA(PBIL)
 
@@ -431,49 +436,46 @@ Here's an example implementation:
 
 ```{r setup-ldb}
 # Create field configuration vector (assign items to fields)
-conf <- c(1,6,6,8,9,9,4,7,7,7,5,8,9,10,10,9,9,10,10,10,2,2,3,3,5,5,6,9,9,10,1,1,7,9,10)
+conf <- c(1, 6, 6, 8, 9, 9, 4, 7, 7, 7, 5, 8, 9, 10, 10, 9, 9, 10, 10, 10, 2, 2, 3, 3, 5, 5, 6, 9, 9, 10, 1, 1, 7, 9, 10)
 
 # Create edge data for network structure between fields
 edges_data <- data.frame(
   "From Field (Parent) >>>" = c(
-    6, 4, 5, 1, 1, 4,       # Class/Rank 2
-    3, 4, 6, 2, 4, 4,       # Class/Rank 3
-    3, 6, 4, 1,             # Class/Rank 4
-    7, 9, 6, 7              # Class/Rank 5
+    6, 4, 5, 1, 1, 4, # Class/Rank 2
+    3, 4, 6, 2, 4, 4, # Class/Rank 3
+    3, 6, 4, 1, # Class/Rank 4
+    7, 9, 6, 7 # Class/Rank 5
   ),
   ">>> To Field (Child)" = c(
-    8, 7, 8, 7, 2, 5,       # Class/Rank 2
-    5, 8, 8, 4, 6, 7,       # Class/Rank 3
-    5, 8, 5, 8,             # Class/Rank 4
-    10, 10, 8, 9            # Class/Rank 5
+    8, 7, 8, 7, 2, 5, # Class/Rank 2
+    5, 8, 8, 4, 6, 7, # Class/Rank 3
+    5, 8, 5, 8, # Class/Rank 4
+    10, 10, 8, 9 # Class/Rank 5
   ),
   "At Class/Rank (Locus)" = c(
-    2, 2, 2, 2, 2, 2,       # Class/Rank 2
-    3, 3, 3, 3, 3, 3,       # Class/Rank 3
-    4, 4, 4, 4,             # Class/Rank 4
-    5, 5, 5, 5              # Class/Rank 5
+    2, 2, 2, 2, 2, 2, # Class/Rank 2
+    3, 3, 3, 3, 3, 3, # Class/Rank 3
+    4, 4, 4, 4, # Class/Rank 4
+    5, 5, 5, 5 # Class/Rank 5
   )
 )
 
 # Save edge data to temporary file
-tmp_file <- tempfile(fileext = ".csv")
-write.csv(edges_data, file = tmp_file, row.names = FALSE)
+edgeFile <- tempfile(fileext = ".csv")
+write.csv(edges_data, file = edgeFile, row.names = FALSE)
 ```
 
 ```{r setup-ldb-conf, include=FALSE, message=FALSE, warning=FALSE}
 # Fit Local Dependence Biclustering model
 result.LDB <- LDB(
   U = J35S515,
-  ncls = 5,            # Number of latent classes
-  conf = conf,         # Field configuration vector
-  adj_file = tmp_file  # Network structure file
+  ncls = 5, # Number of latent classes
+  conf = conf, # Field configuration vector
+  adj_file = edgeFile # Network structure file
 )
 
 # Display model results
 print(result.LDB)
-
-# Clean up temporary file
-unlink(tmp_file)
 ```
 
 
@@ -481,6 +483,11 @@ Additionally, as mentioned in the text (Shojima, 2022), it is often the case tha
 ```{r}
 result.LDB <- LDB(U = J35S515, ncls = 5, conf = conf, adj_file = edgeFile)
 result.LDB
+```
+
+```{r,include=FALSE}
+# Clean up temporary file
+unlink(edgeFile)
 ```
 
 Of course, it also supports various types of plots.
@@ -515,30 +522,30 @@ To execute this analysis, in addition to the dataset, the same field corresponde
 
 ```{r setup-binet}
 # Create field configuration vector for item assignment
-conf <- c(1,5,5,5,9,9,6,6,6,6,2,7,7,11,11,7,7,12,12,12,2,2,3,3,4,4,4,8,8,12,1,1,6,10,10)
+conf <- c(1, 5, 5, 5, 9, 9, 6, 6, 6, 6, 2, 7, 7, 11, 11, 7, 7, 12, 12, 12, 2, 2, 3, 3, 4, 4, 4, 8, 8, 12, 1, 1, 6, 10, 10)
 
 # Create edge data for network structure between classes
 edges_data <- data.frame(
   "From Class (Parent) >>>" = c(
-    1, 2, 3, 4, 5, 7,   # Dependencies in various fields
+    1, 2, 3, 4, 5, 7, # Dependencies in various fields
     2, 4, 6, 8, 10,
     6, 6, 11, 8, 9, 12
   ),
   ">>> To Class (Child)" = c(
-    2, 4, 5, 5, 6, 11,  # Target classes
+    2, 4, 5, 5, 6, 11, # Target classes
     3, 7, 9, 12, 12,
     10, 8, 12, 12, 11, 13
   ),
   "At Field (Locus)" = c(
-    1, 2, 2, 3, 4, 4,   # Field locations
+    1, 2, 2, 3, 4, 4, # Field locations
     5, 5, 5, 5, 5,
     7, 8, 8, 9, 9, 12
   )
 )
 
 # Save edge data to temporary file
-tmp_file <- tempfile(fileext = ".csv")
-write.csv(edges_data, file = tmp_file, row.names = FALSE)
+edgeFile <- tempfile(fileext = ".csv")
+write.csv(edges_data, file = edgeFile, row.names = FALSE)
 ```
 
 The model requires three components:
@@ -551,17 +558,19 @@ The model requires three components:
 # Fit Bicluster Network Model
 result.BINET <- BINET(
   U = J35S515,
-  ncls = 13,           # Maximum class number from edges (13)
-  nfld = 12,           # Maximum field number from conf (12)
-  conf = conf,         # Field configuration vector
-  adj_file = tmp_file  # Network structure file
+  ncls = 13, # Maximum class number from edges (13)
+  nfld = 12, # Maximum field number from conf (12)
+  conf = conf, # Field configuration vector
+  adj_file = edgeFile # Network structure file
 )
 
 # Display model results
 print(result.BINET)
+```
 
+```{r,include=FALSE}
 # Clean up temporary file
-unlink(tmp_file)
+unlink(edgeFile)
 ```
 
 Of course, it also supports various types of plots.

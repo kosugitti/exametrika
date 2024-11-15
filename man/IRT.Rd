@@ -48,6 +48,24 @@ and \eqn{d_j} is the upper asymptote parameter.
 The model includes lower models, and among the 4PL models, the case where \eqn{d=1} is the 3PL model,
 and among the 3PL models, the case where \eqn{c=0} is the 2PL model.
 }
+\examples{
+\donttest{
+# Fit a 3-parameter IRT model to the sample dataset
+result.IRT <- IRT(J15S500, model = 3)
+
+# Display the first few rows of estimated student abilities
+head(result.IRT$ability)
+
+# Plot Item Characteristic Curves (ICC) for items 1-6 in a 2x3 grid
+plot(result.IRT, type = "ICC", items = 1:6, nc = 2, nr = 3)
+
+# Plot Item Information Curves (IIC) for items 1-6 in a 2x3 grid
+plot(result.IRT, type = "IIC", items = 1:6, nc = 2, nr = 3)
+
+# Plot the Test Information Curve (TIC) for all items
+plot(result.IRT, type = "TIC")
+}
+}
 \references{
 Yen, W. M. (1984) Applied Psychological Measurement, 8, 125-145.
 }

@@ -56,17 +56,11 @@ Stanine scores provide a normalized scale with:
 }
 }
 \examples{
-\donttest{
-# Calculate stanine scores
-U <- J15S500
-result <- stanine(U)
-
+result <- stanine(J15S500)
 # View score boundaries
 result$stanine
-
 # View individual scores
 result$stanineScore
-}
 }
 \references{
 Angoff, W. H. (1984). Scales, norms, and equivalent scores. Educational Testing Service.

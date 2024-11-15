@@ -132,8 +132,8 @@ LD_param_est <- function(tmp, adj_list, classRefMat, ncls, smoothpost) {
 #' performed, so you need to provide item graphs for each rank as separate files.
 #' The file format for this is plain text CSV that includes edges (From, To) and
 #' rank numbers.
-#' @param U U is either a data class of Exametrika, or raw data. When raw data is given,
-#' it is converted to the Exametrika class with the [dataFormat] function.
+#' @param U U is either a data class of exametrika, or raw data. When raw data is given,
+#' it is converted to the exametrika class with the [dataFormat] function.
 #' @param Z Z is a missing indicator matrix of the type matrix or data.frame
 #' @param w w is item weight vector
 #' @param na na argument specifies the numbers or characters to be treated as missing values.
@@ -170,6 +170,51 @@ LD_param_est <- function(tmp, adj_list, classRefMat, ncls, smoothpost) {
 #'  \item{Studens}{Student information. It includes estimated class
 #'  membership, probability of class membership, RUO, and RDO.}
 #' }
+#' @examples
+#' \donttest{
+#' # Create sample DAG structure with different rank levels
+#' # Format: From, To, Rank
+#' DAG_dat <- matrix(c(
+#'   "From", "To", "Rank",
+#'   "Item01", "Item02", "1",    # Simple structure for Rank 1
+#'   "Item01", "Item02", "2",    # More complex structure for Rank 2
+#'   "Item02", "Item03", "2",
+#'   "Item01", "Item02", "3",    # Additional connections for Rank 3
+#'   "Item02", "Item03", "3",
+#'   "Item03", "Item04", "3"
+#' ), ncol = 3, byrow = TRUE)
+#'
+#' # Method 1: Directly use graph and adjacency lists
+#' g_list <- list()
+#' adj_list <- list()
+#' for (i in 1:3) {
+#'   adj_R <- DAG_dat[DAG_dat[, 3] == i, 1:2]
+#'   g_tmp <- igraph::graph_from_data_frame(adj_R)
+#'   adj_tmp <- igraph::get.adjacency(g_tmp)
+#'   g_list[[i]] <- g_tmp
+#'   adj_list[[i]] <- adj_tmp
+#' }
+#'
+#' # Fit Local Dependence Latent Rank Analysis
+#' result.LDLRA1 <- LDLRA(J12S5000,
+#'   ncls = 3,
+#'   g_list = g_list,
+#'   adj_list = adj_list
+#' )
+#'
+#' # Plot Item Reference Profiles (IRP) in a 4x3 grid
+#' # Shows the probability patterns of correct responses for each item across ranks
+#' plot(result.LDLRA1, type = "IRP", nc = 4, nr = 3)
+#'
+#' # Plot Test Reference Profile (TRP)
+#' # Displays the overall pattern of correct response probabilities across ranks
+#' plot(result.LDLRA1, type = "TRP")
+#'
+#' # Plot Latent Rank Distribution (LRD)
+#' # Shows the distribution of students across different ranks
+#' plot(result.LDLRA1, type = "LRD")
+#' }
+#'
 #' @export
 #'
 
@@ -178,7 +223,7 @@ LDLRA <- function(U, Z = NULL, w = NULL, na = NULL,
                   g_list = NULL, adj_list = NULL, adj_file = NULL,
                   verbose = FALSE) {
   # data format
-  if (class(U)[1] != "Exametrika") {
+  if (class(U)[1] != "exametrika") {
     tmp <- dataFormat(data = U, na = na, Z = Z, w = w)
   } else {
     tmp <- U
@@ -391,6 +436,6 @@ LDLRA <- function(U, Z = NULL, w = NULL, na = NULL,
     CCRR_table = CCRR_table,
     SOACflg = SOACflg,
     WOACflg = WOACflg
-  ), class = c("Exametrika", "LDLRA"))
+  ), class = c("exametrika", "LDLRA"))
   return(ret)
 }

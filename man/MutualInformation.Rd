@@ -33,3 +33,8 @@ between item pairs and their marginal probabilities.
 This function is implemented using a binary data compatibility wrapper and
 will raise an error if used with polytomous data.
 }
+\examples{
+# example code
+# Calculate Mutual Information using sample dataset J15S500
+MutualInformation(J15S500)
+}

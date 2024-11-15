@@ -1,8 +1,8 @@
 #' @title Model Fit Functions for Items
 #' @description
 #' A general function that returns the model fit indices.
-#' @param U U is either a data class of Exametrika, or raw data. When raw data is given,
-#' it is converted to the Exametrika class with the [dataFormat] function.
+#' @param U U is either a data class of exametrika, or raw data. When raw data is given,
+#' it is converted to the exametrika class with the [dataFormat] function.
 #' @param Z Z is a missing indicator matrix of the type matrix or data.frame
 #' @param ell_A log likelihood of this model
 #' @param nparam number of parameters for this model
@@ -77,7 +77,7 @@ ItemFit <- function(U, Z, ell_A, nparam) {
       model_df = df_A,
       null_df = df_B
     ), ItemFitIndices),
-    class = c("Exametrika", "ModelFit")
+    class = c("exametrika", "ModelFit")
   )
 
   TestFitIndices <- calcFitIndices(
@@ -97,7 +97,7 @@ ItemFit <- function(U, Z, ell_A, nparam) {
       model_df = sum(df_A),
       null_df = sum(df_B)
     ), TestFitIndices),
-    class = c("Exametrika", "ModelFit")
+    class = c("exametrika", "ModelFit")
   )
 
   ret <- list(
@@ -110,8 +110,8 @@ ItemFit <- function(U, Z, ell_A, nparam) {
 #' @title Model Fit Functions for test whole
 #' @description
 #' A general function that returns the model fit indices.
-#' @param U U is either a data class of Exametrika, or raw data. When raw data is given,
-#' it is converted to the Exametrika class with the [dataFormat] function.
+#' @param U U is either a data class of exametrika, or raw data. When raw data is given,
+#' it is converted to the exametrika class with the [dataFormat] function.
 #' @param Z Z is a missing indicator matrix of the type matrix or data.frame
 #' @param ell_A log likelihood of this model
 #' @param nparam number of parameters for this model
@@ -180,15 +180,15 @@ TestFit <- function(U, Z, ell_A, nparam) {
       model_df = df_A,
       null_df = df_B
     ), indices),
-    class = c("Exametrika", "ModelFit")
+    class = c("exametrika", "ModelFit")
   )
 }
 
 #' @title Model Fit Functions for saturated model
 #' @description
 #' A general function that returns the model fit indices.
-#' @param U U is either a data class of Exametrika, or raw data. When raw data is given,
-#' it is converted to the Exametrika class with the [dataFormat] function.
+#' @param U U is either a data class of exametrika, or raw data. When raw data is given,
+#' it is converted to the exametrika class with the [dataFormat] function.
 #' @param Z Z is a missing indicator matrix of the type matrix or data.frame
 #' @param ell_A log likelihood of this model
 #' @param nparam number of parameters for this model
@@ -244,7 +244,7 @@ TestFitSaturated <- function(U, Z, ell_A, nparam) {
       model_df = df_A,
       null_df = df_B
     ), indices),
-    class = c("Exametrika", "ModelFit")
+    class = c("exametrika", "ModelFit")
   )
 }
 

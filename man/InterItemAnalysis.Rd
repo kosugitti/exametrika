@@ -47,3 +47,9 @@ between items i and j.
 This function is implemented using a binary data compatibility wrapper and
 will raise an error if used with polytomous data.
 }
+\examples{
+\donttest{
+# example code
+InterItemAnalysis(J15S500)
+}
+}

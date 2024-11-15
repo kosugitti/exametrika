@@ -20,7 +20,7 @@ DAG <-
       "Item03", "Item05",
       "Item04", "Item05"
     ),
-    ncol = 2, byrow = T
+    ncol = 2, byrow = TRUE
   )
 ## graph object
 g <- igraph::graph_from_data_frame(DAG)

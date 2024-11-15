@@ -1,7 +1,7 @@
 #' @title print.exametrika
 #' @description
-#' Output format for Exametrika Class
-#' @param x Exametrika Class object
+#' Output format for exametrika Class
+#' @param x exametrika Class object
 #' @param digits printed digits
 #' @param ... other options
 #' @importFrom utils tail
@@ -9,7 +9,7 @@
 #' @importFrom igraph layout_on_grid
 #' @importFrom igraph layout_with_fr
 #' @importFrom igraph E
-#' @return Prints a formatted summary of the Exametrika object to the console, with content
+#' @return Prints a formatted summary of the exametrika object to the console, with content
 #'   varying by object class:
 #'   \itemize{
 #'     \item TestStatistics: Basic descriptive statistics of the test
@@ -23,7 +23,7 @@
 #'   }
 #' @export
 
-print.Exametrika <- function(x, digits = 3, ...) {
+print.exametrika <- function(x, digits = 3, ...) {
   value <- if (length(class(x)) > 1) tail(class(x), 1) else "all"
 
   switch(value,

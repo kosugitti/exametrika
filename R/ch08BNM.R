@@ -2,7 +2,7 @@
 #' @description inner function of return full length adj from data.frame
 #' @param g igraph object
 #' @param ItemLabel Labels for all items. Information should held by the
-#' Exametrika class data.
+#' exametrika class data.
 #' @importFrom igraph as_adjacency_matrix
 #' @return adjacency matrix
 #' @noRd
@@ -33,8 +33,8 @@ fill_adj <- function(g, ItemLabel) {
 #' package for graph visualization and checking the adjacency matrix.
 #' You need to provide either a graph object or a CSV file where the graph
 #'  structure is specified.
-#' @param U U is either a data class of Exametrika, or raw data. When raw data is given,
-#' it is converted to the Exametrika class with the [dataFormat] function.
+#' @param U U is either a data class of exametrika, or raw data. When raw data is given,
+#' it is converted to the exametrika class with the [dataFormat] function.
 #' @param Z Z is a missing indicator matrix of the type matrix or data.frame
 #' @param w w is item weight vector
 #' @param na na argument specifies the numbers or characters to be treated as missing values.
@@ -55,12 +55,43 @@ fill_adj <- function(g, ItemLabel) {
 #'  \item{param}{Learned Parameters}
 #'  \item{CCRR_table}{Correct Response Rate tables}
 #' }
+#' @examples
+#' \donttest{
+#' # Create a Directed Acyclic Graph (DAG) structure for item relationships
+#' # Each row represents a directed edge from one item to another
+#' DAG <-
+#'   matrix(
+#'     c(
+#'       "Item01", "Item02",  # Item01 influences Item02
+#'       "Item02", "Item03",  # Item02 influences Item03
+#'       "Item02", "Item04",  # Item02 influences Item04
+#'       "Item03", "Item05",  # Item03 influences Item05
+#'       "Item04", "Item05"   # Item04 influences Item05
+#'     ),
+#'     ncol = 2, byrow = TRUE
+#'   )
+#'
+#' # Convert the DAG matrix to an igraph object for network analysis
+#' g <- igraph::graph_from_data_frame(DAG)
+#' g
+#'
+#' # Create adjacency matrix from the graph
+#' # Shows direct connections between items (1 for connection, 0 for no connection)
+#' adj_mat <- as.matrix(igraph::get.adjacency(g))
+#' print(adj_mat)
+#'
+#' # Fit Bayesian Network Model using the specified adjacency matrix
+#' # Analyzes probabilistic relationships between items based on the graph structure
+#' result.BNM <- BNM(J5S10, adj_matrix = adj_mat)
+#' result.BNM
+#' }
+#'
 #' @export
 
 BNM <- function(U, Z = NULL, w = NULL, na = NULL,
                 g = NULL, adj_file = NULL, adj_matrix = NULL) {
   # data format
-  if (class(U)[1] != "Exametrika") {
+  if (class(U)[1] != "exametrika") {
     tmp <- dataFormat(data = U, na = na, Z = Z, w = w)
   } else {
     tmp <- U
@@ -213,7 +244,7 @@ BNM <- function(U, Z = NULL, w = NULL, na = NULL,
     param = param,
     TestFitIndices = FitIndices,
     CCRR_table = CCRR_table
-  ), class = c("Exametrika", "BNM"))
+  ), class = c("exametrika", "BNM"))
   return(ret)
 }
 

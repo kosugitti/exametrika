@@ -129,8 +129,8 @@ PSD_item_params <- function(model, Lambda, quadrature, marginal_posttheta) {
 #' A function for estimating item parameters using the EM algorithm.
 #' @param model This argument takes the number of item parameters to be
 #' estimated in the logistic model. It is limited to values 2, 3, or 4.
-#' @param U U is either a data class of Exametrika, or raw data. When raw data is given,
-#' it is converted to the Exametrika class with the \code{\link{dataFormat}} function.
+#' @param U U is either a data class of exametrika, or raw data. When raw data is given,
+#' it is converted to the exametrika class with the \code{\link{dataFormat}} function.
 #' @param Z Z is a missing indicator matrix of the type matrix or data.frame
 #' @param w w is item weight vector
 #' @param na na argument specifies the numbers or characters to be treated as missing values.
@@ -160,12 +160,29 @@ PSD_item_params <- function(model, Lambda, quadrature, marginal_posttheta) {
 #' }
 #' @references Yen, W. M. (1984) Applied Psychological Measurement, 8, 125-145.
 #' @importFrom stats rnorm
+#' @examples
+#' \donttest{
+#' # Fit a 3-parameter IRT model to the sample dataset
+#' result.IRT <- IRT(J15S500, model = 3)
+#'
+#' # Display the first few rows of estimated student abilities
+#' head(result.IRT$ability)
+#'
+#' # Plot Item Characteristic Curves (ICC) for items 1-6 in a 2x3 grid
+#' plot(result.IRT, type = "ICC", items = 1:6, nc = 2, nr = 3)
+#'
+#' # Plot Item Information Curves (IIC) for items 1-6 in a 2x3 grid
+#' plot(result.IRT, type = "IIC", items = 1:6, nc = 2, nr = 3)
+#'
+#' # Plot the Test Information Curve (TIC) for all items
+#' plot(result.IRT, type = "TIC")
+#' }
 #' @export
 #'
 
 IRT <- function(U, model = 2, na = NULL, Z = NULL, w = NULL, verbose = TRUE) {
   # data format
-  if (class(U)[1] != "Exametrika") {
+  if (class(U)[1] != "exametrika") {
     tmp <- dataFormat(data = U, na = na, Z = Z, w = w)
   } else {
     tmp <- U
@@ -375,6 +392,6 @@ IRT <- function(U, model = 2, na = NULL, Z = NULL, w = NULL, verbose = TRUE) {
     ability = theta,
     ItemFitIndices = FitIndices$item,
     TestFitIndices = FitIndices$test
-  ), class = c("Exametrika", "IRT"))
+  ), class = c("exametrika", "IRT"))
   return(ret)
 }

@@ -43,3 +43,7 @@ The biserial correlation is generally preferred over the point-biserial
 correlation when the dichotomization is artificial (i.e., when the underlying
 trait is continuous).
 }
+\examples{
+# using sample dataset
+ITBiserial(J15S500)
+}

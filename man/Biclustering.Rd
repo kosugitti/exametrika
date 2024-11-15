@@ -77,3 +77,25 @@ as well as the rank-up odds and rank-down odds.}
 \description{
 performs biclustering, rankclustering, and their confirmatory models.
 }
+\examples{
+\donttest{
+# Perform Biclustering with Binary method (B)
+# Analyze data with 5 fields and 6 classes
+Biclustering(J35S515, nfld = 5, ncls = 6, method = "B")
+
+# Perform Biclustering with Rank method (R)
+# Store results for further analysis and visualization
+result.Ranklusteing <- Biclustering(J35S515, nfld = 5, ncls = 6, method = "R")
+
+# Display the Bicluster Reference Matrix (BRM) as a heatmap
+plot(result.Ranklusteing, type = "Array")
+
+# Plot Field Reference Profiles (FRP) in a 2x3 grid
+# Shows the probability patterns for each field
+plot(result.Ranklusteing, type = "FRP", nc = 2, nr = 3)
+
+# Plot Rank Membership Profiles (RMP) for students 1-9 in a 3x3 grid
+# Shows the posterior probability distribution of rank membership for each student
+plot(result.Ranklusteing, type = "RMP", students = 1:9, nc = 3, nr = 3)
+}
+}

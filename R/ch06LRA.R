@@ -1,8 +1,8 @@
 #' @title Latent Rank Analysis
 #' @description
 #' A function for estimating LRA by SOM/GTM
-#' @param U U is either a data class of Exametrika, or raw data. When raw data is given,
-#' it is converted to the Exametrika class with the [dataFormat] function.
+#' @param U U is either a data class of exametrika, or raw data. When raw data is given,
+#' it is converted to the exametrika class with the [dataFormat] function.
 #' @param nrank number of latent rank
 #' @param Z Z is a missing indicator matrix of the type matrix or data.frame
 #' @param w w is item weight vector
@@ -31,8 +31,8 @@
 #'  \item{Nclass}{number of classes you set}
 #'  \item{TRP}{Test Reference Profile matrix. The TRP is the column sum vector of estimated class reference matrix,
 #' \eqn{\hat{\Pi}_c}}
-#'  \item{LCD}{Latent Class Distribution table.see also [plot.Exametrika]}
-#'  \item{CMD}{Class Membership Distribution table. see also [plot.Exametrika]}
+#'  \item{LCD}{Latent Class Distribution table.see also [plot.exametrika]}
+#'  \item{CMD}{Class Membership Distribution table. see also [plot.exametrika]}
 #'  \item{Students}{Class Membership Profile matrix.The s-th row vector of \eqn{\hat{M}_c}, \eqn{\hat{m}_c}, is the
 #' class membership profile of Student s, namely the posterior probability distribution representing the student's
 #' belonging to the respective latent classes. It also includes the rank with the maximum estimated membership probability,
@@ -44,6 +44,32 @@
 #'  \item{ItemFitIndices}{Fit index for each item.See also [ItemFit]}
 #'  \item{TestFitIndices}{Overall fit index for the test.See also [TestFit]}
 #' }
+#' @examples
+#' \donttest{
+#' # Fit a Latent Rank Analysis model with 6 ranks to the sample dataset
+#' result.LRA <- LRA(J15S500, nrank = 6)
+#'
+#' # Display the first few rows of student rank membership profiles
+#' # This shows posterior probabilities of students belonging to each rank
+#' head(result.LRA$Students)
+#'
+#' # Plot Item Reference Profiles (IRP) for items 1-6 in a 2x3 grid
+#' # Shows the probability of correct response for each rank
+#' plot(result.LRA, type = "IRP", items = 1:6, nc = 2, nr = 3)
+#'
+#' # Plot Rank Membership Profiles (RMP) for students 1-9 in a 3x3 grid
+#' # Shows the posterior probability distribution of rank membership for each student
+#' plot(result.LRA, type = "RMP", students = 1:9, nc = 3, nr = 3)
+#'
+#' # Plot Test Reference Profile (TRP)
+#' # Shows the column sum vector of estimated rank reference matrix
+#' plot(result.LRA, type = "TRP")
+#'
+#' # Plot Latent Rank Distribution (LRD)
+#' # Shows the distribution of students across different ranks
+#' plot(result.LRA, type = "LRD")
+#' }
+#'
 #' @importFrom stats runif
 #' @export
 #'
@@ -55,7 +81,7 @@ LRA <- function(U, nrank = 2, na = NULL, Z = NULL, w = NULL,
                 BIC.check = FALSE,
                 seed = NULL) {
   # data format
-  if (class(U)[1] != "Exametrika") {
+  if (class(U)[1] != "exametrika") {
     tmp <- dataFormat(data = U, na = na, Z = Z, w = w)
   } else {
     tmp <- U
@@ -247,6 +273,6 @@ LRA <- function(U, nrank = 2, na = NULL, Z = NULL, w = NULL,
     IRPIndex = IRPIndex,
     ItemFitIndices = FitIndices$item,
     TestFitIndices = FitIndices$test
-  ), class = c("Exametrika", "LRA"))
+  ), class = c("exametrika", "LRA"))
   return(ret)
 }

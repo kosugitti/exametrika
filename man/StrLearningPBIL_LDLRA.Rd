@@ -21,7 +21,7 @@ StrLearningPBIL_LDLRA(
   elitism = 0,
   alpha = 0.05,
   estimate = 1,
-  filename = "NULL",
+  filename = NULL,
   verbose = TRUE
 )
 }
@@ -102,6 +102,29 @@ Instead of learning the adjacency matrix itself, the 'genes of genes'
 that generate the adjacency matrix are updated with each generation.
 For more details, please refer to Fukuda(2014) and Section
 9.4.3 of the text(Shojima,2022).
+}
+\examples{
+\donttest{
+# Perform Structure Learning for LDLRA using PBIL algorithm
+# This process may take considerable time due to evolutionary optimization
+result.LDLRA.PBIL <- StrLearningPBIL_LDLRA(J35S515,
+                                           seed = 123,       # Set random seed for reproducibility
+                                           ncls = 5,         # Number of latent ranks
+                                           method = "R",     # Use rank model (vs. class model)
+                                           elitism = 1,      # Keep best solution in each generation
+                                           successiveLimit = 15  # Convergence criterion
+)
+
+# Examine the learned network structure
+# Plot Item Response Profiles showing item patterns across ranks
+plot(result.LDLRA.PBIL, type = "IRP", nc = 4, nr = 3)
+
+# Plot Test Response Profile showing overall response patterns
+plot(result.LDLRA.PBIL, type = "TRP")
+
+# Plot Latent Rank Distribution showing student distribution
+plot(result.LDLRA.PBIL, type = "LRD")
+}
 }
 \references{
 Fukuda, S., Yamanaka, Y., & Yoshihiro, T. (2014). A Probability-based evolutionary

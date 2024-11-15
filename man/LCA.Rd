@@ -41,3 +41,25 @@ belonging to the respective latent classes. The last column indicates the latent
 \description{
 A function for estimating LCA using the EM algorithm.
 }
+\examples{
+\donttest{
+# Fit a Latent Class Analysis model with 5 classes to the sample dataset
+result.LCA <- LCA(J15S500, ncls = 5)
+
+# Display the first few rows of student class membership probabilities
+head(result.LCA$Students)
+
+# Plot Item Response Profiles (IRP) for items 1-6 in a 2x3 grid
+plot(result.LCA, type = "IRP", items = 1:6, nc = 2, nr = 3)
+
+# Plot Class Membership Probabilities (CMP) for students 1-9 in a 3x3 grid
+plot(result.LCA, type = "CMP", students = 1:9, nc = 3, nr = 3)
+
+# Plot Test Response Profile (TRP) showing response patterns across all classes
+plot(result.LCA, type = "TRP")
+
+# Plot Latent Class Distribution (LCD) showing the size of each latent class
+plot(result.LCA, type = "LCD")
+}
+
+}

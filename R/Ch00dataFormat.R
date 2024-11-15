@@ -36,7 +36,7 @@
 #'
 dataFormat <- function(data, na = NULL, id = 1, Z = NULL, w = NULL) {
   # Check if the object is already formatted
-  if (inherits(data, "Exametrika")) {
+  if (inherits(data, "exametrika")) {
     return(data)
   }
   if (!is.null(na) && is.na(na)) {
@@ -211,14 +211,14 @@ dataFormat <- function(data, na = NULL, id = 1, Z = NULL, w = NULL) {
   }
 
   # Return with appropriate class structure
-  ret <- structure(ret.list, class = c("Exametrika", "exametrikaData"))
+  ret <- structure(ret.list, class = c("exametrika", "exametrikaData"))
   return(ret)
 }
 
 
 #' @title dataFormat for long-type data
 #' @description
-#' A function to reshape long data into a dataset suitable for Exametrika.
+#' A function to reshape long data into a dataset suitable for exametrika.
 #' @param data is a data matrix of the type matrix or data.frame. This must
 #' contain at least three columns to identify the student, the item, and
 #' the response. Additionally, it can include a column for the weight of
@@ -259,7 +259,7 @@ dataFormat.long <- function(data, na = NULL,
                             Resp = NULL, w = NULL,
                             response.type = NULL) {
   # Check if already formatted
-  if (inherits(data, "Exametrika")) {
+  if (inherits(data, "exametrika")) {
     return(data)
   }
 
@@ -385,7 +385,7 @@ dataFormat.long <- function(data, na = NULL,
 
   # Return with appropriate class structure
   ret <- structure(ret_list,
-    class = c("Exametrika", "exametrikaData")
+    class = c("exametrika", "exametrikaData")
   )
   return(ret)
 }

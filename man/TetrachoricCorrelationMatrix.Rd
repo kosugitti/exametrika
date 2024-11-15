@@ -32,3 +32,9 @@ relation of an item pair. This function is applicable only to binary response da
 This function is implemented using a binary data compatibility wrapper and
 will raise an error if used with polytomous data.
 }
+\examples{
+\donttest{
+# example code
+TetrachoricCorrelationMatrix(J15S500)
+}
+}

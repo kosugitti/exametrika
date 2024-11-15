@@ -87,6 +87,20 @@ itself, the 'genes of genes' that generate the adjacency matrix are updated
 with each generation. For more details, please refer to Fukuda(2014) and Section
 8.5.2 of the text(Shojima,2022).
 }
+\examples{
+\donttest{
+# Perform Structure Learning for Bayesian Network Model using PBIL
+# (Population-Based Incremental Learning)
+StrLearningPBIL_BNM(J5S10,
+                    population = 20,    # Size of population in each generation
+                    Rs = 0.5,          # 50\% survival rate for next generation
+                    Rm = 0.005,        # 0.5\% mutation rate for genetic diversity
+                    maxParents = 2,    # Maximum of 2 parent nodes per item
+                    alpha = 0.05,      # Learning rate for probability update
+                    estimate = 4       # Use rounded generational gene method
+)
+}
+}
 \references{
 Fukuda, S., Yamanaka, Y., & Yoshihiro, T. (2014). A Probability-based evolutionary
 algorithm with mutations to learn Bayesian networks. International Journal of Artificial

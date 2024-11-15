@@ -75,3 +75,30 @@ the slope parameters A and Alpha, and the monotonicity indices C and Gamma.}
 \description{
 A function for estimating LRA by SOM/GTM
 }
+\examples{
+\donttest{
+# Fit a Latent Rank Analysis model with 6 ranks to the sample dataset
+result.LRA <- LRA(J15S500, nrank = 6)
+
+# Display the first few rows of student rank membership profiles
+# This shows posterior probabilities of students belonging to each rank
+head(result.LRA$Students)
+
+# Plot Item Reference Profiles (IRP) for items 1-6 in a 2x3 grid
+# Shows the probability of correct response for each rank
+plot(result.LRA, type = "IRP", items = 1:6, nc = 2, nr = 3)
+
+# Plot Rank Membership Profiles (RMP) for students 1-9 in a 3x3 grid
+# Shows the posterior probability distribution of rank membership for each student
+plot(result.LRA, type = "RMP", students = 1:9, nc = 3, nr = 3)
+
+# Plot Test Reference Profile (TRP)
+# Shows the column sum vector of estimated rank reference matrix
+plot(result.LRA, type = "TRP")
+
+# Plot Latent Rank Distribution (LRD)
+# Shows the distribution of students across different ranks
+plot(result.LRA, type = "LRD")
+}
+
+}

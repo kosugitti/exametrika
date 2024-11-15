@@ -9,8 +9,8 @@
 #' that generate the adjacency matrix are updated with each generation.
 #' For more details, please refer to Fukuda(2014) and Section
 #' 9.4.3 of the text(Shojima,2022).
-#' @param U U is either a data class of Exametrika, or raw data. When raw data is given,
-#' it is converted to the Exametrika class with the [dataFormat] function.
+#' @param U U is either a data class of exametrika, or raw data. When raw data is given,
+#' it is converted to the exametrika class with the [dataFormat] function.
 #' @param Z Z is a missing indicator matrix of the type matrix or data.frame
 #' @param w w is item weight vector
 #' @param na na argument specifies the numbers or characters to be treated as missing values.
@@ -59,6 +59,28 @@
 #'  algorithm with mutations to learn Bayesian networks. International Journal of Artificial
 #'  Intelligence and Interactive Multimedia, 3, 7–13. DOI: 10.9781/ijimai.2014.311
 #' @importFrom stats runif rbinom
+#' @examples
+#' \donttest{
+#' # Perform Structure Learning for LDLRA using PBIL algorithm
+#' # This process may take considerable time due to evolutionary optimization
+#' result.LDLRA.PBIL <- StrLearningPBIL_LDLRA(J35S515,
+#'                                            seed = 123,       # Set random seed for reproducibility
+#'                                            ncls = 5,         # Number of latent ranks
+#'                                            method = "R",     # Use rank model (vs. class model)
+#'                                            elitism = 1,      # Keep best solution in each generation
+#'                                            successiveLimit = 15  # Convergence criterion
+#' )
+#'
+#' # Examine the learned network structure
+#' # Plot Item Response Profiles showing item patterns across ranks
+#' plot(result.LDLRA.PBIL, type = "IRP", nc = 4, nr = 3)
+#'
+#' # Plot Test Response Profile showing overall response patterns
+#' plot(result.LDLRA.PBIL, type = "TRP")
+#'
+#' # Plot Latent Rank Distribution showing student distribution
+#' plot(result.LDLRA.PBIL, type = "LRD")
+#' }
 #' @export
 #'
 
@@ -68,10 +90,10 @@ StrLearningPBIL_LDLRA <- function(U, Z = NULL, w = NULL, na = NULL,
                                   maxParents = 2, maxGeneration = 100,
                                   successiveLimit = 5, elitism = 0,
                                   alpha = 0.05, estimate = 1,
-                                  filename = "NULL",
+                                  filename = NULL,
                                   verbose = TRUE) {
   # data format
-  if (class(U)[1] != "Exametrika") {
+  if (class(U)[1] != "exametrika") {
     tmp <- dataFormat(data = U, na = na, Z = Z, w = w)
   } else {
     tmp <- U

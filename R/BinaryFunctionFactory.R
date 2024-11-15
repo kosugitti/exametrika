@@ -1,6 +1,6 @@
 #' @title create Binary Function
 #' @description
-#' This function was introduced in Exametrika version 1.1 to handle the possibility
+#' This function was introduced in exametrika version 1.1 to handle the possibility
 #' of polytomous data input. Since functions prior to v1.1 were designed exclusively
 #' for binary data, this factory function serves as a filter and recursively generates
 #' functions that maintain backward compatibility by ensuring binary data input.
@@ -11,7 +11,7 @@
 createBinaryFunction <- function(fun, fun_name = NULL) {
   function(U, na = NULL, Z = NULL, w = NULL, ...) {
     # Format data if needed
-    if (!inherits(U, "Exametrika")) {
+    if (!inherits(U, "exametrika")) {
       U <- dataFormat(U, na = na, Z = Z, w = w)
     }
 

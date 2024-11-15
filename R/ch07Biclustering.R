@@ -13,8 +13,8 @@ softmax <- function(x) {
 #' @title Biclustering and Ranklustering
 #' @description
 #' performs biclustering, rankclustering, and their confirmatory models.
-#' @param U U is either a data class of Exametrika, or raw data. When raw data is given,
-#' it is converted to the Exametrika class with the [dataFormat] function.
+#' @param U U is either a data class of exametrika, or raw data. When raw data is given,
+#' it is converted to the exametrika class with the [dataFormat] function.
 #' @param ncls number of classes
 #' @param nfld number of fields
 #' @param Z Z is a missing indicator matrix of the type matrix or data.frame
@@ -49,12 +49,34 @@ softmax <- function(x) {
 #' rank membership profile of Student s, namely the posterior probability distribution representing the student's
 #' belonging to the respective latent classes. It also includes the rank with the maximum estimated membership probability,
 #' as well as the rank-up odds and rank-down odds.}
-#'  \item{LRD}{Latent Rank Distribution. see also [plot.Exametrika]}
-#'  \item{LCD}{Latent Class Distribution. see also [plot.Exametrika]}
-#'  \item{LFD}{Latent Field Distribution. see also [plot.Exametrika]}
+#'  \item{LRD}{Latent Rank Distribution. see also [plot.exametrika]}
+#'  \item{LCD}{Latent Class Distribution. see also [plot.exametrika]}
+#'  \item{LFD}{Latent Field Distribution. see also [plot.exametrika]}
 #'  \item{RMD}{Rank Membership Distribution.}
 #'  \item{TestFitIndices}{Overall fit index for the test.See also [TestFit]}
 #' }
+#' @examples
+#' \donttest{
+#' # Perform Biclustering with Binary method (B)
+#' # Analyze data with 5 fields and 6 classes
+#' Biclustering(J35S515, nfld = 5, ncls = 6, method = "B")
+#'
+#' # Perform Biclustering with Rank method (R)
+#' # Store results for further analysis and visualization
+#' result.Ranklusteing <- Biclustering(J35S515, nfld = 5, ncls = 6, method = "R")
+#'
+#' # Display the Bicluster Reference Matrix (BRM) as a heatmap
+#' plot(result.Ranklusteing, type = "Array")
+#'
+#' # Plot Field Reference Profiles (FRP) in a 2x3 grid
+#' # Shows the probability patterns for each field
+#' plot(result.Ranklusteing, type = "FRP", nc = 2, nr = 3)
+#'
+#' # Plot Rank Membership Profiles (RMP) for students 1-9 in a 3x3 grid
+#' # Shows the posterior probability distribution of rank membership for each student
+#' plot(result.Ranklusteing, type = "RMP", students = 1:9, nc = 3, nr = 3)
+#' }
+
 #' @export
 
 Biclustering <- function(U, ncls = 2, nfld = 2,
@@ -65,7 +87,7 @@ Biclustering <- function(U, ncls = 2, nfld = 2,
                          maxiter = 100,
                          verbose = TRUE) {
   # data format
-  if (class(U)[1] != "Exametrika") {
+  if (class(U)[1] != "exametrika") {
     tmp <- dataFormat(data = U, na = na, Z = Z, w = w)
   } else {
     tmp <- U
@@ -355,7 +377,7 @@ Biclustering <- function(U, ncls = 2, nfld = 2,
     TestFitIndices = FitIndices,
     SOACflg = SOACflg,
     WOACflg = WOACflg
-  ), class = c("Exametrika", "Biclustering"))
+  ), class = c("exametrika", "Biclustering"))
   return(ret)
 }
 
@@ -366,7 +388,7 @@ Biclustering <- function(U, ncls = 2, nfld = 2,
 #' output for Field Analysis
 #' @param x Biclustering Objects yielded by Biclustering Function
 #' @param digits printed digits
-#' @return Returns a list of class c("Exametrika", "Biclustering", "FieldAnalysis") containing:
+#' @return Returns a list of class c("exametrika", "Biclustering", "FieldAnalysis") containing:
 #'   \describe{
 #'     \item{FieldAnalysisMatrix}{A matrix showing field analysis results with rows
 #'       representing items and columns showing:
@@ -382,8 +404,8 @@ Biclustering <- function(U, ncls = 2, nfld = 2,
 
 FieldAnalysis <- function(x, digits = 4) {
   # data format
-  if (class(x)[1] != "Exametrika") {
-    stop("Field Analysis needs Exametrika Output.")
+  if (class(x)[1] != "exametrika") {
+    stop("Field Analysis needs exametrika Output.")
   }
   if (class(x)[2] != "Biclustering") {
     stop("Field Analysis needs Biclustering Output.")
@@ -403,5 +425,5 @@ FieldAnalysis <- function(x, digits = 4) {
   rownames(yy) <- rownames_tmp
   return(structure(list(
     FieldAnalysisMatrix = yy
-  ), class = c("Exametrika", "Biclustering", "FieldAnalysis")))
+  ), class = c("exametrika", "Biclustering", "FieldAnalysis")))
 }

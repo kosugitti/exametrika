@@ -2,90 +2,150 @@
 output: github_document
 ---
 
+
 # exametrika
 
-The Exametrika package is designed for test data engineering and corresponds to the text by Shojima (2022). Test data engineering involves analyzing test response patterns to classify item difficulty and respondent ranking. This analysis includes the following test theory models.
+## Overview
 
-+ Classical Test Theory
-+ Item response theory: 2PL, 3PL, 4PL model
-+ Latent Class Analysis
-+ Latent Rank Analysis
-+ Biclustering and Ranklustering
-+ Infinite Relational Model for optimal number of classes and fields
-+ Bayesian Network Analysis
-+ Structure Learning for Bayesian Network Analysis by Genetic Algorithm
-+ Local Dependence Latent Rank Analysis
-+ Structure Learning for LDLRA by PBIL
-+ Local Dependence Biclustering
-+ Bicluster Network Model
+The Exametrika package provides comprehensive test data engineering tools, implementing the methods described in Shojima (2022). Test data engineering analyzes test response patterns to understand item characteristics and classify respondents. 
 
-Exametrika is originally implemented and published as a Mathematica and Excel Add-in. Please refer to the following website for more information.
+## Features
 
-[Accompanying Website for Test Data Engineering](http://shojima.starfree.jp/tde/)
+The package implements various psychometric models and techniques:
 
-[news](NEWS.md)
+### Basic Test Theory
+- Classical Test Theory
+- Item Response Theory (2PL, 3PL, 4PL models)
+
+### Latent Structure Analysis
+- Latent Class Analysis (LCA)
+- Latent Rank Analysis (LRA)
+- Biclustering and Ranklustering
+- Infinite Relational Model (IRM) for optimal class/field determination
+
+### Network and Dependency Analysis
+- Bayesian Network Analysis
+  - Structure Learning with Genetic Algorithm
+  - Structure Learning with PBIL (Population-Based Incremental Learning)
+- Local Dependence Models
+  - Local Dependence Latent Rank Analysis (LDLRA)
+  - Local Dependence Biclustering (LDB)
+  - Bicluster Network Model (BINET)
+
+## Background
+
+Exametrika was originally developed and published as a Mathematica and Excel Add-in. For additional information, visit:
+
+- [Test Data Engineering Website](http://shojima.starfree.jp/tde/)
+- [Package News](NEWS.md)
+
 
 ## Installation
 
-You can install the development version of Exametrika from [GitHub](https://github.com/) with:
+The development version of Exametrika can be installed from [GitHub](https://github.com/):
 
-``` r
-# install.packages("devtools")
-devtools::install_github("kosugitti/Exametrika")
+```{r install, eval=FALSE}
+# Install devtools if not already installed
+if (!require("devtools")) install.packages("devtools")
+
+# Install Exametrika
+devtools::install_github("kosugitti/exametrika")
 ```
 
-## Usage
+## Data Format and Usage
 
-```{r library}
+### Basic Usage
+
+```{r setup-library, message=FALSE, warning=FALSE}
 library(exametrika)
 ```
 
-## Example and Sample Data
+### Data Requirements
 
-This package includes the same sample data that is distributed on the original site. The number of test-takers is represented by S, and the number of test items is represented by J. The data is named in a format like JxxSxxx.
+Exametrika accepts both binary and polytomous response data:
 
-#### Exametrika Data Format
+- Binary data (0/1)
+  - 0: Incorrect answer
+  - 1: Correct answer
+- Polytomous data
+  - Ordinal response categories
+  - Multiple score levels
+- Missing values
+  - NA values supported
+  - Custom missing value codes can be specified
 
-Exametrika conducts analysis on data matrices composed solely of 0 or 1. In this matrix, 0 represents an incorrect answer, and 1 indicates a correct answer.For more details, refer to Shojima (2022) regarding the format.
+### Input Data Specifications
 
-#### Data Matrix Format
+The package accepts data in several formats with the following features:
 
-- The data matrix must be in a matrix or data frame format.
-- It's permissible to include NA as missing values.
-- Specific values (for instance, -99) can be designated as missing values.
-- Along with the data, you may also provide a missing value index matrix that discerns the presence or absence of missing values.
+1. **Data Structure**
+   - Matrix or data.frame format
+   - Response data (binary or polytomous)
+   - Flexible handling of missing values
+   - Support for various data types and structures
 
-#### Examinee ID Column
+2. **Optional Components**
+   - Examinee ID column (default: first column)
+   - Item weights (default: all weights = 1)
+   - Item labels (default: sequential numbers)
+   - Missing value indicator matrix
 
-It is possible to incorporate a column of examinee IDs into the data matrix you provide. By default, the first column is presumed to be the examinee ID column.
+Note: Some analysis methods may have specific data type requirements. Please refer to each function's documentation for detailed requirements.
 
-#### Item Weight Vector
+### Data Formatting
 
-Item weights can be specified by the item weight vector, w. If not given, all elements' weights are set to 1.
+The `dataFormat` function preprocesses input data for analysis:
 
-#### Item label Vector
+- **Functions**
+  - Extracts and validates ID vectors if present
+  - Processes item labels or assigns sequential numbers
+  - Creates response data matrix U
+  - Generates missing value indicator matrix Z
+  - Handles item weights
+  - Converts data to appropriate format for analysis
 
-Data column names (colnames) are available as item labels. If not specified, a sequential number is assigned.
+Example:
+```{r example-data-format}
+# Format raw data for analysis
+data <- dataFormat(J15S500)  # Using sample dataset
+str(data)  # View structure of formatted data
+```
 
-#### Data Formatting Function
+### Sample Datasets
 
-Before any analysis, the dataFormat function decomposes the provided data into an ID vector,Item label vector, data matrix U, missing value index matrix Z, and item weight vector w.
+The package includes various sample datasets from Shojima (2022) for testing and learning:
+
+- **Naming Convention**: JxxSxxx format
+  - J: Number of items (e.g., J15 = 15 items)
+  - S: Sample size (e.g., S500 = 500 examinees)
+
+Available datasets:
+- J5S10: Very small dataset (5 items, 10 examinees)
+  - Useful for quick testing and understanding basic concepts
+- J12S5000: Large sample dataset (12 items, 5000 examinees)
+  - Suitable for LDLRA and other advanced analyses
+- J14S500: Medium dataset (14 items, 500 examinees)
+- J15S500: Medium dataset (15 items, 500 examinees)
+  - Often used in IRT and LCA examples
+- J20S400: Medium dataset (20 items, 400 examinees)
+- J35S515: Large item dataset (35 items, 515 examinees)
+  - Used in Biclustering and network model examples
 
 ## Test Statistics
 
-```{r Ts}
+```{r results-test-statistics, message=FALSE, warning=FALSE}
 TestStatistics(J15S500)
 ```
 
 ## ItemStatistics
 
-```{r Is}
+```{r results-item-statistics, message=FALSE, warning=FALSE}
 ItemStatistics(J15S500)
 ```
 
 ## CTT Example
 
-```{r CTT}
+```{r results-ctt, message=FALSE, warning=FALSE}
 CTT(J15S500)
 ```
 
@@ -93,20 +153,20 @@ CTT(J15S500)
 
 The IRT function estimates the number of parameters using a logistic model, which can be specified using the `model` option. It supports 2PL, 3PL, and 4PL models.
 
-```{r}
+```{r model-irt, message=FALSE, warning=FALSE}
 result.IRT <- IRT(J15S500, model = 3)
 result.IRT
 ```
 
 The estimated population of subjects is included in the returned object.
-```{r}
+```{r results-irt-ability, message=FALSE, warning=FALSE}
 head(result.IRT$ability)
 ```
 
 
 The plots offer options for Item Characteristic Curves (ICC), Item Information Curves (IIC), and Test Information Curves (TIC), which can be specified through options. Items can be specified using the `items` argument, and if not specified, plots will be drawn for all items. The number of rows and columns for dividing the plotting area can be specified using `nr` and `nc`, respectively.
 
-```{r}
+```{r plot-irt-curves, fig.width=7, fig.height=5, message=FALSE, warning=FALSE}
 plot(result.IRT, type = "ICC", items = 1:6, nc = 2, nr = 3)
 plot(result.IRT, type = "IIC", items = 1:6, nc = 2, nr = 3)
 plot(result.IRT, type = "TIC")
@@ -116,20 +176,20 @@ plot(result.IRT, type = "TIC")
 
 Latent Class Analysis requires specifying the dataset and the number of classes.
 
-```{r}
+```{r model-lca, message=FALSE, warning=FALSE}
 LCA(J15S500, ncls = 5)
 ```
 
 The returned object contains the Class Membership Matrix, which indicates which latent class each subject belongs to. The Estimate includes the one with the highest membership probability.
 
-```{r}
+```{r results-lca-membership, message=FALSE, warning=FALSE}
 result.LCA <- LCA(J15S500, ncls = 5)
 head(result.LCA$Students)
 ```
 
 The plots offer options for IRP, CMP, TRP, and LCD. For more details on each, please refer to Shojima (2022).
 
-```{r}
+```{r plot-lca, fig.width=7, fig.height=5, message=FALSE, warning=FALSE}
 plot(result.LCA, type = "IRP", items = 1:6, nc = 2, nr = 3)
 plot(result.LCA, type = "CMP", students = 1:9, nc = 3, nr = 3)
 plot(result.LCA, type = "TRP")
@@ -140,18 +200,18 @@ plot(result.LCA, type = "LCD")
 
 Latent Class Analysis requires specifying the dataset and the number of classes.
 
-```{r}
+```{r model-lra, message=FALSE, warning=FALSE}
 LRA(J15S500, nrank = 6)
 ```
 
 The estimated subject rank membership probabilities and plots are almost the same as those in LCA (Latent Class Analysis). Since a ranking is assumed for the latent classes, rank-up odds and rank-down odds are calculated.
 
-```{r}
+```{r results-lra-membership, message=FALSE, warning=FALSE}
 result.LRA <- LRA(J15S500, nrank = 6)
 head(result.LRA$Students)
 ```
 
-```{r}
+```{r plot-lra, fig.width=7, fig.height=5, message=FALSE, warning=FALSE}
 plot(result.LRA, type = "IRP", items = 1:6, nc = 2, nr = 3)
 plot(result.LRA, type = "RMP", students = 1:9, nc = 3, nr = 3)
 plot(result.LRA, type = "TRP")
@@ -168,11 +228,11 @@ Biclustering(J35S515, nfld = 5, ncls = 6, method = "B")
 
 
 ```{r}
-result.Ranklusteing <- Biclustering(J35S515, nfld = 5, ncls = 6, method = "R")
-plot(result.Ranklusteing, type = "Array")
-plot(result.Ranklusteing, type = "FRP", nc = 2, nr = 3)
-plot(result.Ranklusteing, type = "RMP", students = 1:9, nc = 3, nr = 3)
-plot(result.Ranklusteing, type = "LRD")
+result.Ranklustering <- Biclustering(J35S515, nfld = 5, ncls = 6, method = "R")
+plot(result.Ranklustering, type = "Array")
+plot(result.Ranklustering, type = "FRP", nc = 2, nr = 3)
+plot(result.Ranklustering, type = "RMP", students = 1:9, nc = 3, nr = 3)
+plot(result.Ranklustering, type = "LRD")
 ```
 
 To find the optimal number of classes and the optimal number of fields, the Infinite Relational Model is available.
@@ -194,7 +254,7 @@ There are three ways to specify the graph. You can either pass a matrix-type DAG
 
 The methods to create the matrix-type adj_matrix and the graph object g are as follows:
 
-```{r igraph, eval=TRUE, message=FALSE, warning=FALSE}
+```{r setup-igraph, message=FALSE, warning=FALSE}
 library(igraph)
 DAG <-
   matrix(
@@ -217,7 +277,7 @@ print(adj_mat)
 
 A CSV file with the same information as the graph above in the following format. The first line contains column names (headers) and will not be read as data.
 
-```{r echo=FALSE}
+```{r print-dag, echo=FALSE, message=FALSE, warning=FALSE}
 cat("From,To\n")
 for (i in 1:nrow(DAG)) {
   cat(sprintf("%s,%s\n", DAG[i, 1], DAG[i, 2]))
@@ -228,7 +288,7 @@ While only one specification is sufficient, if multiple specifications are provi
 
 An example of executing BNM by providing a graph structure (DAG) is as follows:
 
-```{r BNM}
+```{r model-bnm, message=FALSE, warning=FALSE}
 result.BNM <- BNM(J5S10, adj_matrix = adj_mat)
 result.BNM
 ```
@@ -239,7 +299,7 @@ The function searches for a DAG suitable for the data using a genetic algorithm.
 
 Please note that the GA may take a considerable amount of time, depending on the number of items and the size of the population.
 
-```{r GAsimple}
+```{r model-ga-bnm, message=FALSE, warning=FALSE}
 StrLearningGA_BNM(J5S10,
   population = 20, Rs = 0.5, Rm = 0.002, maxParents = 2,
   maxGeneration = 100, crossover = 2, elitism = 2
@@ -248,7 +308,7 @@ StrLearningGA_BNM(J5S10,
 
 The method of Population-based incremental learning proposed by Fukuda (2014) can also be used for learning. This method has several variations for estimating the optimal adjacency matrix at the end, which can be specified as options. See help or text Section 8.5.2.
 
-```{r PBIL}
+```{r model-pbil-bnm, message=FALSE, warning=FALSE}
 StrLearningPBIL_BNM(J5S10,
   population = 20, Rs = 0.5, Rm = 0.005, maxParents = 2,
   alpha = 0.05, estimate = 4
@@ -261,7 +321,7 @@ LD-LRA is an analysis that combines LRA and BNM, and it is used to analyze the n
 
 For each class, it is necessary to specify a graph, and there are three ways to do so. You can either pass a matrix-type DAG for each class or a list of graph-type objects used in the igraph package to the arguments adj_list or g_list, respectively, or you can provide a DAG described in a CSV file. The way to specify it in a CSV file is as follows.
 
-```{r read DAG file}
+```{r setup-dag-data, message=FALSE, warning=FALSE}
 DAG_dat <- matrix(c(
   "From", "To", "Rank",
   "Item01", "Item02", 1,
@@ -304,7 +364,7 @@ write.csv(DAG_dat, "develop/DAG_file.csv", row.names = FALSE, quote = TRUE)
 
 Here, it is shown an example of specifying with matrix-type and graph objects using the aforementioned CSV file. While only one specification is sufficient, if multiple specifications are provided, they will be prioritized in the order of file, matrix, and graph object.
 
-```{r convert_style}
+```{r setup-graph-conversion, message=FALSE, warning=FALSE}
 g_csv <- read.csv("develop/DAG_file.csv")
 colnames(g_csv) <- c("From", "To", "Rank")
 adj_list <- list()
@@ -320,14 +380,14 @@ for (i in 1:5) {
 g_list
 ```
 
-```{r example of adj list}
+```{r results-adj-list, message=FALSE, warning=FALSE}
 ### Example of adj list
 adj_list
 ```
 
 The example of running the LDLRA function using this CSV file would look like this.
 
-```{r LDLRA}
+```{r model-ldlra, message=FALSE, warning=FALSE}
 result.LDLRA <- LDLRA(J12S5000,
   ncls = 5,
   adj_file = "develop/DAG_file.csv"
@@ -336,7 +396,7 @@ result.LDLRA
 ```
 
 Of course, it also supports various types of plots.
-```{r LDLRA plot}
+```{r plot-ldlra, fig.width=7, fig.height=5, message=FALSE, warning=FALSE}
 plot(result.LDLRA, type = "IRP", nc = 4, nr = 3)
 plot(result.LDLRA, type = "TRP")
 plot(result.LDLRA, type = "LRD")
@@ -347,7 +407,7 @@ plot(result.LDLRA, type = "LRD")
 
 You can learn item-interaction graphs for each rank using the PBIL algorithm. In addition to various options, the learning process requires a very long computation time. It's also important to note that the result is merely one of the feasible solutions, and it's not necessarily the optimal solution.
 
-```{r LDLRA_PBIL}
+```{r model-pbil-ldlra, message=FALSE, warning=FALSE}
 result.LDLRA.PBIL <- StrLearningPBIL_LDLRA(J35S515,
   seed = 123,
   ncls = 5,
@@ -360,41 +420,62 @@ result.LDLRA.PBIL
 
 ## Local Dependence Biclustering
 
-Latent dependence Biclustering, which incorporates biclustering and a Bayesian network model.
+## Local Dependence Biclustering (LDB)
 
-To execute this, you need to determine the number of ranks, the correspondence between items and fields, and the network structure for each rank in advance. For confirmatory Rankclustering, the correspondence between items and fields is provided in the form of a matrix or vector.
+Local Dependence Biclustering combines biclustering and Bayesian network models. The model requires three main components:
+- Number of latent classes/ranks
+- Field assignments for items
+- Network structure between fields at each rank
 
-```{r settings for LDB, include=FALSE}
-fieldFile <- "develop/mtmk15forVer13/FixFieldLDB.csv"
-ncls <- 5
-edgeFile <- "develop/mtmk15forVer13/EdgesLDB.csv"
-FieldData <- read.csv(fieldFile)
-conf <- FieldData[, 2]
-adj_file <- edgeFile
+Here's an example implementation:
+
+```{r setup-ldb}
+# Create field configuration vector (assign items to fields)
+conf <- c(1,6,6,8,9,9,4,7,7,7,5,8,9,10,10,9,9,10,10,10,2,2,3,3,5,5,6,9,9,10,1,1,7,9,10)
+
+# Create edge data for network structure between fields
+edges_data <- data.frame(
+  "From Field (Parent) >>>" = c(
+    6, 4, 5, 1, 1, 4,       # Class/Rank 2
+    3, 4, 6, 2, 4, 4,       # Class/Rank 3
+    3, 6, 4, 1,             # Class/Rank 4
+    7, 9, 6, 7              # Class/Rank 5
+  ),
+  ">>> To Field (Child)" = c(
+    8, 7, 8, 7, 2, 5,       # Class/Rank 2
+    5, 8, 8, 4, 6, 7,       # Class/Rank 3
+    5, 8, 5, 8,             # Class/Rank 4
+    10, 10, 8, 9            # Class/Rank 5
+  ),
+  "At Class/Rank (Locus)" = c(
+    2, 2, 2, 2, 2, 2,       # Class/Rank 2
+    3, 3, 3, 3, 3, 3,       # Class/Rank 3
+    4, 4, 4, 4,             # Class/Rank 4
+    5, 5, 5, 5              # Class/Rank 5
+  )
+)
+
+# Save edge data to temporary file
+tmp_file <- tempfile(fileext = ".csv")
+write.csv(edges_data, file = tmp_file, row.names = FALSE)
 ```
 
-```{r LDB conf}
-lines <- readLines(fieldFile)
-for (line in lines) {
-  cat(line)
-  cat("\n")
-}
-```
-```{r}
-FieldData <- read.csv(fieldFile)
-conf <- FieldData[, 2]
-conf
+```{r setup-ldb-conf, include=FALSE, message=FALSE, warning=FALSE}
+# Fit Local Dependence Biclustering model
+result.LDB <- LDB(
+  U = J35S515,
+  ncls = 5,            # Number of latent classes
+  conf = conf,         # Field configuration vector
+  adj_file = tmp_file  # Network structure file
+)
+
+# Display model results
+print(result.LDB)
+
+# Clean up temporary file
+unlink(tmp_file)
 ```
 
-The network structure for each rank can be specified using a matrix, a graph object, or a CSV file. Here is an example using a CSV file for specification.
-
-```{r LDB Graph }
-lines <- readLines(edgeFile)
-for (line in lines) {
-  cat(line)
-  cat("\n")
-}
-```
 
 Additionally, as mentioned in the text (Shojima, 2022), it is often the case that seeking the network structure exploratively does not yield appropriate results, so it has not been implemented.
 ```{r}
@@ -404,17 +485,22 @@ result.LDB
 
 Of course, it also supports various types of plots.
 
-```{r LDB plot}
+```{r plot-ldb, fig.width=7, fig.height=5, message=FALSE, warning=FALSE}
+# Show bicluster structure
 plot(result.LDB, type = "Array")
+# Test Response Profile
 plot(result.LDB, type = "TRP")
+# Latent Rank Distribution
 plot(result.LDB, type = "LRD")
+# Rank Membership Profiles for first 9 students
 plot(result.LDB, type = "RMP", students = 1:9, nc = 3, nr = 3)
+# Field Reference Profiles
 plot(result.LDB, type = "FRP", nc = 3, nr = 2)
 ```
 
 In this model, you can draw a Field PIRP Profile that visualizes the correct answer count for each rank and each field.
 
-```{r LDB FieldPIRP}
+```{r plot-ldb-fieldpirp, fig.width=7, fig.height=5, message=FALSE, warning=FALSE}
 plot(result.LDB, type = "FieldPIRP")
 ```
 
@@ -427,54 +513,77 @@ The most significant difference is that in LDB, the nodes represent the fields, 
 
 To execute this analysis, in addition to the dataset, the same field correspondence file used during exploratory Biclustering is required, as well as an adjacency matrix between classes. 
 
-```{r BINETsetting}
-fieldFile <- "develop/mtmk15forVer13/FixFieldBINET.csv"
-edgeFile <- "develop/mtmk15forVer13/EdgesBINET.csv"
-FieldData <- read.csv(fieldFile)
-conf <- FieldData[, 2]
+```{r setup-binet}
+# Create field configuration vector for item assignment
+conf <- c(1,5,5,5,9,9,6,6,6,6,2,7,7,11,11,7,7,12,12,12,2,2,3,3,4,4,4,8,8,12,1,1,6,10,10)
+
+# Create edge data for network structure between classes
+edges_data <- data.frame(
+  "From Class (Parent) >>>" = c(
+    1, 2, 3, 4, 5, 7,   # Dependencies in various fields
+    2, 4, 6, 8, 10,
+    6, 6, 11, 8, 9, 12
+  ),
+  ">>> To Class (Child)" = c(
+    2, 4, 5, 5, 6, 11,  # Target classes
+    3, 7, 9, 12, 12,
+    10, 8, 12, 12, 11, 13
+  ),
+  "At Field (Locus)" = c(
+    1, 2, 2, 3, 4, 4,   # Field locations
+    5, 5, 5, 5, 5,
+    7, 8, 8, 9, 9, 12
+  )
+)
+
+# Save edge data to temporary file
+tmp_file <- tempfile(fileext = ".csv")
+write.csv(edges_data, file = tmp_file, row.names = FALSE)
 ```
 
-```{r}
-conf <- FieldData[, 2]
-conf
-```
+The model requires three components:
 
-The adjacency matrix between classes can be provided in a CSV file like as follow:
+1. Field assignments for items (conf vector)
+2. Network structure between classes for each field
+3. Number of classes and fields
 
-```{r BINETconf}
-lines <- readLines(edgeFile)
-for (line in lines) {
-  cat(line)
-  cat("\n")
-}
-```
-
-For verification purposes, you also need to specify the number of classes and fields. Once you input these along with the dataset into the function, the analysis will be executed.
-
-
-```{r BINET}
+```{r model-binet, message=FALSE, warning=FALSE}
+# Fit Bicluster Network Model
 result.BINET <- BINET(
   U = J35S515,
-  ncls = 13, nfld = 12,
-  conf = conf, adj_file = edgeFile
+  ncls = 13,           # Maximum class number from edges (13)
+  nfld = 12,           # Maximum field number from conf (12)
+  conf = conf,         # Field configuration vector
+  adj_file = tmp_file  # Network structure file
 )
-result.BINET
+
+# Display model results
+print(result.BINET)
+
+# Clean up temporary file
+unlink(tmp_file)
 ```
 
 Of course, it also supports various types of plots.
 
-```{r BINETplot}
+```{r plot-binet, fig.width=7, fig.height=5, message=FALSE, warning=FALSE}
+# Show bicluster structure
 plot(result.BINET, type = "Array")
+# Test Response Profile
 plot(result.BINET, type = "TRP")
+# Latent Rank Distribution
 plot(result.BINET, type = "LRD")
+# Rank Membership Profiles for first 9 students
 plot(result.BINET, type = "RMP", students = 1:9, nc = 3, nr = 3)
+# Field Reference Profiles
 plot(result.BINET, type = "FRP", nc = 3, nr = 2)
 ```
 
 LDPSR plot shows all Passing Student Rates for all locally dependent classes compared with their respective parents.
 
 
-```{r LDPSRplot}
+```{r plot-binet-ldpsr, fig.width=7, fig.height=5, message=FALSE, warning=FALSE}
+# Locally Dependent Passing Student Rates
 plot(result.BINET, type = "LDPSR", nc = 3, nr = 2)
 ```
 

@@ -33,3 +33,8 @@ The coefficient ranges from -1 to 1, where 1 indicates perfect positive correlat
 This function is implemented using a binary data compatibility wrapper and
 will raise an error if used with polytomous data.
 }
+\examples{
+# example code
+# Calculate Phi-Coefficient using sample dataset J15S500
+PhiCoefficient(J15S500)
+}

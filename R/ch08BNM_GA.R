@@ -6,8 +6,8 @@
 #' Depending on the size of the data and the settings, the computation may
 #' take a significant amount of computational time. For details on the
 #' settings or algorithm, see Shojima(2022), section 8.5
-#' @param U U is either a data class of Exametrika, or raw data. When raw data is given,
-#' it is converted to the Exametrika class with the [dataFormat] function.
+#' @param U U is either a data class of exametrika, or raw data. When raw data is given,
+#' it is converted to the exametrika class with the [dataFormat] function.
 #' @param Z Z is a missing indicator matrix of the type matrix or data.frame
 #' @param w w is item weight vector
 #' @param na na argument specifies the numbers or characters to be treated as missing values.
@@ -47,6 +47,20 @@
 #'  \item{CCRR_table}{Correct Response Rate tables}
 #' }
 #' @importFrom stats rbinom
+#' @examples
+#' \donttest{
+#' # Perform Structure Learning for Bayesian Network Model using Genetic Algorithm
+#' # Parameters are set for balanced exploration and computational efficiency
+#' StrLearningGA_BNM(J5S10,
+#'                   population = 20,    # Size of population in each generation
+#'                   Rs = 0.5,          # 50% survival rate for next generation
+#'                   Rm = 0.002,        # 0.2% mutation rate for genetic diversity
+#'                   maxParents = 2,    # Maximum of 2 parent nodes per item
+#'                   maxGeneration = 100,# Maximum number of evolutionary steps
+#'                   crossover = 2,     # Use two-point crossover method
+#'                   elitism = 2        # Keep 2 best solutions in each generation
+#' )
+#' }
 #' @export
 
 StrLearningGA_BNM <- function(U, Z = NULL, w = NULL, na = NULL,
@@ -54,10 +68,10 @@ StrLearningGA_BNM <- function(U, Z = NULL, w = NULL, na = NULL,
                               population = 20, Rs = 0.5, Rm = 0.005,
                               maxParents = 2, maxGeneration = 100,
                               successiveLimit = 5, crossover = 0,
-                              elitism = 0, filename = "NULL",
+                              elitism = 0, filename = NULL,
                               verbose = TRUE) {
   # data format
-  if (class(U)[1] != "Exametrika") {
+  if (class(U)[1] != "exametrika") {
     tmp <- dataFormat(data = U, na = na, Z = Z, w = w)
   } else {
     tmp <- U
@@ -236,8 +250,8 @@ StrLearningGA_BNM <- function(U, Z = NULL, w = NULL, na = NULL,
 #' itself, the 'genes of genes' that generate the adjacency matrix are updated
 #' with each generation. For more details, please refer to Fukuda(2014) and Section
 #' 8.5.2 of the text(Shojima,2022).
-#' @param U U is either a data class of Exametrika, or raw data. When raw data is given,
-#' it is converted to the Exametrika class with the [dataFormat] function.
+#' @param U U is either a data class of exametrika, or raw data. When raw data is given,
+#' it is converted to the exametrika class with the [dataFormat] function.
 #' @param Z Z is a missing indicator matrix of the type matrix or data.frame
 #' @param w w is item weight vector
 #' @param na na argument specifies the numbers or characters to be treated as missing values.
@@ -280,6 +294,19 @@ StrLearningGA_BNM <- function(U, Z = NULL, w = NULL, na = NULL,
 #'  algorithm with mutations to learn Bayesian networks. International Journal of Artificial
 #'  Intelligence and Interactive Multimedia, 3, 7–13. DOI: 10.9781/ijimai.2014.311
 #' @importFrom stats runif rbinom
+#' @examples
+#' \donttest{
+#' # Perform Structure Learning for Bayesian Network Model using PBIL
+#' # (Population-Based Incremental Learning)
+#' StrLearningPBIL_BNM(J5S10,
+#'                     population = 20,    # Size of population in each generation
+#'                     Rs = 0.5,          # 50% survival rate for next generation
+#'                     Rm = 0.005,        # 0.5% mutation rate for genetic diversity
+#'                     maxParents = 2,    # Maximum of 2 parent nodes per item
+#'                     alpha = 0.05,      # Learning rate for probability update
+#'                     estimate = 4       # Use rounded generational gene method
+#' )
+#' }
 #' @export
 
 StrLearningPBIL_BNM <- function(U, Z = NULL, w = NULL, na = NULL,
@@ -291,7 +318,7 @@ StrLearningPBIL_BNM <- function(U, Z = NULL, w = NULL, na = NULL,
                                 filename = "NULL",
                                 verbose = TRUE) {
   # data format
-  if (class(U)[1] != "Exametrika") {
+  if (class(U)[1] != "exametrika") {
     tmp <- dataFormat(data = U, na = na, Z = Z, w = w)
   } else {
     tmp <- U

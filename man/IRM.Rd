@@ -85,3 +85,23 @@ it takes a long computation time when the sample size S is large.
 In addition, this method incorporates the Chinese restaurant process
 and Gibbs sampling. In detail, See Section 7.8 in Shojima(2022).
 }
+\examples{
+\donttest{
+# Fit an Infinite Relational Model (IRM) to determine optimal number of classes and fields
+# gamma_c and gamma_f are concentration parameters for the Chinese Restaurant Process
+result.IRM <- IRM(J35S515, gamma_c = 1, gamma_f = 1, verbose = TRUE)
+
+# Display the Bicluster Reference Matrix (BRM) as a heatmap
+# Shows the discovered clustering structure of items and students
+plot(result.IRM, type = "Array")
+
+# Plot Field Reference Profiles (FRP) in a 3-column grid
+# Shows the probability patterns for each automatically determined field
+plot(result.IRM, type = "FRP", nc = 3)
+
+# Plot Test Reference Profile (TRP)
+# Shows the overall response pattern across all fields
+plot(result.IRM, type = "TRP")
+}
+
+}

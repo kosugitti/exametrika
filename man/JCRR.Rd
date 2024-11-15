@@ -31,3 +31,8 @@ both items. This function is applicable only to binary response data.
 This function is implemented using a binary data compatibility wrapper and
 will raise an error if used with polytomous data.
 }
+\examples{
+# example code
+# Calculate JCRR using sample dataset J5S10
+JCRR(J5S10)
+}

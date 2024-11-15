@@ -52,3 +52,8 @@ will raise an error if used with polytomous data.
 Values below 0.2 might indicate problematic items that should be reviewed.
 Values above 0.3 are generally considered acceptable.
 }
+\examples{
+# using sample dataset
+ItemTotalCorr(J15S500)
+
+}

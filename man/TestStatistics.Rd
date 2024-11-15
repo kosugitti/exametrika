@@ -38,3 +38,7 @@ TestStatistics(U, na = NULL, Z = NULL, w = NULL)
 \description{
 Statistics regarding the total score.
 }
+\examples{
+# using sample dataset
+TestStatistics(J15S500)
+}

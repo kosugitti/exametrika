@@ -52,13 +52,6 @@ tests or groups. A positive score indicates above-average performance, while
 a negative score indicates below-average performance.
 }
 \examples{
-\donttest{
-# Simple binary data
-U <- matrix(c(1, 0, 1, 1, 0, 1), ncol = 2)
-sscore(U)
-
-# With missing values
-U[1, 1] <- NA
-sscore(U, na = NA)
-}
+# using sample dataset
+sscore(J5S10)
 }

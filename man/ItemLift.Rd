@@ -34,6 +34,11 @@ This function is applicable only to binary response data.
 This function is implemented using a binary data compatibility wrapper and
 will raise an error if used with polytomous data.
 }
+\examples{
+# example code
+# Calculate ItemLift using sample dataset J5S10
+ItemLift(J5S10)
+}
 \references{
 Brin, S., Motwani, R., Ullman, J., & Tsur, S. (1997). Dynamic itemset counting and
 implication rules for market basket data. In Proceedings of ACM SIGMOD International Conference

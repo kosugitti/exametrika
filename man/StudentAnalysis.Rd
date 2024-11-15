@@ -41,3 +41,7 @@ The StudentAnalysis function returns descriptive statistics for each individual 
 Specifically, it provides the number of responses, the number of correct answers,
 the passage rate, the standardized score, the percentile, and the stanine.
 }
+\examples{
+# using sample dataset
+StudentAnalysis(J15S500)
+}

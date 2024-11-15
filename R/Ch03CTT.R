@@ -27,7 +27,7 @@ AlphaCoefficient <- function(x, na = NULL, Z = NULL, w = NULL) {
   }
 
   if (NROW(x) != NCOL(x)) {
-    if (class(x)[1] != "Exametrika") {
+    if (class(x)[1] != "exametrika") {
       tmp <- dataFormat(data = x, na = na, Z = Z, w = w)
     } else {
       tmp <- x
@@ -76,7 +76,7 @@ AlphaIfDel <- function(x, delItem = NULL, na = NULL, Z = NULL, w = NULL) {
     }
   }
 
-  if (class(x)[1] != "Exametrika") {
+  if (class(x)[1] != "exametrika") {
     tmp <- dataFormat(data = x, na = na, Z = Z, w = w)
   } else {
     tmp <- x
@@ -141,7 +141,7 @@ OmegaCoefficient <- function(x, na = NULL, Z = NULL, w = NULL) {
   }
 
   if (NROW(x) != NCOL(x)) {
-    if (class(x)[1] != "Exametrika") {
+    if (class(x)[1] != "exametrika") {
       tmp <- dataFormat(data = x, na = na, Z = Z, w = w)
     } else {
       tmp <- x
@@ -173,7 +173,7 @@ OmegaCoefficient <- function(x, na = NULL, Z = NULL, w = NULL) {
 #' @param Z Z is a missing indicator matrix of the type matrix or data.frame
 #' @param w w is item weight vector
 #' @param na na argument specifies the numbers or characters to be treated as missing values.
-#' @return Returns a list of class c("Exametrika", "CTT") containing two data frames:
+#' @return Returns a list of class c("exametrika", "CTT") containing two data frames:
 #'   \itemize{
 #'     \item Reliability: A data frame with overall reliability coefficients
 #'       (Alpha and Omega) calculated using different correlation matrices
@@ -181,10 +181,15 @@ OmegaCoefficient <- function(x, na = NULL, Z = NULL, w = NULL) {
 #'     \item ReliabilityExcludingItem: A data frame showing alpha coefficients
 #'       when each item is excluded, calculated using different correlation matrices
 #'   }
+#' @examples
+#' \donttest{
+#' # using sample dataset
+#' CTT(J15S500)
+#' }
 #' @export
 
 CTT <- function(U, na = NULL, Z = NULL, w = NULL) {
-  if (class(U)[1] != "Exametrika") {
+  if (class(U)[1] != "exametrika") {
     tmp <- dataFormat(data = U, na = na, Z = Z, w = w)
   } else {
     tmp <- U
@@ -213,5 +218,5 @@ CTT <- function(U, na = NULL, Z = NULL, w = NULL) {
     "Alpha.Tetrachoric" = eachAlpha$AlphaTetrachoric
   ))
   ret <- list(Reliability = df, ReliabilityExcludingItem = df2)
-  structure(ret, class = c("Exametrika", "CTT"))
+  structure(ret, class = c("exametrika", "CTT"))
 }

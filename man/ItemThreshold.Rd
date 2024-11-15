@@ -44,13 +44,6 @@ This function is implemented using a binary data compatibility wrapper and
 will raise an error if used with polytomous data.
 }
 \examples{
-\donttest{
-# Easy item (80\% correct)
-p1 <- 0.8
-tau1 <- qnorm(1 - p1) # negative threshold
-
-# Hard item (20\% correct)
-p2 <- 0.2
-tau2 <- qnorm(1 - p2) # positive threshold
-}
+# using sample dataset
+ItemThreshold(J5S10)
 }

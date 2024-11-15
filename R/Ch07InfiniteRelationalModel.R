@@ -6,8 +6,8 @@
 #' it takes a long computation time when the sample size S is large.
 #' In addition, this method incorporates the Chinese restaurant process
 #' and Gibbs sampling. In detail, See Section 7.8 in Shojima(2022).
-#' @param U U is either a data class of Exametrika, or raw data. When raw data is given,
-#' it is converted to the Exametrika class with the [dataFormat] function.
+#' @param U U is either a data class of exametrika, or raw data. When raw data is given,
+#' it is converted to the exametrika class with the [dataFormat] function.
 #' @param Z Z is a missing indicator matrix of the type matrix or data.frame
 #' @param w w is item weight vector
 #' @param na na argument specifies the numbers or characters to be treated as missing values.
@@ -45,12 +45,31 @@
 #' rank membership profile of Student s, namely the posterior probability distribution representing the student's
 #' belonging to the respective latent classes. It also includes the rank with the maximum estimated membership probability,
 #' as well as the rank-up odds and rank-down odds.}
-#'  \item{LRD}{Latent Rank Distribution. see also [plot.Exametrika]}
-#'  \item{LFD}{Latent Field Distribution. see also [plot.Exametrika]}
+#'  \item{LRD}{Latent Rank Distribution. see also [plot.exametrika]}
+#'  \item{LFD}{Latent Field Distribution. see also [plot.exametrika]}
 #'  \item{RMD}{Rank Membership Distribution.}
 #'  \item{TestFitIndices}{Overall fit index for the test.See also [TestFit]}
 #' }
 #' @importFrom stats rmultinom
+#' @examples
+#' \donttest{
+#' # Fit an Infinite Relational Model (IRM) to determine optimal number of classes and fields
+#' # gamma_c and gamma_f are concentration parameters for the Chinese Restaurant Process
+#' result.IRM <- IRM(J35S515, gamma_c = 1, gamma_f = 1, verbose = TRUE)
+#'
+#' # Display the Bicluster Reference Matrix (BRM) as a heatmap
+#' # Shows the discovered clustering structure of items and students
+#' plot(result.IRM, type = "Array")
+#'
+#' # Plot Field Reference Profiles (FRP) in a 3-column grid
+#' # Shows the probability patterns for each automatically determined field
+#' plot(result.IRM, type = "FRP", nc = 3)
+#'
+#' # Plot Test Reference Profile (TRP)
+#' # Shows the overall response pattern across all fields
+#' plot(result.IRM, type = "TRP")
+#' }
+#'
 #' @export
 
 IRM <- function(U, Z = NULL, w = NULL, na = NULL,
@@ -58,7 +77,7 @@ IRM <- function(U, Z = NULL, w = NULL, na = NULL,
                 max_iter = 100, stable_limit = 5, minSize = 20, EM_limit = 20,
                 seed = 123, verbose = TRUE) {
   # data format
-  if (class(U)[1] != "Exametrika") {
+  if (class(U)[1] != "exametrika") {
     tmp <- dataFormat(data = U, na = na, Z = Z, w = w)
   } else {
     tmp <- U
@@ -366,10 +385,8 @@ IRM <- function(U, Z = NULL, w = NULL, na = NULL,
       limit_count <- 0
     }
     if (verbose) {
-      message(
-        "iter ", iter, " Exact match count of field elements. ",
-        limit_count, " nfld ", nfld, " ncls ", ncls
-      )
+      message("iter ", iter, " Exact match count of field elements. ",
+              limit_count, " nfld ", nfld, " ncls ", ncls)
     }
     if (limit_count == stable_limit || iter == max_iter) {
       IRM_FLG <- FALSE
@@ -431,10 +448,8 @@ IRM <- function(U, Z = NULL, w = NULL, na = NULL,
     if (minclass[1] < minSize) {
       delt <- delt + 1
       if (verbose) {
-        message(
-          "The minimum class member count is under the setting value.\n",
-          "bic ", format(bic, digits = 6), " nclass ", ncls
-        )
+        message("The minimum class member count is under the setting value.\n",
+                "bic ", format(bic, digits = 6), " nclass ", ncls)
       }
     } else {
       DelRepFLG <- FALSE
@@ -558,6 +573,6 @@ IRM <- function(U, Z = NULL, w = NULL, na = NULL,
     FieldEstimated = field,
     ClassEstimated = cls,
     TestFitIndices = FitIndices
-  ), class = c("Exametrika", "IRM"))
+  ), class = c("exametrika", "IRM"))
   return(ret)
 }

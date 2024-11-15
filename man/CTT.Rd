@@ -30,3 +30,9 @@ This function calculates the overall alpha and omega coefficients for
 the given data matrix. It also computes the alpha coefficient for
 each item, assuming that item is excluded.
 }
+\examples{
+\donttest{
+# using sample dataset
+CTT(J15S500)
+}
+}

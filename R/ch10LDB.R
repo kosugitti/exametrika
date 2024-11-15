@@ -2,8 +2,8 @@
 #' @description
 #' Latent dependence Biclustering, which incorporates biclustering and a Bayesian
 #' network model.
-#' @param U U is either a data class of Exametrika, or raw data. When raw data is given,
-#' it is converted to the Exametrika class with the [dataFormat] function.
+#' @param U U is either a data class of exametrika, or raw data. When raw data is given,
+#' it is converted to the exametrika class with the [dataFormat] function.
 #' @param Z Z is a missing indicator matrix of the type matrix or data.frame
 #' @param w w is item weight vector
 #' @param na na argument specifies the numbers or characters to be treated as missing values.
@@ -35,8 +35,8 @@
 #'  PIRP array, where each dimension represents the number of rank,number
 #'  of field, and Dmax. Dmax denotes the maximum number of correct response
 #'  patterns for each field.}
-#'  \item{LFD}{Latent Field Distribution. see also [plot.Exametrika]}
-#'  \item{LRD}{Latent Rank Distribution. see also [plot.Exametrika]}
+#'  \item{LFD}{Latent Field Distribution. see also [plot.exametrika]}
+#'  \item{LRD}{Latent Rank Distribution. see also [plot.exametrika]}
 #'  \item{FRP}{Marginal Field Reference Matrix}
 #'  \item{FRPIndex}{Index of FFP includes the item location parameters B and Beta,
 #'  the slope parameters A and Alpha, and the monotonicity indices C and Gamma.}
@@ -54,6 +54,63 @@
 #' as well as the rank-up odds and rank-down odds.}
 #'  \item{TestFitIndices}{Overall fit index for the test.See also [TestFit]}
 #' }
+#' @examples
+#' \donttest{
+#' # Example: Latent Dirichlet Bayesian Network model
+#' # Create field configuration vector based on field assignments
+#' conf <- c(1,6,6,8,9,9,4,7,7,7,5,8,9,10,10,9,9,10,10,10,2,2,3,3,5,5,6,9,9,10,1,1,7,9,10)
+#'
+#' # Create edge data for the network structure between fields
+#' edges_data <- data.frame(
+#'   "From Field (Parent) >>>" = c(
+#'     6, 4, 5, 1, 1, 4,       # Class/Rank 2
+#'     3, 4, 6, 2, 4, 4,       # Class/Rank 3
+#'     3, 6, 4, 1,             # Class/Rank 4
+#'     7, 9, 6, 7              # Class/Rank 5
+#'   ),
+#'   ">>> To Field (Child)" = c(
+#'     8, 7, 8, 7, 2, 5,       # Class/Rank 2
+#'     5, 8, 8, 4, 6, 7,       # Class/Rank 3
+#'     5, 8, 5, 8,             # Class/Rank 4
+#'     10, 10, 8, 9            # Class/Rank 5
+#'   ),
+#'   "At Class/Rank (Locus)" = c(
+#'     2, 2, 2, 2, 2, 2,       # Class/Rank 2
+#'     3, 3, 3, 3, 3, 3,       # Class/Rank 3
+#'     4, 4, 4, 4,             # Class/Rank 4
+#'     5, 5, 5, 5              # Class/Rank 5
+#'   )
+#' )
+#'
+#' # Save edge data to temporary CSV file
+#' tmp_file <- tempfile(fileext = ".csv")
+#' write.csv(edges_data, file = tmp_file, row.names = FALSE)
+#'
+#' # Fit Latent Dirichlet Bayesian Network model
+#' result.LDB <- LDB(
+#'   U = J35S515,
+#'   ncls = 5,            # Number of latent classes
+#'   conf = conf,         # Field configuration vector
+#'   adj_file = tmp_file  # Path to the CSV file
+#' )
+#'
+#' # Clean up temporary file
+#' unlink(tmp_file)
+#'
+#' # Display model results
+#' print(result.LDB)
+#'
+#' # Visualize different aspects of the model
+#' plot(result.LDB, type = "Array")    # Show bicluster structure
+#' plot(result.LDB, type = "TRP")      # Test Response Profile
+#' plot(result.LDB, type = "LRD")      # Latent Rank Distribution
+#' plot(result.LDB, type = "RMP",      # Rank Membership Profiles
+#'      students = 1:9, nc = 3, nr = 3)
+#' plot(result.LDB, type = "FRP",      # Field Reference Profiles
+#'      nc = 3, nr = 2)
+#' # Field PIRP Profile showing correct answer counts for each rank and field
+#' plot(result.LDB, type = "FieldPIRP")
+#' }
 #' @export
 
 LDB <- function(U, Z = NULL, w = NULL, na = NULL,
@@ -62,7 +119,7 @@ LDB <- function(U, Z = NULL, w = NULL, na = NULL,
                 g_list = NULL, adj_list = NULL, adj_file = NULL,
                 verbose = FALSE) {
   # data format
-  if (class(U)[1] != "Exametrika") {
+  if (class(U)[1] != "exametrika") {
     tmp <- dataFormat(data = U, na = na, Z = Z, w = w)
   } else {
     tmp <- U
@@ -344,6 +401,6 @@ LDB <- function(U, Z = NULL, w = NULL, na = NULL,
     TestFitIndices = FitIndices,
     SOACflg = SOACflg,
     WOACflg = WOACflg
-  ), class = c("Exametrika", "LDB"))
+  ), class = c("exametrika", "LDB"))
   return(ret)
 }

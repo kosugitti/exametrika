@@ -98,3 +98,56 @@ the fields, whereas in BINET, they represent the class. BINET
 explores the local dependency structure among latent classes at each
 latent field, where each field is a locus.
 }
+\examples{
+\donttest{
+# Example: Bicluster Network Model (BINET)
+# BINET combines Bayesian network model and Biclustering to explore
+# local dependency structure among latent classes at each field
+
+# Create field configuration vector based on field assignments
+conf <- c(1,5,5,5,9,9,6,6,6,6,2,7,7,11,11,7,7,12,12,12,2,2,3,3,4,4,4,8,8,12,1,1,6,10,10)
+
+# Create edge data for network structure between classes
+edges_data <- data.frame(
+  "From Class (Parent) >>>" = c(
+    1, 2, 3, 4, 5, 7, 2, 4, 6, 8, 10, 6, 6, 11, 8, 9, 12
+  ),
+  ">>> To Class (Child)" = c(
+    2, 4, 5, 5, 6, 11, 3, 7, 9, 12, 12, 10, 8, 12, 12, 11, 13
+  ),
+  "At Field (Locus)" = c(
+    1, 2, 2, 3, 4, 4, 5, 5, 5, 5, 5, 7, 8, 8, 9, 9, 12
+  )
+)
+
+# Save edge data to temporary CSV file
+tmp_file <- tempfile(fileext = ".csv")
+write.csv(edges_data, file = tmp_file, row.names = FALSE)
+
+# Fit Bicluster Network Model
+result.BINET <- BINET(
+  U = J35S515,
+  ncls = 13,           # Maximum class number from edges (13)
+  nfld = 12,           # Maximum field number from conf (12)
+  conf = conf,         # Field configuration vector
+  adj_file = tmp_file  # Path to the CSV file
+)
+
+# Clean up temporary file
+unlink(tmp_file)
+
+# Display model results
+print(result.BINET)
+
+# Visualize different aspects of the model
+plot(result.BINET, type = "Array")    # Show bicluster structure
+plot(result.BINET, type = "TRP")      # Test Response Profile
+plot(result.BINET, type = "LRD")      # Latent Rank Distribution
+plot(result.BINET, type = "RMP",      # Rank Membership Profiles
+     students = 1:9, nc = 3, nr = 3)
+plot(result.BINET, type = "FRP",      # Field Reference Profiles
+     nc = 3, nr = 2)
+plot(result.BINET, type = "LDPSR",    # Locally Dependent Passing Student Rates
+     nc = 3, nr = 2)
+}
+}

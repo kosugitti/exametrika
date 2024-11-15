@@ -1,11 +1,11 @@
-#' @title Plotting functions for the Exametrika package of class "Exametrika"
+#' @title Plotting functions for the exametrika package of class "exametrika"
 #' @description
-#' The calculation results of the Exametrika package have an Exametrika class attribute.
+#' The calculation results of the exametrika package have an exametrika class attribute.
 #' In addition, the class name of the analysis model is also assigned.
 #' The models are listed as follows: IRT, LCA, LRA, Biclustering, IRM, LDLRA, LDB,
 #' BINET. A plot is made for each model. Although the analysis results are visualized
 #' from various perspectives, they correspond by specifying the 'type' variable when plotting.
-#' @param x Exametrika Class object
+#' @param x exametrika Class object
 #' @param type Plot type.The selectable type names are as follows: IIC, ICC, TIC, IRP, TRP,
 #' LCD, CMP, FRP, RMP, LRD, Array, FieldPRIP, LDPSR.
 #' \describe{
@@ -83,7 +83,7 @@
 #'   The function returns NULL invisibly.
 #' @export
 
-plot.Exametrika <- function(x,
+plot.exametrika <- function(x,
                             type = c(
                               "IIC", "ICC", "TIC",
                               "IRP", "TRP", "LCD", "CMP",
@@ -487,7 +487,7 @@ plot.Exametrika <- function(x,
       }
     },
     none = {
-      stop("This object cannot be plotted. The object must be of class 'Exametrika' with a valid model type.")
+      stop("This object cannot be plotted. The object must be of class 'exametrika' with a valid model type.")
     }
   )
 }

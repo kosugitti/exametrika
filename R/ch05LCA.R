@@ -1,8 +1,8 @@
 #' @title Latent Class Analysis
 #' @description
 #' A function for estimating LCA using the EM algorithm.
-#' @param U U is either a data class of Exametrika, or raw data. When raw data is given,
-#' it is converted to the Exametrika class with the [dataFormat] function.
+#' @param U U is either a data class of exametrika, or raw data. When raw data is given,
+#' it is converted to the exametrika class with the [dataFormat] function.
 #' @param ncls number of latent class
 #' @param Z Z is a missing indicator matrix of the type matrix or data.frame
 #' @param w w is item weight vector
@@ -15,8 +15,8 @@
 #'  \item{Nclass}{number of classes you set}
 #'  \item{TRP}{Test Reference Profile matrix. The TRP is the column sum vector of estimated class reference matrix,
 #' \eqn{\hat{\Pi}_c}}
-#'  \item{LCD}{Latent Class Distribution table.see also [plot.Exametrika]}
-#'  \item{CMD}{Class Membership Distribution table. see also [plot.Exametrika]}
+#'  \item{LCD}{Latent Class Distribution table.see also [plot.exametrika]}
+#'  \item{CMD}{Class Membership Distribution table. see also [plot.exametrika]}
 #'  \item{Students}{Class Membership Profile matrix.The s-th row vector of \eqn{\hat{M}_c}, \eqn{\hat{m}_c}, is the
 #' class membership profile of Student s, namely the posterior probability distribution representing the student's
 #' belonging to the respective latent classes. The last column indicates the latent class estimate.}
@@ -25,12 +25,33 @@
 #'  \item{ItemFitIndices}{Fit index for each item.See also [ItemFit]}
 #'  \item{TestFitIndices}{Overall fit index for the test.See also [TestFit]}
 #' }
+#' @examples
+#' \donttest{
+#' # Fit a Latent Class Analysis model with 5 classes to the sample dataset
+#' result.LCA <- LCA(J15S500, ncls = 5)
+#'
+#' # Display the first few rows of student class membership probabilities
+#' head(result.LCA$Students)
+#'
+#' # Plot Item Response Profiles (IRP) for items 1-6 in a 2x3 grid
+#' plot(result.LCA, type = "IRP", items = 1:6, nc = 2, nr = 3)
+#'
+#' # Plot Class Membership Probabilities (CMP) for students 1-9 in a 3x3 grid
+#' plot(result.LCA, type = "CMP", students = 1:9, nc = 3, nr = 3)
+#'
+#' # Plot Test Response Profile (TRP) showing response patterns across all classes
+#' plot(result.LCA, type = "TRP")
+#'
+#' # Plot Latent Class Distribution (LCD) showing the size of each latent class
+#' plot(result.LCA, type = "LCD")
+#' }
+#'
 #' @export
 #'
 
 LCA <- function(U, ncls = 2, na = NULL, Z = NULL, w = NULL, maxiter = 100) {
   # data format
-  if (class(U)[1] != "Exametrika") {
+  if (class(U)[1] != "exametrika") {
     tmp <- dataFormat(data = U, na = na, Z = Z, w = w)
   } else {
     tmp <- U
@@ -77,6 +98,6 @@ LCA <- function(U, ncls = 2, na = NULL, Z = NULL, w = NULL, maxiter = 100) {
     IRP = IRP,
     ItemFitIndices = FitIndices$item,
     TestFitIndices = FitIndices$test
-  ), class = c("Exametrika", "LCA"))
+  ), class = c("exametrika", "LCA"))
   return(ret)
 }

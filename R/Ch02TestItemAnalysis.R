@@ -10,7 +10,7 @@
 #'            processing system. Not intended for direct use.
 #' @note This function is implemented using a binary data compatibility wrapper and
 #'       will raise an error if used with polytomous data.
-#' @return Returns a matrix of class c("Exametrika", "matrix") where each element (i,j)
+#' @return Returns a matrix of class c("exametrika", "matrix") where each element (i,j)
 #'   represents the number of students who responded to both item i and item j. The
 #'   diagonal elements represent the total number of responses for each item.
 #' @export
@@ -18,7 +18,7 @@
 JointSampleSize <- createBinaryFunction(
   function(U, ...) {
     S_jk <- t(U$Z) %*% U$Z
-    structure(S_jk, class = c("Exametrika", "matrix"))
+    structure(S_jk, class = c("exametrika", "matrix"))
   },
   "JointSmapleSize"
 )
@@ -35,14 +35,18 @@ JointSampleSize <- createBinaryFunction(
 #'            processing system. Not intended for direct use.
 #' @note This function is implemented using a binary data compatibility wrapper and
 #'       will raise an error if used with polytomous data.
-#' @return A matrix of joint correct response rates with Exametrika class.
+#' @return A matrix of joint correct response rates with exametrika class.
 #' Each element (i,j) represents the proportion of students who correctly
 #' answered both items i and j.
+#' @examples
+#' # example code
+#' # Calculate JCRR using sample dataset J5S10
+#' JCRR(J5S10)
 #' @export
 JCRR <- createBinaryFunction(
   function(U, ...) {
     P_J <- t(U$Z * U$U) %*% (U$Z * U$U) / (t(U$Z) %*% U$Z)
-    structure(P_J, class = c("Exametrika", "matrix"))
+    structure(P_J, class = c("exametrika", "matrix"))
   },
   "JCRR"
 )
@@ -60,9 +64,13 @@ JCRR <- createBinaryFunction(
 #'            processing system. Not intended for direct use.
 #' @note This function is implemented using a binary data compatibility wrapper and
 #'       will raise an error if used with polytomous data.
-#' @return A matrix of conditional correct response rates with Exametrika class.
+#' @return A matrix of conditional correct response rates with exametrika class.
 #' Each element (i,j) represents the probability of correctly answering item j
 #' given that item i was answered correctly.
+#' @examples
+#' # example code
+#' # Calculate CCRR using sample dataset J5S10
+#' CCRR(J5S10)
 #' @export
 CCRR <- createBinaryFunction(
   function(U, ...) {
@@ -71,7 +79,7 @@ CCRR <- createBinaryFunction(
     Pj <- JCRR(U)
     p <- crr(U)
     P_C <- Pj / (p %*% t(OneJ))
-    structure(P_C, class = c("Exametrika", "matrix"))
+    structure(P_C, class = c("exametrika", "matrix"))
   },
   "CCRR"
 )
@@ -90,13 +98,17 @@ CCRR <- createBinaryFunction(
 #'            processing system. Not intended for direct use.
 #' @note This function is implemented using a binary data compatibility wrapper and
 #'       will raise an error if used with polytomous data.
-#' @return A matrix of item lift values with Exametrika class.
+#' @return A matrix of item lift values with exametrika class.
 #' Each element (j,k) represents the lift value of item k given item j,
 #' which indicates how much more likely item k is to be correct given that
 #' item j was answered correctly.
 #' @references Brin, S., Motwani, R., Ullman, J., & Tsur, S. (1997). Dynamic itemset counting and
 #' implication rules for market basket data. In Proceedings of ACM SIGMOD International Conference
 #' on Management of Data (pp. 255–264). https://dl.acm.org/doi/10.1145/253262.253325
+#' @examples
+#' # example code
+#' # Calculate ItemLift using sample dataset J5S10
+#' ItemLift(J5S10)
 #' @export
 ItemLift <- createBinaryFunction(
   function(U, ...) {
@@ -104,7 +116,7 @@ ItemLift <- createBinaryFunction(
     Pc <- CCRR(U)
     p <- crr(U)
     P_L <- Pc / (OneJ %*% t(p))
-    structure(P_L, class = c("Exametrika", "matrix"))
+    structure(P_L, class = c("exametrika", "matrix"))
   },
   "ItemLift"
 )
@@ -123,9 +135,13 @@ ItemLift <- createBinaryFunction(
 #'            processing system. Not intended for direct use.
 #' @note This function is implemented using a binary data compatibility wrapper and
 #'       will raise an error if used with polytomous data.
-#' @return A matrix of mutual information values with Exametrika class.
+#' @return A matrix of mutual information values with exametrika class.
 #' Each element (i,j) represents the mutual information between items i and j,
 #' measured in bits. Higher values indicate stronger interdependence between items.
+#' @examples
+#' # example code
+#' # Calculate Mutual Information using sample dataset J15S500
+#' MutualInformation(J15S500)
 #' @export
 MutualInformation <- createBinaryFunction(
   function(U, ...) {
@@ -158,7 +174,7 @@ MutualInformation <- createBinaryFunction(
     diag(MI) <- diag(P$S_00 * log(L$L_00, base = 2) +
       P$S_11 * log(L$L_11, base = 2))
 
-    structure(MI, class = c("Exametrika", "matrix"))
+    structure(MI, class = c("exametrika", "matrix"))
   },
   "MutualInformation"
 )
@@ -177,9 +193,13 @@ MutualInformation <- createBinaryFunction(
 #'            processing system. Not intended for direct use.
 #' @note This function is implemented using a binary data compatibility wrapper and
 #'       will raise an error if used with polytomous data.
-#' @return A matrix of phi coefficients with Exametrika class.
+#' @return A matrix of phi coefficients with exametrika class.
 #' Each element (i,j) represents the phi coefficient between items i and j.
 #' The matrix is symmetric with ones on the diagonal.
+#' @examples
+#' # example code
+#' # Calculate Phi-Coefficient using sample dataset J15S500
+#' PhiCoefficient(J15S500)
 #' @export
 PhiCoefficient <- createBinaryFunction(
   function(U, ...) {
@@ -198,7 +218,7 @@ PhiCoefficient <- createBinaryFunction(
     # Calculate correlation matrix
     phi <- C / sqrt(v) %*% t(sqrt(v))
 
-    structure(phi, class = c("Exametrika", "matrix"))
+    structure(phi, class = c("exametrika", "matrix"))
   },
   "PhiCoefficient"
 )
@@ -219,7 +239,7 @@ PhiCoefficient <- createBinaryFunction(
 #' @importFrom stats qnorm
 #' @importFrom stats pnorm
 #' @importFrom stats optimize
-#' @return Returns a single numeric value of class "Exametrika" representing the
+#' @return Returns a single numeric value of class "exametrika" representing the
 #'   tetrachoric correlation coefficient between the two binary variables. The value
 #'   ranges from -1 to 1, where:
 #'   \itemize{
@@ -281,7 +301,7 @@ tetrachoric <- function(x, y) {
     upper = 1, # upper limit
     method = "Brent" # one-dimensional optimization method
   )
-  ret <- structure(ret$par, class = c("Exametrika"))
+  ret <- structure(ret$par, class = c("exametrika"))
   return(ret)
 }
 
@@ -299,9 +319,14 @@ tetrachoric <- function(x, y) {
 #'            processing system. Not intended for direct use.
 #' @note This function is implemented using a binary data compatibility wrapper and
 #'       will raise an error if used with polytomous data.
-#' @return A matrix of tetrachoric correlations with Exametrika class.
+#' @return A matrix of tetrachoric correlations with exametrika class.
 #' Each element (i,j) represents the tetrachoric correlation between items i and j.
 #' The matrix is symmetric with ones on the diagonal.
+#' @examples
+#' \donttest{
+#' # example code
+#' TetrachoricCorrelationMatrix(J15S500)
+#' }
 #' @export
 TetrachoricCorrelationMatrix <- createBinaryFunction(
   function(U, ...) {
@@ -321,7 +346,7 @@ TetrachoricCorrelationMatrix <- createBinaryFunction(
       }
     }
     diag(mat) <- 1
-    structure(mat, class = c("Exametrika", "matrix"))
+    structure(mat, class = c("exametrika", "matrix"))
   },
   "TetrachoricCorrelationMatrix"
 )
@@ -348,7 +373,7 @@ TetrachoricCorrelationMatrix <- createBinaryFunction(
 #'            processing system. Not intended for direct use.
 #' @note This function is implemented using a binary data compatibility wrapper and
 #'       will raise an error if used with polytomous data.
-#' @return A list of class "Exametrika" and "IIAnalysis" containing the following matrices:
+#' @return A list of class "exametrika" and "IIAnalysis" containing the following matrices:
 #' \describe{
 #'   \item{JSS}{Joint Sample Size matrix}
 #'   \item{JCRR}{Joint Correct Response Rate matrix}
@@ -356,6 +381,11 @@ TetrachoricCorrelationMatrix <- createBinaryFunction(
 #'   \item{MI}{Mutual Information matrix}
 #'   \item{Phi}{Phi Coefficient matrix}
 #'   \item{Tetrachoric}{Tetrachoric Correlation matrix}
+#' }
+#' @examples
+#' \donttest{
+#' # example code
+#' InterItemAnalysis(J15S500)
 #' }
 #' @export
 InterItemAnalysis <- createBinaryFunction(
@@ -366,7 +396,7 @@ InterItemAnalysis <- createBinaryFunction(
     IL <- ItemLift(U)
     MI <- MutualInformation(U)
     Phi <- PhiCoefficient(U)
-    Tet <- TetrachoricCorrelation(U)
+    Tet <- TetrachoricCorrelationMatrix(U)
 
     # Create return structure
     structure(
@@ -378,7 +408,7 @@ InterItemAnalysis <- createBinaryFunction(
         Phi = Phi,
         Tetrachoric = Tet
       ),
-      class = c("Exametrika", "IIAnalysis")
+      class = c("exametrika", "IIAnalysis")
     )
   },
   "InterItemAnalysis"
@@ -406,15 +436,12 @@ InterItemAnalysis <- createBinaryFunction(
 #' Values range from 0 to 1, where higher values indicate easier items
 #' (more students answered correctly).
 #' @examples
-#' \donttest{
 #' # Simple binary data
 #' U <- matrix(c(1, 0, 1, 1, 0, 1), ncol = 2)
 #' crr(U)
 #'
-#' # With missing values
-#' U[1, 1] <- NA
-#' crr(U)
-#' }
+#' # using sample datasaet
+#' crr(J15S500)
 #' @export
 crr <- createBinaryFunction(
   function(U, ...) {
@@ -460,15 +487,8 @@ crr <- createBinaryFunction(
 #'   \item odds < 1: incorrect response more likely than correct
 #' }
 #' @examples
-#' \donttest{
-#' # Easy item (80% correct)
-#' p1 <- 0.8
-#' o1 <- p1 / (1 - p1) # odds = 4
-#'
-#' # Hard item (20% correct)
-#' p2 <- 0.2
-#' o2 <- p2 / (1 - p2) # odds = 0.25
-#' }
+#' # using sample dataset
+#' ItemOdds(J5S10)
 #' @export
 ItemOdds <- createBinaryFunction(
   function(U, ...) {
@@ -512,15 +532,8 @@ ItemOdds <- createBinaryFunction(
 #' }
 #' @importFrom stats qnorm
 #' @examples
-#' \donttest{
-#' # Easy item (80% correct)
-#' p1 <- 0.8
-#' tau1 <- qnorm(1 - p1) # negative threshold
-#'
-#' # Hard item (20% correct)
-#' p2 <- 0.2
-#' tau2 <- qnorm(1 - p2) # positive threshold
-#' }
+#' # using sample dataset
+#' ItemThreshold(J5S10)
 #' @export
 ItemThreshold <- createBinaryFunction(
   function(U, ...) {
@@ -572,15 +585,9 @@ ItemThreshold <- createBinaryFunction(
 #'   \item Values near 0 indicate items with extreme response patterns
 #' }
 #' @examples
-#' \donttest{
-#' # Balanced item (50% correct)
-#' p1 <- 0.5
-#' e1 <- -p1 * log2(p1) - (1 - p1) * log2(1 - p1) # maximum entropy
+#' # using sample dataset
+#' ItemEntropy(J5S10)
 #'
-#' # Extreme item (90% correct)
-#' p2 <- 0.9
-#' e2 <- -p2 * log2(p2) - (1 - p2) * log2(1 - p2) # low entropy
-#' }
 #' @export
 ItemEntropy <- createBinaryFunction(
   function(U, ...) {
@@ -632,6 +639,10 @@ ItemEntropy <- createBinaryFunction(
 #' @note
 #' Values below 0.2 might indicate problematic items that should be reviewed.
 #' Values above 0.3 are generally considered acceptable.
+#' @examples
+#' # using sample dataset
+#' ItemTotalCorr(J15S500)
+#'
 #' @export
 ItemTotalCorr <- createBinaryFunction(
   function(U, ...) {
@@ -737,6 +748,9 @@ Biserial_Correlation <- function(i, t) {
 #' The biserial correlation is generally preferred over the point-biserial
 #' correlation when the dichotomization is artificial (i.e., when the underlying
 #' trait is continuous).
+#' @examples
+#' # using sample dataset
+#' ITBiserial(J15S500)
 #' @export
 ITBiserial <- createBinaryFunction(
   function(U, ...) {
@@ -787,15 +801,8 @@ ITBiserial <- createBinaryFunction(
 #'   \item Missing responses do not contribute to the score
 #' }
 #' @examples
-#' \donttest{
-#' # Simple binary data
-#' U <- matrix(c(1, 0, 1, 1, 0, 1), ncol = 2)
-#' nrs(U)
-#'
-#' # With item weights
-#' w <- c(2, 1) # first item worth 2 points
-#' nrs(U, w = w)
-#' }
+#' # using sample dataset
+#' nrs(J15S500)
 #' @export
 nrs <- createBinaryFunction(
   function(U, ...) {
@@ -843,15 +850,9 @@ nrs <- createBinaryFunction(
 #' were actually presented to each student. This provides a fair comparison
 #' between students who attempted different numbers of items.
 #' @examples
-#' \donttest{
-#' # Simple binary data
-#' U <- matrix(c(1, 0, 1, 1, 0, 1), ncol = 2)
-#' passage(U)
+#' # using sample dataset
+#' passage(J15S500)
 #'
-#' # With missing responses
-#' U[1, 1] <- NA
-#' passage(U, na = NA)
-#' }
 #' @export
 passage <- createBinaryFunction(
   function(U, ...) {
@@ -906,15 +907,8 @@ passage <- createBinaryFunction(
 #' tests or groups. A positive score indicates above-average performance, while
 #' a negative score indicates below-average performance.
 #' @examples
-#' \donttest{
-#' # Simple binary data
-#' U <- matrix(c(1, 0, 1, 1, 0, 1), ncol = 2)
-#' sscore(U)
-#'
-#' # With missing values
-#' U[1, 1] <- NA
-#' sscore(U, na = NA)
-#' }
+#' # using sample dataset
+#' sscore(J5S10)
 #' @export
 sscore <- createBinaryFunction(
   function(U, ...) {
@@ -971,15 +965,9 @@ sscore <- createBinaryFunction(
 #' function of standardized scores. Tied scores receive the same percentile rank.
 #' The values are rounded up to the nearest integer to provide ranks from 1 to 100.
 #' @examples
-#' \donttest{
-#' # Simple binary data
-#' U <- matrix(c(1, 0, 1, 1, 0, 1), ncol = 2)
-#' percentile(U)
+#' # using sample dataset
+#' percentile(J5S10)
 #'
-#' # With missing values
-#' U[1, 1] <- NA
-#' percentile(U)
-#' }
 #' @importFrom stats ecdf
 #' @export
 percentile <- createBinaryFunction(
@@ -1044,17 +1032,11 @@ percentile <- createBinaryFunction(
 #' American Council on Education.
 #' @importFrom stats quantile
 #' @examples
-#' \donttest{
-#' # Calculate stanine scores
-#' U <- J15S500
-#' result <- stanine(U)
-#'
+#' result <- stanine(J15S500)
 #' # View score boundaries
 #' result$stanine
-#'
 #' # View individual scores
 #' result$stanineScore
-#' }
 #' @export
 stanine <- createBinaryFunction(
   function(U, ...) {
@@ -1123,6 +1105,9 @@ stanine <- createBinaryFunction(
 #'     \item Percentile: Student's percentile rank
 #'     \item Stanine: Student's stanine score (1-9)
 #'   }
+#' @examples
+#' # using sample dataset
+#' StudentAnalysis(J15S500)
 #' @export
 #'
 
@@ -1173,6 +1158,9 @@ StudentAnalysis <- function(U, na = NULL, Z = NULL, w = NULL) {
 #' \item{Stanine}{see [stanine]}
 #' }
 #' @importFrom stats sd var
+#' @examples
+#' # using sample dataset
+#' TestStatistics(J15S500)
 #' @export
 
 TestStatistics <- function(U, na = NULL, Z = NULL, w = NULL) {
@@ -1214,7 +1202,7 @@ TestStatistics <- function(U, na = NULL, Z = NULL, w = NULL) {
       Q3 = Q3,
       IQR = IQR,
       Stanine = Stanine$stanine
-    ), class = c("Exametrika", "TestStatistics"))
+    ), class = c("exametrika", "TestStatistics"))
   return(ret)
 }
 
@@ -1226,7 +1214,7 @@ TestStatistics <- function(U, na = NULL, Z = NULL, w = NULL) {
 #' @param Z Z is a missing indicator matrix of the type matrix or data.frame
 #' @param w w is item weight vector
 #' @param na na argument specifies the numbers or characters to be treated as missing values.
-#' @return Returns a list of class c("Exametrika", "Dimensionality") containing:
+#' @return Returns a list of class c("exametrika", "Dimensionality") containing:
 #'   \itemize{
 #'     \item Component: Sequence of component numbers
 #'     \item Eigenvalue: Eigenvalues of the tetrachoric correlation matrix
@@ -1250,7 +1238,7 @@ Dimensionality <- function(U, na = NULL, Z = NULL, w = NULL) {
         PerOfVar = EvalVariance,
         CumOfPer = CumVari
       ),
-      class = c("Exametrika", "Dimensionality")
+      class = c("exametrika", "Dimensionality")
     )
 
   return(ret)
@@ -1274,6 +1262,9 @@ Dimensionality <- function(U, na = NULL, Z = NULL, w = NULL) {
 #' Defined as \eqn{e_j=-p_j \log_2 p_j - (1-p_j)\log_2(1-p_j)}}
 #' \item{ITCrr}{Item-total Correlation is a Pearson's correlation fo an item with the number of Number-Right score.}
 #' }
+#' @examples
+#' # using sample dataset
+#' ItemStatistics(J15S500)
 #' @export
 
 ItemStatistics <- function(U, na = NULL, Z = NULL, w = NULL) {
@@ -1287,6 +1278,6 @@ ItemStatistics <- function(U, na = NULL, Z = NULL, w = NULL) {
       Threshold = ItemThreshold(tmp),
       Entropy = ItemEntropy(tmp),
       ITCrr = ItemTotalCorr(tmp)
-    ), class = c("Exametrika", "ItemStatistics"))
+    ), class = c("exametrika", "ItemStatistics"))
   return(ret)
 }

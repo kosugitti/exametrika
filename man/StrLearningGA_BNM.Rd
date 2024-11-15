@@ -18,7 +18,7 @@ StrLearningGA_BNM(
   successiveLimit = 5,
   crossover = 0,
   elitism = 0,
-  filename = "NULL",
+  filename = NULL,
   verbose = TRUE
 )
 }
@@ -82,4 +82,19 @@ This function generates a DAG from data using a genetic algorithm.
 Depending on the size of the data and the settings, the computation may
 take a significant amount of computational time. For details on the
 settings or algorithm, see Shojima(2022), section 8.5
+}
+\examples{
+\donttest{
+# Perform Structure Learning for Bayesian Network Model using Genetic Algorithm
+# Parameters are set for balanced exploration and computational efficiency
+StrLearningGA_BNM(J5S10,
+                  population = 20,    # Size of population in each generation
+                  Rs = 0.5,          # 50\% survival rate for next generation
+                  Rm = 0.002,        # 0.2\% mutation rate for genetic diversity
+                  maxParents = 2,    # Maximum of 2 parent nodes per item
+                  maxGeneration = 100,# Maximum number of evolutionary steps
+                  crossover = 2,     # Use two-point crossover method
+                  elitism = 2        # Keep 2 best solutions in each generation
+)
+}
 }

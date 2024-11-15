@@ -43,6 +43,6 @@ EAP_PSD <- function(Lambda, U, Z) {
   PSDs <- sqrt(numerator / denominator)
 
   ret <- list(EAP = EAP, PSDs = PSDs)
-  ret <- structure(ret, class = c("Exametrika", "IRT_EAP_PSD"))
+  ret <- structure(ret, class = c("exametrika", "IRT_EAP_PSD"))
   return(ret)
 }

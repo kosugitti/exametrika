@@ -62,11 +62,11 @@ fill_adj <- function(g, ItemLabel) {
 #' DAG <-
 #'   matrix(
 #'     c(
-#'       "Item01", "Item02",  # Item01 influences Item02
-#'       "Item02", "Item03",  # Item02 influences Item03
-#'       "Item02", "Item04",  # Item02 influences Item04
-#'       "Item03", "Item05",  # Item03 influences Item05
-#'       "Item04", "Item05"   # Item04 influences Item05
+#'       "Item01", "Item02", # Item01 influences Item02
+#'       "Item02", "Item03", # Item02 influences Item03
+#'       "Item02", "Item04", # Item02 influences Item04
+#'       "Item03", "Item05", # Item03 influences Item05
+#'       "Item04", "Item05" # Item04 influences Item05
 #'     ),
 #'     ncol = 2, byrow = TRUE
 #'   )

@@ -52,13 +52,13 @@
 #' # Perform Structure Learning for Bayesian Network Model using Genetic Algorithm
 #' # Parameters are set for balanced exploration and computational efficiency
 #' StrLearningGA_BNM(J5S10,
-#'                   population = 20,    # Size of population in each generation
-#'                   Rs = 0.5,          # 50% survival rate for next generation
-#'                   Rm = 0.002,        # 0.2% mutation rate for genetic diversity
-#'                   maxParents = 2,    # Maximum of 2 parent nodes per item
-#'                   maxGeneration = 100,# Maximum number of evolutionary steps
-#'                   crossover = 2,     # Use two-point crossover method
-#'                   elitism = 2        # Keep 2 best solutions in each generation
+#'   population = 20, # Size of population in each generation
+#'   Rs = 0.5, # 50% survival rate for next generation
+#'   Rm = 0.002, # 0.2% mutation rate for genetic diversity
+#'   maxParents = 2, # Maximum of 2 parent nodes per item
+#'   maxGeneration = 100, # Maximum number of evolutionary steps
+#'   crossover = 2, # Use two-point crossover method
+#'   elitism = 2 # Keep 2 best solutions in each generation
 #' )
 #' }
 #' @export
@@ -299,12 +299,12 @@ StrLearningGA_BNM <- function(U, Z = NULL, w = NULL, na = NULL,
 #' # Perform Structure Learning for Bayesian Network Model using PBIL
 #' # (Population-Based Incremental Learning)
 #' StrLearningPBIL_BNM(J5S10,
-#'                     population = 20,    # Size of population in each generation
-#'                     Rs = 0.5,          # 50% survival rate for next generation
-#'                     Rm = 0.005,        # 0.5% mutation rate for genetic diversity
-#'                     maxParents = 2,    # Maximum of 2 parent nodes per item
-#'                     alpha = 0.05,      # Learning rate for probability update
-#'                     estimate = 4       # Use rounded generational gene method
+#'   population = 20, # Size of population in each generation
+#'   Rs = 0.5, # 50% survival rate for next generation
+#'   Rm = 0.005, # 0.5% mutation rate for genetic diversity
+#'   maxParents = 2, # Maximum of 2 parent nodes per item
+#'   alpha = 0.05, # Learning rate for probability update
+#'   estimate = 4 # Use rounded generational gene method
 #' )
 #' }
 #' @export
@@ -315,7 +315,7 @@ StrLearningPBIL_BNM <- function(U, Z = NULL, w = NULL, na = NULL,
                                 maxParents = 2, maxGeneration = 100,
                                 successiveLimit = 5, elitism = 0,
                                 alpha = 0.05, estimate = 1,
-                                filename = "NULL",
+                                filename = NULL,
                                 verbose = TRUE) {
   # data format
   if (class(U)[1] != "exametrika") {

@@ -7,7 +7,7 @@ output: github_document
 
 ## Overview
 
-The Exametrika package provides comprehensive test data engineering tools, implementing the methods described in Shojima (2022). Test data engineering analyzes test response patterns to understand item characteristics and classify respondents. 
+The Exametrika package provides comprehensive test data engineering tools, implementing the methods described in Shojima (2022). Test Data Engineering analyzes test response patterns to understand item characteristics and classify respondents. 
 
 ## Features
 
@@ -198,7 +198,7 @@ plot(result.LCA, type = "LCD")
 
 ## LRA Example
 
-Latent Class Analysis requires specifying the dataset and the number of classes.
+Latent Rank Analysis requires specifying the dataset and the number of classes.
 
 ```{r model-lra, message=FALSE, warning=FALSE}
 LRA(J15S500, nrank = 6)
@@ -391,7 +391,7 @@ The example of running the LDLRA function using this CSV file would look like th
 ```{r model-ldlra, message=FALSE, warning=FALSE}
 result.LDLRA <- LDLRA(J12S5000,
   ncls = 5,
-  adj_file = "develop/DAG_file.csv"
+  adj_file = edgeFile
 )
 result.LDLRA
 ```

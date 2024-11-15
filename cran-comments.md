@@ -41,3 +41,11 @@ This is a resubmission of version 1.1.0. In this version, I have addressed the f
 
 With these changes, I believe the package is now ready for CRAN resubmission. Please let me know if you have any other feedback or concerns.
 
+## RE-RESUBMISSION
+
+This is a resubmission of version 1.1.0. In this version, I have addressed the following additional issues raised by the CRAN team:
+
+1. **Unwrapped examples from \donttest{}** for functions where execution time is less than 5 seconds, allowing for automatic testing. For longer-running examples, I have added small toy examples to demonstrate the functionality while keeping the original examples in \donttest{}.
+2. **Fixed the default value of the 'filename' argument** in R/ch08BNM_GA.R and R/ch09LDLRA_GA.R from "NULL" (string) to NULL to prevent unintended file writing behavior.
+
+These changes ensure proper testing of the package examples and correct handling of file operations. All examples now either run within the 5-second limit or include testable toy examples, and the file writing behavior works as intended with the corrected NULL default value.

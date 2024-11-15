@@ -19,7 +19,7 @@ StrLearningPBIL_BNM(
   elitism = 0,
   alpha = 0.05,
   estimate = 1,
-  filename = "NULL",
+  filename = NULL,
   verbose = TRUE
 )
 }

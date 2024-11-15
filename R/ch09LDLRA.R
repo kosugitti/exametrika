@@ -176,10 +176,10 @@ LD_param_est <- function(tmp, adj_list, classRefMat, ncls, smoothpost) {
 #' # Format: From, To, Rank
 #' DAG_dat <- matrix(c(
 #'   "From", "To", "Rank",
-#'   "Item01", "Item02", "1",    # Simple structure for Rank 1
-#'   "Item01", "Item02", "2",    # More complex structure for Rank 2
+#'   "Item01", "Item02", "1", # Simple structure for Rank 1
+#'   "Item01", "Item02", "2", # More complex structure for Rank 2
 #'   "Item02", "Item03", "2",
-#'   "Item01", "Item02", "3",    # Additional connections for Rank 3
+#'   "Item01", "Item02", "3", # Additional connections for Rank 3
 #'   "Item02", "Item03", "3",
 #'   "Item03", "Item04", "3"
 #' ), ncol = 3, byrow = TRUE)
@@ -187,9 +187,16 @@ LD_param_est <- function(tmp, adj_list, classRefMat, ncls, smoothpost) {
 #' # Method 1: Directly use graph and adjacency lists
 #' g_list <- list()
 #' adj_list <- list()
+#'
 #' for (i in 1:3) {
-#'   adj_R <- DAG_dat[DAG_dat[, 3] == i, 1:2]
-#'   g_tmp <- igraph::graph_from_data_frame(adj_R)
+#'   adj_R <- DAG_dat[DAG_dat[, 3] == as.character(i), 1:2, drop = FALSE]
+#'   g_tmp <- igraph::graph_from_data_frame(
+#'     d = data.frame(
+#'       From = adj_R[, 1],
+#'       To = adj_R[, 2]
+#'     ),
+#'     directed = TRUE
+#'   )
 #'   adj_tmp <- igraph::get.adjacency(g_tmp)
 #'   g_list[[i]] <- g_tmp
 #'   adj_list[[i]] <- adj_tmp

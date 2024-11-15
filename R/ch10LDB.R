@@ -58,27 +58,27 @@
 #' \donttest{
 #' # Example: Latent Dirichlet Bayesian Network model
 #' # Create field configuration vector based on field assignments
-#' conf <- c(1,6,6,8,9,9,4,7,7,7,5,8,9,10,10,9,9,10,10,10,2,2,3,3,5,5,6,9,9,10,1,1,7,9,10)
+#' conf <- c(1, 6, 6, 8, 9, 9, 4, 7, 7, 7, 5, 8, 9, 10, 10, 9, 9, 10, 10, 10, 2, 2, 3, 3, 5, 5, 6, 9, 9, 10, 1, 1, 7, 9, 10)
 #'
 #' # Create edge data for the network structure between fields
 #' edges_data <- data.frame(
 #'   "From Field (Parent) >>>" = c(
-#'     6, 4, 5, 1, 1, 4,       # Class/Rank 2
-#'     3, 4, 6, 2, 4, 4,       # Class/Rank 3
-#'     3, 6, 4, 1,             # Class/Rank 4
-#'     7, 9, 6, 7              # Class/Rank 5
+#'     6, 4, 5, 1, 1, 4, # Class/Rank 2
+#'     3, 4, 6, 2, 4, 4, # Class/Rank 3
+#'     3, 6, 4, 1, # Class/Rank 4
+#'     7, 9, 6, 7 # Class/Rank 5
 #'   ),
 #'   ">>> To Field (Child)" = c(
-#'     8, 7, 8, 7, 2, 5,       # Class/Rank 2
-#'     5, 8, 8, 4, 6, 7,       # Class/Rank 3
-#'     5, 8, 5, 8,             # Class/Rank 4
-#'     10, 10, 8, 9            # Class/Rank 5
+#'     8, 7, 8, 7, 2, 5, # Class/Rank 2
+#'     5, 8, 8, 4, 6, 7, # Class/Rank 3
+#'     5, 8, 5, 8, # Class/Rank 4
+#'     10, 10, 8, 9 # Class/Rank 5
 #'   ),
 #'   "At Class/Rank (Locus)" = c(
-#'     2, 2, 2, 2, 2, 2,       # Class/Rank 2
-#'     3, 3, 3, 3, 3, 3,       # Class/Rank 3
-#'     4, 4, 4, 4,             # Class/Rank 4
-#'     5, 5, 5, 5              # Class/Rank 5
+#'     2, 2, 2, 2, 2, 2, # Class/Rank 2
+#'     3, 3, 3, 3, 3, 3, # Class/Rank 3
+#'     4, 4, 4, 4, # Class/Rank 4
+#'     5, 5, 5, 5 # Class/Rank 5
 #'   )
 #' )
 #'
@@ -89,9 +89,9 @@
 #' # Fit Latent Dirichlet Bayesian Network model
 #' result.LDB <- LDB(
 #'   U = J35S515,
-#'   ncls = 5,            # Number of latent classes
-#'   conf = conf,         # Field configuration vector
-#'   adj_file = tmp_file  # Path to the CSV file
+#'   ncls = 5, # Number of latent classes
+#'   conf = conf, # Field configuration vector
+#'   adj_file = tmp_file # Path to the CSV file
 #' )
 #'
 #' # Clean up temporary file
@@ -101,13 +101,17 @@
 #' print(result.LDB)
 #'
 #' # Visualize different aspects of the model
-#' plot(result.LDB, type = "Array")    # Show bicluster structure
-#' plot(result.LDB, type = "TRP")      # Test Response Profile
-#' plot(result.LDB, type = "LRD")      # Latent Rank Distribution
-#' plot(result.LDB, type = "RMP",      # Rank Membership Profiles
-#'      students = 1:9, nc = 3, nr = 3)
-#' plot(result.LDB, type = "FRP",      # Field Reference Profiles
-#'      nc = 3, nr = 2)
+#' plot(result.LDB, type = "Array") # Show bicluster structure
+#' plot(result.LDB, type = "TRP") # Test Response Profile
+#' plot(result.LDB, type = "LRD") # Latent Rank Distribution
+#' plot(result.LDB,
+#'   type = "RMP", # Rank Membership Profiles
+#'   students = 1:9, nc = 3, nr = 3
+#' )
+#' plot(result.LDB,
+#'   type = "FRP", # Field Reference Profiles
+#'   nc = 3, nr = 2
+#' )
 #' # Field PIRP Profile showing correct answer counts for each rank and field
 #' plot(result.LDB, type = "FieldPIRP")
 #' }

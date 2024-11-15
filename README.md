@@ -274,14 +274,14 @@ result.IRT
     ## Item02       -253.405       -235.436      -278.949       35.937      87.025
     ## Item03       -280.640       -260.906      -293.598       39.468      65.383
     ## Item04       -204.884       -192.072      -265.962       25.623     147.780
-    ## Item05       -232.135       -206.537      -247.403       51.197      81.732
+    ## Item05       -232.135       -206.537      -247.403       51.196      81.732
     ## Item06       -173.669       -153.940      -198.817       39.459      89.755
-    ## Item07       -250.905       -228.379      -298.345       45.053     139.933
+    ## Item07       -250.905       -228.379      -298.345       45.052     139.933
     ## Item08       -314.781       -293.225      -338.789       43.111      91.127
     ## Item09       -321.920       -300.492      -327.842       42.856      54.700
     ## Item10       -309.318       -288.198      -319.850       42.240      63.303
     ## Item11       -248.409       -224.085      -299.265       48.647     150.360
-    ## Item12       -238.877       -214.797      -293.598       48.160     157.603
+    ## Item12       -238.877       -214.797      -293.598       48.161     157.603
     ## Item13       -293.472       -262.031      -328.396       62.882     132.730
     ## Item14       -223.473       -204.953      -273.212       37.040     136.519
     ## Item15       -271.903       -254.764      -302.847       34.279      96.166
@@ -290,14 +290,14 @@ result.IRT
     ## Item02       11      13 0.587 0.512 0.672 0.602 0.663 0.067 13.937 -32.446
     ## Item03       11      13 0.396 0.287 0.477 0.358 0.457 0.072 17.468 -28.915
     ## Item04       11      13 0.827 0.795 0.893 0.872 0.892 0.052  3.623 -42.759
-    ## Item05       11      13 0.374 0.260 0.432 0.309 0.415 0.086 29.197 -17.186
+    ## Item05       11      13 0.374 0.260 0.432 0.309 0.415 0.086 29.196 -17.186
     ## Item06       11      13 0.560 0.480 0.639 0.562 0.629 0.072 17.459 -28.924
-    ## Item07       11      13 0.678 0.620 0.736 0.683 0.732 0.079 23.053 -23.330
+    ## Item07       11      13 0.678 0.620 0.736 0.683 0.732 0.079 23.052 -23.330
     ## Item08       11      13 0.527 0.441 0.599 0.514 0.589 0.076 21.111 -25.272
     ## Item09       11      13 0.217 0.074 0.271 0.097 0.236 0.076 20.856 -25.527
     ## Item10       11      13 0.333 0.211 0.403 0.266 0.379 0.075 20.240 -26.143
     ## Item11       11      13 0.676 0.618 0.730 0.676 0.726 0.083 26.647 -19.736
-    ## Item12       11      13 0.694 0.639 0.747 0.696 0.743 0.082 26.160 -20.223
+    ## Item12       11      13 0.694 0.639 0.747 0.696 0.743 0.082 26.161 -20.221
     ## Item13       11      13 0.526 0.440 0.574 0.488 0.567 0.097 40.882  -5.501
     ## Item14       11      13 0.729 0.679 0.793 0.751 0.789 0.069 15.040 -31.343
     ## Item15       11      13 0.644 0.579 0.727 0.669 0.720 0.065 12.279 -34.104
@@ -313,7 +313,7 @@ result.IRT
     ## Item09 -25.505
     ## Item10 -26.121
     ## Item11 -19.714
-    ## Item12 -20.201
+    ## Item12 -20.200
     ## Item13  -5.479
     ## Item14 -31.321
     ## Item15 -34.082
@@ -335,7 +335,7 @@ result.IRT
     ## RMSEA              0.076
     ## AIC              311.528
     ## CAIC            -384.212
-    ## BIC             -383.883
+    ## BIC             -383.882
 
 The estimated population of subjects is included in the returned object.
 
@@ -344,12 +344,12 @@ head(result.IRT$ability)
 ```
 
     ##       tmp$ID         EAP       PSD
-    ## 1 Student001 -0.75526199 0.5805691
-    ## 2 Student002 -0.17398880 0.5473601
-    ## 3 Student003  0.01382147 0.5530498
-    ## 4 Student004  0.57628195 0.5749107
-    ## 5 Student005 -0.97449575 0.5915604
-    ## 6 Student006  0.85232717 0.5820530
+    ## 1 Student001 -0.75526845 0.5805706
+    ## 2 Student002 -0.17398729 0.5473608
+    ## 3 Student003  0.01382369 0.5530507
+    ## 4 Student004  0.57627879 0.5749108
+    ## 5 Student005 -0.97449492 0.5915604
+    ## 6 Student006  0.85233554 0.5820560
 
 The plots offer options for Item Characteristic Curves (ICC), Item
 Information Curves (IIC), and Test Information Curves (TIC), which can
@@ -891,9 +891,9 @@ g <- igraph::graph_from_data_frame(DAG)
 g
 ```
 
-    ## IGRAPH d1b1bdd DN-- 5 5 -- 
+    ## IGRAPH 8941c90 DN-- 5 5 -- 
     ## + attr: name (v/c)
-    ## + edges from d1b1bdd (vertex names):
+    ## + edges from 8941c90 (vertex names):
     ## [1] Item01->Item02 Item02->Item03 Item02->Item04 Item03->Item05 Item04->Item05
 
 ``` r
@@ -1196,36 +1196,36 @@ g_list
 ```
 
     ## [[1]]
-    ## IGRAPH 5694726 DN-- 4 2 -- 
+    ## IGRAPH 98e4d96 DN-- 4 2 -- 
     ## + attr: name (v/c)
-    ## + edges from 5694726 (vertex names):
+    ## + edges from 98e4d96 (vertex names):
     ## [1] Item01->Item02 Item04->Item05
     ## 
     ## [[2]]
-    ## IGRAPH bd4a665 DN-- 9 7 -- 
+    ## IGRAPH 1968868 DN-- 9 7 -- 
     ## + attr: name (v/c)
-    ## + edges from bd4a665 (vertex names):
+    ## + edges from 1968868 (vertex names):
     ## [1] Item01->Item02 Item02->Item03 Item04->Item05 Item08->Item09 Item08->Item10
     ## [6] Item09->Item10 Item08->Item11
     ## 
     ## [[3]]
-    ## IGRAPH f032444 DN-- 9 7 -- 
+    ## IGRAPH 024d4d6 DN-- 9 7 -- 
     ## + attr: name (v/c)
-    ## + edges from f032444 (vertex names):
+    ## + edges from 024d4d6 (vertex names):
     ## [1] Item01->Item02 Item02->Item03 Item04->Item05 Item08->Item09 Item08->Item10
     ## [6] Item09->Item10 Item08->Item11
     ## 
     ## [[4]]
-    ## IGRAPH 39c2f5f DN-- 10 8 -- 
+    ## IGRAPH 8af3a7c DN-- 10 8 -- 
     ## + attr: name (v/c)
-    ## + edges from 39c2f5f (vertex names):
+    ## + edges from 8af3a7c (vertex names):
     ## [1] Item02->Item03 Item04->Item06 Item04->Item07 Item05->Item06 Item05->Item07
     ## [6] Item08->Item10 Item08->Item11 Item09->Item11
     ## 
     ## [[5]]
-    ## IGRAPH a42a817 DN-- 10 8 -- 
+    ## IGRAPH 0912247 DN-- 10 8 -- 
     ## + attr: name (v/c)
-    ## + edges from a42a817 (vertex names):
+    ## + edges from 0912247 (vertex names):
     ## [1] Item02->Item03 Item04->Item06 Item04->Item07 Item05->Item06 Item05->Item07
     ## [6] Item09->Item11 Item10->Item11 Item10->Item12
 
@@ -1304,7 +1304,7 @@ like this.
 ``` r
 result.LDLRA <- LDLRA(J12S5000,
   ncls = 5,
-  adj_file = "develop/DAG_file.csv"
+  adj_file = edgeFile
 )
 result.LDLRA
 ```

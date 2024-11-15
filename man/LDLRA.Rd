@@ -90,13 +90,20 @@ DAG_dat <- matrix(c(
 # Method 1: Directly use graph and adjacency lists
 g_list <- list()
 adj_list <- list()
+
 for (i in 1:3) {
-  adj_R <- DAG_dat[DAG_dat[, 3] == i, 1:2]
-  g_tmp <- igraph::graph_from_data_frame(adj_R)
-  adj_tmp <- igraph::get.adjacency(g_tmp)
-  g_list[[i]] <- g_tmp
-  adj_list[[i]] <- adj_tmp
-}
+  adj_R <- DAG_dat[DAG_dat[, 3] == as.character(i), 1:2, drop = FALSE]
+  g_tmp <- igraph::graph_from_data_frame(
+    d = data.frame(
+    From = adj_R[, 1],
+    To = adj_R[, 2]
+   ),
+   directed = TRUE
+   )
+   adj_tmp <- igraph::get.adjacency(g_tmp)
+   g_list[[i]] <- g_tmp
+   adj_list[[i]] <- adj_tmp
+ }
 
 # Fit Local Dependence Latent Rank Analysis
 result.LDLRA1 <- LDLRA(J12S5000,

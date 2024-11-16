@@ -91,7 +91,10 @@ network model.
 \donttest{
 # Example: Latent Dirichlet Bayesian Network model
 # Create field configuration vector based on field assignments
-conf <- c(1, 6, 6, 8, 9, 9, 4, 7, 7, 7, 5, 8, 9, 10, 10, 9, 9, 10, 10, 10, 2, 2, 3, 3, 5, 5, 6, 9, 9, 10, 1, 1, 7, 9, 10)
+conf <- c(
+  1, 6, 6, 8, 9, 9, 4, 7, 7, 7, 5, 8, 9, 10, 10, 9, 9,
+  10, 10, 10, 2, 2, 3, 3, 5, 5, 6, 9, 9, 10, 1, 1, 7, 9, 10
+)
 
 # Create edge data for the network structure between fields
 edges_data <- data.frame(

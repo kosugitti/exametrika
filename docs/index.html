@@ -778,11 +778,11 @@ for all items. The number of rows and columns for dividing the plotting
 area can be specified using <code>nr</code> and <code>nc</code>,
 respectively.</p>
 <pre class="r"><code>plot(result.IRT, type = &quot;ICC&quot;, items = 1:6, nc = 2, nr = 3)</code></pre>
-<p><img src="index_files/figure-html/plot-irt-curves-1.png" width="672" /></p>
+<p><img src="docs/figures/plot-irt-curves-1.png" width="672" /></p>
 <pre class="r"><code>plot(result.IRT, type = &quot;IIC&quot;, items = 1:6, nc = 2, nr = 3)</code></pre>
-<p><img src="index_files/figure-html/plot-irt-curves-2.png" width="672" /></p>
+<p><img src="docs/figures/plot-irt-curves-2.png" width="672" /></p>
 <pre class="r"><code>plot(result.IRT, type = &quot;TIC&quot;)</code></pre>
-<p><img src="index_files/figure-html/plot-irt-curves-3.png" width="672" /></p>
+<p><img src="docs/figures/plot-irt-curves-3.png" width="672" /></p>
 </div>
 <div id="lca-example" class="section level2">
 <h2>LCA Example</h2>
@@ -883,13 +883,13 @@ head(result.LCA$Students)</code></pre>
 <p>The plots offer options for IRP, CMP, TRP, and LCD. For more details
 on each, please refer to Shojima (2022).</p>
 <pre class="r"><code>plot(result.LCA, type = &quot;IRP&quot;, items = 1:6, nc = 2, nr = 3)</code></pre>
-<p><img src="index_files/figure-html/plot-lca-1.png" width="672" /></p>
+<p><img src="docs/figures/plot-lca-1.png" width="672" /></p>
 <pre class="r"><code>plot(result.LCA, type = &quot;CMP&quot;, students = 1:9, nc = 3, nr = 3)</code></pre>
-<p><img src="index_files/figure-html/plot-lca-2.png" width="672" /></p>
+<p><img src="docs/figures/plot-lca-2.png" width="672" /></p>
 <pre class="r"><code>plot(result.LCA, type = &quot;TRP&quot;)</code></pre>
-<p><img src="index_files/figure-html/plot-lca-3.png" width="672" /></p>
+<p><img src="docs/figures/plot-lca-3.png" width="672" /></p>
 <pre class="r"><code>plot(result.LCA, type = &quot;LCD&quot;)</code></pre>
-<p><img src="index_files/figure-html/plot-lca-4.png" width="672" /></p>
+<p><img src="docs/figures/plot-lca-4.png" width="672" /></p>
 </div>
 <div id="lra-example" class="section level2">
 <h2>LRA Example</h2>
@@ -1013,13 +1013,13 @@ head(result.LRA$Students)</code></pre>
 ## Student005             NA
 ## Student006      0.5791986</code></pre>
 <pre class="r"><code>plot(result.LRA, type = &quot;IRP&quot;, items = 1:6, nc = 2, nr = 3)</code></pre>
-<p><img src="index_files/figure-html/plot-lra-1.png" width="672" /></p>
+<p><img src="docs/figures/plot-lra-1.png" width="672" /></p>
 <pre class="r"><code>plot(result.LRA, type = &quot;RMP&quot;, students = 1:9, nc = 3, nr = 3)</code></pre>
-<p><img src="index_files/figure-html/plot-lra-2.png" width="672" /></p>
+<p><img src="docs/figures/plot-lra-2.png" width="672" /></p>
 <pre class="r"><code>plot(result.LRA, type = &quot;TRP&quot;)</code></pre>
-<p><img src="index_files/figure-html/plot-lra-3.png" width="672" /></p>
+<p><img src="docs/figures/plot-lra-3.png" width="672" /></p>
 <pre class="r"><code>plot(result.LRA, type = &quot;LRD&quot;)</code></pre>
-<p><img src="index_files/figure-html/plot-lra-4.png" width="672" /></p>
+<p><img src="docs/figures/plot-lra-4.png" width="672" /></p>
 </div>
 <div id="biclustering-example" class="section level2">
 <h2>Biclustering Example</h2>
@@ -1081,13 +1081,13 @@ the help documentation.</p>
 <pre><code>## iter 1 logLik -8097.56iter 2 logLik -7669.21iter 3 logLik -7586.72iter 4 logLik -7568.24iter 5 logLik -7561.02iter 6 logLik -7557.34iter 7 logLik -7557.36iter 7 logLik -7557.36
 ## Strongly ordinal alignment condition was satisfied.</code></pre>
 <pre class="r"><code>plot(result.Ranklustering, type = &quot;Array&quot;)</code></pre>
-<p><img src="index_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
+<p><img src="docs/figures/unnamed-chunk-2-1.png" width="672" /></p>
 <pre class="r"><code>plot(result.Ranklustering, type = &quot;FRP&quot;, nc = 2, nr = 3)</code></pre>
-<p><img src="index_files/figure-html/unnamed-chunk-2-2.png" width="672" /></p>
+<p><img src="docs/figures/unnamed-chunk-2-2.png" width="672" /></p>
 <pre class="r"><code>plot(result.Ranklustering, type = &quot;RMP&quot;, students = 1:9, nc = 3, nr = 3)</code></pre>
-<p><img src="index_files/figure-html/unnamed-chunk-2-3.png" width="672" /></p>
+<p><img src="docs/figures/unnamed-chunk-2-3.png" width="672" /></p>
 <pre class="r"><code>plot(result.Ranklustering, type = &quot;LRD&quot;)</code></pre>
-<p><img src="index_files/figure-html/unnamed-chunk-2-4.png" width="672" /></p>
+<p><img src="docs/figures/unnamed-chunk-2-4.png" width="672" /></p>
 <p>To find the optimal number of classes and the optimal number of
 fields, the Infinite Relational Model is available.</p>
 <pre class="r"><code>result.IRM &lt;- IRM(J35S515, gamma_c = 1, gamma_f = 1, verbose = TRUE)</code></pre>
@@ -1113,11 +1113,11 @@ fields, the Infinite Relational Model is available.</p>
 <pre><code>## The minimum class member count is under the setting value.
 ## bic -100001 nclass 17</code></pre>
 <pre class="r"><code>plot(result.IRM, type = &quot;Array&quot;)</code></pre>
-<p><img src="index_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
+<p><img src="docs/figures/unnamed-chunk-3-1.png" width="672" /></p>
 <pre class="r"><code>plot(result.IRM, type = &quot;FRP&quot;, nc = 3)</code></pre>
-<p><img src="index_files/figure-html/unnamed-chunk-3-2.png" width="672" /><img src="index_files/figure-html/unnamed-chunk-3-3.png" width="672" /><img src="index_files/figure-html/unnamed-chunk-3-4.png" width="672" /><img src="index_files/figure-html/unnamed-chunk-3-5.png" width="672" /></p>
+<p><img src="docs/figures/unnamed-chunk-3-2.png" width="672" /><img src="docs/figures/unnamed-chunk-3-3.png" width="672" /><img src="docs/figures/unnamed-chunk-3-4.png" width="672" /><img src="docs/figures/unnamed-chunk-3-5.png" width="672" /></p>
 <pre class="r"><code>plot(result.IRM, type = &quot;TRP&quot;)</code></pre>
-<p><img src="index_files/figure-html/unnamed-chunk-3-6.png" width="672" /></p>
+<p><img src="docs/figures/unnamed-chunk-3-6.png" width="672" /></p>
 <p>Additionally, supplementary notes on the derivation of the Infinite
 Relational Model with Chinese restaurant process is <a
 href="https://kosugitti.github.io/kosugitti10/notes/IRM_memo.pdf">here</a>.</p>
@@ -1151,9 +1151,9 @@ DAG &lt;-
 ## graph object
 g &lt;- igraph::graph_from_data_frame(DAG)
 g</code></pre>
-<pre><code>## IGRAPH fc4f44a DN-- 5 5 -- 
+<pre><code>## IGRAPH ff33dbe DN-- 5 5 -- 
 ## + attr: name (v/c)
-## + edges from fc4f44a (vertex names):
+## + edges from ff33dbe (vertex names):
 ## [1] Item01-&gt;Item02 Item02-&gt;Item03 Item02-&gt;Item04 Item03-&gt;Item05 Item04-&gt;Item05</code></pre>
 <pre class="r"><code>## Adjacency matrix
 adj_mat &lt;- as.matrix(igraph::get.adjacency(g))
@@ -1189,7 +1189,7 @@ result.BNM</code></pre>
 ## Item05      0      0      0      0      0
 ## [1] &quot;Your graph is an acyclic graph.&quot;
 ## [1] &quot;Your graph is connected DAG.&quot;</code></pre>
-<p><img src="index_files/figure-html/model-bnm-1.png" width="672" /></p>
+<p><img src="docs/figures/model-bnm-1.png" width="672" /></p>
 <pre><code>## 
 ## Parameter Learning
 ##        PIRP 1 PIRP 2 PIRP 3 PIRP 4
@@ -1258,7 +1258,7 @@ depending on the number of items and the size of the population.</p>
 ## Item05      0      0      0      0      0
 ## [1] &quot;Your graph is an acyclic graph.&quot;
 ## [1] &quot;Your graph is connected DAG.&quot;</code></pre>
-<p><img src="index_files/figure-html/model-ga-bnm-1.png" width="672" /></p>
+<p><img src="docs/figures/model-ga-bnm-1.png" width="672" /></p>
 <pre><code>## 
 ## Parameter Learning
 ##        PIRP 1 PIRP 2
@@ -1312,7 +1312,7 @@ can be specified as options. See help or text Section 8.5.2.</p>
 ## Item05      0      0      0      0      0
 ## [1] &quot;Your graph is an acyclic graph.&quot;
 ## [1] &quot;Your graph is connected DAG.&quot;</code></pre>
-<p><img src="index_files/figure-html/model-pbil-bnm-1.png" width="672" /></p>
+<p><img src="docs/figures/model-pbil-bnm-1.png" width="672" /></p>
 <pre><code>## 
 ## Parameter Learning
 ##        PIRP 1 PIRP 2
@@ -1420,34 +1420,34 @@ for (i in 1:5) {
 ## Example of graph list
 g_list</code></pre>
 <pre><code>## [[1]]
-## IGRAPH db67c6f DN-- 4 2 -- 
+## IGRAPH fbead4f DN-- 4 2 -- 
 ## + attr: name (v/c)
-## + edges from db67c6f (vertex names):
+## + edges from fbead4f (vertex names):
 ## [1] Item01-&gt;Item02 Item04-&gt;Item05
 ## 
 ## [[2]]
-## IGRAPH bf82ce2 DN-- 9 7 -- 
+## IGRAPH 3d74f06 DN-- 9 7 -- 
 ## + attr: name (v/c)
-## + edges from bf82ce2 (vertex names):
+## + edges from 3d74f06 (vertex names):
 ## [1] Item01-&gt;Item02 Item02-&gt;Item03 Item04-&gt;Item05 Item08-&gt;Item09 Item08-&gt;Item10 Item09-&gt;Item10 Item08-&gt;Item11
 ## 
 ## [[3]]
-## IGRAPH 88e6677 DN-- 9 7 -- 
+## IGRAPH 9370945 DN-- 9 7 -- 
 ## + attr: name (v/c)
-## + edges from 88e6677 (vertex names):
+## + edges from 9370945 (vertex names):
 ## [1] Item01-&gt;Item02 Item02-&gt;Item03 Item04-&gt;Item05 Item08-&gt;Item09 Item08-&gt;Item10 Item09-&gt;Item10 Item08-&gt;Item11
 ## 
 ## [[4]]
-## IGRAPH e27305c DN-- 10 8 -- 
+## IGRAPH b4ff35c DN-- 10 8 -- 
 ## + attr: name (v/c)
-## + edges from e27305c (vertex names):
+## + edges from b4ff35c (vertex names):
 ## [1] Item02-&gt;Item03 Item04-&gt;Item06 Item04-&gt;Item07 Item05-&gt;Item06 Item05-&gt;Item07 Item08-&gt;Item10 Item08-&gt;Item11
 ## [8] Item09-&gt;Item11
 ## 
 ## [[5]]
-## IGRAPH 22b1200 DN-- 10 8 -- 
+## IGRAPH 6823857 DN-- 10 8 -- 
 ## + attr: name (v/c)
-## + edges from 22b1200 (vertex names):
+## + edges from 6823857 (vertex names):
 ## [1] Item02-&gt;Item03 Item04-&gt;Item06 Item04-&gt;Item07 Item05-&gt;Item06 Item05-&gt;Item07 Item09-&gt;Item11 Item10-&gt;Item11
 ## [8] Item10-&gt;Item12</code></pre>
 <pre class="r"><code>### Example of adjacency list
@@ -1595,7 +1595,7 @@ result.LDLRA</code></pre>
 ## Item10      0      0      0      0      0      0      0      0      0      0      1      1
 ## Item11      0      0      0      0      0      0      0      0      0      0      0      0
 ## Item12      0      0      0      0      0      0      0      0      0      0      0      0</code></pre>
-<p><img src="index_files/figure-html/model-ldlra-1.png" width="672" /><img src="index_files/figure-html/model-ldlra-2.png" width="672" /><img src="index_files/figure-html/model-ldlra-3.png" width="672" /><img src="index_files/figure-html/model-ldlra-4.png" width="672" /><img src="index_files/figure-html/model-ldlra-5.png" width="672" /></p>
+<p><img src="docs/figures/model-ldlra-1.png" width="672" /><img src="docs/figures/model-ldlra-2.png" width="672" /><img src="docs/figures/model-ldlra-3.png" width="672" /><img src="docs/figures/model-ldlra-4.png" width="672" /><img src="docs/figures/model-ldlra-5.png" width="672" /></p>
 <pre><code>## 
 ## Parameter Learning
 ##      Item Rank PIRP 1 PIRP 2 PIRP 3 PIRP 4
@@ -1821,11 +1821,11 @@ result.LDLRA</code></pre>
 ## BIC             10201.673</code></pre>
 <p>Of course, it also supports various types of plots.</p>
 <pre class="r"><code>plot(result.LDLRA, type = &quot;IRP&quot;, nc = 4, nr = 3)</code></pre>
-<p><img src="index_files/figure-html/plot-ldlra-1.png" width="672" /></p>
+<p><img src="docs/figures/plot-ldlra-1.png" width="672" /></p>
 <pre class="r"><code>plot(result.LDLRA, type = &quot;TRP&quot;)</code></pre>
-<p><img src="index_files/figure-html/plot-ldlra-2.png" width="672" /></p>
+<p><img src="docs/figures/plot-ldlra-2.png" width="672" /></p>
 <pre class="r"><code>plot(result.LDLRA, type = &quot;LRD&quot;)</code></pre>
-<p><img src="index_files/figure-html/plot-ldlra-3.png" width="672" /></p>
+<p><img src="docs/figures/plot-ldlra-3.png" width="672" /></p>
 <div id="structure-learning-for-ldlra-with-gapbil"
 class="section level3">
 <h3>Structure Learning for LDLRA with GA(PBIL)</h3>
@@ -1952,7 +1952,7 @@ result.LDB</code></pre>
 ## Field08       0       0       0       0       0       0       0       0       0       0
 ## Field09       0       0       0       0       0       0       0       0       0       1
 ## Field10       0       0       0       0       0       0       0       0       0       0</code></pre>
-<p><img src="index_files/figure-html/unnamed-chunk-5-1.png" width="672" /><img src="index_files/figure-html/unnamed-chunk-5-2.png" width="672" /><img src="index_files/figure-html/unnamed-chunk-5-3.png" width="672" /><img src="index_files/figure-html/unnamed-chunk-5-4.png" width="672" /><img src="index_files/figure-html/unnamed-chunk-5-5.png" width="672" /></p>
+<p><img src="docs/figures/unnamed-chunk-5-1.png" width="672" /><img src="docs/figures/unnamed-chunk-5-2.png" width="672" /><img src="docs/figures/unnamed-chunk-5-3.png" width="672" /><img src="docs/figures/unnamed-chunk-5-4.png" width="672" /><img src="docs/figures/unnamed-chunk-5-5.png" width="672" /></p>
 <pre><code>## 
 ## Parameter Learning
 ## Rank 1 
@@ -2072,23 +2072,23 @@ result.LDB</code></pre>
 <p>Of course, it also supports various types of plots.</p>
 <pre class="r"><code># Show bicluster structure
 plot(result.LDB, type = &quot;Array&quot;)</code></pre>
-<p><img src="index_files/figure-html/plot-ldb-1.png" width="672" /></p>
+<p><img src="docs/figures/plot-ldb-1.png" width="672" /></p>
 <pre class="r"><code># Test Response Profile
 plot(result.LDB, type = &quot;TRP&quot;)</code></pre>
-<p><img src="index_files/figure-html/plot-ldb-2.png" width="672" /></p>
+<p><img src="docs/figures/plot-ldb-2.png" width="672" /></p>
 <pre class="r"><code># Latent Rank Distribution
 plot(result.LDB, type = &quot;LRD&quot;)</code></pre>
-<p><img src="index_files/figure-html/plot-ldb-3.png" width="672" /></p>
+<p><img src="docs/figures/plot-ldb-3.png" width="672" /></p>
 <pre class="r"><code># Rank Membership Profiles for first 9 students
 plot(result.LDB, type = &quot;RMP&quot;, students = 1:9, nc = 3, nr = 3)</code></pre>
-<p><img src="index_files/figure-html/plot-ldb-4.png" width="672" /></p>
+<p><img src="docs/figures/plot-ldb-4.png" width="672" /></p>
 <pre class="r"><code># Field Reference Profiles
 plot(result.LDB, type = &quot;FRP&quot;, nc = 3, nr = 2)</code></pre>
-<p><img src="index_files/figure-html/plot-ldb-5.png" width="672" /><img src="index_files/figure-html/plot-ldb-6.png" width="672" /></p>
+<p><img src="docs/figures/plot-ldb-5.png" width="672" /><img src="docs/figures/plot-ldb-6.png" width="672" /></p>
 <p>In this model, you can draw a Field PIRP Profile that visualizes the
 correct answer count for each rank and each field.</p>
 <pre class="r"><code>plot(result.LDB, type = &quot;FieldPIRP&quot;)</code></pre>
-<p><img src="index_files/figure-html/plot-ldb-fieldpirp-1.png" width="672" /><img src="index_files/figure-html/plot-ldb-fieldpirp-2.png" width="672" /><img src="index_files/figure-html/plot-ldb-fieldpirp-3.png" width="672" /><img src="index_files/figure-html/plot-ldb-fieldpirp-4.png" width="672" /><img src="index_files/figure-html/plot-ldb-fieldpirp-5.png" width="672" /></p>
+<p><img src="docs/figures/plot-ldb-fieldpirp-1.png" width="672" /><img src="docs/figures/plot-ldb-fieldpirp-2.png" width="672" /><img src="docs/figures/plot-ldb-fieldpirp-3.png" width="672" /><img src="docs/figures/plot-ldb-fieldpirp-4.png" width="672" /><img src="docs/figures/plot-ldb-fieldpirp-5.png" width="672" /></p>
 </div>
 <div id="bicluster-network-model" class="section level2">
 <h2>Bicluster Network Model</h2>
@@ -2159,7 +2159,7 @@ print(result.BINET)</code></pre>
 ## Class11       0       0       0       0       0       0       0       0       0       0       0       1       0
 ## Class12       0       0       0       0       0       0       0       0       0       0       0       0       1
 ## Class13       0       0       0       0       0       0       0       0       0       0       0       0       0</code></pre>
-<p><img src="index_files/figure-html/model-binet-1.png" width="672" /></p>
+<p><img src="docs/figures/model-binet-1.png" width="672" /></p>
 <pre><code>## Estimation of Parameter set
 ## Field 1 
 ##          PSRP 1 PSRP 2 PSRP 3 PSRP 4
@@ -2422,24 +2422,24 @@ print(result.BINET)</code></pre>
 <p>Of course, it also supports various types of plots.</p>
 <pre class="r"><code># Show bicluster structure
 plot(result.BINET, type = &quot;Array&quot;)</code></pre>
-<p><img src="index_files/figure-html/plot-binet-1.png" width="672" /></p>
+<p><img src="docs/figures/plot-binet-1.png" width="672" /></p>
 <pre class="r"><code># Test Response Profile
 plot(result.BINET, type = &quot;TRP&quot;)</code></pre>
-<p><img src="index_files/figure-html/plot-binet-2.png" width="672" /></p>
+<p><img src="docs/figures/plot-binet-2.png" width="672" /></p>
 <pre class="r"><code># Latent Rank Distribution
 plot(result.BINET, type = &quot;LRD&quot;)</code></pre>
-<p><img src="index_files/figure-html/plot-binet-3.png" width="672" /></p>
+<p><img src="docs/figures/plot-binet-3.png" width="672" /></p>
 <pre class="r"><code># Rank Membership Profiles for first 9 students
 plot(result.BINET, type = &quot;RMP&quot;, students = 1:9, nc = 3, nr = 3)</code></pre>
-<p><img src="index_files/figure-html/plot-binet-4.png" width="672" /></p>
+<p><img src="docs/figures/plot-binet-4.png" width="672" /></p>
 <pre class="r"><code># Field Reference Profiles
 plot(result.BINET, type = &quot;FRP&quot;, nc = 3, nr = 2)</code></pre>
-<p><img src="index_files/figure-html/plot-binet-5.png" width="672" /><img src="index_files/figure-html/plot-binet-6.png" width="672" /></p>
+<p><img src="docs/figures/plot-binet-5.png" width="672" /><img src="docs/figures/plot-binet-6.png" width="672" /></p>
 <p>LDPSR plot shows all Passing Student Rates for all locally dependent
 classes compared with their respective parents.</p>
 <pre class="r"><code># Locally Dependent Passing Student Rates
 plot(result.BINET, type = &quot;LDPSR&quot;, nc = 3, nr = 2)</code></pre>
-<p><img src="index_files/figure-html/plot-binet-ldpsr-1.png" width="672" /><img src="index_files/figure-html/plot-binet-ldpsr-2.png" width="672" /><img src="index_files/figure-html/plot-binet-ldpsr-3.png" width="672" /></p>
+<p><img src="docs/figures/plot-binet-ldpsr-1.png" width="672" /><img src="docs/figures/plot-binet-ldpsr-2.png" width="672" /><img src="docs/figures/plot-binet-ldpsr-3.png" width="672" /></p>
 </div>
 <div id="table-of-model-and-plotting-option-correspondence"
 class="section level2">

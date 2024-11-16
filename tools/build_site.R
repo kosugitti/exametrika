@@ -49,11 +49,11 @@ build_site <- function() {
   new_content <- c(
     "---",
     "output:",
-    "  github_document:",
-    "    fig_path: \"docs/figures/\"",
+    "  github_document",
     "---",
     content[(yaml_end + 1):length(content)]
   )
+  cat(new_content, sep = "\n")
   writeLines(new_content, temp_rmd)
 
   # README.mdを生成
@@ -65,7 +65,4 @@ build_site <- function() {
   message("Documentation built successfully!")
 }
 
-# スクリプトとして実行された場合は自動的にビルド実行
-if (!interactive()) {
-  build_site()
-}
+build_site()

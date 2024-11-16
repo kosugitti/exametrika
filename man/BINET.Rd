@@ -105,7 +105,10 @@ latent field, where each field is a locus.
 # local dependency structure among latent classes at each field
 
 # Create field configuration vector based on field assignments
-conf <- c(1, 5, 5, 5, 9, 9, 6, 6, 6, 6, 2, 7, 7, 11, 11, 7, 7, 12, 12, 12, 2, 2, 3, 3, 4, 4, 4, 8, 8, 12, 1, 1, 6, 10, 10)
+conf <- c(
+  1, 5, 5, 5, 9, 9, 6, 6, 6, 6, 2, 7, 7, 11, 11, 7, 7,
+  12, 12, 12, 2, 2, 3, 3, 4, 4, 4, 8, 8, 12, 1, 1, 6, 10, 10
+)
 
 # Create edge data for network structure between classes
 edges_data <- data.frame(

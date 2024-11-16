@@ -6,7 +6,8 @@ title: Home
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(
   cache = TRUE,
-  cache.path = "cache/"
+  cache.path = "cache/",
+  fig.path = "docs/figures/"
 )
 ```
 

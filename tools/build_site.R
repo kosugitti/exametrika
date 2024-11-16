@@ -49,7 +49,8 @@ build_site <- function() {
   new_content <- c(
     "---",
     "output:",
-    "  github_document",
+    "  github_document:",
+    "    fig_path: \"docs/figures/\"",
     "---",
     content[(yaml_end + 1):length(content)]
   )

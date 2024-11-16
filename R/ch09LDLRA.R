@@ -145,7 +145,7 @@ LD_param_est <- function(tmp, adj_list, classRefMat, ncls, smoothpost) {
 #' @param adj_file A file detailing the relationships of the graph for each rank/class,
 #' listed in the order of starting point, ending point, and rank(class).
 #' @param verbose verbose output Flag. default is TRUE
-#' @importFrom igraph get.adjacency
+#' @importFrom igraph as_adjacency_matrix
 #' @importFrom igraph graph_from_data_frame
 #' @importFrom igraph graph_from_adjacency_matrix
 #' @importFrom utils read.csv
@@ -197,7 +197,7 @@ LD_param_est <- function(tmp, adj_list, classRefMat, ncls, smoothpost) {
 #'     ),
 #'     directed = TRUE
 #'   )
-#'   adj_tmp <- igraph::get.adjacency(g_tmp)
+#'   adj_tmp <- igraph::as_adjacency_matrix(g_tmp)
 #'   g_list[[i]] <- g_tmp
 #'   adj_list[[i]] <- adj_tmp
 #' }

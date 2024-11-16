@@ -1,0 +1,17 @@
+name: "exametrika"
+navbar:
+  title: "exametrika"
+  left:
+    - text: "Home"
+      href: README.html
+    - text: "日本語"
+      href: README_ja.html
+  right:
+    - icon: fa-github
+      href: https://github.com/kosugitti/exametrika
+output:
+  html_document:
+    theme: cosmo
+    highlight: textmate
+    toc: true
+    toc_float: true

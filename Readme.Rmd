@@ -2,39 +2,84 @@
 output: github_document
 ---
 
+[English](README.html) | [日本語](README_ja.html)
 
 # exametrika
 
 ## Overview
 
-The Exametrika package provides comprehensive test data engineering tools, implementing the methods described in Shojima (2022). Test Data Engineering analyzes test response patterns to understand item characteristics and classify respondents. 
+The `exametrika` package provides comprehensive Test Data Engineering tools for analyzing educational test data. Based on the methods described in Shojima (2022), this package enables researchers and practitioners to:
+
+- Analyze test response patterns and item characteristics
+- Classify respondents using various psychometric models
+- Investigate latent structures in test data
+- Examine local dependencies between items
+- Perform network analysis of item relationships
+
+The package implements both traditional psychometric approaches and advanced statistical methods, making it suitable for various assessment and research purposes.
 
 ## Features
 
 The package implements various psychometric models and techniques:
 
-### Basic Test Theory
-- Classical Test Theory
-- Item Response Theory (2PL, 3PL, 4PL models)
+#### Classical Methods
+- Classical Test Theory (CTT)
+  - Item difficulty and discrimination
+  - Test reliability and validity
+- Item Response Theory (IRT)
+  - 2PL, 3PL, and 4PL models
+  - Item characteristic curves
+  - Test information functions
 
-### Latent Structure Analysis
+#### Latent Structure Analysis
 - Latent Class Analysis (LCA)
+  - Class membership estimation
+  - Item response profiles
 - Latent Rank Analysis (LRA)
+  - Ordered latent classes
+  - Rank transition probabilities
 - Biclustering and Ranklustering
-- Infinite Relational Model (IRM) for optimal class/field determination
+  - Simultaneous clustering of items and examinees
+  - Field-specific response patterns
+- Infinite Relational Model (IRM)
+  - Optimal class/field determination
+  - Nonparametric clustering
 
-### Network and Dependency Analysis
+#### Advanced Network Models
 - Bayesian Network Analysis
-  - Structure Learning with Genetic Algorithm
-  - Structure Learning with PBIL (Population-Based Incremental Learning)
+  - Structure Learning
+    - Genetic Algorithm approach
+    - Population-Based Incremental Learning (PBIL)
+  - Conditional probability estimation
 - Local Dependence Models
   - Local Dependence Latent Rank Analysis (LDLRA)
   - Local Dependence Biclustering (LDB)
   - Bicluster Network Model (BINET)
 
+## Model Overview
+
+### Local Dependence Models
+
+The package implements three complementary approaches to modeling local dependencies in test data:
+
+1. **LDLRA (Local Dependence Latent Rank Analysis)**
+   - Analyzes how item dependencies change across different proficiency ranks
+   - Suitable when item relationships are expected to vary by student ability level
+   - Combines the strengths of LRA and Bayesian Networks
+
+2. **LDB (Local Dependence Biclustering)**
+   - Focuses on relationships between item fields within each rank
+   - Optimal when items naturally form groups (fields) with hierarchical relationships
+   - Integrates biclustering with field-level dependency structures
+
+3. **BINET (Bicluster Network Model)**
+   - Examines class transitions within each field
+   - Best for understanding complex patterns of class progression
+   - Combines biclustering with class-level network analysis
+
 ## Background
 
-Exametrika was originally developed and published as a Mathematica and Excel Add-in. For additional information, visit:
+Exametrika was originally developed and published as a Mathematica and Excel Add-in. For additional information about Exametrika, visit:
 
 - [Test Data Engineering Website](http://shojima.starfree.jp/tde/)
 - [Package News](NEWS.md)
@@ -51,6 +96,14 @@ if (!require("devtools")) install.packages("devtools")
 # Install Exametrika
 devtools::install_github("kosugitti/exametrika")
 ```
+
+### Dependencies
+
+The package requires:
+
++ R (>= 4.1.0)
++ igraph (for network analysis)
++ Other dependencies are automatically installed
 
 ## Data Format and Usage
 
@@ -270,7 +323,7 @@ DAG <-
 ## graph object
 g <- igraph::graph_from_data_frame(DAG)
 g
-## Adj mmatrix
+## Adjacency matrix
 adj_mat <- as.matrix(igraph::get.adjacency(g))
 print(adj_mat)
 ```
@@ -306,7 +359,7 @@ StrLearningGA_BNM(J5S10,
 )
 ```
 
-The method of Population-based incremental learning proposed by Fukuda (2014) can also be used for learning. This method has several variations for estimating the optimal adjacency matrix at the end, which can be specified as options. See help or text Section 8.5.2.
+The method of Population-Based incremental learning proposed by Fukuda (2014) can also be used for learning. This method has several variations for estimating the optimal adjacency matrix at the end, which can be specified as options. See help or text Section 8.5.2.
 
 ```{r model-pbil-bnm, message=FALSE, warning=FALSE}
 StrLearningPBIL_BNM(J5S10,
@@ -315,7 +368,7 @@ StrLearningPBIL_BNM(J5S10,
 )
 ```
 
-## Local Dependent Latent Rank Analysis
+## Local Dependence Latent Rank Analysis
 
 LD-LRA is an analysis that combines LRA and BNM, and it is used to analyze the network structure among items in the latent rank. In this function, structural learning is not performed, so you need to provide item graphs for each rank as separate files.
 
@@ -382,7 +435,7 @@ g_list
 ```
 
 ```{r results-adj-list, message=FALSE, warning=FALSE}
-### Example of adj list
+### Example of adjacency list
 adj_list
 ```
 
@@ -599,8 +652,8 @@ plot(result.BINET, type = "LDPSR", nc = 3, nr = 2)
 
 ## Table of Model and Plotting Option Correspondence
 
-| model/type     | IIC | ICC | TIC | IRP | FRP | TRP | LCD/LRD | CMP/RMP | ARRAY | FieldPIRP | LDPSR |
-|----------------|-----|-----|-----|-----|-----|-----|---------|---------|-------|-----------|-------|
+| Model/Type | IIC | ICC | TIC | IRP | FRP | TRP | LCD/LRD | CMP/RMP | Array | FieldPIRP | LDPSR |
+|------------|:---:|:---:|:---:|:---:|:---:|:---:|:-------:|:-------:|:-----:|:---------:|:-----:|
 | IRT            |  ◯  |  ◯  |  ◯  |     |     |     |         |         |       |           |       |
 | LCA            |     |     |     |  ◯  |  ◯  |  ◯  |    ◯    |    ◯    |       |           |       |
 | LRA            |     |     |     |  ◯  |  ◯  |  ◯  |    ◯    |    ◯    |       |           |       |
@@ -611,10 +664,129 @@ plot(result.BINET, type = "LDPSR", nc = 3, nr = 2)
 | BINET          |     |     |     |     |  ◯  |  ◯  |    ◯    |    ◯    |   ◯   |           |   ◯   |
 
 
+## Common Issues and Solutions
+
+### Data Preparation
+
+- Missing Values
+  - NA values are supported
+  - Use `dataFormat()` to properly handle missing data
+  - Avoid empty strings or special missing codes
+
+- Data Structure
+  - Response data must be numeric
+  - Binary data should be 0/1
+  - Polytomous data should be ordered integers
+
+### Network Structure Specifications
+
+When using LDLRA, LDB, or BINET, common issues with network specifications include:
+
+- File Format
+  - CSV files must include headers
+  - Column names should match expected format
+  - Check for extra whitespace or hidden characters
+
+- Graph Structure
+  - Must be acyclic (DAG)
+  - Parent-child relationships should respect logical ordering
+  - Maximum number of parents per node should be reasonable
+
+### Convergence Issues
+
+For iterative procedures (IRT, LCA, LRA):
+- Try different starting values
+- Adjust maximum iterations
+- Consider reducing model complexity
+
+### Memory Management
+
+For large datasets:
+- Consider analyzing subsets first
+- Monitor memory usage with larger matrices
+- Use efficient data structures
+
+## Best Practices
+
+1. Data Validation
+   - Always inspect data structure with `str()`
+   - Check for unexpected values with `summary()`
+   - Verify response patterns with `TestStatistics()`
+
+2. Model Building
+   - Start with simpler models
+   - Incrementally add complexity
+   - Compare multiple model specifications
+
+3. Result Interpretation
+   - Use multiple plot types
+   - Check model fit statistics
+   - Validate results against domain knowledge
+
+## Community and Support
+
+We welcome community involvement and feedback to improve `exametrika`. Here's how you can participate and get support:
+
+### Reporting Issues
+
+If you encounter bugs or have suggestions for improvements:
+- Open an issue on [GitHub Issues](https://github.com/kosugitti/exametrika/issues)
+- Provide a minimal reproducible example
+- Include your R session information (`sessionInfo()`)
+
+### Discussions and Community
+
+Join our community discussions:
+- Ask questions
+- Share your use cases
+- Discuss feature requests
+- Exchange tips and tricks
+- Get updates about package development
+
+Visit our [GitHub Discussions](https://github.com/kosugitti/exametrika/discussions) page to participate.
+
+### Contributing
+
+We appreciate contributions from the community:
+- Bug reports and feature requests through Issues
+- Usage examples and tips through Discussions
+- Code improvements through Pull Requests
+
+Please check our existing Issues and Discussions before posting to avoid duplicates.
+
 ## Reference
 
 Shojima, Kojiro (2022) Test Data Engineering: Latent Rank Analysis, Biclustering, and Bayesian Network (Behaviormetrics: Quantitative Approaches to Human Behavior, 13),Springer.
 
+## Future Updates
+
+### Upcoming Features
+
+#### Polytomous Data Support
+- Item Response Theory
+  - Graded Response Model (GRM)
+  - Partial Credit Model (PCM)
+  - Generalized Partial Credit Model (GPCM)
+- Latent Structure Analysis
+  - Polytomous Latent Rank Model
+  - Polytomous Latent Class Analysis
+  - Extended Biclustering for polytomous data
+- Network Models
+  - LDLRA extension for polytomous responses
+  - Polytomous Local Dependence Biclustering
+
+#### Package Development
+- CRAN availability
+- Package logo and visual identity
+- Additional vignettes and documentation
+- Performance optimization for large datasets
+
+### Current Development Status
+- Binary response models: ✅ Implemented
+- Polytomous response models: 🚧 Under development
+- CRAN submission: 🚧 In review
+
+Follow our [GitHub repository](https://github.com/kosugitti/exametrika) and join the [Discussions](https://github.com/kosugitti/exametrika/discussions) to stay updated on development progress and provide feedback on desired features.
 
 ## Citation
 

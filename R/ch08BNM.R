@@ -42,7 +42,7 @@ fill_adj <- function(g, ItemLabel) {
 #' @param adj_file specify CSV file where the graph structure is specified.
 #' @param adj_matrix specify adjacency matrix.
 #' @importFrom igraph graph_from_data_frame
-#' @importFrom igraph get.adjacency
+#' @importFrom igraph as_adjacency_matrix
 #' @importFrom utils read.csv
 #' @importFrom igraph V
 #' @return
@@ -77,7 +77,7 @@ fill_adj <- function(g, ItemLabel) {
 #'
 #' # Create adjacency matrix from the graph
 #' # Shows direct connections between items (1 for connection, 0 for no connection)
-#' adj_mat <- as.matrix(igraph::get.adjacency(g))
+#' adj_mat <- as.matrix(igraph::as_adjacency_matrix(g))
 #' print(adj_mat)
 #'
 #' # Fit Bayesian Network Model using the specified adjacency matrix

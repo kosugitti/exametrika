@@ -3,9 +3,9 @@ navbar:
   title: "exametrika"
   left:
     - text: "Home"
-      href: README.html
+      href: index.html
     - text: "日本語"
-      href: README_ja.html
+      href: ja.html
   right:
     - icon: fa-github
       href: https://github.com/kosugitti/exametrika

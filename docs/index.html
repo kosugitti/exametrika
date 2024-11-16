@@ -321,10 +321,10 @@ div.tocify {
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
         <li>
-  <a href="README.html">Home</a>
+  <a href="index.html">Home</a>
 </li>
 <li>
-  <a href="README_ja.html">日本語</a>
+  <a href="ja.html">日本語</a>
 </li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
@@ -1151,9 +1151,9 @@ DAG &lt;-
 ## graph object
 g &lt;- igraph::graph_from_data_frame(DAG)
 g</code></pre>
-<pre><code>## IGRAPH 7ea03bc DN-- 5 5 -- 
+<pre><code>## IGRAPH fc4f44a DN-- 5 5 -- 
 ## + attr: name (v/c)
-## + edges from 7ea03bc (vertex names):
+## + edges from fc4f44a (vertex names):
 ## [1] Item01-&gt;Item02 Item02-&gt;Item03 Item02-&gt;Item04 Item03-&gt;Item05 Item04-&gt;Item05</code></pre>
 <pre class="r"><code>## Adjacency matrix
 adj_mat &lt;- as.matrix(igraph::get.adjacency(g))
@@ -1420,34 +1420,34 @@ for (i in 1:5) {
 ## Example of graph list
 g_list</code></pre>
 <pre><code>## [[1]]
-## IGRAPH 3dd4c55 DN-- 4 2 -- 
+## IGRAPH db67c6f DN-- 4 2 -- 
 ## + attr: name (v/c)
-## + edges from 3dd4c55 (vertex names):
+## + edges from db67c6f (vertex names):
 ## [1] Item01-&gt;Item02 Item04-&gt;Item05
 ## 
 ## [[2]]
-## IGRAPH ebace07 DN-- 9 7 -- 
+## IGRAPH bf82ce2 DN-- 9 7 -- 
 ## + attr: name (v/c)
-## + edges from ebace07 (vertex names):
+## + edges from bf82ce2 (vertex names):
 ## [1] Item01-&gt;Item02 Item02-&gt;Item03 Item04-&gt;Item05 Item08-&gt;Item09 Item08-&gt;Item10 Item09-&gt;Item10 Item08-&gt;Item11
 ## 
 ## [[3]]
-## IGRAPH 7f6eaeb DN-- 9 7 -- 
+## IGRAPH 88e6677 DN-- 9 7 -- 
 ## + attr: name (v/c)
-## + edges from 7f6eaeb (vertex names):
+## + edges from 88e6677 (vertex names):
 ## [1] Item01-&gt;Item02 Item02-&gt;Item03 Item04-&gt;Item05 Item08-&gt;Item09 Item08-&gt;Item10 Item09-&gt;Item10 Item08-&gt;Item11
 ## 
 ## [[4]]
-## IGRAPH 1ef9010 DN-- 10 8 -- 
+## IGRAPH e27305c DN-- 10 8 -- 
 ## + attr: name (v/c)
-## + edges from 1ef9010 (vertex names):
+## + edges from e27305c (vertex names):
 ## [1] Item02-&gt;Item03 Item04-&gt;Item06 Item04-&gt;Item07 Item05-&gt;Item06 Item05-&gt;Item07 Item08-&gt;Item10 Item08-&gt;Item11
 ## [8] Item09-&gt;Item11
 ## 
 ## [[5]]
-## IGRAPH 18cc203 DN-- 10 8 -- 
+## IGRAPH 22b1200 DN-- 10 8 -- 
 ## + attr: name (v/c)
-## + edges from 18cc203 (vertex names):
+## + edges from 22b1200 (vertex names):
 ## [1] Item02-&gt;Item03 Item04-&gt;Item06 Item04-&gt;Item07 Item05-&gt;Item06 Item05-&gt;Item07 Item09-&gt;Item11 Item10-&gt;Item11
 ## [8] Item10-&gt;Item12</code></pre>
 <pre class="r"><code>### Example of adjacency list

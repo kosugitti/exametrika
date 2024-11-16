@@ -44,3 +44,6 @@ vignettes/*.pdf
 # develop
 /develop/
 
+# Generated files
+docs/libs/
+docs/cache/

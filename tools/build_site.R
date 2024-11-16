@@ -53,7 +53,6 @@ build_site <- function() {
     "---",
     content[(yaml_end + 1):length(content)]
   )
-  cat(new_content, sep = "\n")
   writeLines(new_content, temp_rmd)
 
   # README.mdを生成

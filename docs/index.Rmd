@@ -10,7 +10,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-[English](README.html) | [日本語](README_ja.html)
+[English](index.html) | [日本語](ja.html)
 
 # exametrika
 

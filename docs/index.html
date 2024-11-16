@@ -593,18 +593,33 @@ testing and learning:</p>
 <li>S: Sample size (e.g., S500 = 500 examinees)</li>
 </ul></li>
 </ul>
-<p>Available datasets: - J5S10: Very small dataset (5 items, 10
-examinees) - Useful for quick testing and understanding basic concepts -
-J12S5000: Large sample dataset (12 items, 5000 examinees) - Suitable for
-LDLRA and other advanced analyses - J14S500: Medium dataset (14 items,
-500 examinees) - J15S500: Medium dataset (15 items, 500 examinees) -
-Often used in IRT and LCA examples - J20S400: Medium dataset (20 items,
-400 examinees) - J35S515: Large item dataset (35 items, 515 examinees) -
-Used in Biclustering and network model examples</p>
+<p>Available datasets:</p>
+<ul>
+<li>J5S10: Very small dataset (5 items, 10 examinees)
+<ul>
+<li>Useful for quick testing and understanding basic concepts</li>
+</ul></li>
+<li>J12S5000: Large sample dataset (12 items, 5000 examinees)
+<ul>
+<li>Suitable for LDLRA and other advanced analyses</li>
+</ul></li>
+<li>J14S500: Medium dataset (14 items, 500 examinees)</li>
+<li>J15S500: Medium dataset (15 items, 500 examinees)
+<ul>
+<li>Often used in IRT and LCA examples</li>
+</ul></li>
+<li>J20S400: Medium dataset (20 items, 400 examinees)</li>
+<li>J35S515: Large item dataset (35 items, 515 examinees)
+<ul>
+<li>Used in Biclustering and network model examples</li>
+</ul></li>
+</ul>
 </div>
 </div>
-<div id="test-statistics" class="section level2">
-<h2>Test Statistics</h2>
+<div id="examples" class="section level2">
+<h2>Examples</h2>
+<div id="test-statistics" class="section level3">
+<h3>Test Statistics</h3>
 <pre class="r"><code>TestStatistics(J15S500)</code></pre>
 <pre><code>## Test Statics
 ##                   value
@@ -632,8 +647,8 @@ Used in Biclustering and network model examples</p>
 ## Stanine.89%  13.0000000
 ## Stanine.96%  14.0000000</code></pre>
 </div>
-<div id="itemstatistics" class="section level2">
-<h2>ItemStatistics</h2>
+<div id="itemstatistics" class="section level3">
+<h3>ItemStatistics</h3>
 <pre class="r"><code>ItemStatistics(J15S500)</code></pre>
 <pre><code>## Item Statics
 ##    ItemLabel  NR   CRR  ODDs Threshold Entropy ITCrr
@@ -653,8 +668,8 @@ Used in Biclustering and network model examples</p>
 ## 14    Item14 500 0.764 3.237    -0.719   0.788 0.485
 ## 15    Item15 500 0.706 2.401    -0.542   0.874 0.413</code></pre>
 </div>
-<div id="ctt-example" class="section level2">
-<h2>CTT Example</h2>
+<div id="ctt" class="section level3">
+<h3>CTT</h3>
 <pre class="r"><code>CTT(J15S500)</code></pre>
 <pre><code>## Realiability
 ##                 name value
@@ -683,8 +698,8 @@ Used in Biclustering and network model examples</p>
 ## 14    Item14            0.593     0.598             0.745
 ## 15    Item15            0.607     0.612             0.759</code></pre>
 </div>
-<div id="irt-example" class="section level2">
-<h2>IRT Example</h2>
+<div id="irt" class="section level3">
+<h3>IRT</h3>
 <p>The IRT function estimates the number of parameters using a logistic
 model, which can be specified using the <code>model</code> option. It
 supports 2PL, 3PL, and 4PL models.</p>
@@ -784,8 +799,8 @@ respectively.</p>
 <pre class="r"><code>plot(result.IRT, type = &quot;TIC&quot;)</code></pre>
 <p><img src="docs/figures/plot-irt-curves-3.png" width="672" /></p>
 </div>
-<div id="lca-example" class="section level2">
-<h2>LCA Example</h2>
+<div id="lca-example" class="section level3">
+<h3>LCA Example</h3>
 <p>Latent Class Analysis requires specifying the dataset and the number
 of classes.</p>
 <pre class="r"><code>LCA(J15S500, ncls = 5)</code></pre>
@@ -891,8 +906,8 @@ on each, please refer to Shojima (2022).</p>
 <pre class="r"><code>plot(result.LCA, type = &quot;LCD&quot;)</code></pre>
 <p><img src="docs/figures/plot-lca-4.png" width="672" /></p>
 </div>
-<div id="lra-example" class="section level2">
-<h2>LRA Example</h2>
+<div id="lra-example" class="section level3">
+<h3>LRA Example</h3>
 <p>Latent Rank Analysis requires specifying the dataset and the number
 of classes.</p>
 <pre class="r"><code>LRA(J15S500, nrank = 6)</code></pre>
@@ -1021,8 +1036,8 @@ head(result.LRA$Students)</code></pre>
 <pre class="r"><code>plot(result.LRA, type = &quot;LRD&quot;)</code></pre>
 <p><img src="docs/figures/plot-lra-4.png" width="672" /></p>
 </div>
-<div id="biclustering-example" class="section level2">
-<h2>Biclustering Example</h2>
+<div id="biclusteringranklustering" class="section level3">
+<h3>Biclustering/Ranklustering</h3>
 <p>Biclustering and Ranklustering algorithms are almost the same,
 differing only in whether they include a filtering matrix or not. The
 difference is specified using the <code>method</code> option in the
@@ -1122,8 +1137,8 @@ fields, the Infinite Relational Model is available.</p>
 Relational Model with Chinese restaurant process is <a
 href="https://kosugitti.github.io/kosugitti10/notes/IRM_memo.pdf">here</a>.</p>
 </div>
-<div id="bayesian-network-model" class="section level2">
-<h2>Bayesian Network Model</h2>
+<div id="bayesian-network-model" class="section level3">
+<h3>Bayesian Network Model</h3>
 <p>The Bayesian network model is a model that represents the conditional
 probabilities between items in a network format based on the pass rates
 of the items. By providing a Directed Acyclic Graph (DAG) between items
@@ -1232,8 +1247,8 @@ result.BNM</code></pre>
 ## CAIC           -13.005
 ## BIC            -11.099</code></pre>
 <div id="structure-learning-for-bayesian-network-with-ga"
-class="section level3">
-<h3>Structure Learning for Bayesian network with GA</h3>
+class="section level4">
+<h4>Structure Learning for Bayesian network with GA</h4>
 <p>The function searches for a DAG suitable for the data using a genetic
 algorithm. A best DAG is not necessarily identified. Instead of
 exploring all combinations of nodes and edges, only the space
@@ -1351,8 +1366,8 @@ can be specified as options. See help or text Section 8.5.2.</p>
 ## BIC            -19.214</code></pre>
 </div>
 </div>
-<div id="local-dependence-latent-rank-analysis" class="section level2">
-<h2>Local Dependence Latent Rank Analysis</h2>
+<div id="local-dependence-latent-rank-analysis" class="section level3">
+<h3>Local Dependence Latent Rank Analysis</h3>
 <p>LD-LRA is an analysis that combines LRA and BNM, and it is used to
 analyze the network structure among items in the latent rank. In this
 function, structural learning is not performed, so you need to provide
@@ -1827,8 +1842,8 @@ result.LDLRA</code></pre>
 <pre class="r"><code>plot(result.LDLRA, type = &quot;LRD&quot;)</code></pre>
 <p><img src="docs/figures/plot-ldlra-3.png" width="672" /></p>
 <div id="structure-learning-for-ldlra-with-gapbil"
-class="section level3">
-<h3>Structure Learning for LDLRA with GA(PBIL)</h3>
+class="section level4">
+<h4>Structure Learning for LDLRA with GA(PBIL)</h4>
 <p>You can learn item-interaction graphs for each rank using the PBIL
 algorithm. In addition to various options, the learning process requires
 a very long computation time. It’s also important to note that the
@@ -2737,15 +2752,15 @@ result.LDLRA.PBIL</code></pre>
 ## BIC            -1940.893</code></pre>
 </div>
 </div>
-<div id="local-dependence-biclustering" class="section level2">
-<h2>Local Dependence Biclustering</h2>
-</div>
-<div id="local-dependence-biclustering-ldb" class="section level2">
-<h2>Local Dependence Biclustering (LDB)</h2>
+<div id="local-dependence-biclustering" class="section level3">
+<h3>Local Dependence Biclustering</h3>
 <p>Local Dependence Biclustering combines biclustering and Bayesian
-network models. The model requires three main components: - Number of
-latent classes/ranks - Field assignments for items - Network structure
-between fields at each rank</p>
+network models. The model requires three main components:</p>
+<ul>
+<li>Number of latent classes/ranks</li>
+<li>Field assignments for items</li>
+<li>Network structure between fields at each rank</li>
+</ul>
 <p>Here’s an example implementation:</p>
 <pre class="r"><code># Create field configuration vector (assign items to fields)
 conf &lt;- c(1, 6, 6, 8, 9, 9, 4, 7, 7, 7, 5, 8, 9, 10, 10, 9, 9, 10, 10, 10, 2, 2, 3, 3, 5, 5, 6, 9, 9, 10, 1, 1, 7, 9, 10)
@@ -2983,8 +2998,8 @@ correct answer count for each rank and each field.</p>
 <pre class="r"><code>plot(result.LDB, type = &quot;FieldPIRP&quot;)</code></pre>
 <p><img src="docs/figures/plot-ldb-fieldpirp-1.png" width="672" /><img src="docs/figures/plot-ldb-fieldpirp-2.png" width="672" /><img src="docs/figures/plot-ldb-fieldpirp-3.png" width="672" /><img src="docs/figures/plot-ldb-fieldpirp-4.png" width="672" /><img src="docs/figures/plot-ldb-fieldpirp-5.png" width="672" /></p>
 </div>
-<div id="bicluster-network-model" class="section level2">
-<h2>Bicluster Network Model</h2>
+<div id="bicluster-network-model" class="section level3">
+<h3>Bicluster Network Model</h3>
 <p>Bicluster Network Model: BINET is a model that combines the Bayesian
 network model and Biclustering. BINET is very similar to LDB and
 LDR.</p>
@@ -3335,8 +3350,8 @@ plot(result.BINET, type = &quot;LDPSR&quot;, nc = 3, nr = 2)</code></pre>
 <p><img src="docs/figures/plot-binet-ldpsr-1.png" width="672" /><img src="docs/figures/plot-binet-ldpsr-2.png" width="672" /><img src="docs/figures/plot-binet-ldpsr-3.png" width="672" /></p>
 </div>
 <div id="table-of-model-and-plotting-option-correspondence"
-class="section level2">
-<h2>Table of Model and Plotting Option Correspondence</h2>
+class="section level3">
+<h3>Table of Model and Plotting Option Correspondence</h3>
 <table>
 <colgroup>
 <col width="14%" />
@@ -3484,78 +3499,6 @@ class="section level2">
 </tbody>
 </table>
 </div>
-<div id="common-issues-and-solutions" class="section level2">
-<h2>Common Issues and Solutions</h2>
-<div id="data-preparation" class="section level3">
-<h3>Data Preparation</h3>
-<ul>
-<li>Missing Values
-<ul>
-<li>NA values are supported</li>
-<li>Use <code>dataFormat()</code> to properly handle missing data</li>
-<li>Avoid empty strings or special missing codes</li>
-</ul></li>
-<li>Data Structure
-<ul>
-<li>Response data must be numeric</li>
-<li>Binary data should be 0/1</li>
-<li>Polytomous data should be ordered integers</li>
-</ul></li>
-</ul>
-</div>
-<div id="network-structure-specifications" class="section level3">
-<h3>Network Structure Specifications</h3>
-<p>When using LDLRA, LDB, or BINET, common issues with network
-specifications include:</p>
-<ul>
-<li>File Format
-<ul>
-<li>CSV files must include headers</li>
-<li>Column names should match expected format</li>
-<li>Check for extra whitespace or hidden characters</li>
-</ul></li>
-<li>Graph Structure
-<ul>
-<li>Must be acyclic (DAG)</li>
-<li>Parent-child relationships should respect logical ordering</li>
-<li>Maximum number of parents per node should be reasonable</li>
-</ul></li>
-</ul>
-</div>
-<div id="convergence-issues" class="section level3">
-<h3>Convergence Issues</h3>
-<p>For iterative procedures (IRT, LCA, LRA): - Try different starting
-values - Adjust maximum iterations - Consider reducing model
-complexity</p>
-</div>
-<div id="memory-management" class="section level3">
-<h3>Memory Management</h3>
-<p>For large datasets: - Consider analyzing subsets first - Monitor
-memory usage with larger matrices - Use efficient data structures</p>
-</div>
-</div>
-<div id="best-practices" class="section level2">
-<h2>Best Practices</h2>
-<ol style="list-style-type: decimal">
-<li>Data Validation
-<ul>
-<li>Always inspect data structure with <code>str()</code></li>
-<li>Check for unexpected values with <code>summary()</code></li>
-<li>Verify response patterns with <code>TestStatistics()</code></li>
-</ul></li>
-<li>Model Building
-<ul>
-<li>Start with simpler models</li>
-<li>Incrementally add complexity</li>
-<li>Compare multiple model specifications</li>
-</ul></li>
-<li>Result Interpretation
-<ul>
-<li>Use multiple plot types</li>
-<li>Check model fit statistics</li>
-<li>Validate results against domain knowledge</li>
-</ul></li>
-</ol>
 </div>
 <div id="community-and-support" class="section level2">
 <h2>Community and Support</h2>
@@ -3564,25 +3507,36 @@ memory usage with larger matrices - Use efficient data structures</p>
 support:</p>
 <div id="reporting-issues" class="section level3">
 <h3>Reporting Issues</h3>
-<p>If you encounter bugs or have suggestions for improvements: - Open an
-issue on <a href="https://github.com/kosugitti/exametrika/issues">GitHub
-Issues</a> - Provide a minimal reproducible example - Include your R
-session information (<code>sessionInfo()</code>)</p>
+<p>If you encounter bugs or have suggestions for improvements:</p>
+<ul>
+<li>Open an issue on <a
+href="https://github.com/kosugitti/exametrika/issues">GitHub
+Issues</a></li>
+<li>Provide a minimal reproducible example</li>
+<li>Include your R session information (<code>sessionInfo()</code>)</li>
+</ul>
 </div>
 <div id="discussions-and-community" class="section level3">
 <h3>Discussions and Community</h3>
-<p>Join our community discussions: - Ask questions - Share your use
-cases - Discuss feature requests - Exchange tips and tricks - Get
-updates about package development</p>
-<p>Visit our <a
+<p>Join our <a
 href="https://github.com/kosugitti/exametrika/discussions">GitHub
-Discussions</a> page to participate.</p>
+Discussions</a>:</p>
+<ul>
+<li>Ask questions</li>
+<li>Share your use cases</li>
+<li>Discuss feature requests</li>
+<li>Exchange tips and tricks</li>
+<li>Get updates about package development</li>
+</ul>
 </div>
 <div id="contributing" class="section level3">
 <h3>Contributing</h3>
-<p>We appreciate contributions from the community: - Bug reports and
-feature requests through Issues - Usage examples and tips through
-Discussions - Code improvements through Pull Requests</p>
+<p>We appreciate contributions from the community:</p>
+<ul>
+<li>Bug reports and feature requests through Issues</li>
+<li>Usage examples and tips through Discussions</li>
+<li>Code improvements through Pull Requests</li>
+</ul>
 <p>Please check our existing Issues and Discussions before posting to
 avoid duplicates.</p>
 </div>
@@ -3612,20 +3566,6 @@ Approaches to Human Behavior, 13),Springer.</p>
 <li>Polytomous Latent Class Analysis</li>
 <li>Extended Biclustering for polytomous data</li>
 </ul></li>
-<li>Network Models
-<ul>
-<li>LDLRA extension for polytomous responses</li>
-<li>Polytomous Local Dependence Biclustering</li>
-</ul></li>
-</ul>
-</div>
-<div id="package-development" class="section level4">
-<h4>Package Development</h4>
-<ul>
-<li>CRAN availability</li>
-<li>Package logo and visual identity</li>
-<li>Additional vignettes and documentation</li>
-<li>Performance optimization for large datasets</li>
 </ul>
 </div>
 </div>

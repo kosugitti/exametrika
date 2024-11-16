@@ -603,8 +603,10 @@ J35S515：大規模項目データセット（35項目、515人の受験者） -
 バイクラスタリングとネットワークモデルの例で使用</p>
 </div>
 </div>
-<div id="テスト統計量" class="section level2">
-<h2>テスト統計量</h2>
+<div id="使用例" class="section level2">
+<h2>使用例</h2>
+<div id="テスト統計量" class="section level3">
+<h3>テスト統計量</h3>
 <pre class="r"><code>TestStatistics(J15S500)</code></pre>
 <pre><code>## Test Statics
 ##                   value
@@ -632,8 +634,8 @@ J35S515：大規模項目データセット（35項目、515人の受験者） -
 ## Stanine.89%  13.0000000
 ## Stanine.96%  14.0000000</code></pre>
 </div>
-<div id="項目統計量" class="section level2">
-<h2>項目統計量</h2>
+<div id="項目統計量" class="section level3">
+<h3>項目統計量</h3>
 <pre class="r"><code>ItemStatistics(J15S500)</code></pre>
 <pre><code>## Item Statics
 ##    ItemLabel  NR   CRR  ODDs Threshold Entropy ITCrr
@@ -653,8 +655,8 @@ J35S515：大規模項目データセット（35項目、515人の受験者） -
 ## 14    Item14 500 0.764 3.237    -0.719   0.788 0.485
 ## 15    Item15 500 0.706 2.401    -0.542   0.874 0.413</code></pre>
 </div>
-<div id="cttの例" class="section level2">
-<h2>CTTの例</h2>
+<div id="ctt" class="section level3">
+<h3>CTT</h3>
 <pre class="r"><code>CTT(J15S500)</code></pre>
 <pre><code>## Realiability
 ##                 name value
@@ -683,8 +685,8 @@ J35S515：大規模項目データセット（35項目、515人の受験者） -
 ## 14    Item14            0.593     0.598             0.745
 ## 15    Item15            0.607     0.612             0.759</code></pre>
 </div>
-<div id="irtの例" class="section level2">
-<h2>IRTの例</h2>
+<div id="irt" class="section level3">
+<h3>IRT</h3>
 <p>IRT関数は、ロジスティックモデルを用いてパラメータを推定します。<code>model</code>オプションで指定でき、2PL、3PL、4PLモデルに対応しています。</p>
 <pre class="r"><code>result.IRT &lt;- IRT(J15S500, model = 3)
 result.IRT</code></pre>
@@ -775,8 +777,8 @@ result.IRT</code></pre>
 <pre class="r"><code>plot(result.IRT, type = &quot;TIC&quot;)</code></pre>
 <p><img src="docs/figures/plot-irt-curves-3.png" width="672" /></p>
 </div>
-<div id="lcaの例" class="section level2">
-<h2>LCAの例</h2>
+<div id="lca" class="section level3">
+<h3>LCA</h3>
 <p>潜在クラス分析では、データセットとクラス数の指定が必要です。</p>
 <pre class="r"><code>LCA(J15S500, ncls = 5)</code></pre>
 <pre><code>## 
@@ -878,8 +880,8 @@ head(result.LCA$Students)</code></pre>
 <pre class="r"><code>plot(result.LCA, type = &quot;LCD&quot;)</code></pre>
 <p><img src="docs/figures/plot-lca-4.png" width="672" /></p>
 </div>
-<div id="lraの例" class="section level2">
-<h2>LRAの例</h2>
+<div id="lra" class="section level3">
+<h3>LRA</h3>
 <p>潜在ランク分析では、データセットとランク数の指定が必要です。</p>
 <pre class="r"><code>LRA(J15S500, nrank = 6)</code></pre>
 <pre><code>## estimating method is  GTMItem Reference Profile
@@ -1004,8 +1006,8 @@ head(result.LRA$Students)</code></pre>
 <pre class="r"><code>plot(result.LRA, type = &quot;LRD&quot;)</code></pre>
 <p><img src="docs/figures/plot-lra-4.png" width="672" /></p>
 </div>
-<div id="バイクラスタリングの例" class="section level2">
-<h2>バイクラスタリングの例</h2>
+<div id="バイクラスタリング" class="section level3">
+<h3>バイクラスタリング</h3>
 <p>バイクラスタリングとランククラスタリングのアルゴリズムはほぼ同じで、フィルタリング行列を含むかどうかのみが異なります。この違いは<code>Biclustering()</code>関数の<code>method</code>オプションで指定します。詳細についてはヘルプドキュメントを参照してください。</p>
 <pre class="r"><code>Biclustering(J35S515, nfld = 5, ncls = 6, method = &quot;B&quot;)</code></pre>
 <pre><code>## Biclustering is chosen.</code></pre>
@@ -1099,8 +1101,8 @@ head(result.LRA$Students)</code></pre>
 <p>また、チャイニーズレストランプロセスを用いた無限関係モデルの導出に関する補足的なノートは<a
 href="https://kosugitti.github.io/kosugitti10/notes/IRM_memo.pdf">こちら</a>にあります。</p>
 </div>
-<div id="ベイジアンネットワークモデル" class="section level2">
-<h2>ベイジアンネットワークモデル</h2>
+<div id="ベイジアンネットワークモデル" class="section level3">
+<h3>ベイジアンネットワークモデル</h3>
 <p>ベイジアンネットワークモデルは、項目の正答率に基づいて、項目間の条件付き確率をネットワーク形式で表現するモデルです。項目間の有向非循環グラフ（DAG）を外部から与えることで、指定されたグラフに基づいて条件付き確率を計算します。ネットワークの分析と表現にはigraphパッケージを使用しています。</p>
 <p>グラフの指定方法は3つあります。行列形式のDAGを引数adj_matrixに渡す方法、CSVファイルに記述されたDAGを引数adj_fileに渡す方法、igraphパッケージで使用されるグラフ型オブジェクトgを引数gに渡す方法です。</p>
 <p>行列形式のadj_matrixとグラフオブジェクトgを作成する方法は以下の通りです：</p>
@@ -1195,8 +1197,8 @@ result.BNM</code></pre>
 ## CAIC           -13.005
 ## BIC            -11.099</code></pre>
 <div id="遺伝的アルゴリズムによるベイジアンネットワークの構造学習"
-class="section level3">
-<h3>遺伝的アルゴリズムによるベイジアンネットワークの構造学習</h3>
+class="section level4">
+<h4>遺伝的アルゴリズムによるベイジアンネットワークの構造学習</h4>
 <p>この関数は、遺伝的アルゴリズムを用いてデータに適したDAGを探索します。最適なDAGが必ずしも特定されるわけではありません。ノードとエッジのすべての組み合わせを探索する代わりに、正答率によって位相的にソートされた空間、すなわち隣接行列の上三角部分のみを探索します。解釈可能性のために、親ノードの数は制限されるべきです。ヌルモデルは提案されません。項目の内容と質問者の経験を活用して結果を解釈することが推奨されます。詳細については、テキスト（荘島,
 2022）の8.5節を参照してください。</p>
 <p>GAは項目数と集団サイズによっては相当な時間がかかる可能性があることにご注意ください。</p>
@@ -1301,7 +1303,10 @@ class="section level3">
 ## AIC            -11.952
 ## CAIC           -21.502
 ## BIC            -19.214</code></pre>
-<p>ーーー ## 局所依存潜在ランク分析</p>
+</div>
+</div>
+<div id="局所依存潜在ランク分析" class="section level3">
+<h3>局所依存潜在ランク分析</h3>
 <p>LD-LRAはLRAとBNMを組み合わせた分析で、潜在ランク内の項目間のネットワーク構造を分析するために使用されます。この関数では構造学習は行われないため、各ランクの項目グラフを別々のファイルとして提供する必要があります。</p>
 <p>各クラスについてグラフを指定する必要があり、その方法は3つあります。各クラスの行列型DAGまたはigraphパッケージで使用されるグラフ型オブジェクトのリストを、それぞれ引数adj_listまたはg_listに渡す方法、またはCSVファイルでDAGを記述する方法です。CSVファイルでの指定方法は以下の通りです。</p>
 <pre class="r"><code>DAG_dat &lt;- matrix(c(
@@ -1763,9 +1768,8 @@ result.LDLRA</code></pre>
 <p><img src="docs/figures/plot-ldlra-2.png" width="672" /></p>
 <pre class="r"><code>plot(result.LDLRA, type = &quot;LRD&quot;)</code></pre>
 <p><img src="docs/figures/plot-ldlra-3.png" width="672" /></p>
-</div>
-<div id="gapbilを用いたldlraの構造学習" class="section level3">
-<h3>GA(PBIL)を用いたLDLRAの構造学習</h3>
+<div id="gapbilを用いたldlraの構造学習" class="section level4">
+<h4>GA(PBIL)を用いたLDLRAの構造学習</h4>
 <p>PBILアルゴリズムを使用して、各ランクの項目間相互作用グラフを学習することができます。様々なオプションに加えて、学習プロセスには非常に長い計算時間が必要です。また、結果は実行可能な解の1つに過ぎず、必ずしも最適解ではないことに注意することが重要です。</p>
 <pre class="r"><code>result.LDLRA.PBIL &lt;- StrLearningPBIL_LDLRA(J35S515,
   seed = 123,
@@ -2670,11 +2674,8 @@ result.LDLRA.PBIL</code></pre>
 ## BIC            -1940.893</code></pre>
 </div>
 </div>
-<div id="局所依存バイクラスタリング" class="section level2">
-<h2>局所依存バイクラスタリング</h2>
-</div>
-<div id="局所依存バイクラスタリングldb" class="section level2">
-<h2>局所依存バイクラスタリング（LDB）</h2>
+<div id="局所依存バイクラスタリング" class="section level3">
+<h3>局所依存バイクラスタリング</h3>
 <p>局所依存バイクラスタリングは、バイクラスタリングとベイジアンネットワークモデルを組み合わせたものです。このモデルには3つの主要な要素が必要です：
 - 潜在クラス/ランクの数 - 項目のフィールド割り当て -
 各ランクにおけるフィールド間のネットワーク構造</p>
@@ -2913,8 +2914,8 @@ PIRPプロファイルを描画することができます。</p>
 <pre class="r"><code>plot(result.LDB, type = &quot;FieldPIRP&quot;)</code></pre>
 <p><img src="docs/figures/plot-ldb-fieldpirp-1.png" width="672" /><img src="docs/figures/plot-ldb-fieldpirp-2.png" width="672" /><img src="docs/figures/plot-ldb-fieldpirp-3.png" width="672" /><img src="docs/figures/plot-ldb-fieldpirp-4.png" width="672" /><img src="docs/figures/plot-ldb-fieldpirp-5.png" width="672" /></p>
 </div>
-<div id="バイクラスターネットワークモデル" class="section level2">
-<h2>バイクラスターネットワークモデル</h2>
+<div id="バイクラスターネットワークモデル" class="section level3">
+<h3>バイクラスターネットワークモデル</h3>
 <p>バイクラスターネットワークモデル（BINET）は、ベイジアンネットワークモデルとバイクラスタリングを組み合わせたモデルです。BINETはLDBやLDRと非常に似ています。</p>
 <p>最も重要な違いは、LDBではノードがフィールドを表すのに対し、BINETではクラスを表すことです。BINETは各潜在フィールド（これがlocusとなります）における潜在クラス間の局所依存構造を探索します。</p>
 <p>この分析を実行するには、データセットに加えて、探索的バイクラスタリング時に使用したのと同じフィールド対応ファイル、およびクラス間の隣接行列が必要です。</p>
@@ -3256,8 +3257,8 @@ plot(result.BINET, type = &quot;FRP&quot;, nc = 3, nr = 2)</code></pre>
 plot(result.BINET, type = &quot;LDPSR&quot;, nc = 3, nr = 2)</code></pre>
 <p><img src="docs/figures/plot-binet-ldpsr-1.png" width="672" /><img src="docs/figures/plot-binet-ldpsr-2.png" width="672" /><img src="docs/figures/plot-binet-ldpsr-3.png" width="672" /></p>
 </div>
-<div id="モデルとプロットオプションの対応表" class="section level2">
-<h2>モデルとプロットオプションの対応表</h2>
+<div id="モデルとプロットオプションの対応表" class="section level3">
+<h3>モデルとプロットオプションの対応表</h3>
 <table>
 <colgroup>
 <col width="16%" />
@@ -3405,95 +3406,40 @@ plot(result.BINET, type = &quot;LDPSR&quot;, nc = 3, nr = 2)</code></pre>
 </tbody>
 </table>
 </div>
-<div id="よくある問題と解決方法" class="section level2">
-<h2>よくある問題と解決方法</h2>
-<div id="データの準備" class="section level3">
-<h3>データの準備</h3>
-<ul>
-<li><p>欠測値</p></li>
-<li><p>NA値がサポートされています</p></li>
-<li><p><code>dataFormat()</code>を使用して欠測値を適切に処理</p></li>
-<li><p>空文字列や特殊な欠測値コードは避ける</p></li>
-<li><p>データ構造</p></li>
-<li><p>反応データは数値でなければなりません</p></li>
-<li><p>2値データは0/1である必要があります</p></li>
-<li><p>多値データは順序付き整数である必要があります</p></li>
-</ul>
 </div>
-<div id="ネットワーク構造の指定" class="section level3">
-<h3>ネットワーク構造の指定</h3>
-<p>LDLRA、LDB、BINETを使用する際のネットワーク指定に関する一般的な問題：</p>
-<ul>
-<li><p>ファイル形式</p></li>
-<li><p>CSVファイルにはヘッダーが必要です</p></li>
-<li><p>列名は期待される形式と一致する必要があります</p></li>
-<li><p>余分な空白や非表示文字がないか確認</p></li>
-<li><p>グラフ構造</p></li>
-<li><p>非循環（DAG）でなければなりません</p></li>
-<li><p>親子関係は論理的な順序を尊重する必要があります</p></li>
-<li><p>ノードあたりの親の数は適切な範囲である必要があります</p></li>
-</ul>
-</div>
-<div id="収束の問題" class="section level3">
-<h3>収束の問題</h3>
-<p>反復手続き（IRT、LCA、LRA）について： - 異なる初期値を試してみる -
-最大反復回数を調整する - モデルの複雑さを減らすことを検討する</p>
-</div>
-<div id="メモリ管理" class="section level3">
-<h3>メモリ管理</h3>
-<p>大規模データセットの場合： - まず部分集合で分析を試みる -
-大きな行列を使用する際はメモリ使用量を監視する -
-効率的なデータ構造を使用する</p>
-</div>
-</div>
-<div id="ベストプラクティス" class="section level2">
-<h2>ベストプラクティス</h2>
-<ol style="list-style-type: decimal">
-<li>データの検証</li>
-</ol>
-<ul>
-<li><code>str()</code>でデータ構造を必ず確認</li>
-<li><code>summary()</code>で予期しない値をチェック</li>
-<li><code>TestStatistics()</code>で反応パターンを確認</li>
-</ul>
-<ol start="2" style="list-style-type: decimal">
-<li>モデル構築</li>
-</ol>
-<ul>
-<li>より単純なモデルから開始</li>
-<li>段階的に複雑さを増やす</li>
-<li>複数のモデル指定を比較</li>
-</ul>
-<ol start="3" style="list-style-type: decimal">
-<li>結果の解釈</li>
-</ol>
-<ul>
-<li>複数の種類のプロットを使用</li>
-<li>モデル適合度統計量を確認</li>
-<li>領域知識に照らして結果を検証 ## コミュニティとサポート</li>
-</ul>
+<div id="コミュニティとサポート" class="section level2">
+<h2>コミュニティとサポート</h2>
 <p><code>exametrika</code>の改善のため、コミュニティの参加とフィードバックを歓迎します。以下が参加方法とサポートの受け方です：</p>
 <div id="問題の報告" class="section level3">
 <h3>問題の報告</h3>
-<p>バグを発見した場合や改善の提案がある場合： - <a
-href="https://github.com/kosugitti/exametrika/issues">GitHub
-Issues</a>に課題を開く - 最小限の再現可能な例を提供する -
-Rのセッション情報（<code>sessionInfo()</code>）を含める</p>
+<p>バグを発見した場合や改善の提案がある場合：</p>
+<ul>
+<li><a href="https://github.com/kosugitti/exametrika/issues">GitHub
+Issues</a>にIssueを開いてください</li>
+<li>最小限の再現可能な例を提供してください</li>
+<li>Rのセッション情報（<code>sessionInfo()</code>）を含めてください</li>
+</ul>
 </div>
 <div id="ディスカッションとコミュニティ" class="section level3">
 <h3>ディスカッションとコミュニティ</h3>
-<p>コミュニティディスカッションに参加してください： - 質問をする -
-使用事例を共有する - 機能リクエストについて議論する -
-ヒントやコツを交換する - パッケージの開発に関する最新情報を得る</p>
-<p><a href="https://github.com/kosugitti/exametrika/discussions">GitHub
-Discussions</a>ページで参加できます。</p>
+<p><a href="https://github.com/kosugitti/exametrika/discussions">Github
+Discussions</a>では，次のことができます。</p>
+<ul>
+<li>質問をする</li>
+<li>使用事例を共有する</li>
+<li>機能リクエストについて議論する</li>
+<li>ヒントやコツを交換する</li>
+<li>パッケージの開発に関する最新情報を得る</li>
+</ul>
 </div>
 <div id="コントリビューション" class="section level3">
 <h3>コントリビューション</h3>
-<p>コミュニティからの貢献を歓迎します： -
-Issuesを通じたバグ報告と機能リクエスト -
-Discussionsを通じた使用例とヒントの共有 -
-プルリクエストを通じたコードの改善</p>
+<p>コミュニティからの貢献を歓迎します：</p>
+<ul>
+<li>Issuesを通じたバグ報告と機能リクエスト</li>
+<li>Discussionsを通じた使用例とヒントの共有</li>
+<li>プルリクエストを通じたコードの改善</li>
+</ul>
 <p>重複を避けるため、投稿前に既存のIssuesとDiscussionsをご確認ください。</p>
 </div>
 </div>
@@ -3510,26 +3456,18 @@ Approaches to Human Behavior, 13), Springer.</p>
 <div id="多値データ対応" class="section level4">
 <h4>多値データ対応</h4>
 <ul>
-<li>項目反応理論</li>
+<li>項目反応理論
+<ul>
 <li>段階反応モデル（GRM）</li>
 <li>部分採点モデル（PCM）</li>
 <li>一般化部分採点モデル（GPCM）</li>
-<li>潜在構造分析</li>
+</ul></li>
+<li>潜在構造分析
+<ul>
 <li>多値潜在ランクモデル</li>
 <li>多値潜在クラス分析</li>
 <li>多値データ用拡張バイクラスタリング</li>
-<li>ネットワークモデル</li>
-<li>多値反応用LDLRA拡張</li>
-<li>多値局所依存バイクラスタリング</li>
-</ul>
-</div>
-<div id="パッケージ開発" class="section level4">
-<h4>パッケージ開発</h4>
-<ul>
-<li>CRAN公開</li>
-<li>パッケージロゴとビジュアルアイデンティティ</li>
-<li>追加のビネットとドキュメント</li>
-<li>大規模データセット向けのパフォーマンス最適化</li>
+</ul></li>
 </ul>
 </div>
 </div>

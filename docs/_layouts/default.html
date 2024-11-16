@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="{{ page.lang | default: 'en' }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ site.title }} - {{ page.title }}</title>
+    <link rel="stylesheet" href="{{ '/assets/css/style.css' | relative_url }}">
+    <!-- MathJax for mathematical expressions -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+    <header>
+        <nav>
+            <a href="{{ '/' | relative_url }}">English</a> |
+            <a href="{{ '/ja.html' | relative_url }}">日本語</a>
+        </nav>
+        <h1>{{ site.title }}</h1>
+        <p>{{ site.description }}</p>
+    </header>
+
+    <div class="container">
+        <aside class="toc">
+            <h2>{{ page.lang == 'ja' ? '目次' : 'Contents' }}</h2>
+            <!-- 自動生成される目次 -->
+            {% include toc.html html=content %}
+        </aside>
+
+        <main>
+            {{ content }}
+        </main>
+    </div>
+
+    <footer>
+        <p>Maintained by <a href="https://github.com/kosugitti">Kosuke Sugimoto</a></p>
+        <p>
+            <a href="https://github.com/kosugitti/exametrika">GitHub</a> |
+            <a href="https://github.com/kosugitti/exametrika/issues">Issues</a> |
+            <a href="https://github.com/kosugitti/exametrika/discussions">Discussions</a>
+        </p>
+    </footer>
+</body>
+</html>

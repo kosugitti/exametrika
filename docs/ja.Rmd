@@ -1,0 +1,834 @@
+---
+layout: default
+title: Home
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  cache = TRUE,
+  cache.path = "cache/"
+)
+```
+
+
+[English](README.html) | [日本語](README_ja.html)
+
+# exametrika
+
+## 概要
+
+`exametrika`パッケージは、教育テストデータを分析するための包括的なテストデータエンジニアリングツールを提供します。荘島（2022）で説明されている方法に基づき、このパッケージは研究者と実務家に以下の機能を提供します：
+
+- テスト応答パターンと項目特性の分析
+- 様々な心理測定モデルを用いた受験者の分類
+- テストデータにおける潜在構造の調査
+- 項目間の局所依存性の検討
+- 項目関係のネットワーク分析
+
+このパッケージは、伝統的な心理測定学的アプローチと先進的な統計手法の両方を実装しており、様々なアセスメントや研究目的に適しています。
+
+## 機能
+
+本パッケージは以下の心理測定モデルと技法を実装しています：
+
+#### 古典的手法
+- 古典的テスト理論（CTT）
+  - 項目の難易度と識別力
+  - テストの信頼性と妥当性
+- 項目反応理論（IRT）
+  - 2PL、3PL、4PLモデル
+  - 項目特性曲線
+  - テスト情報関数
+
+#### 潜在構造分析
+- 潜在クラス分析（LCA）
+  - クラスメンバーシップの推定
+  - 項目応答プロファイル
+- 潜在ランク分析（LRA）
+  - 順序付き潜在クラス
+  - ランク遷移確率
+- バイクラスタリングとランククラスタリング
+  - 項目と受験者の同時クラスタリング
+  - フィールド固有の応答パターン
+- 無限関係モデル（IRM）
+  - 最適なクラス/フィールド数の決定
+  - ノンパラメトリッククラスタリング
+
+## モデルの概要
+
+### 局所依存モデル
+
+本パッケージは、テストデータにおける局所依存性をモデル化する3つの相補的なアプローチを実装しています：
+
+1. **局所依存潜在ランク分析（LDLRA）**
+   - 項目間の依存関係が異なる習熟度ランクでどのように変化するかを分析
+   - 項目間の関係が学習者の能力レベルによって変化すると予想される場合に適している
+   - LRAとベイジアンネットワークの長所を組み合わせたモデル
+
+2. **局所依存バイクラスタリング（LDB）**
+   - 各ランク内における項目フィールド間の関係に焦点
+   - 項目が自然なグループ（フィールド）を形成し、階層的な関係を持つ場合に最適
+   - バイクラスタリングとフィールドレベルの依存構造を統合
+
+3. **バイクラスターネットワークモデル（BINET）**
+   - 各フィールド内でのクラス遷移を検討
+   - 複雑なクラス進行パターンの理解に最適
+   - バイクラスタリングとクラスレベルのネットワーク分析を組み合わせたモデル
+
+### モデル選択ガイド
+
+| モデル | 主な焦点 | 適用場面 |
+|--------|----------|----------|
+| LDLRA  | 項目レベルの依存関係 | 項目関係が習熟度によって変化する場合 |
+| LDB    | フィールドレベルの構造 | 項目が自然なグループを形成し依存関係を持つ場合 |
+| BINET  | クラス進行 | フィールド内に複雑な学習パターンが存在する場合 |
+
+## 背景
+
+Exametrikaは、もともとMathematicaとExcelのアドインとして開発・公開されていました。Exametrikaに関する詳細な情報は以下をご覧ください：
+
+- [テストデータエンジニアリングWebサイト](http://shojima.starfree.jp/tde/)
+- [パッケージニュース](NEWS.md)
+
+## インストール
+
+`exametrika`の開発版は[GitHub](https://github.com/)からインストールできます：
+
+```{r install, eval=FALSE}
+# devtoolsがインストールされていない場合は、まずインストール
+if (!require("devtools")) install.packages("devtools")
+
+# Exametrikaのインストール
+devtools::install_github("kosugitti/exametrika")
+```
+
+
+
+### 依存パッケージ
+
+本パッケージには以下が必要です：
+
++ R (>= 4.1.0)
++ igraph (ネットワーク分析用)
++ その他の依存パッケージは自動的にインストールされます
+
+## データ形式と使用方法
+
+### 基本的な使用方法
+
+```{r setup-library, message=FALSE, warning=FALSE}
+library(exametrika)
+```
+
+### データ要件
+
+Exametrikaは2値データと多値データの両方に対応しています：
+
+- 2値データ（0/1）
+  - 0：誤答
+  - 1：正答
+- 多値データ
+  - 順序のある反応カテゴリ
+  - 複数の得点レベル
+- 欠測値
+  - NA値がサポートされています
+  - カスタムの欠測値コードを指定可能
+
+### 入力データの仕様
+
+本パッケージは以下の特徴を持つ複数の形式のデータを受け付けます：
+
+1. **データ構造**
+   - 行列またはデータフレーム形式
+   - 反応データ（2値または多値）
+   - 柔軟な欠測値の取り扱い
+   - 様々なデータ型と構造のサポート
+
+2. **オプション要素**
+   - 受験者IDの列（デフォルト：最初の列）
+   - 項目の重み（デフォルト：すべての重み = 1）
+   - 項目ラベル（デフォルト：連番）
+   - 欠測値指示行列
+
+注：分析手法によって、特定のデータ型要件がある場合があります。詳細は各関数のドキュメントを参照してください。
+
+### データフォーマット
+
+`dataFormat`関数は分析用の入力データを前処理します：
+
+- **機能**
+  - IDベクトルの抽出と検証
+  - 項目ラベルの処理または連番の割り当て
+  - 反応データ行列Uの作成
+  - 欠測値指示行列Zの生成
+  - 項目の重みの処理
+  - 分析に適した形式へのデータ変換
+
+例：
+
+```{r example-data-format}
+# Format raw data for analysis
+data <- dataFormat(J15S500) # Using sample dataset
+str(data) # View structure of formatted data
+```
+
+### サンプルデータセット
+
+本パッケージには、荘島（2022）からの様々なサンプルデータセットが学習用に含まれています：
+
+- **命名規則**：JxxSxxx形式
+  - J：項目数（例：J15 = 15項目）
+  - S：サンプルサイズ（例：S500 = 500人の受験者）
+
+利用可能なデータセット：
+- J5S10：非常に小さなデータセット（5項目、10人の受験者）
+  - クイックテストと基本概念の理解に有用
+- J12S5000：大規模サンプルデータセット（12項目、5000人の受験者）
+  - LDLRAなどの高度な分析に適している
+- J14S500：中規模データセット（14項目、500人の受験者）
+- J15S500：中規模データセット（15項目、500人の受験者）
+  - IRTとLCAの例でよく使用
+- J20S400：中規模データセット（20項目、400人の受験者）
+- J35S515：大規模項目データセット（35項目、515人の受験者）
+  - バイクラスタリングとネットワークモデルの例で使用
+
+
+## テスト統計量
+
+```{r results-test-statistics, message=FALSE, warning=FALSE}
+TestStatistics(J15S500)
+```
+
+## 項目統計量
+
+```{r results-item-statistics, message=FALSE, warning=FALSE}
+ItemStatistics(J15S500)
+```
+
+## CTTの例
+
+```{r results-ctt, message=FALSE, warning=FALSE}
+CTT(J15S500)
+```
+
+
+## IRTの例
+
+IRT関数は、ロジスティックモデルを用いてパラメータを推定します。`model`オプションで指定でき、2PL、3PL、4PLモデルに対応しています。
+
+```{r model-irt, message=FALSE, warning=FALSE}
+result.IRT <- IRT(J15S500, model = 3)
+result.IRT
+```
+
+推定された受験者集団の特性値は返り値オブジェクトに含まれています。
+```{r results-irt-ability, message=FALSE, warning=FALSE}
+head(result.IRT$ability)
+```
+
+
+プロットでは、項目特性曲線（ICC）、項目情報曲線（IIC）、テスト情報曲線（TIC）のオプションが用意されており、それらはオプションで指定できます。項目は`items`引数で指定でき、指定しない場合はすべての項目についてプロットが描かれます。プロット領域の分割は`nr`と`nc`で行数と列数を指定できます。
+
+
+```{r plot-irt-curves, fig.width=7, fig.height=5, message=FALSE, warning=FALSE}
+plot(result.IRT, type = "ICC", items = 1:6, nc = 2, nr = 3)
+plot(result.IRT, type = "IIC", items = 1:6, nc = 2, nr = 3)
+plot(result.IRT, type = "TIC")
+```
+
+
+## LCAの例
+
+潜在クラス分析では、データセットとクラス数の指定が必要です。
+
+```{r model-lca, message=FALSE, warning=FALSE}
+LCA(J15S500, ncls = 5)
+```
+
+返り値オブジェクトにはクラスメンバーシップ行列が含まれており、各受験者がどの潜在クラスに属するかを示します。推定値には最も高いメンバーシップ確率を持つものが含まれます。
+
+```{r results-lca-membership, message=FALSE, warning=FALSE}
+result.LCA <- LCA(J15S500, ncls = 5)
+head(result.LCA$Students)
+```
+
+
+プロットでは、IRP、CMP、TRP、LCDのオプションが用意されています。各プロットの詳細については荘島（2022）を参照してください。
+
+```{r plot-lca, message=FALSE, warning=FALSE}
+plot(result.LCA, type = "IRP", items = 1:6, nc = 2, nr = 3)
+plot(result.LCA, type = "CMP", students = 1:9, nc = 3, nr = 3)
+plot(result.LCA, type = "TRP")
+plot(result.LCA, type = "LCD")
+```
+
+
+## LRAの例
+
+潜在ランク分析では、データセットとランク数の指定が必要です。
+
+
+```{r model-lra, message=FALSE, warning=FALSE}
+LRA(J15S500, nrank = 6)
+```
+
+
+推定された受験者のランクメンバーシップ確率とプロットは、LCA（潜在クラス分析）とほぼ同じです。潜在クラスにランキングが仮定されているため、ランクアップオッズとランクダウンオッズが計算されます。
+
+```{r results-lra-membership, message=FALSE, warning=FALSE}
+result.LRA <- LRA(J15S500, nrank = 6)
+head(result.LRA$Students)
+```
+
+```{r plot-lra, message=FALSE, warning=FALSE}
+plot(result.LRA, type = "IRP", items = 1:6, nc = 2, nr = 3)
+plot(result.LRA, type = "RMP", students = 1:9, nc = 3, nr = 3)
+plot(result.LRA, type = "TRP")
+plot(result.LRA, type = "LRD")
+```
+
+
+## バイクラスタリングの例
+
+バイクラスタリングとランククラスタリングのアルゴリズムはほぼ同じで、フィルタリング行列を含むかどうかのみが異なります。この違いは`Biclustering()`関数の`method`オプションで指定します。詳細についてはヘルプドキュメントを参照してください。
+
+```{r}
+Biclustering(J35S515, nfld = 5, ncls = 6, method = "B")
+```
+
+
+```{r}
+result.Ranklustering <- Biclustering(J35S515, nfld = 5, ncls = 6, method = "R")
+plot(result.Ranklustering, type = "Array")
+plot(result.Ranklustering, type = "FRP", nc = 2, nr = 3)
+plot(result.Ranklustering, type = "RMP", students = 1:9, nc = 3, nr = 3)
+plot(result.Ranklustering, type = "LRD")
+```
+
+
+最適なクラス数とフィールド数を見つけるために、無限関係モデルが利用可能です。
+
+```{r}
+result.IRM <- IRM(J35S515, gamma_c = 1, gamma_f = 1, verbose = TRUE)
+plot(result.IRM, type = "Array")
+plot(result.IRM, type = "FRP", nc = 3)
+plot(result.IRM, type = "TRP")
+```
+
+
+また、チャイニーズレストランプロセスを用いた無限関係モデルの導出に関する補足的なノートは[こちら](https://kosugitti.github.io/kosugitti10/notes/IRM_memo.pdf)にあります。
+
+
+## ベイジアンネットワークモデル
+
+ベイジアンネットワークモデルは、項目の正答率に基づいて、項目間の条件付き確率をネットワーク形式で表現するモデルです。項目間の有向非循環グラフ（DAG）を外部から与えることで、指定されたグラフに基づいて条件付き確率を計算します。ネットワークの分析と表現にはigraphパッケージを使用しています。
+
+グラフの指定方法は3つあります。行列形式のDAGを引数adj_matrixに渡す方法、CSVファイルに記述されたDAGを引数adj_fileに渡す方法、igraphパッケージで使用されるグラフ型オブジェクトgを引数gに渡す方法です。
+
+行列形式のadj_matrixとグラフオブジェクトgを作成する方法は以下の通りです：
+
+```{r setup-igraph, message=FALSE, warning=FALSE}
+library(igraph)
+DAG <-
+  matrix(
+    c(
+      "Item01", "Item02",
+      "Item02", "Item03",
+      "Item02", "Item04",
+      "Item03", "Item05",
+      "Item04", "Item05"
+    ),
+    ncol = 2, byrow = T
+  )
+## graph object
+g <- igraph::graph_from_data_frame(DAG)
+g
+## Adjacency matrix
+adj_mat <- as.matrix(igraph::get.adjacency(g))
+print(adj_mat)
+```
+
+
+上記のグラフと同じ情報を持つCSVファイルは以下の形式です。最初の行には列名（ヘッダー）が含まれており、データとしては読み込まれません。
+
+
+```{r print-dag, echo=FALSE, message=FALSE, warning=FALSE}
+cat("From,To\n")
+for (i in 1:nrow(DAG)) {
+  cat(sprintf("%s,%s\n", DAG[i, 1], DAG[i, 2]))
+}
+```
+
+
+指定方法は1つで十分ですが、複数の指定がある場合は、ファイル、行列、グラフオブジェクトの順で優先されます。
+
+グラフ構造（DAG）を提供してBNMを実行する例は以下の通りです：
+
+
+```{r model-bnm, message=FALSE, warning=FALSE}
+result.BNM <- BNM(J5S10, adj_matrix = adj_mat)
+result.BNM
+```
+
+
+### 遺伝的アルゴリズムによるベイジアンネットワークの構造学習
+
+この関数は、遺伝的アルゴリズムを用いてデータに適したDAGを探索します。最適なDAGが必ずしも特定されるわけではありません。ノードとエッジのすべての組み合わせを探索する代わりに、正答率によって位相的にソートされた空間、すなわち隣接行列の上三角部分のみを探索します。解釈可能性のために、親ノードの数は制限されるべきです。ヌルモデルは提案されません。項目の内容と質問者の経験を活用して結果を解釈することが推奨されます。詳細については、テキスト（荘島, 2022）の8.5節を参照してください。
+
+GAは項目数と集団サイズによっては相当な時間がかかる可能性があることにご注意ください。
+
+
+```{r model-ga-bnm, message=FALSE, warning=FALSE}
+StrLearningGA_BNM(J5S10,
+  population = 20, Rs = 0.5, Rm = 0.002, maxParents = 2,
+  maxGeneration = 100, crossover = 2, elitism = 2
+)
+```
+
+Fukuda(2014)によって提案された集団ベース増分学習法も学習に使用できます。この手法には、最後に最適な隣接行列を推定するためのいくつかのバリエーションがあり、オプションとして指定できます。詳細についてはヘルプまたはテキストの8.5.2節を参照してください。
+
+
+```{r model-pbil-bnm, message=FALSE, warning=FALSE}
+StrLearningPBIL_BNM(J5S10,
+  population = 20, Rs = 0.5, Rm = 0.005, maxParents = 2,
+  alpha = 0.05, estimate = 4
+)
+```
+
+
+ーーー
+## 局所依存潜在ランク分析
+
+LD-LRAはLRAとBNMを組み合わせた分析で、潜在ランク内の項目間のネットワーク構造を分析するために使用されます。この関数では構造学習は行われないため、各ランクの項目グラフを別々のファイルとして提供する必要があります。
+
+各クラスについてグラフを指定する必要があり、その方法は3つあります。各クラスの行列型DAGまたはigraphパッケージで使用されるグラフ型オブジェクトのリストを、それぞれ引数adj_listまたはg_listに渡す方法、またはCSVファイルでDAGを記述する方法です。CSVファイルでの指定方法は以下の通りです。
+
+```{r setup-dag-data, message=FALSE, warning=FALSE}
+DAG_dat <- matrix(c(
+  "From", "To", "Rank",
+  "Item01", "Item02", 1,
+  "Item04", "Item05", 1,
+  "Item01", "Item02", 2,
+  "Item02", "Item03", 2,
+  "Item04", "Item05", 2,
+  "Item08", "Item09", 2,
+  "Item08", "Item10", 2,
+  "Item09", "Item10", 2,
+  "Item08", "Item11", 2,
+  "Item01", "Item02", 3,
+  "Item02", "Item03", 3,
+  "Item04", "Item05", 3,
+  "Item08", "Item09", 3,
+  "Item08", "Item10", 3,
+  "Item09", "Item10", 3,
+  "Item08", "Item11", 3,
+  "Item02", "Item03", 4,
+  "Item04", "Item06", 4,
+  "Item04", "Item07", 4,
+  "Item05", "Item06", 4,
+  "Item05", "Item07", 4,
+  "Item08", "Item10", 4,
+  "Item08", "Item11", 4,
+  "Item09", "Item11", 4,
+  "Item02", "Item03", 5,
+  "Item04", "Item06", 5,
+  "Item04", "Item07", 5,
+  "Item05", "Item06", 5,
+  "Item05", "Item07", 5,
+  "Item09", "Item11", 5,
+  "Item10", "Item11", 5,
+  "Item10", "Item12", 5
+), ncol = 3, byrow = TRUE)
+
+# save csv file
+edgeFile <- tempfile(fileext = ".csv")
+write.csv(DAG_dat, edgeFile, row.names = FALSE, quote = TRUE)
+```
+
+
+ここでは、前述のCSVファイルを使用した行列型とグラフオブジェクトでの指定例を示します。指定方法は1つで十分ですが、複数の指定がある場合は、ファイル、行列、グラフオブジェクトの順で優先されます。
+
+
+```{r setup-graph-conversion, message=FALSE, warning=FALSE}
+g_csv <- read.csv(edgeFile)
+colnames(g_csv) <- c("From", "To", "Rank")
+adj_list <- list()
+g_list <- list()
+for (i in 1:5) {
+  adj_R <- g_csv[g_csv$Rank == i, 1:2]
+  g_tmp <- igraph::graph_from_data_frame(adj_R)
+  adj_tmp <- igraph::get.adjacency(g_tmp)
+  g_list[[i]] <- g_tmp
+  adj_list[[i]] <- adj_tmp
+}
+## Example of graph list
+g_list
+```
+
+```{r results-adj-list, message=FALSE, warning=FALSE}
+### Example of adjacency list
+adj_list
+```
+
+
+このCSVファイルを使用してLDLRA関数を実行する例は以下の通りです。
+
+
+```{r model-ldlra, message=FALSE, warning=FALSE}
+result.LDLRA <- LDLRA(J12S5000,
+  ncls = 5,
+  adj_file = edgeFile
+)
+result.LDLRA
+```
+
+
+もちろん、様々な種類のプロットもサポートしています。
+```{r plot-ldlra, message=FALSE, warning=FALSE}
+plot(result.LDLRA, type = "IRP", nc = 4, nr = 3)
+plot(result.LDLRA, type = "TRP")
+plot(result.LDLRA, type = "LRD")
+```
+
+```{r,include=FALSE}
+# Clean up temporary file
+unlink(edgeFile)
+```
+
+### GA(PBIL)を用いたLDLRAの構造学習
+
+PBILアルゴリズムを使用して、各ランクの項目間相互作用グラフを学習することができます。様々なオプションに加えて、学習プロセスには非常に長い計算時間が必要です。また、結果は実行可能な解の1つに過ぎず、必ずしも最適解ではないことに注意することが重要です。
+
+```{r model-pbil-ldlra, message=FALSE, warning=FALSE}
+result.LDLRA.PBIL <- StrLearningPBIL_LDLRA(J35S515,
+  seed = 123,
+  ncls = 5,
+  method = "R",
+  elitism = 1,
+  successiveLimit = 15
+)
+result.LDLRA.PBIL
+```
+
+## 局所依存バイクラスタリング
+
+## 局所依存バイクラスタリング（LDB）
+
+局所依存バイクラスタリングは、バイクラスタリングとベイジアンネットワークモデルを組み合わせたものです。このモデルには3つの主要な要素が必要です：
+- 潜在クラス/ランクの数
+- 項目のフィールド割り当て
+- 各ランクにおけるフィールド間のネットワーク構造
+
+実装例を以下に示します：
+
+
+```{r setup-ldb}
+# Create field configuration vector (assign items to fields)
+conf <- c(1, 6, 6, 8, 9, 9, 4, 7, 7, 7, 5, 8, 9, 10, 10, 9, 9, 10, 10, 10, 2, 2, 3, 3, 5, 5, 6, 9, 9, 10, 1, 1, 7, 9, 10)
+
+# Create edge data for network structure between fields
+edges_data <- data.frame(
+  "From Field (Parent) >>>" = c(
+    6, 4, 5, 1, 1, 4, # Class/Rank 2
+    3, 4, 6, 2, 4, 4, # Class/Rank 3
+    3, 6, 4, 1, # Class/Rank 4
+    7, 9, 6, 7 # Class/Rank 5
+  ),
+  ">>> To Field (Child)" = c(
+    8, 7, 8, 7, 2, 5, # Class/Rank 2
+    5, 8, 8, 4, 6, 7, # Class/Rank 3
+    5, 8, 5, 8, # Class/Rank 4
+    10, 10, 8, 9 # Class/Rank 5
+  ),
+  "At Class/Rank (Locus)" = c(
+    2, 2, 2, 2, 2, 2, # Class/Rank 2
+    3, 3, 3, 3, 3, 3, # Class/Rank 3
+    4, 4, 4, 4, # Class/Rank 4
+    5, 5, 5, 5 # Class/Rank 5
+  )
+)
+
+# Save edge data to temporary file
+edgeFile <- tempfile(fileext = ".csv")
+write.csv(edges_data, file = edgeFile, row.names = FALSE)
+```
+
+```{r setup-ldb-conf, include=FALSE, message=FALSE, warning=FALSE}
+# Fit Local Dependence Biclustering model
+result.LDB <- LDB(
+  U = J35S515,
+  ncls = 5, # Number of latent classes
+  conf = conf, # Field configuration vector
+  adj_file = edgeFile # Network structure file
+)
+
+# Display model results
+print(result.LDB)
+```
+
+
+また、テキスト(Shojima,2022)で言及されているように、ネットワーク構造を探索的に求めることは適切な結果を得られないことが多いため、実装されていません。
+```{r}
+result.LDB <- LDB(U = J35S515, ncls = 5, conf = conf, adj_file = edgeFile)
+result.LDB
+```
+
+```{r,include=FALSE}
+# Clean up temporary file
+unlink(edgeFile)
+```
+
+もちろん、様々な種類のプロットもサポートしています。
+
+
+```{r plot-ldb, message=FALSE, warning=FALSE}
+# Show bicluster structure
+plot(result.LDB, type = "Array")
+# Test Response Profile
+plot(result.LDB, type = "TRP")
+# Latent Rank Distribution
+plot(result.LDB, type = "LRD")
+# Rank Membership Profiles for first 9 students
+plot(result.LDB, type = "RMP", students = 1:9, nc = 3, nr = 3)
+# Field Reference Profiles
+plot(result.LDB, type = "FRP", nc = 3, nr = 2)
+```
+
+
+このモデルでは、各ランクと各フィールドの正答数を視覚化するField PIRPプロファイルを描画することができます。
+
+
+```{r plot-ldb-fieldpirp, fig.width=7, fig.height=5, message=FALSE, warning=FALSE}
+plot(result.LDB, type = "FieldPIRP")
+```
+
+
+## バイクラスターネットワークモデル
+
+バイクラスターネットワークモデル（BINET）は、ベイジアンネットワークモデルとバイクラスタリングを組み合わせたモデルです。BINETはLDBやLDRと非常に似ています。
+
+最も重要な違いは、LDBではノードがフィールドを表すのに対し、BINETではクラスを表すことです。BINETは各潜在フィールド（これがlocusとなります）における潜在クラス間の局所依存構造を探索します。
+
+この分析を実行するには、データセットに加えて、探索的バイクラスタリング時に使用したのと同じフィールド対応ファイル、およびクラス間の隣接行列が必要です。
+
+
+```{r setup-binet}
+# Create field configuration vector for item assignment
+conf <- c(1, 5, 5, 5, 9, 9, 6, 6, 6, 6, 2, 7, 7, 11, 11, 7, 7, 12, 12, 12, 2, 2, 3, 3, 4, 4, 4, 8, 8, 12, 1, 1, 6, 10, 10)
+
+# Create edge data for network structure between classes
+edges_data <- data.frame(
+  "From Class (Parent) >>>" = c(
+    1, 2, 3, 4, 5, 7, # Dependencies in various fields
+    2, 4, 6, 8, 10,
+    6, 6, 11, 8, 9, 12
+  ),
+  ">>> To Class (Child)" = c(
+    2, 4, 5, 5, 6, 11, # Target classes
+    3, 7, 9, 12, 12,
+    10, 8, 12, 12, 11, 13
+  ),
+  "At Field (Locus)" = c(
+    1, 2, 2, 3, 4, 4, # Field locations
+    5, 5, 5, 5, 5,
+    7, 8, 8, 9, 9, 12
+  )
+)
+
+# Save edge data to temporary file
+edgeFile <- tempfile(fileext = ".csv")
+write.csv(edges_data, file = edgeFile, row.names = FALSE)
+```
+
+
+このモデルには3つの要素が必要です：
+
+1. 項目のフィールド割り当て（confベクトル）
+2. 各フィールドのクラス間ネットワーク構造
+3. クラス数とフィールド数
+
+
+```{r model-binet, message=FALSE, warning=FALSE}
+# Fit Bicluster Network Model
+result.BINET <- BINET(
+  U = J35S515,
+  ncls = 13, # Maximum class number from edges (13)
+  nfld = 12, # Maximum field number from conf (12)
+  conf = conf, # Field configuration vector
+  adj_file = edgeFile # Network structure file
+)
+
+# Display model results
+print(result.BINET)
+```
+
+```{r,include=FALSE}
+# Clean up temporary file
+unlink(edgeFile)
+```
+
+
+もちろん、様々な種類のプロットもサポートしています。
+
+
+```{r plot-binet, message=FALSE, warning=FALSE}
+# Show bicluster structure
+plot(result.BINET, type = "Array")
+# Test Response Profile
+plot(result.BINET, type = "TRP")
+# Latent Rank Distribution
+plot(result.BINET, type = "LRD")
+# Rank Membership Profiles for first 9 students
+plot(result.BINET, type = "RMP", students = 1:9, nc = 3, nr = 3)
+# Field Reference Profiles
+plot(result.BINET, type = "FRP", nc = 3, nr = 2)
+```
+
+
+LDPSRプロットは、それぞれの親と比較した、すべての局所依存クラスの合格者率を示します。
+
+
+```{r plot-binet-ldpsr, message=FALSE, warning=FALSE}
+# Locally Dependent Passing Student Rates
+plot(result.BINET, type = "LDPSR", nc = 3, nr = 2)
+```
+
+## モデルとプロットオプションの対応表
+
+| モデル/タイプ | IIC | ICC | TIC | IRP | FRP | TRP | LCD/LRD | CMP/RMP | Array | FieldPIRP | LDPSR |
+|--------------|:---:|:---:|:---:|:---:|:---:|:---:|:-------:|:-------:|:-----:|:---------:|:-----:|
+| IRT            |  ◯  |  ◯  |  ◯  |     |     |     |         |         |       |           |       |
+| LCA            |     |     |     |  ◯  |  ◯  |  ◯  |    ◯    |    ◯    |       |           |       |
+| LRA            |     |     |     |  ◯  |  ◯  |  ◯  |    ◯    |    ◯    |       |           |       |
+| Biclustering   |     |     |     |  ◯  |  ◯  |  ◯  |    ◯    |    ◯    |   ◯   |           |       |
+| IRM            |     |     |     |     |  ◯  |  ◯  |         |         |   ◯   |           |       |
+| LDLRA          |     |     |     |  ◯  |     |     |    ◯    |    ◯    |       |           |       |
+| LDB            |     |     |     |     |  ◯  |  ◯  |    ◯    |    ◯    |   ◯   |     ◯     |       |
+| BINET          |     |     |     |     |  ◯  |  ◯  |    ◯    |    ◯    |   ◯   |           |   ◯   |
+
+## よくある問題と解決方法
+
+### データの準備
+
+- 欠測値
+ - NA値がサポートされています
+ - `dataFormat()`を使用して欠測値を適切に処理
+ - 空文字列や特殊な欠測値コードは避ける
+
+- データ構造
+ - 反応データは数値でなければなりません
+ - 2値データは0/1である必要があります
+ - 多値データは順序付き整数である必要があります
+
+### ネットワーク構造の指定
+
+LDLRA、LDB、BINETを使用する際のネットワーク指定に関する一般的な問題：
+
+- ファイル形式
+ - CSVファイルにはヘッダーが必要です
+ - 列名は期待される形式と一致する必要があります
+ - 余分な空白や非表示文字がないか確認
+
+- グラフ構造
+ - 非循環（DAG）でなければなりません
+ - 親子関係は論理的な順序を尊重する必要があります
+ - ノードあたりの親の数は適切な範囲である必要があります
+
+### 収束の問題
+
+反復手続き（IRT、LCA、LRA）について：
+- 異なる初期値を試してみる
+- 最大反復回数を調整する
+- モデルの複雑さを減らすことを検討する
+
+### メモリ管理
+
+大規模データセットの場合：
+- まず部分集合で分析を試みる
+- 大きな行列を使用する際はメモリ使用量を監視する
+- 効率的なデータ構造を使用する
+
+## ベストプラクティス
+
+1. データの検証
+  - `str()`でデータ構造を必ず確認
+  - `summary()`で予期しない値をチェック
+  - `TestStatistics()`で反応パターンを確認
+
+2. モデル構築
+  - より単純なモデルから開始
+  - 段階的に複雑さを増やす
+  - 複数のモデル指定を比較
+
+3. 結果の解釈
+  - 複数の種類のプロットを使用
+  - モデル適合度統計量を確認
+  - 領域知識に照らして結果を検証
+## コミュニティとサポート
+
+`exametrika`の改善のため、コミュニティの参加とフィードバックを歓迎します。以下が参加方法とサポートの受け方です：
+
+### 問題の報告
+
+バグを発見した場合や改善の提案がある場合：
+- [GitHub Issues](https://github.com/kosugitti/exametrika/issues)に課題を開く
+- 最小限の再現可能な例を提供する
+- Rのセッション情報（`sessionInfo()`）を含める
+
+### ディスカッションとコミュニティ
+
+コミュニティディスカッションに参加してください：
+- 質問をする
+- 使用事例を共有する
+- 機能リクエストについて議論する
+- ヒントやコツを交換する
+- パッケージの開発に関する最新情報を得る
+
+[GitHub Discussions](https://github.com/kosugitti/exametrika/discussions)ページで参加できます。
+
+### コントリビューション
+
+コミュニティからの貢献を歓迎します：
+- Issuesを通じたバグ報告と機能リクエスト
+- Discussionsを通じた使用例とヒントの共有
+- プルリクエストを通じたコードの改善
+
+重複を避けるため、投稿前に既存のIssuesとDiscussionsをご確認ください。
+
+## 参考文献
+
+Shojima,K. (2022) Test Data Engineering: Latent Rank Analysis, Biclustering, and Bayesian Network (Behaviormetrics: Quantitative Approaches to Human Behavior, 13), Springer.
+
+## 今後の更新予定
+
+### 今後実装予定の機能
+
+#### 多値データ対応
+- 項目反応理論
+ - 段階反応モデル（GRM）
+ - 部分採点モデル（PCM）
+ - 一般化部分採点モデル（GPCM）
+- 潜在構造分析
+ - 多値潜在ランクモデル
+ - 多値潜在クラス分析
+ - 多値データ用拡張バイクラスタリング
+- ネットワークモデル
+ - 多値反応用LDLRA拡張
+ - 多値局所依存バイクラスタリング
+
+#### パッケージ開発
+- CRAN公開
+- パッケージロゴとビジュアルアイデンティティ
+- 追加のビネットとドキュメント
+- 大規模データセット向けのパフォーマンス最適化
+
+### 現在の開発状況
+- 2値反応モデル：✅ 実装済み
+- 多値反応モデル：🚧 開発中
+- CRAN投稿：🚧 審査中
+
+開発の進捗状況の確認や希望する機能についてのフィードバックを提供するには、[GitHubリポジトリ](https://github.com/kosugitti/exametrika)をフォローし、[Discussions](https://github.com/kosugitti/exametrika/discussions)に参加してください。
+
+## 引用
+
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.11529926.svg)](https://doi.org/10.5281/zenodo.11529926)

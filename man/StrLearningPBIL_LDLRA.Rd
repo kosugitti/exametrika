@@ -108,11 +108,11 @@ For more details, please refer to Fukuda(2014) and Section
 # Perform Structure Learning for LDLRA using PBIL algorithm
 # This process may take considerable time due to evolutionary optimization
 result.LDLRA.PBIL <- StrLearningPBIL_LDLRA(J35S515,
-                                           seed = 123,       # Set random seed for reproducibility
-                                           ncls = 5,         # Number of latent ranks
-                                           method = "R",     # Use rank model (vs. class model)
-                                           elitism = 1,      # Keep best solution in each generation
-                                           successiveLimit = 15  # Convergence criterion
+  seed = 123, # Set random seed for reproducibility
+  ncls = 5, # Number of latent ranks
+  method = "R", # Use rank model (vs. class model)
+  elitism = 1, # Keep best solution in each generation
+  successiveLimit = 15 # Convergence criterion
 )
 
 # Examine the learned network structure

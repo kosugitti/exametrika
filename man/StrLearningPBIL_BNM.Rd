@@ -92,12 +92,12 @@ with each generation. For more details, please refer to Fukuda(2014) and Section
 # Perform Structure Learning for Bayesian Network Model using PBIL
 # (Population-Based Incremental Learning)
 StrLearningPBIL_BNM(J5S10,
-                    population = 20,    # Size of population in each generation
-                    Rs = 0.5,          # 50\% survival rate for next generation
-                    Rm = 0.005,        # 0.5\% mutation rate for genetic diversity
-                    maxParents = 2,    # Maximum of 2 parent nodes per item
-                    alpha = 0.05,      # Learning rate for probability update
-                    estimate = 4       # Use rounded generational gene method
+  population = 20, # Size of population in each generation
+  Rs = 0.5, # 50\% survival rate for next generation
+  Rm = 0.005, # 0.5\% mutation rate for genetic diversity
+  maxParents = 2, # Maximum of 2 parent nodes per item
+  alpha = 0.05, # Learning rate for probability update
+  estimate = 4 # Use rounded generational gene method
 )
 }
 }

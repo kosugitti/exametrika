@@ -1,0 +1,8 @@
+# Site settings
+title: exametrika
+description: Test Data Engineering tools for R
+baseurl: "/exametrika"
+url: "https://kosugitti.github.io"
+
+# Build settings
+markdown: kramdown

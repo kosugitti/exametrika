@@ -58,11 +58,11 @@ structure is specified.
 DAG <-
   matrix(
     c(
-      "Item01", "Item02",  # Item01 influences Item02
-      "Item02", "Item03",  # Item02 influences Item03
-      "Item02", "Item04",  # Item02 influences Item04
-      "Item03", "Item05",  # Item03 influences Item05
-      "Item04", "Item05"   # Item04 influences Item05
+      "Item01", "Item02", # Item01 influences Item02
+      "Item02", "Item03", # Item02 influences Item03
+      "Item02", "Item04", # Item02 influences Item04
+      "Item03", "Item05", # Item03 influences Item05
+      "Item04", "Item05" # Item04 influences Item05
     ),
     ncol = 2, byrow = TRUE
   )
@@ -73,7 +73,7 @@ g
 
 # Create adjacency matrix from the graph
 # Shows direct connections between items (1 for connection, 0 for no connection)
-adj_mat <- as.matrix(igraph::get.adjacency(g))
+adj_mat <- as.matrix(igraph::as_adjacency_matrix(g))
 print(adj_mat)
 
 # Fit Bayesian Network Model using the specified adjacency matrix

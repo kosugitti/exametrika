@@ -469,7 +469,7 @@ unlink(edgeFile)
 
 You can learn item-interaction graphs for each rank using the PBIL algorithm. In addition to various options, the learning process requires a very long computation time. It's also important to note that the result is merely one of the feasible solutions, and it's not necessarily the optimal solution.
 
-```{r model-pbil-ldlra, message=FALSE, warning=FALSE, eval=TRUE}
+```{r model-pbil-ldlra, message=FALSE, warning=FALSE, eval=F}
 result.LDLRA.PBIL <- StrLearningPBIL_LDLRA(J35S515,
   seed = 123,
   ncls = 5,

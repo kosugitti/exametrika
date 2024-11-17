@@ -1,103 +1,81 @@
-# カレントディレクトリを保存
-old_dir <- getwd()
-on.exit(setwd(old_dir))
+build_site <- function() {
+  # カレントディレクトリを保存
+  old_dir <- getwd()
+  on.exit(setwd(old_dir))
 
-message("Building documentation...")
-# まずdocsディレクトリのファイルをビルド
-message("Building docs site...")
-setwd("docs")
+  message("Building documentation...")
 
-# 画像ファイルのディレクトリを作成
-dir.create("figures", showWarnings = FALSE)
+  # docsディレクトリに移動
+  setwd("docs")
 
-# 英語版をレンダリングして図を生成
-message("Rendering English version...")
-rmarkdown::render("index.Rmd",
-  output_format = "html_document",
-  output_options = list(
-    self_contained = FALSE,
-    lib_dir = "libs",
-    fig_path = "figures/"
-  ),
-  output_file = "index.html"
-)
+  # setup chunkの内容を確認
+  message("\nChecking Rmd files setup chunks:")
 
-# 生成された図のファイル名を取得
-fig_files <- list.files("figures", pattern = "\\.(png|jpg|jpeg|svg)$", full.names = TRUE)
-message("Generated figures: ", paste(basename(fig_files), collapse = ", "))
+  # index.Rmdのsetup確認
+  message("\nindex.Rmd setup:")
+  index_content <- readLines("index.Rmd")
+  setup_start <- which(grepl("^```\\{r setup,", index_content))
+  if (length(setup_start) > 0) {
+    setup_end <- setup_start + which(grepl("^```$", index_content[setup_start:length(index_content)]))[1] - 1
+    writeLines(index_content[setup_start:setup_end])
+  }
 
-# 日本語版のRmdを読み込んで修正
-message("Modifying Japanese version...")
-ja_content <- readLines("ja.Rmd")
+  # ja.Rmdのsetup確認
+  message("\nja.Rmd setup:")
+  ja_content <- readLines("ja.Rmd")
+  setup_start <- which(grepl("^```\\{r setup,", ja_content))
+  if (length(setup_start) > 0) {
+    setup_end <- setup_start + which(grepl("^```$", ja_content[setup_start:length(ja_content)]))[1] - 1
+    writeLines(ja_content[setup_start:setup_end])
+  }
 
-# setup chunkを探して修正
-setup_start <- which(grepl("^```\\{r setup,", ja_content))
-if (length(setup_start) > 0) {
-  setup_end <- setup_start + which(grepl("^```$", ja_content[setup_start:length(ja_content)]))[1] - 1
+  # HTML生成
+  message("\nGenerating HTML files...")
 
-  # 新しいsetup chunk（キャッシュを無効化し、既存の図を使用）
-  new_setup <- c(
-    "```{r setup, include=FALSE}",
-    "knitr::opts_chunk$set(",
-    "  cache = FALSE,", # キャッシュを無効化
-    "  fig.path = 'figures/',", # 図のパスは共通
-    "  eval = FALSE     # 図を生成せず表示のみ",
-    ")",
-    "```"
-  )
+  # 英語版
+  rmarkdown::render("index.Rmd",
+                    output_format = "html_document",
+                    output_file = "index.html")
 
-  # setup chunkを置換
-  ja_content <- c(
-    ja_content[1:(setup_start - 1)],
-    new_setup,
-    ja_content[(setup_end + 1):length(ja_content)]
-  )
+  # 日本語版
+  rmarkdown::render("ja.Rmd",
+                    output_format = "html_document",
+                    output_file = "ja.html")
+
+  # 生成された図を確認
+  message("\nChecking generated figures:")
+  if (dir.exists("figures")) {
+    fig_files <- list.files("figures", full.names = TRUE)
+    message("Found figures: ", paste(basename(fig_files), collapse = ", "))
+  } else {
+    message("No figures directory found")
+  }
+
+  # READMEの生成
+  setwd(old_dir)
+  message("\nCreating README.md...")
+
+  # index.Rmdから必要な部分を抽出
+  content <- readLines("docs/index.Rmd")
+  yaml_end <- which(content == "---")[2]
+  content <- content[(yaml_end + 1):length(content)]
+
+  # setup chunkを削除
+  setup_start <- which(grepl("^```\\{r setup,", content))
+  if (length(setup_start) > 0) {
+    setup_end <- setup_start + which(grepl("^```$", content[setup_start:length(content)]))[1] - 1
+    content <- content[-(setup_start:setup_end)]
+  }
+
+  # 言語切り替えリンクを修正
+  lang_link_idx <- grep("\\[English\\].*\\[日本語\\]", content)
+  if (length(lang_link_idx) > 0) {
+    content[lang_link_idx] <- "[English](docs/index.html) | [日本語](docs/ja.html)"
+  }
+
+  writeLines(content, "README.md")
+
+  message("\nDocumentation built successfully!")
 }
 
-# 修正した日本語版を一時ファイルに保存
-temp_ja <- tempfile(fileext = ".Rmd")
-writeLines(ja_content, temp_ja)
-
-# 修正した日本語版をレンダリング
-message("Rendering Japanese version...")
-rmarkdown::render(temp_ja,
-  output_format = "html_document",
-  output_options = list(
-    self_contained = FALSE,
-    lib_dir = "libs",
-    fig_path = "figures/"
-  ),
-  output_file = "ja.html",
-  knit_root_dir = getwd()
-) # 重要：元のディレクトリでknitする
-
-unlink(temp_ja) # 一時ファイルを削除
-
-# ルートディレクトリに戻る
-setwd(old_dir)
-
-# README.md作成
-message("Creating README.md...")
-content <- readLines("docs/index.Rmd")
-
-# YAMLヘッダーを削除
-yaml_end <- which(content == "---")[2]
-content <- content[(yaml_end + 1):length(content)]
-
-# setup chunkを削除（あれば）
-setup_start <- which(grepl("^```\\{r setup,", content))
-if (length(setup_start) > 0) {
-  setup_end <- setup_start + which(grepl("^```$", content[setup_start:length(content)]))[1] - 1
-  content <- content[-(setup_start:setup_end)]
-}
-
-# 言語切り替えリンクを修正
-lang_link_idx <- grep("\\[English\\].*\\[日本語\\]", content)
-if (length(lang_link_idx) > 0) {
-  content[lang_link_idx] <- "[English](docs/index.html) | [日本語](docs/ja.html)"
-}
-
-# README.mdとして書き出し
-writeLines(content, "README.md")
-
-message("Documentation built successfully!")
+build_site()

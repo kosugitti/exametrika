@@ -1,5 +1,5 @@
 
-[English](README.html) \| [日本語](README_ja.html)
+[English](index.html) \| [日本語](ja.html)
 
 # exametrika
 
@@ -199,16 +199,22 @@ testing and learning:
   - J: Number of items (e.g., J15 = 15 items)
   - S: Sample size (e.g., S500 = 500 examinees)
 
-Available datasets: - J5S10: Very small dataset (5 items, 10
-examinees) - Useful for quick testing and understanding basic concepts -
-J12S5000: Large sample dataset (12 items, 5000 examinees) - Suitable for
-LDLRA and other advanced analyses - J14S500: Medium dataset (14 items,
-500 examinees) - J15S500: Medium dataset (15 items, 500 examinees) -
-Often used in IRT and LCA examples - J20S400: Medium dataset (20 items,
-400 examinees) - J35S515: Large item dataset (35 items, 515 examinees) -
-Used in Biclustering and network model examples
+Available datasets:
 
-## Test Statistics
+- J5S10: Very small dataset (5 items, 10 examinees)
+  - Useful for quick testing and understanding basic concepts
+- J12S5000: Large sample dataset (12 items, 5000 examinees)
+  - Suitable for LDLRA and other advanced analyses
+- J14S500: Medium dataset (14 items, 500 examinees)
+- J15S500: Medium dataset (15 items, 500 examinees)
+  - Often used in IRT and LCA examples
+- J20S400: Medium dataset (20 items, 400 examinees)
+- J35S515: Large item dataset (35 items, 515 examinees)
+  - Used in Biclustering and network model examples
+
+## Examples
+
+### Test Statistics
 
 ``` r
 TestStatistics(J15S500)
@@ -240,7 +246,7 @@ TestStatistics(J15S500)
     ## Stanine.89%  13.0000000
     ## Stanine.96%  14.0000000
 
-## ItemStatistics
+### ItemStatistics
 
 ``` r
 ItemStatistics(J15S500)
@@ -264,7 +270,7 @@ ItemStatistics(J15S500)
     ## 14    Item14 500 0.764 3.237    -0.719   0.788 0.485
     ## 15    Item15 500 0.706 2.401    -0.542   0.874 0.413
 
-## CTT Example
+### CTT
 
 ``` r
 CTT(J15S500)
@@ -297,7 +303,7 @@ CTT(J15S500)
     ## 14    Item14            0.593     0.598             0.745
     ## 15    Item15            0.607     0.612             0.759
 
-## IRT Example
+### IRT
 
 The IRT function estimates the number of parameters using a logistic
 model, which can be specified using the `model` option. It supports 2PL,
@@ -327,54 +333,38 @@ result.IRT
     ## Item15 0.908   -0.812    0.1531      0.159         0.383         0.1254
     ## 
     ## Item Fit Indices
-    ##        model_log_like bench_log_like null_log_like model_Chi_sq null_Chi_sq
-    ## Item01       -262.979       -240.190      -283.343       45.578      86.307
-    ## Item02       -253.405       -235.436      -278.949       35.937      87.025
-    ## Item03       -280.640       -260.906      -293.598       39.468      65.383
-    ## Item04       -204.884       -192.072      -265.962       25.623     147.780
-    ## Item05       -232.135       -206.537      -247.403       51.196      81.732
-    ## Item06       -173.669       -153.940      -198.817       39.459      89.755
-    ## Item07       -250.905       -228.379      -298.345       45.053     139.933
-    ## Item08       -314.781       -293.225      -338.789       43.111      91.127
-    ## Item09       -321.920       -300.492      -327.842       42.856      54.700
-    ## Item10       -309.318       -288.198      -319.850       42.240      63.303
-    ## Item11       -248.409       -224.085      -299.265       48.647     150.360
-    ## Item12       -238.877       -214.797      -293.598       48.160     157.603
-    ## Item13       -293.472       -262.031      -328.396       62.882     132.730
-    ## Item14       -223.473       -204.953      -273.212       37.040     136.519
-    ## Item15       -271.903       -254.764      -302.847       34.279      96.166
-    ##        model_df null_df   NFI   RFI   IFI   TLI   CFI RMSEA    AIC    CAIC
-    ## Item01       11      13 0.472 0.376 0.541 0.443 0.528 0.079 23.578 -22.805
-    ## Item02       11      13 0.587 0.512 0.672 0.602 0.663 0.067 13.937 -32.446
-    ## Item03       11      13 0.396 0.287 0.477 0.358 0.457 0.072 17.468 -28.915
-    ## Item04       11      13 0.827 0.795 0.893 0.872 0.892 0.052  3.623 -42.759
-    ## Item05       11      13 0.374 0.260 0.432 0.309 0.415 0.086 29.196 -17.186
-    ## Item06       11      13 0.560 0.480 0.639 0.562 0.629 0.072 17.459 -28.924
-    ## Item07       11      13 0.678 0.620 0.736 0.683 0.732 0.079 23.053 -23.330
-    ## Item08       11      13 0.527 0.441 0.599 0.514 0.589 0.076 21.111 -25.272
-    ## Item09       11      13 0.217 0.074 0.271 0.097 0.236 0.076 20.856 -25.527
-    ## Item10       11      13 0.333 0.211 0.403 0.266 0.379 0.075 20.240 -26.143
-    ## Item11       11      13 0.676 0.618 0.730 0.676 0.726 0.083 26.647 -19.735
-    ## Item12       11      13 0.694 0.639 0.747 0.696 0.743 0.082 26.160 -20.223
-    ## Item13       11      13 0.526 0.440 0.574 0.488 0.567 0.097 40.882  -5.501
-    ## Item14       11      13 0.729 0.679 0.793 0.751 0.789 0.069 15.040 -31.343
-    ## Item15       11      13 0.644 0.579 0.727 0.669 0.720 0.065 12.279 -34.104
-    ##            BIC
-    ## Item01 -22.783
-    ## Item02 -32.424
-    ## Item03 -28.893
-    ## Item04 -42.737
-    ## Item05 -17.164
-    ## Item06 -28.902
-    ## Item07 -23.308
-    ## Item08 -25.250
-    ## Item09 -25.505
-    ## Item10 -26.121
-    ## Item11 -19.713
-    ## Item12 -20.201
-    ## Item13  -5.479
-    ## Item14 -31.321
-    ## Item15 -34.082
+    ##        model_log_like bench_log_like null_log_like model_Chi_sq null_Chi_sq model_df null_df   NFI   RFI   IFI
+    ## Item01       -262.979       -240.190      -283.343       45.578      86.307       11      13 0.472 0.376 0.541
+    ## Item02       -253.405       -235.436      -278.949       35.937      87.025       11      13 0.587 0.512 0.672
+    ## Item03       -280.640       -260.906      -293.598       39.468      65.383       11      13 0.396 0.287 0.477
+    ## Item04       -204.884       -192.072      -265.962       25.623     147.780       11      13 0.827 0.795 0.893
+    ## Item05       -232.135       -206.537      -247.403       51.196      81.732       11      13 0.374 0.260 0.432
+    ## Item06       -173.669       -153.940      -198.817       39.459      89.755       11      13 0.560 0.480 0.639
+    ## Item07       -250.905       -228.379      -298.345       45.053     139.933       11      13 0.678 0.620 0.736
+    ## Item08       -314.781       -293.225      -338.789       43.111      91.127       11      13 0.527 0.441 0.599
+    ## Item09       -321.920       -300.492      -327.842       42.856      54.700       11      13 0.217 0.074 0.271
+    ## Item10       -309.318       -288.198      -319.850       42.240      63.303       11      13 0.333 0.211 0.403
+    ## Item11       -248.410       -224.085      -299.265       48.648     150.360       11      13 0.676 0.618 0.730
+    ## Item12       -238.877       -214.797      -293.598       48.160     157.603       11      13 0.694 0.639 0.747
+    ## Item13       -293.472       -262.031      -328.396       62.882     132.730       11      13 0.526 0.440 0.574
+    ## Item14       -223.473       -204.953      -273.212       37.040     136.519       11      13 0.729 0.679 0.793
+    ## Item15       -271.903       -254.764      -302.847       34.279      96.166       11      13 0.644 0.579 0.727
+    ##          TLI   CFI RMSEA    AIC    CAIC     BIC
+    ## Item01 0.443 0.528 0.079 23.578 -22.805 -22.783
+    ## Item02 0.602 0.663 0.067 13.937 -32.446 -32.424
+    ## Item03 0.358 0.457 0.072 17.468 -28.915 -28.893
+    ## Item04 0.872 0.892 0.052  3.623 -42.759 -42.737
+    ## Item05 0.309 0.415 0.086 29.196 -17.186 -17.164
+    ## Item06 0.562 0.629 0.072 17.459 -28.924 -28.902
+    ## Item07 0.683 0.732 0.079 23.053 -23.330 -23.308
+    ## Item08 0.514 0.589 0.076 21.111 -25.272 -25.250
+    ## Item09 0.097 0.236 0.076 20.856 -25.527 -25.505
+    ## Item10 0.266 0.379 0.075 20.240 -26.143 -26.121
+    ## Item11 0.676 0.726 0.083 26.648 -19.735 -19.713
+    ## Item12 0.696 0.743 0.082 26.160 -20.223 -20.201
+    ## Item13 0.488 0.567 0.097 40.882  -5.501  -5.479
+    ## Item14 0.751 0.789 0.069 15.040 -31.343 -31.321
+    ## Item15 0.669 0.720 0.065 12.279 -34.104 -34.082
     ## 
     ## Model Fit Indices
     ##                    value
@@ -402,12 +392,12 @@ head(result.IRT$ability)
 ```
 
     ##       tmp$ID         EAP       PSD
-    ## 1 Student001 -0.75526589 0.5805691
-    ## 2 Student002 -0.17398780 0.5473603
-    ## 3 Student003  0.01382262 0.5530501
-    ## 4 Student004  0.57628258 0.5749110
-    ## 5 Student005 -0.97449591 0.5915604
-    ## 6 Student006  0.85232796 0.5820541
+    ## 1 Student001 -0.75526238 0.5805679
+    ## 2 Student002 -0.17398742 0.5473610
+    ## 3 Student003  0.01382355 0.5530509
+    ## 4 Student004  0.57628579 0.5749125
+    ## 5 Student005 -0.97449552 0.5915605
+    ## 6 Student006  0.85232605 0.5820542
 
 The plots offer options for Item Characteristic Curves (ICC), Item
 Information Curves (IIC), and Test Information Curves (TIC), which can
@@ -420,21 +410,21 @@ specified using `nr` and `nc`, respectively.
 plot(result.IRT, type = "ICC", items = 1:6, nc = 2, nr = 3)
 ```
 
-![](README_files/figure-gfm/plot-irt-curves-1.png)<!-- -->
+![](figures/plot-irt-curves-1.png)<!-- -->
 
 ``` r
 plot(result.IRT, type = "IIC", items = 1:6, nc = 2, nr = 3)
 ```
 
-![](README_files/figure-gfm/plot-irt-curves-2.png)<!-- -->
+![](figures/plot-irt-curves-2.png)<!-- -->
 
 ``` r
 plot(result.IRT, type = "TIC")
 ```
 
-![](README_files/figure-gfm/plot-irt-curves-3.png)<!-- -->
+![](figures/plot-irt-curves-3.png)<!-- -->
 
-## LCA Example
+### LCA Example
 
 Latent Class Analysis requires specifying the dataset and the number of
 classes.
@@ -469,54 +459,38 @@ LCA(J15S500, ncls = 5)
     ## Class Membership Distribution  90.372  97.105 105.238 102.800 104.484
     ## 
     ## Item Fit Indices
-    ##        model_log_like bench_log_like null_log_like model_Chi_sq null_Chi_sq
-    ## Item01       -264.179       -240.190      -283.343       47.978      86.307
-    ## Item02       -256.363       -235.436      -278.949       41.853      87.025
-    ## Item03       -237.888       -260.906      -293.598      -46.037      65.383
-    ## Item04       -208.536       -192.072      -265.962       32.928     147.780
-    ## Item05       -226.447       -206.537      -247.403       39.819      81.732
-    ## Item06       -164.762       -153.940      -198.817       21.644      89.755
-    ## Item07       -249.377       -228.379      -298.345       41.997     139.933
-    ## Item08       -295.967       -293.225      -338.789        5.483      91.127
-    ## Item09       -294.250       -300.492      -327.842      -12.484      54.700
-    ## Item10       -306.985       -288.198      -319.850       37.574      63.303
-    ## Item11       -187.202       -224.085      -299.265      -73.767     150.360
-    ## Item12       -232.307       -214.797      -293.598       35.020     157.603
-    ## Item13       -267.647       -262.031      -328.396       11.232     132.730
-    ## Item14       -203.468       -204.953      -273.212       -2.969     136.519
-    ## Item15       -268.616       -254.764      -302.847       27.705      96.166
-    ##        model_df null_df   NFI   RFI   IFI   TLI   CFI RMSEA     AIC     CAIC
-    ## Item01        9      13 0.444 0.197 0.496 0.232 0.468 0.093  29.978   -7.972
-    ## Item02        9      13 0.519 0.305 0.579 0.359 0.556 0.086  23.853  -14.097
-    ## Item03        9      13 1.000 1.000 1.000 1.000 1.000 0.000 -64.037 -101.987
-    ## Item04        9      13 0.777 0.678 0.828 0.744 0.822 0.073  14.928  -23.022
-    ## Item05        9      13 0.513 0.296 0.576 0.352 0.552 0.083  21.819  -16.130
-    ## Item06        9      13 0.759 0.652 0.843 0.762 0.835 0.053   3.644  -34.305
-    ## Item07        9      13 0.700 0.566 0.748 0.625 0.740 0.086  23.997  -13.952
-    ## Item08        9      13 0.940 0.913 1.000 1.000 1.000 0.000 -12.517  -50.466
-    ## Item09        9      13 1.000 1.000 1.000 1.000 1.000 0.000 -30.484  -68.433
-    ## Item10        9      13 0.406 0.143 0.474 0.179 0.432 0.080  19.574  -18.375
-    ## Item11        9      13 1.000 1.000 1.000 1.000 1.000 0.000 -91.767 -129.716
-    ## Item12        9      13 0.778 0.679 0.825 0.740 0.820 0.076  17.020  -20.930
-    ## Item13        9      13 0.915 0.878 0.982 0.973 0.981 0.022  -6.768  -44.717
-    ## Item14        9      13 1.000 1.000 1.000 1.000 1.000 0.000 -20.969  -58.919
-    ## Item15        9      13 0.712 0.584 0.785 0.675 0.775 0.065   9.705  -28.244
-    ##             BIC
-    ## Item01   -7.954
-    ## Item02  -14.079
-    ## Item03 -101.969
-    ## Item04  -23.004
-    ## Item05  -16.112
-    ## Item06  -34.287
-    ## Item07  -13.934
-    ## Item08  -50.448
-    ## Item09  -68.415
-    ## Item10  -18.357
-    ## Item11 -129.698
-    ## Item12  -20.912
-    ## Item13  -44.699
-    ## Item14  -58.901
-    ## Item15  -28.226
+    ##        model_log_like bench_log_like null_log_like model_Chi_sq null_Chi_sq model_df null_df   NFI   RFI   IFI
+    ## Item01       -264.179       -240.190      -283.343       47.978      86.307        9      13 0.444 0.197 0.496
+    ## Item02       -256.363       -235.436      -278.949       41.853      87.025        9      13 0.519 0.305 0.579
+    ## Item03       -237.888       -260.906      -293.598      -46.037      65.383        9      13 1.000 1.000 1.000
+    ## Item04       -208.536       -192.072      -265.962       32.928     147.780        9      13 0.777 0.678 0.828
+    ## Item05       -226.447       -206.537      -247.403       39.819      81.732        9      13 0.513 0.296 0.576
+    ## Item06       -164.762       -153.940      -198.817       21.644      89.755        9      13 0.759 0.652 0.843
+    ## Item07       -249.377       -228.379      -298.345       41.997     139.933        9      13 0.700 0.566 0.748
+    ## Item08       -295.967       -293.225      -338.789        5.483      91.127        9      13 0.940 0.913 1.000
+    ## Item09       -294.250       -300.492      -327.842      -12.484      54.700        9      13 1.000 1.000 1.000
+    ## Item10       -306.985       -288.198      -319.850       37.574      63.303        9      13 0.406 0.143 0.474
+    ## Item11       -187.202       -224.085      -299.265      -73.767     150.360        9      13 1.000 1.000 1.000
+    ## Item12       -232.307       -214.797      -293.598       35.020     157.603        9      13 0.778 0.679 0.825
+    ## Item13       -267.647       -262.031      -328.396       11.232     132.730        9      13 0.915 0.878 0.982
+    ## Item14       -203.468       -204.953      -273.212       -2.969     136.519        9      13 1.000 1.000 1.000
+    ## Item15       -268.616       -254.764      -302.847       27.705      96.166        9      13 0.712 0.584 0.785
+    ##          TLI   CFI RMSEA     AIC     CAIC      BIC
+    ## Item01 0.232 0.468 0.093  29.978   -7.972   -7.954
+    ## Item02 0.359 0.556 0.086  23.853  -14.097  -14.079
+    ## Item03 1.000 1.000 0.000 -64.037 -101.987 -101.969
+    ## Item04 0.744 0.822 0.073  14.928  -23.022  -23.004
+    ## Item05 0.352 0.552 0.083  21.819  -16.130  -16.112
+    ## Item06 0.762 0.835 0.053   3.644  -34.305  -34.287
+    ## Item07 0.625 0.740 0.086  23.997  -13.952  -13.934
+    ## Item08 1.000 1.000 0.000 -12.517  -50.466  -50.448
+    ## Item09 1.000 1.000 0.000 -30.484  -68.433  -68.415
+    ## Item10 0.179 0.432 0.080  19.574  -18.375  -18.357
+    ## Item11 1.000 1.000 0.000 -91.767 -129.716 -129.698
+    ## Item12 0.740 0.820 0.076  17.020  -20.930  -20.912
+    ## Item13 0.973 0.981 0.022  -6.768  -44.717  -44.699
+    ## Item14 1.000 1.000 0.000 -20.969  -58.919  -58.901
+    ## Item15 0.675 0.775 0.065   9.705  -28.244  -28.226
     ## 
     ## Model Fit Indices
     ## Number of Latent class: 5
@@ -563,27 +537,27 @@ each, please refer to Shojima (2022).
 plot(result.LCA, type = "IRP", items = 1:6, nc = 2, nr = 3)
 ```
 
-![](README_files/figure-gfm/plot-lca-1.png)<!-- -->
+![](figures/plot-lca-1.png)<!-- -->
 
 ``` r
 plot(result.LCA, type = "CMP", students = 1:9, nc = 3, nr = 3)
 ```
 
-![](README_files/figure-gfm/plot-lca-2.png)<!-- -->
+![](figures/plot-lca-2.png)<!-- -->
 
 ``` r
 plot(result.LCA, type = "TRP")
 ```
 
-![](README_files/figure-gfm/plot-lca-3.png)<!-- -->
+![](figures/plot-lca-3.png)<!-- -->
 
 ``` r
 plot(result.LCA, type = "LCD")
 ```
 
-![](README_files/figure-gfm/plot-lca-4.png)<!-- -->
+![](figures/plot-lca-4.png)<!-- -->
 
-## LRA Example
+### LRA Example
 
 Latent Rank Analysis requires specifying the dataset and the number of
 classes.
@@ -635,54 +609,38 @@ LRA(J15S500, nrank = 6)
     ## Class Membership Distribution  83.755  78.691  81.853  84.918  84.238  86.545
     ## 
     ## Item Fit Indices
-    ##        model_log_like bench_log_like null_log_like model_Chi_sq null_Chi_sq
-    ## Item01       -264.495       -240.190      -283.343       48.611      86.307
-    ## Item02       -253.141       -235.436      -278.949       35.409      87.025
-    ## Item03       -282.785       -260.906      -293.598       43.758      65.383
-    ## Item04       -207.082       -192.072      -265.962       30.021     147.780
-    ## Item05       -234.902       -206.537      -247.403       56.730      81.732
-    ## Item06       -168.218       -153.940      -198.817       28.556      89.755
-    ## Item07       -250.864       -228.379      -298.345       44.970     139.933
-    ## Item08       -312.621       -293.225      -338.789       38.791      91.127
-    ## Item09       -317.600       -300.492      -327.842       34.216      54.700
-    ## Item10       -309.654       -288.198      -319.850       42.910      63.303
-    ## Item11       -242.821       -224.085      -299.265       37.472     150.360
-    ## Item12       -236.522       -214.797      -293.598       43.451     157.603
-    ## Item13       -287.782       -262.031      -328.396       51.502     132.730
-    ## Item14       -221.702       -204.953      -273.212       33.499     136.519
-    ## Item15       -267.793       -254.764      -302.847       26.059      96.166
-    ##        model_df null_df   NFI   RFI   IFI   TLI   CFI RMSEA    AIC    CAIC
-    ## Item01    9.233      13 0.437 0.207 0.489 0.244 0.463 0.092 30.146  -8.785
-    ## Item02    9.233      13 0.593 0.427 0.664 0.502 0.646 0.075 16.944 -21.987
-    ## Item03    9.233      13 0.331 0.058 0.385 0.072 0.341 0.087 25.293 -13.638
-    ## Item04    9.233      13 0.797 0.714 0.850 0.783 0.846 0.067 11.555 -27.375
-    ## Item05    9.233      13 0.306 0.023 0.345 0.027 0.309 0.102 38.264  -0.667
-    ## Item06    9.233      13 0.682 0.552 0.760 0.646 0.748 0.065 10.091 -28.840
-    ## Item07    9.233      13 0.679 0.548 0.727 0.604 0.718 0.088 26.504 -12.427
-    ## Item08    9.233      13 0.574 0.401 0.639 0.467 0.622 0.080 20.326 -18.605
-    ## Item09    9.233      13 0.374 0.119 0.451 0.156 0.401 0.074 15.751 -23.180
-    ## Item10    9.233      13 0.322 0.046 0.377 0.057 0.330 0.085 24.445 -14.486
-    ## Item11    9.233      13 0.751 0.649 0.800 0.711 0.794 0.078 19.006 -19.925
-    ## Item12    9.233      13 0.724 0.612 0.769 0.667 0.763 0.086 24.985 -13.946
-    ## Item13    9.233      13 0.612 0.454 0.658 0.503 0.647 0.096 33.037  -5.894
-    ## Item14    9.233      13 0.755 0.654 0.809 0.723 0.804 0.073 15.034 -23.897
-    ## Item15    9.233      13 0.729 0.618 0.806 0.715 0.798 0.060  7.593 -31.338
-    ##            BIC
-    ## Item01  -8.767
-    ## Item02 -21.969
-    ## Item03 -13.620
-    ## Item04 -27.357
-    ## Item05  -0.648
-    ## Item06 -28.822
-    ## Item07 -12.408
-    ## Item08 -18.587
-    ## Item09 -23.162
-    ## Item10 -14.467
-    ## Item11 -19.906
-    ## Item12 -13.927
-    ## Item13  -5.875
-    ## Item14 -23.879
-    ## Item15 -31.319
+    ##        model_log_like bench_log_like null_log_like model_Chi_sq null_Chi_sq model_df null_df   NFI   RFI   IFI
+    ## Item01       -264.495       -240.190      -283.343       48.611      86.307    9.233      13 0.437 0.207 0.489
+    ## Item02       -253.141       -235.436      -278.949       35.409      87.025    9.233      13 0.593 0.427 0.664
+    ## Item03       -282.785       -260.906      -293.598       43.758      65.383    9.233      13 0.331 0.058 0.385
+    ## Item04       -207.082       -192.072      -265.962       30.021     147.780    9.233      13 0.797 0.714 0.850
+    ## Item05       -234.902       -206.537      -247.403       56.730      81.732    9.233      13 0.306 0.023 0.345
+    ## Item06       -168.218       -153.940      -198.817       28.556      89.755    9.233      13 0.682 0.552 0.760
+    ## Item07       -250.864       -228.379      -298.345       44.970     139.933    9.233      13 0.679 0.548 0.727
+    ## Item08       -312.621       -293.225      -338.789       38.791      91.127    9.233      13 0.574 0.401 0.639
+    ## Item09       -317.600       -300.492      -327.842       34.216      54.700    9.233      13 0.374 0.119 0.451
+    ## Item10       -309.654       -288.198      -319.850       42.910      63.303    9.233      13 0.322 0.046 0.377
+    ## Item11       -242.821       -224.085      -299.265       37.472     150.360    9.233      13 0.751 0.649 0.800
+    ## Item12       -236.522       -214.797      -293.598       43.451     157.603    9.233      13 0.724 0.612 0.769
+    ## Item13       -287.782       -262.031      -328.396       51.502     132.730    9.233      13 0.612 0.454 0.658
+    ## Item14       -221.702       -204.953      -273.212       33.499     136.519    9.233      13 0.755 0.654 0.809
+    ## Item15       -267.793       -254.764      -302.847       26.059      96.166    9.233      13 0.729 0.618 0.806
+    ##          TLI   CFI RMSEA    AIC    CAIC     BIC
+    ## Item01 0.244 0.463 0.092 30.146  -8.785  -8.767
+    ## Item02 0.502 0.646 0.075 16.944 -21.987 -21.969
+    ## Item03 0.072 0.341 0.087 25.293 -13.638 -13.620
+    ## Item04 0.783 0.846 0.067 11.555 -27.375 -27.357
+    ## Item05 0.027 0.309 0.102 38.264  -0.667  -0.648
+    ## Item06 0.646 0.748 0.065 10.091 -28.840 -28.822
+    ## Item07 0.604 0.718 0.088 26.504 -12.427 -12.408
+    ## Item08 0.467 0.622 0.080 20.326 -18.605 -18.587
+    ## Item09 0.156 0.401 0.074 15.751 -23.180 -23.162
+    ## Item10 0.057 0.330 0.085 24.445 -14.486 -14.467
+    ## Item11 0.711 0.794 0.078 19.006 -19.925 -19.906
+    ## Item12 0.667 0.763 0.086 24.985 -13.946 -13.927
+    ## Item13 0.503 0.647 0.096 33.037  -5.894  -5.875
+    ## Item14 0.723 0.804 0.073 15.034 -23.897 -23.879
+    ## Item15 0.715 0.798 0.060  7.593 -31.338 -31.319
     ## 
     ## Model Fit Indices
     ## Number of Latent class: 6
@@ -715,46 +673,46 @@ result.LRA <- LRA(J15S500, nrank = 6)
 head(result.LRA$Students)
 ```
 
-    ##            Membership 1 Membership 2 Membership 3 Membership 4 Membership 5
-    ## Student001 0.2704649921  0.357479353   0.27632327  0.084988078  0.010069050
-    ## Student002 0.0276546965  0.157616072   0.47438958  0.279914853  0.053715813
-    ## Student003 0.0228189795  0.138860955   0.37884545  0.284817610  0.120794858
-    ## Student004 0.0020140858  0.015608542   0.09629429  0.216973334  0.362406292
-    ## Student005 0.5582996437  0.397431414   0.03841668  0.003365601  0.001443909
-    ## Student006 0.0003866603  0.003168853   0.04801344  0.248329964  0.428747502
-    ##            Membership 6 Estimate Rank-Up Odds Rank-Down Odds
-    ## Student001 0.0006752546        2    0.7729769      0.7565891
-    ## Student002 0.0067089816        3    0.5900527      0.3322503
-    ## Student003 0.0538621490        3    0.7518042      0.3665372
-    ## Student004 0.3067034562        5    0.8462973      0.5987019
-    ## Student005 0.0010427491        1    0.7118604             NA
-    ## Student006 0.2713535842        5    0.6328983      0.5791986
+    ##            Membership 1 Membership 2 Membership 3 Membership 4 Membership 5 Membership 6 Estimate Rank-Up Odds
+    ## Student001 0.2704649921  0.357479353   0.27632327  0.084988078  0.010069050 0.0006752546        2    0.7729769
+    ## Student002 0.0276546965  0.157616072   0.47438958  0.279914853  0.053715813 0.0067089816        3    0.5900527
+    ## Student003 0.0228189795  0.138860955   0.37884545  0.284817610  0.120794858 0.0538621490        3    0.7518042
+    ## Student004 0.0020140858  0.015608542   0.09629429  0.216973334  0.362406292 0.3067034562        5    0.8462973
+    ## Student005 0.5582996437  0.397431414   0.03841668  0.003365601  0.001443909 0.0010427491        1    0.7118604
+    ## Student006 0.0003866603  0.003168853   0.04801344  0.248329964  0.428747502 0.2713535842        5    0.6328983
+    ##            Rank-Down Odds
+    ## Student001      0.7565891
+    ## Student002      0.3322503
+    ## Student003      0.3665372
+    ## Student004      0.5987019
+    ## Student005             NA
+    ## Student006      0.5791986
 
 ``` r
 plot(result.LRA, type = "IRP", items = 1:6, nc = 2, nr = 3)
 ```
 
-![](README_files/figure-gfm/plot-lra-1.png)<!-- -->
+![](figures/plot-lra-1.png)<!-- -->
 
 ``` r
 plot(result.LRA, type = "RMP", students = 1:9, nc = 3, nr = 3)
 ```
 
-![](README_files/figure-gfm/plot-lra-2.png)<!-- -->
+![](figures/plot-lra-2.png)<!-- -->
 
 ``` r
 plot(result.LRA, type = "TRP")
 ```
 
-![](README_files/figure-gfm/plot-lra-3.png)<!-- -->
+![](figures/plot-lra-3.png)<!-- -->
 
 ``` r
 plot(result.LRA, type = "LRD")
 ```
 
-![](README_files/figure-gfm/plot-lra-4.png)<!-- -->
+![](figures/plot-lra-4.png)<!-- -->
 
-## Biclustering Example
+### Biclustering/Ranklustering
 
 Biclustering and Ranklustering algorithms are almost the same, differing
 only in whether they include a filtering matrix or not. The difference
@@ -828,25 +786,25 @@ result.Ranklustering <- Biclustering(J35S515, nfld = 5, ncls = 6, method = "R")
 plot(result.Ranklustering, type = "Array")
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-2-1.png)<!-- -->
+![](figures/unnamed-chunk-2-1.png)<!-- -->
 
 ``` r
 plot(result.Ranklustering, type = "FRP", nc = 2, nr = 3)
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-2-2.png)<!-- -->
+![](figures/unnamed-chunk-2-2.png)<!-- -->
 
 ``` r
 plot(result.Ranklustering, type = "RMP", students = 1:9, nc = 3, nr = 3)
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-2-3.png)<!-- -->
+![](figures/unnamed-chunk-2-3.png)<!-- -->
 
 ``` r
 plot(result.Ranklustering, type = "LRD")
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-2-4.png)<!-- -->
+![](figures/unnamed-chunk-2-4.png)<!-- -->
 
 To find the optimal number of classes and the optimal number of fields,
 the Infinite Relational Model is available.
@@ -896,25 +854,25 @@ result.IRM <- IRM(J35S515, gamma_c = 1, gamma_f = 1, verbose = TRUE)
 plot(result.IRM, type = "Array")
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-3-1.png)<!-- -->
+![](figures/unnamed-chunk-3-1.png)<!-- -->
 
 ``` r
 plot(result.IRM, type = "FRP", nc = 3)
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-3-2.png)<!-- -->![](README_files/figure-gfm/unnamed-chunk-3-3.png)<!-- -->![](README_files/figure-gfm/unnamed-chunk-3-4.png)<!-- -->![](README_files/figure-gfm/unnamed-chunk-3-5.png)<!-- -->
+![](figures/unnamed-chunk-3-2.png)<!-- -->![](figures/unnamed-chunk-3-3.png)<!-- -->![](figures/unnamed-chunk-3-4.png)<!-- -->![](figures/unnamed-chunk-3-5.png)<!-- -->
 
 ``` r
 plot(result.IRM, type = "TRP")
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-3-6.png)<!-- -->
+![](figures/unnamed-chunk-3-6.png)<!-- -->
 
 Additionally, supplementary notes on the derivation of the Infinite
 Relational Model with Chinese restaurant process is
 [here](https://kosugitti.github.io/kosugitti10/notes/IRM_memo.pdf).
 
-## Bayesian Network Model
+### Bayesian Network Model
 
 The Bayesian network model is a model that represents the conditional
 probabilities between items in a network format based on the pass rates
@@ -949,9 +907,9 @@ g <- igraph::graph_from_data_frame(DAG)
 g
 ```
 
-    ## IGRAPH 6357138 DN-- 5 5 -- 
+    ## IGRAPH 18d44d2 DN-- 5 5 -- 
     ## + attr: name (v/c)
-    ## + edges from 6357138 (vertex names):
+    ## + edges from 18d44d2 (vertex names):
     ## [1] Item01->Item02 Item02->Item03 Item02->Item04 Item03->Item05 Item04->Item05
 
 ``` r
@@ -1001,7 +959,7 @@ result.BNM
     ## [1] "Your graph is an acyclic graph."
     ## [1] "Your graph is connected DAG."
 
-![](README_files/figure-gfm/model-bnm-1.png)<!-- -->
+![](figures/model-bnm-1.png)<!-- -->
 
     ## 
     ## Parameter Learning
@@ -1045,7 +1003,7 @@ result.BNM
     ## CAIC           -13.005
     ## BIC            -11.099
 
-### Structure Learning for Bayesian network with GA
+#### Structure Learning for Bayesian network with GA
 
 The function searches for a DAG suitable for the data using a genetic
 algorithm. A best DAG is not necessarily identified. Instead of
@@ -1077,7 +1035,7 @@ StrLearningGA_BNM(J5S10,
     ## [1] "Your graph is an acyclic graph."
     ## [1] "Your graph is connected DAG."
 
-![](README_files/figure-gfm/model-ga-bnm-1.png)<!-- -->
+![](figures/model-ga-bnm-1.png)<!-- -->
 
     ## 
     ## Parameter Learning
@@ -1138,7 +1096,7 @@ StrLearningPBIL_BNM(J5S10,
     ## [1] "Your graph is an acyclic graph."
     ## [1] "Your graph is connected DAG."
 
-![](README_files/figure-gfm/model-pbil-bnm-1.png)<!-- -->
+![](figures/model-pbil-bnm-1.png)<!-- -->
 
     ## 
     ## Parameter Learning
@@ -1177,7 +1135,7 @@ StrLearningPBIL_BNM(J5S10,
     ## CAIC           -21.502
     ## BIC            -19.214
 
-## Local Dependence Latent Rank Analysis
+### Local Dependence Latent Rank Analysis
 
 LD-LRA is an analysis that combines LRA and BNM, and it is used to
 analyze the network structure among items in the latent rank. In this
@@ -1254,38 +1212,36 @@ g_list
 ```
 
     ## [[1]]
-    ## IGRAPH 0474c94 DN-- 4 2 -- 
+    ## IGRAPH 7e82889 DN-- 4 2 -- 
     ## + attr: name (v/c)
-    ## + edges from 0474c94 (vertex names):
+    ## + edges from 7e82889 (vertex names):
     ## [1] Item01->Item02 Item04->Item05
     ## 
     ## [[2]]
-    ## IGRAPH 5c0a404 DN-- 9 7 -- 
+    ## IGRAPH bdf08cd DN-- 9 7 -- 
     ## + attr: name (v/c)
-    ## + edges from 5c0a404 (vertex names):
-    ## [1] Item01->Item02 Item02->Item03 Item04->Item05 Item08->Item09 Item08->Item10
-    ## [6] Item09->Item10 Item08->Item11
+    ## + edges from bdf08cd (vertex names):
+    ## [1] Item01->Item02 Item02->Item03 Item04->Item05 Item08->Item09 Item08->Item10 Item09->Item10 Item08->Item11
     ## 
     ## [[3]]
-    ## IGRAPH 3b6caa4 DN-- 9 7 -- 
+    ## IGRAPH 7c64a21 DN-- 9 7 -- 
     ## + attr: name (v/c)
-    ## + edges from 3b6caa4 (vertex names):
-    ## [1] Item01->Item02 Item02->Item03 Item04->Item05 Item08->Item09 Item08->Item10
-    ## [6] Item09->Item10 Item08->Item11
+    ## + edges from 7c64a21 (vertex names):
+    ## [1] Item01->Item02 Item02->Item03 Item04->Item05 Item08->Item09 Item08->Item10 Item09->Item10 Item08->Item11
     ## 
     ## [[4]]
-    ## IGRAPH f6afd65 DN-- 10 8 -- 
+    ## IGRAPH 71c04b6 DN-- 10 8 -- 
     ## + attr: name (v/c)
-    ## + edges from f6afd65 (vertex names):
-    ## [1] Item02->Item03 Item04->Item06 Item04->Item07 Item05->Item06 Item05->Item07
-    ## [6] Item08->Item10 Item08->Item11 Item09->Item11
+    ## + edges from 71c04b6 (vertex names):
+    ## [1] Item02->Item03 Item04->Item06 Item04->Item07 Item05->Item06 Item05->Item07 Item08->Item10 Item08->Item11
+    ## [8] Item09->Item11
     ## 
     ## [[5]]
-    ## IGRAPH aaccf40 DN-- 10 8 -- 
+    ## IGRAPH 49ef0c9 DN-- 10 8 -- 
     ## + attr: name (v/c)
-    ## + edges from aaccf40 (vertex names):
-    ## [1] Item02->Item03 Item04->Item06 Item04->Item07 Item05->Item06 Item05->Item07
-    ## [6] Item09->Item11 Item10->Item11 Item10->Item12
+    ## + edges from 49ef0c9 (vertex names):
+    ## [1] Item02->Item03 Item04->Item06 Item04->Item07 Item05->Item06 Item05->Item07 Item09->Item11 Item10->Item11
+    ## [8] Item10->Item12
 
 ``` r
 ### Example of adjacency list
@@ -1369,146 +1325,81 @@ result.LDLRA
 
     ## Adjacency Matrix
     ## [[1]]
-    ##        Item01 Item02 Item03 Item04 Item05 Item06 Item07 Item08 Item09 Item10
-    ## Item01      0      1      0      0      0      0      0      0      0      0
-    ## Item02      0      0      0      0      0      0      0      0      0      0
-    ## Item03      0      0      0      0      0      0      0      0      0      0
-    ## Item04      0      0      0      0      1      0      0      0      0      0
-    ## Item05      0      0      0      0      0      0      0      0      0      0
-    ## Item06      0      0      0      0      0      0      0      0      0      0
-    ## Item07      0      0      0      0      0      0      0      0      0      0
-    ## Item08      0      0      0      0      0      0      0      0      0      0
-    ## Item09      0      0      0      0      0      0      0      0      0      0
-    ## Item10      0      0      0      0      0      0      0      0      0      0
-    ## Item11      0      0      0      0      0      0      0      0      0      0
-    ## Item12      0      0      0      0      0      0      0      0      0      0
-    ##        Item11 Item12
-    ## Item01      0      0
-    ## Item02      0      0
-    ## Item03      0      0
-    ## Item04      0      0
-    ## Item05      0      0
-    ## Item06      0      0
-    ## Item07      0      0
-    ## Item08      0      0
-    ## Item09      0      0
-    ## Item10      0      0
-    ## Item11      0      0
-    ## Item12      0      0
+    ##        Item01 Item02 Item03 Item04 Item05 Item06 Item07 Item08 Item09 Item10 Item11 Item12
+    ## Item01      0      1      0      0      0      0      0      0      0      0      0      0
+    ## Item02      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item03      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item04      0      0      0      0      1      0      0      0      0      0      0      0
+    ## Item05      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item06      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item07      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item08      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item09      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item10      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item11      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item12      0      0      0      0      0      0      0      0      0      0      0      0
     ## 
     ## [[2]]
-    ##        Item01 Item02 Item03 Item04 Item05 Item06 Item07 Item08 Item09 Item10
-    ## Item01      0      1      0      0      0      0      0      0      0      0
-    ## Item02      0      0      1      0      0      0      0      0      0      0
-    ## Item03      0      0      0      0      0      0      0      0      0      0
-    ## Item04      0      0      0      0      1      0      0      0      0      0
-    ## Item05      0      0      0      0      0      0      0      0      0      0
-    ## Item06      0      0      0      0      0      0      0      0      0      0
-    ## Item07      0      0      0      0      0      0      0      0      0      0
-    ## Item08      0      0      0      0      0      0      0      0      1      1
-    ## Item09      0      0      0      0      0      0      0      0      0      1
-    ## Item10      0      0      0      0      0      0      0      0      0      0
-    ## Item11      0      0      0      0      0      0      0      0      0      0
-    ## Item12      0      0      0      0      0      0      0      0      0      0
-    ##        Item11 Item12
-    ## Item01      0      0
-    ## Item02      0      0
-    ## Item03      0      0
-    ## Item04      0      0
-    ## Item05      0      0
-    ## Item06      0      0
-    ## Item07      0      0
-    ## Item08      1      0
-    ## Item09      0      0
-    ## Item10      0      0
-    ## Item11      0      0
-    ## Item12      0      0
+    ##        Item01 Item02 Item03 Item04 Item05 Item06 Item07 Item08 Item09 Item10 Item11 Item12
+    ## Item01      0      1      0      0      0      0      0      0      0      0      0      0
+    ## Item02      0      0      1      0      0      0      0      0      0      0      0      0
+    ## Item03      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item04      0      0      0      0      1      0      0      0      0      0      0      0
+    ## Item05      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item06      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item07      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item08      0      0      0      0      0      0      0      0      1      1      1      0
+    ## Item09      0      0      0      0      0      0      0      0      0      1      0      0
+    ## Item10      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item11      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item12      0      0      0      0      0      0      0      0      0      0      0      0
     ## 
     ## [[3]]
-    ##        Item01 Item02 Item03 Item04 Item05 Item06 Item07 Item08 Item09 Item10
-    ## Item01      0      1      0      0      0      0      0      0      0      0
-    ## Item02      0      0      1      0      0      0      0      0      0      0
-    ## Item03      0      0      0      0      0      0      0      0      0      0
-    ## Item04      0      0      0      0      1      0      0      0      0      0
-    ## Item05      0      0      0      0      0      0      0      0      0      0
-    ## Item06      0      0      0      0      0      0      0      0      0      0
-    ## Item07      0      0      0      0      0      0      0      0      0      0
-    ## Item08      0      0      0      0      0      0      0      0      1      1
-    ## Item09      0      0      0      0      0      0      0      0      0      1
-    ## Item10      0      0      0      0      0      0      0      0      0      0
-    ## Item11      0      0      0      0      0      0      0      0      0      0
-    ## Item12      0      0      0      0      0      0      0      0      0      0
-    ##        Item11 Item12
-    ## Item01      0      0
-    ## Item02      0      0
-    ## Item03      0      0
-    ## Item04      0      0
-    ## Item05      0      0
-    ## Item06      0      0
-    ## Item07      0      0
-    ## Item08      1      0
-    ## Item09      0      0
-    ## Item10      0      0
-    ## Item11      0      0
-    ## Item12      0      0
+    ##        Item01 Item02 Item03 Item04 Item05 Item06 Item07 Item08 Item09 Item10 Item11 Item12
+    ## Item01      0      1      0      0      0      0      0      0      0      0      0      0
+    ## Item02      0      0      1      0      0      0      0      0      0      0      0      0
+    ## Item03      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item04      0      0      0      0      1      0      0      0      0      0      0      0
+    ## Item05      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item06      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item07      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item08      0      0      0      0      0      0      0      0      1      1      1      0
+    ## Item09      0      0      0      0      0      0      0      0      0      1      0      0
+    ## Item10      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item11      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item12      0      0      0      0      0      0      0      0      0      0      0      0
     ## 
     ## [[4]]
-    ##        Item01 Item02 Item03 Item04 Item05 Item06 Item07 Item08 Item09 Item10
-    ## Item01      0      0      0      0      0      0      0      0      0      0
-    ## Item02      0      0      1      0      0      0      0      0      0      0
-    ## Item03      0      0      0      0      0      0      0      0      0      0
-    ## Item04      0      0      0      0      0      1      1      0      0      0
-    ## Item05      0      0      0      0      0      1      1      0      0      0
-    ## Item06      0      0      0      0      0      0      0      0      0      0
-    ## Item07      0      0      0      0      0      0      0      0      0      0
-    ## Item08      0      0      0      0      0      0      0      0      0      1
-    ## Item09      0      0      0      0      0      0      0      0      0      0
-    ## Item10      0      0      0      0      0      0      0      0      0      0
-    ## Item11      0      0      0      0      0      0      0      0      0      0
-    ## Item12      0      0      0      0      0      0      0      0      0      0
-    ##        Item11 Item12
-    ## Item01      0      0
-    ## Item02      0      0
-    ## Item03      0      0
-    ## Item04      0      0
-    ## Item05      0      0
-    ## Item06      0      0
-    ## Item07      0      0
-    ## Item08      1      0
-    ## Item09      1      0
-    ## Item10      0      0
-    ## Item11      0      0
-    ## Item12      0      0
+    ##        Item01 Item02 Item03 Item04 Item05 Item06 Item07 Item08 Item09 Item10 Item11 Item12
+    ## Item01      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item02      0      0      1      0      0      0      0      0      0      0      0      0
+    ## Item03      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item04      0      0      0      0      0      1      1      0      0      0      0      0
+    ## Item05      0      0      0      0      0      1      1      0      0      0      0      0
+    ## Item06      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item07      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item08      0      0      0      0      0      0      0      0      0      1      1      0
+    ## Item09      0      0      0      0      0      0      0      0      0      0      1      0
+    ## Item10      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item11      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item12      0      0      0      0      0      0      0      0      0      0      0      0
     ## 
     ## [[5]]
-    ##        Item01 Item02 Item03 Item04 Item05 Item06 Item07 Item08 Item09 Item10
-    ## Item01      0      0      0      0      0      0      0      0      0      0
-    ## Item02      0      0      1      0      0      0      0      0      0      0
-    ## Item03      0      0      0      0      0      0      0      0      0      0
-    ## Item04      0      0      0      0      0      1      1      0      0      0
-    ## Item05      0      0      0      0      0      1      1      0      0      0
-    ## Item06      0      0      0      0      0      0      0      0      0      0
-    ## Item07      0      0      0      0      0      0      0      0      0      0
-    ## Item08      0      0      0      0      0      0      0      0      0      0
-    ## Item09      0      0      0      0      0      0      0      0      0      0
-    ## Item10      0      0      0      0      0      0      0      0      0      0
-    ## Item11      0      0      0      0      0      0      0      0      0      0
-    ## Item12      0      0      0      0      0      0      0      0      0      0
-    ##        Item11 Item12
-    ## Item01      0      0
-    ## Item02      0      0
-    ## Item03      0      0
-    ## Item04      0      0
-    ## Item05      0      0
-    ## Item06      0      0
-    ## Item07      0      0
-    ## Item08      0      0
-    ## Item09      1      0
-    ## Item10      1      1
-    ## Item11      0      0
-    ## Item12      0      0
+    ##        Item01 Item02 Item03 Item04 Item05 Item06 Item07 Item08 Item09 Item10 Item11 Item12
+    ## Item01      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item02      0      0      1      0      0      0      0      0      0      0      0      0
+    ## Item03      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item04      0      0      0      0      0      1      1      0      0      0      0      0
+    ## Item05      0      0      0      0      0      1      1      0      0      0      0      0
+    ## Item06      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item07      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item08      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item09      0      0      0      0      0      0      0      0      0      0      1      0
+    ## Item10      0      0      0      0      0      0      0      0      0      0      1      1
+    ## Item11      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item12      0      0      0      0      0      0      0      0      0      0      0      0
 
-![](README_files/figure-gfm/model-ldlra-1.png)<!-- -->![](README_files/figure-gfm/model-ldlra-2.png)<!-- -->![](README_files/figure-gfm/model-ldlra-3.png)<!-- -->![](README_files/figure-gfm/model-ldlra-4.png)<!-- -->![](README_files/figure-gfm/model-ldlra-5.png)<!-- -->
+![](figures/model-ldlra-1.png)<!-- -->![](figures/model-ldlra-2.png)<!-- -->![](figures/model-ldlra-3.png)<!-- -->![](figures/model-ldlra-4.png)<!-- -->![](figures/model-ldlra-5.png)<!-- -->
 
     ## 
     ## Parameter Learning
@@ -1740,21 +1631,21 @@ Of course, it also supports various types of plots.
 plot(result.LDLRA, type = "IRP", nc = 4, nr = 3)
 ```
 
-![](README_files/figure-gfm/plot-ldlra-1.png)<!-- -->
+![](figures/plot-ldlra-1.png)<!-- -->
 
 ``` r
 plot(result.LDLRA, type = "TRP")
 ```
 
-![](README_files/figure-gfm/plot-ldlra-2.png)<!-- -->
+![](figures/plot-ldlra-2.png)<!-- -->
 
 ``` r
 plot(result.LDLRA, type = "LRD")
 ```
 
-![](README_files/figure-gfm/plot-ldlra-3.png)<!-- -->
+![](figures/plot-ldlra-3.png)<!-- -->
 
-### Structure Learning for LDLRA with GA(PBIL)
+#### Structure Learning for LDLRA with GA(PBIL)
 
 You can learn item-interaction graphs for each rank using the PBIL
 algorithm. In addition to various options, the learning process requires
@@ -1773,14 +1664,910 @@ result.LDLRA.PBIL <- StrLearningPBIL_LDLRA(J35S515,
 result.LDLRA.PBIL
 ```
 
-## Local Dependence Biclustering
+    ## Adjacency Matrix
+    ## [[1]]
+    ##        Item01 Item02 Item03 Item04 Item05 Item06 Item07 Item08 Item09 Item10 Item11 Item12 Item13 Item14 Item15
+    ## Item01      0      0      0      0      0      0      1      0      0      0      0      0      0      0      0
+    ## Item02      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item03      0      0      0      0      0      0      0      0      1      0      0      0      0      0      0
+    ## Item04      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item05      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item06      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item07      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item08      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item09      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item10      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item11      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item12      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item13      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item14      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item15      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item16      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item17      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item18      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item19      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item20      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item21      0      1      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item22      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item23      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item24      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item25      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item26      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item27      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item28      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ##        Item16 Item17 Item18 Item19 Item20 Item21 Item22 Item23 Item24 Item25 Item26 Item27 Item28 Item29 Item30
+    ## Item01      0      0      0      0      0      0      0      1      0      0      0      0      0      0      0
+    ## Item02      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item03      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item04      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item05      0      0      0      0      0      0      0      0      0      0      0      0      1      0      0
+    ## Item06      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item07      0      0      0      0      0      0      0      0      0      0      0      0      0      1      0
+    ## Item08      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item09      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item10      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item11      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item12      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item13      0      0      0      1      0      0      0      0      0      0      0      0      0      0      0
+    ## Item14      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item15      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item16      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item17      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item18      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item19      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item20      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item21      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item22      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item23      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item24      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item25      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item26      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item27      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item28      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ##        Item31 Item32 Item33 Item34 Item35
+    ## Item01      1      1      0      0      0
+    ## Item02      0      0      0      0      0
+    ## Item03      0      0      0      0      0
+    ## Item04      0      0      0      0      0
+    ## Item05      0      0      0      0      0
+    ## Item06      0      0      0      0      0
+    ## Item07      0      0      0      0      0
+    ## Item08      0      0      0      0      0
+    ## Item09      0      0      0      0      0
+    ## Item10      0      0      0      0      0
+    ## Item11      0      0      0      0      0
+    ## Item12      0      0      0      0      0
+    ## Item13      0      0      0      1      0
+    ## Item14      0      0      0      0      0
+    ## Item15      0      0      0      0      0
+    ## Item16      0      0      0      0      0
+    ## Item17      0      0      0      0      0
+    ## Item18      0      0      0      0      0
+    ## Item19      0      0      0      0      0
+    ## Item20      0      0      0      0      0
+    ## Item21      0      0      0      0      0
+    ## Item22      0      0      0      0      0
+    ## Item23      0      0      0      0      0
+    ## Item24      0      0      0      0      0
+    ## Item25      0      0      0      0      0
+    ## Item26      0      0      0      0      0
+    ## Item27      0      0      0      0      0
+    ## Item28      0      0      0      0      0
+    ##  [ reached getOption("max.print") -- omitted 7 rows ]
+    ## 
+    ## [[2]]
+    ##        Item01 Item02 Item03 Item04 Item05 Item06 Item07 Item08 Item09 Item10 Item11 Item12 Item13 Item14 Item15
+    ## Item01      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item02      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item03      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item04      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item05      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item06      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item07      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item08      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item09      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item10      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item11      0      0      0      0      0      0      0      0      1      0      0      0      0      0      0
+    ## Item12      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item13      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item14      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item15      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item16      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item17      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item18      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item19      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item20      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item21      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item22      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item23      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item24      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item25      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item26      0      0      0      0      0      0      0      0      1      0      0      0      0      0      0
+    ## Item27      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item28      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ##        Item16 Item17 Item18 Item19 Item20 Item21 Item22 Item23 Item24 Item25 Item26 Item27 Item28 Item29 Item30
+    ## Item01      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item02      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item03      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item04      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item05      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item06      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item07      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item08      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item09      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item10      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item11      0      0      0      0      0      0      0      0      0      0      0      1      0      0      0
+    ## Item12      0      0      0      0      0      0      0      0      0      0      0      0      1      0      0
+    ## Item13      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item14      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item15      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item16      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item17      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item18      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item19      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item20      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item21      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item22      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item23      0      0      0      0      0      0      1      0      0      0      0      0      0      0      0
+    ## Item24      0      0      0      0      0      0      0      0      0      1      0      0      0      0      0
+    ## Item25      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item26      0      1      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item27      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item28      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ##        Item31 Item32 Item33 Item34 Item35
+    ## Item01      1      1      0      0      0
+    ## Item02      0      0      0      0      0
+    ## Item03      0      0      0      0      0
+    ## Item04      0      0      0      0      0
+    ## Item05      0      0      0      0      0
+    ## Item06      0      0      0      0      0
+    ## Item07      0      0      0      0      0
+    ## Item08      0      0      0      0      0
+    ## Item09      0      0      0      0      1
+    ## Item10      0      0      0      0      0
+    ## Item11      0      0      0      0      0
+    ## Item12      0      0      0      0      0
+    ## Item13      0      0      0      0      0
+    ## Item14      0      0      0      0      0
+    ## Item15      0      0      0      0      0
+    ## Item16      0      0      0      0      0
+    ## Item17      0      0      0      0      0
+    ## Item18      0      0      0      0      0
+    ## Item19      0      0      0      0      0
+    ## Item20      0      0      0      0      0
+    ## Item21      0      0      0      0      0
+    ## Item22      0      0      0      0      0
+    ## Item23      0      0      0      0      0
+    ## Item24      0      0      0      0      0
+    ## Item25      0      0      0      0      0
+    ## Item26      0      0      0      0      0
+    ## Item27      0      0      0      0      0
+    ## Item28      0      0      0      0      0
+    ##  [ reached getOption("max.print") -- omitted 7 rows ]
+    ## 
+    ## [[3]]
+    ##        Item01 Item02 Item03 Item04 Item05 Item06 Item07 Item08 Item09 Item10 Item11 Item12 Item13 Item14 Item15
+    ## Item01      0      0      0      0      1      0      0      0      0      0      0      0      0      0      0
+    ## Item02      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item03      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item04      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item05      0      0      0      0      0      1      0      0      0      0      0      0      0      0      0
+    ## Item06      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item07      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item08      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item09      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item10      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item11      0      0      0      0      0      0      0      0      0      0      0      0      0      0      1
+    ## Item12      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item13      0      0      0      0      0      0      0      0      0      0      0      0      0      1      0
+    ## Item14      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item15      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item16      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item17      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item18      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item19      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item20      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item21      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item22      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item23      0      0      0      0      0      1      0      1      0      0      0      0      0      0      0
+    ## Item24      0      0      0      0      0      0      0      0      0      0      0      0      0      1      0
+    ## Item25      0      0      1      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item26      0      0      0      0      0      0      0      0      1      0      0      0      0      0      0
+    ## Item27      0      0      0      0      0      0      0      0      1      0      0      0      0      0      0
+    ## Item28      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ##        Item16 Item17 Item18 Item19 Item20 Item21 Item22 Item23 Item24 Item25 Item26 Item27 Item28 Item29 Item30
+    ## Item01      0      0      0      0      0      1      0      0      0      0      0      0      0      0      0
+    ## Item02      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item03      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item04      0      0      0      0      0      0      0      0      0      0      0      0      0      1      0
+    ## Item05      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item06      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item07      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item08      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item09      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item10      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item11      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item12      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item13      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item14      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item15      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item16      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item17      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item18      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item19      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item20      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item21      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item22      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item23      0      0      0      0      0      0      1      0      0      0      0      0      0      0      0
+    ## Item24      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item25      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item26      0      0      0      0      0      0      0      0      0      0      0      1      0      0      0
+    ## Item27      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item28      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ##        Item31 Item32 Item33 Item34 Item35
+    ## Item01      1      0      0      0      0
+    ## Item02      0      0      0      0      0
+    ## Item03      0      0      0      0      0
+    ## Item04      0      0      0      0      0
+    ## Item05      0      0      0      0      0
+    ## Item06      0      0      0      0      0
+    ## Item07      0      0      0      0      0
+    ## Item08      0      0      0      0      0
+    ## Item09      0      0      0      0      0
+    ## Item10      0      0      0      0      0
+    ## Item11      0      0      0      0      0
+    ## Item12      0      0      0      0      0
+    ## Item13      0      0      0      0      0
+    ## Item14      0      0      0      0      0
+    ## Item15      0      0      0      0      0
+    ## Item16      0      0      0      0      0
+    ## Item17      0      0      0      0      0
+    ## Item18      0      0      0      0      0
+    ## Item19      0      0      0      0      0
+    ## Item20      0      0      0      0      0
+    ## Item21      0      0      0      0      0
+    ## Item22      0      0      0      0      0
+    ## Item23      0      0      0      0      0
+    ## Item24      0      0      0      0      0
+    ## Item25      0      0      1      0      0
+    ## Item26      0      0      0      0      0
+    ## Item27      0      0      0      0      0
+    ## Item28      0      0      0      0      0
+    ##  [ reached getOption("max.print") -- omitted 7 rows ]
+    ## 
+    ## [[4]]
+    ##        Item01 Item02 Item03 Item04 Item05 Item06 Item07 Item08 Item09 Item10 Item11 Item12 Item13 Item14 Item15
+    ## Item01      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item02      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item03      0      0      0      1      0      0      0      0      0      0      0      0      0      0      0
+    ## Item04      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item05      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item06      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item07      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item08      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item09      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item10      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item11      0      0      0      0      1      0      0      0      0      0      0      0      0      0      0
+    ## Item12      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item13      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item14      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item15      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item16      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item17      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item18      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item19      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item20      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item21      0      0      0      0      0      0      0      0      0      0      0      0      1      0      0
+    ## Item22      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item23      0      0      0      1      0      0      0      0      0      0      0      0      0      0      0
+    ## Item24      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item25      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item26      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item27      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item28      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ##        Item16 Item17 Item18 Item19 Item20 Item21 Item22 Item23 Item24 Item25 Item26 Item27 Item28 Item29 Item30
+    ## Item01      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item02      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item03      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item04      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item05      1      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item06      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item07      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item08      0      1      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item09      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item10      0      0      0      0      1      0      0      0      0      0      0      0      0      0      0
+    ## Item11      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item12      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item13      0      0      1      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item14      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item15      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item16      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item17      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item18      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item19      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item20      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item21      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item22      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item23      0      0      0      0      0      0      1      0      0      0      0      0      0      0      0
+    ## Item24      0      0      0      0      0      0      0      0      0      1      0      0      0      0      0
+    ## Item25      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item26      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item27      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item28      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ##        Item31 Item32 Item33 Item34 Item35
+    ## Item01      1      1      0      0      0
+    ## Item02      0      0      0      0      0
+    ## Item03      0      0      0      0      0
+    ## Item04      0      0      0      0      0
+    ## Item05      0      0      0      0      0
+    ## Item06      0      0      0      0      0
+    ## Item07      0      0      0      0      0
+    ## Item08      0      0      0      0      0
+    ## Item09      0      0      0      0      0
+    ## Item10      0      0      0      0      0
+    ## Item11      0      0      0      0      1
+    ## Item12      0      0      0      0      0
+    ## Item13      0      0      0      0      0
+    ## Item14      0      0      0      0      0
+    ## Item15      0      0      0      0      0
+    ## Item16      0      0      0      0      1
+    ## Item17      0      0      0      1      0
+    ## Item18      0      0      0      0      0
+    ## Item19      0      0      0      0      0
+    ## Item20      0      0      0      0      0
+    ## Item21      0      0      0      0      0
+    ## Item22      0      0      0      0      0
+    ## Item23      0      0      0      0      0
+    ## Item24      0      0      0      0      0
+    ## Item25      0      0      0      0      0
+    ## Item26      0      0      0      0      0
+    ## Item27      0      0      0      0      0
+    ## Item28      0      0      0      0      0
+    ##  [ reached getOption("max.print") -- omitted 7 rows ]
+    ## 
+    ## [[5]]
+    ##        Item01 Item02 Item03 Item04 Item05 Item06 Item07 Item08 Item09 Item10 Item11 Item12 Item13 Item14 Item15
+    ## Item01      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item02      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item03      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item04      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item05      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item06      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item07      0      0      0      0      0      0      0      1      0      0      0      0      0      0      0
+    ## Item08      0      0      0      0      0      0      0      0      0      0      0      1      0      0      0
+    ## Item09      0      0      0      0      0      0      0      0      0      1      0      0      0      0      0
+    ## Item10      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item11      0      0      0      0      0      1      0      0      0      0      0      0      0      0      0
+    ## Item12      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item13      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item14      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item15      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item16      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item17      0      0      0      0      1      0      0      0      0      0      0      0      0      0      0
+    ## Item18      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item19      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item20      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item21      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item22      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item23      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item24      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item25      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item26      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item27      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item28      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ##        Item16 Item17 Item18 Item19 Item20 Item21 Item22 Item23 Item24 Item25 Item26 Item27 Item28 Item29 Item30
+    ## Item01      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item02      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item03      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item04      0      0      0      1      0      0      0      0      0      0      0      0      0      0      0
+    ## Item05      0      0      1      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item06      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item07      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item08      0      0      0      0      0      0      0      0      0      0      0      0      1      0      0
+    ## Item09      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item10      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item11      0      0      0      1      0      0      0      0      0      0      0      0      0      0      0
+    ## Item12      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item13      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item14      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item15      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item16      0      0      0      0      0      0      0      0      0      0      0      0      0      0      1
+    ## Item17      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item18      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item19      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item20      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item21      0      0      0      0      0      0      0      1      0      0      0      0      0      0      0
+    ## Item22      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item23      0      0      0      0      0      0      1      0      0      0      0      0      0      0      0
+    ## Item24      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item25      0      0      1      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item26      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item27      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ## Item28      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+    ##        Item31 Item32 Item33 Item34 Item35
+    ## Item01      0      0      0      0      0
+    ## Item02      0      0      0      0      0
+    ## Item03      0      0      0      0      0
+    ## Item04      0      0      0      0      0
+    ## Item05      0      0      0      0      0
+    ## Item06      0      0      0      0      0
+    ## Item07      0      0      0      0      0
+    ## Item08      0      0      0      0      0
+    ## Item09      0      0      0      0      0
+    ## Item10      0      0      0      0      0
+    ## Item11      0      0      0      0      0
+    ## Item12      0      0      0      0      0
+    ## Item13      0      0      0      0      0
+    ## Item14      0      0      0      0      0
+    ## Item15      0      0      0      0      0
+    ## Item16      0      0      0      0      0
+    ## Item17      0      0      0      0      0
+    ## Item18      0      0      0      0      0
+    ## Item19      0      0      0      0      0
+    ## Item20      0      0      0      0      0
+    ## Item21      0      0      0      0      0
+    ## Item22      0      0      0      0      0
+    ## Item23      0      0      0      0      0
+    ## Item24      0      0      0      0      0
+    ## Item25      0      0      0      0      0
+    ## Item26      0      0      0      0      0
+    ## Item27      0      0      0      0      0
+    ## Item28      0      0      0      0      0
+    ##  [ reached getOption("max.print") -- omitted 7 rows ]
 
-## Local Dependence Biclustering (LDB)
+![](figures/model-pbil-ldlra-1.png)<!-- -->![](figures/model-pbil-ldlra-2.png)<!-- -->![](figures/model-pbil-ldlra-3.png)<!-- -->![](figures/model-pbil-ldlra-4.png)<!-- -->![](figures/model-pbil-ldlra-5.png)<!-- -->
+
+    ## 
+    ## Parameter Learning
+    ##       Item Rank PIRP 1 PIRP 2 PIRP 3 PIRP 4
+    ## 1   Item01    1  0.710                     
+    ## 2   Item02    1  0.073  0.256              
+    ## 3   Item03    1  0.236                     
+    ## 4   Item04    1  0.079                     
+    ## 5   Item05    1  0.061                     
+    ## 6   Item06    1  0.040                     
+    ## 7   Item07    1  0.398  0.429              
+    ## 8   Item08    1  0.258                     
+    ## 9   Item09    1  0.227  0.246              
+    ## 10  Item10    1  0.192                     
+    ## 11  Item11    1  0.133                     
+    ## 12  Item12    1  0.111                     
+    ## 13  Item13    1  0.088                     
+    ## 14  Item14    1  0.013                     
+    ## 15  Item15    1  0.014                     
+    ## 16  Item16    1  0.058                     
+    ## 17  Item17    1  0.125                     
+    ## 18  Item18    1  0.030                     
+    ## 19  Item19    1  0.035  0.079              
+    ## 20  Item20    1  0.028                     
+    ## 21  Item21    1  0.174  0.298              
+    ## 22  Item22    1  0.226                     
+    ## 23  Item23    1  0.301  0.304              
+    ## 24  Item24    1  0.231                     
+    ## 25  Item25    1  0.133                     
+    ## 26  Item26    1  0.092                     
+    ## 27  Item27    1  0.106                     
+    ## 28  Item28    1  0.017  0.112              
+    ## 29  Item29    1  0.061  0.069              
+    ## 30  Item30    1  0.027                     
+    ## 31  Item31    1  0.645  0.706              
+    ## 32  Item32    1  0.484  0.801  0.543  0.809
+    ## 33  Item33    1  0.312                     
+    ## 34  Item34    1  0.183  0.239              
+    ## 35  Item35    1  0.098                     
+    ## 36  Item01    2  0.802                     
+    ## 37  Item02    2  0.231                     
+    ## 38  Item03    2  0.331                     
+    ## 39  Item04    2  0.157                     
+    ## 40  Item05    2  0.124                     
+    ## 41  Item06    2  0.094                     
+    ## 42  Item07    2  0.480                     
+    ## 43  Item08    2  0.276  0.285              
+    ## 44  Item09    2  0.239  0.302  0.348  0.436
+    ## 45  Item10    2  0.258                     
+    ## 46  Item11    2  0.282                     
+    ## 47  Item12    2  0.173                     
+    ## 48  Item13    2  0.114                     
+    ## 49  Item14    2  0.030                     
+    ## 50  Item15    2  0.020                     
+    ## 51  Item16    2  0.081                     
+    ## 52  Item17    2  0.143  0.216              
+    ## 53  Item18    2  0.026                     
+    ## 54  Item19    2  0.029                     
+    ## 55  Item20    2  0.050  0.036              
+    ## 56  Item21    2  0.307  0.522              
+    ## 57  Item22    2  0.317  0.586              
+    ## 58  Item23    2  0.361  0.456              
+    ## 59  Item24    2  0.386                     
+    ## 60  Item25    2  0.133  0.520              
+    ## 61  Item26    2  0.167  0.242              
+    ## 62  Item27    2  0.158  0.331              
+    ## 63  Item28    2  0.046  0.149              
+    ## 64  Item29    2  0.100                     
+    ## 65  Item30    2  0.040                     
+    ## 66  Item31    2  0.659  0.773              
+    ## 67  Item32    2  0.497  0.782  0.564  0.839
+    ## 68  Item33    2  0.354                     
+    ## 69  Item34    2  0.196                     
+    ## 70  Item35    2  0.131  0.106              
+    ## 71  Item01    3  0.877                     
+    ## 72  Item02    3  0.417                     
+    ## 73  Item03    3  0.434  0.523              
+    ## 74  Item04    3  0.308                     
+    ## 75  Item05    3  0.097  0.284              
+    ## 76  Item06    3  0.047  0.024  0.775  0.778
+    ## 77  Item07    3  0.577                     
+    ## 78  Item08    3  0.327  0.354              
+    ## 79  Item09    3  0.301  0.311  0.440  0.503
+    ## 80  Item10    3  0.366                     
+    ## 81  Item11    3  0.501                     
+    ## 82  Item12    3  0.316                     
+    ## 83  Item13    3  0.201                     
+    ## 84  Item14    3  0.041  0.072  0.271  0.437
+    ## 85  Item15    3  0.024  0.133              
+    ## 86  Item16    3  0.185                     
+    ## 87  Item17    3  0.247                     
+    ## 88  Item18    3  0.041                     
+    ## 89  Item19    3  0.045                     
+    ## 90  Item20    3  0.050                     
+    ## 91  Item21    3  0.366  0.390  0.502  0.781
+    ## 92  Item22    3  0.416  0.787              
+    ## 93  Item23    3  0.436  0.669              
+    ## 94  Item24    3  0.598                     
+    ## 95  Item25    3  0.354  0.548              
+    ## 96  Item26    3  0.456                     
+    ## 97  Item27    3  0.098  0.761              
+    ## 98  Item28    3  0.163  0.295              
+    ## 99  Item29    3  0.171  0.301              
+    ## 100 Item30    3  0.082                     
+    ## 101 Item31    3  0.662  0.833              
+    ## 102 Item32    3  0.814                     
+    ## 103 Item33    3  0.366  0.480              
+    ## 104 Item34    3  0.232                     
+    ## 105 Item35    3  0.155                     
+    ## 106 Item01    4  0.950                     
+    ## 107 Item02    4  0.595                     
+    ## 108 Item03    4  0.618                     
+    ## 109 Item04    4  0.157  0.082  0.677  0.695
+    ## 110 Item05    4  0.168  0.449              
+    ## 111 Item06    4  0.329                     
+    ## 112 Item07    4  0.688                     
+    ## 113 Item08    4  0.408                     
+    ## 114 Item09    4  0.499                     
+    ## 115 Item10    4  0.470                     
+    ## 116 Item11    4  0.740                     
+    ## 117 Item12    4  0.496                     
+    ## 118 Item13    4  0.198  0.334              
+    ## 119 Item14    4  0.194                     
+    ## 120 Item15    4  0.128                     
+    ## 121 Item16    4  0.248  0.417              
+    ## 122 Item17    4  0.335  0.410              
+    ## 123 Item18    4  0.019  0.182              
+    ## 124 Item19    4  0.066                     
+    ## 125 Item20    4  0.038  0.128              
+    ## 126 Item21    4  0.802  0.912              
+    ## 127 Item22    4  0.636  0.912              
+    ## 128 Item23    4  0.672  0.858              
+    ## 129 Item24    4  0.757  0.849              
+    ## 130 Item25    4  0.253  0.883              
+    ## 131 Item26    4  0.751                     
+    ## 132 Item27    4  0.656                     
+    ## 133 Item28    4  0.363                     
+    ## 134 Item29    4  0.340                     
+    ## 135 Item30    4  0.131                     
+    ## 136 Item31    4  0.685  0.900              
+    ## 137 Item32    4  0.640  0.860              
+    ## 138 Item33    4  0.520                     
+    ## 139 Item34    4  0.207  0.344              
+    ## 140 Item35    4  0.157  0.269  0.166  0.327
+    ## 141 Item01    5  0.967                     
+    ## 142 Item02    5  0.739                     
+    ## 143 Item03    5  0.732                     
+    ## 144 Item04    5  0.614                     
+    ## 145 Item05    5  0.457  0.591              
+    ## 146 Item06    5  0.157  0.527              
+    ## 147 Item07    5  0.759                     
+    ## 148 Item08    5  0.454  0.511              
+    ## 149 Item09    5  0.627                     
+    ## 150 Item10    5  0.319  0.710              
+    ## 151 Item11    5  0.885                     
+    ## 152 Item12    5  0.628  0.723              
+    ## 153 Item13    5  0.502                     
+    ## 154 Item14    5  0.335                     
+    ## 155 Item15    5  0.244                     
+    ## 156 Item16    5  0.492                     
+    ## 157 Item17    5  0.533                     
+    ## 158 Item18    5  0.171  0.048  0.181  0.211
+    ## 159 Item19    5  0.104  0.031  0.229  0.206
+    ## 160 Item20    5  0.131                     
+    ## 161 Item21    5  0.631  0.799  0.901  0.971
+    ## 162 Item22    5  0.727  0.959              
+    ## 163 Item23    5  0.622  0.941              
+    ## 164 Item24    5  0.941                     
+    ## 165 Item25    5  0.915                     
+    ## 166 Item26    5  0.902                     
+    ##  [ reached 'max' / getOption("max.print") -- omitted 9 rows ]
+    ## 
+    ## Conditional Correct Response Rate
+    ##     Child Item Rank N of Parents   Parent Items       PIRP Conditional CRR
+    ## 1       Item01    1            0     No Parents No Pattern          0.7104
+    ## 2       Item02    1            1         Item21          0          0.0725
+    ## 3       Item02    1            1         Item21          1          0.2563
+    ## 4       Item03    1            0     No Parents No Pattern          0.2360
+    ## 5       Item04    1            0     No Parents No Pattern          0.0789
+    ## 6       Item05    1            0     No Parents No Pattern          0.0608
+    ## 7       Item06    1            0     No Parents No Pattern          0.0400
+    ## 8       Item07    1            1         Item01          0          0.3979
+    ## 9       Item07    1            1         Item01          1          0.4292
+    ## 10      Item08    1            0     No Parents No Pattern          0.2581
+    ## 11      Item09    1            1         Item03          0          0.2275
+    ## 12      Item09    1            1         Item03          1          0.2465
+    ## 13      Item10    1            0     No Parents No Pattern          0.1916
+    ## 14      Item11    1            0     No Parents No Pattern          0.1325
+    ## 15      Item12    1            0     No Parents No Pattern          0.1111
+    ## 16      Item13    1            0     No Parents No Pattern          0.0884
+    ## 17      Item14    1            0     No Parents No Pattern          0.0134
+    ## 18      Item15    1            0     No Parents No Pattern          0.0139
+    ## 19      Item16    1            0     No Parents No Pattern          0.0578
+    ## 20      Item17    1            0     No Parents No Pattern          0.1253
+    ## 21      Item18    1            0     No Parents No Pattern          0.0303
+    ## 22      Item19    1            1         Item13          0          0.0354
+    ## 23      Item19    1            1         Item13          1          0.0795
+    ## 24      Item20    1            0     No Parents No Pattern          0.0283
+    ## 25      Item21    1            1         Item31          0          0.1737
+    ## 26      Item21    1            1         Item31          1          0.2978
+    ## 27      Item22    1            0     No Parents No Pattern          0.2256
+    ## 28      Item23    1            1         Item01          0          0.3009
+    ## 29      Item23    1            1         Item01          1          0.3036
+    ## 30      Item24    1            0     No Parents No Pattern          0.2312
+    ## 31      Item25    1            0     No Parents No Pattern          0.1329
+    ## 32      Item26    1            0     No Parents No Pattern          0.0922
+    ## 33      Item27    1            0     No Parents No Pattern          0.1058
+    ## 34      Item28    1            1         Item05          0          0.0166
+    ## 35      Item28    1            1         Item05          1          0.1120
+    ## 36      Item29    1            1         Item07          0          0.0611
+    ## 37      Item29    1            1         Item07          1          0.0693
+    ## 38      Item30    1            0     No Parents No Pattern          0.0275
+    ## 39      Item31    1            1         Item01          0          0.6446
+    ## 40      Item31    1            1         Item01          1          0.7056
+    ## 41      Item32    1            2 Item01, Item31         00          0.4841
+    ## 42      Item32    1            2 Item01, Item31         01          0.8011
+    ## 43      Item32    1            2 Item01, Item31         10          0.5430
+    ## 44      Item32    1            2 Item01, Item31         11          0.8090
+    ## 45      Item33    1            0     No Parents No Pattern          0.3122
+    ## 46      Item34    1            1         Item13          0          0.1826
+    ## 47      Item34    1            1         Item13          1          0.2390
+    ## 48      Item35    1            0     No Parents No Pattern          0.0985
+    ## 49      Item01    2            0     No Parents No Pattern          0.8019
+    ## 50      Item02    2            0     No Parents No Pattern          0.2314
+    ## 51      Item03    2            0     No Parents No Pattern          0.3315
+    ## 52      Item04    2            0     No Parents No Pattern          0.1574
+    ## 53      Item05    2            0     No Parents No Pattern          0.1245
+    ## 54      Item06    2            0     No Parents No Pattern          0.0938
+    ## 55      Item07    2            0     No Parents No Pattern          0.4805
+    ## 56      Item08    2            1         Item32          0          0.2758
+    ## 57      Item08    2            1         Item32          1          0.2853
+    ## 58      Item09    2            2 Item11, Item26         00          0.2390
+    ## 59      Item09    2            2 Item11, Item26         01          0.3025
+    ## 60      Item09    2            2 Item11, Item26         10          0.3484
+    ## 61      Item09    2            2 Item11, Item26         11          0.4357
+    ## 62      Item10    2            0     No Parents No Pattern          0.2584
+    ## 63      Item11    2            0     No Parents No Pattern          0.2817
+    ## 64      Item12    2            0     No Parents No Pattern          0.1729
+    ## 65      Item13    2            0     No Parents No Pattern          0.1141
+    ## 66      Item14    2            0     No Parents No Pattern          0.0304
+    ## 67      Item15    2            0     No Parents No Pattern          0.0204
+    ## 68      Item16    2            0     No Parents No Pattern          0.0814
+    ## 69      Item17    2            1         Item26          0          0.1429
+    ## 70      Item17    2            1         Item26          1          0.2164
+    ## 71      Item18    2            0     No Parents No Pattern          0.0261
+    ## 72      Item19    2            0     No Parents No Pattern          0.0287
+    ## 73      Item20    2            1         Item31          0          0.0498
+    ## 74      Item20    2            1         Item31          1          0.0362
+    ## 75      Item21    2            1         Item31          0          0.3073
+    ## 76      Item21    2            1         Item31          1          0.5221
+    ## 77      Item22    2            1         Item23          0          0.3171
+    ## 78      Item22    2            1         Item23          1          0.5862
+    ## 79      Item23    2            1         Item32          0          0.3612
+    ## 80      Item23    2            1         Item32          1          0.4558
+    ## 81      Item24    2            0     No Parents No Pattern          0.3861
+    ## 82      Item25    2            1         Item24          0          0.1334
+    ## 83      Item25    2            1         Item24          1          0.5204
+    ## 84      Item26    2            1         Item31          0          0.1670
+    ## 85      Item26    2            1         Item31          1          0.2420
+    ## 86      Item27    2            1         Item11          0          0.1581
+    ## 87      Item27    2            1         Item11          1          0.3310
+    ## 88      Item28    2            1         Item12          0          0.0458
+    ## 89      Item28    2            1         Item12          1          0.1493
+    ## 90      Item29    2            0     No Parents No Pattern          0.1001
+    ## 91      Item30    2            0     No Parents No Pattern          0.0402
+    ## 92      Item31    2            1         Item01          0          0.6591
+    ## 93      Item31    2            1         Item01          1          0.7730
+    ## 94      Item32    2            2 Item01, Item31         00          0.4973
+    ## 95      Item32    2            2 Item01, Item31         01          0.7824
+    ## 96      Item32    2            2 Item01, Item31         10          0.5641
+    ## 97      Item32    2            2 Item01, Item31         11          0.8388
+    ## 98      Item33    2            0     No Parents No Pattern          0.3538
+    ## 99      Item34    2            0     No Parents No Pattern          0.1957
+    ## 100     Item35    2            1         Item09          0          0.1307
+    ## 101     Item35    2            1         Item09          1          0.1056
+    ## 102     Item01    3            0     No Parents No Pattern          0.8766
+    ## 103     Item02    3            0     No Parents No Pattern          0.4172
+    ## 104     Item03    3            1         Item25          0          0.4344
+    ## 105     Item03    3            1         Item25          1          0.5228
+    ## 106     Item04    3            0     No Parents No Pattern          0.3078
+    ## 107     Item05    3            1         Item01          0          0.0972
+    ## 108     Item05    3            1         Item01          1          0.2836
+    ## 109     Item06    3            2 Item05, Item23         00          0.0471
+    ## 110     Item06    3            2 Item05, Item23         01          0.0239
+    ## 111     Item06    3            2 Item05, Item23         10          0.7752
+    ## 112     Item06    3            2 Item05, Item23         11          0.7779
+    ## 113     Item07    3            0     No Parents No Pattern          0.5768
+    ## 114     Item08    3            1         Item23          0          0.3271
+    ## 115     Item08    3            1         Item23          1          0.3542
+    ## 116     Item09    3            2 Item26, Item27         00          0.3008
+    ## 117     Item09    3            2 Item26, Item27         01          0.3107
+    ## 118     Item09    3            2 Item26, Item27         10          0.4403
+    ## 119     Item09    3            2 Item26, Item27         11          0.5028
+    ## 120     Item10    3            0     No Parents No Pattern          0.3665
+    ## 121     Item11    3            0     No Parents No Pattern          0.5008
+    ## 122     Item12    3            0     No Parents No Pattern          0.3162
+    ## 123     Item13    3            0     No Parents No Pattern          0.2012
+    ## 124     Item14    3            2 Item13, Item24         00          0.0414
+    ## 125     Item14    3            2 Item13, Item24         01          0.0721
+    ## 126     Item14    3            2 Item13, Item24         10          0.2709
+    ## 127     Item14    3            2 Item13, Item24         11          0.4372
+    ## 128     Item15    3            1         Item11          0          0.0244
+    ## 129     Item15    3            1         Item11          1          0.1329
+    ## 130     Item16    3            0     No Parents No Pattern          0.1848
+    ## 131     Item17    3            0     No Parents No Pattern          0.2474
+    ## 132     Item18    3            0     No Parents No Pattern          0.0408
+    ## 133     Item19    3            0     No Parents No Pattern          0.0450
+    ## 134     Item20    3            0     No Parents No Pattern          0.0495
+    ## 135     Item21    3            2 Item01, Item31         00          0.3659
+    ## 136     Item21    3            2 Item01, Item31         01          0.3898
+    ## 137     Item21    3            2 Item01, Item31         10          0.5020
+    ## 138     Item21    3            2 Item01, Item31         11          0.7812
+    ## 139     Item22    3            1         Item23          0          0.4160
+    ## 140     Item22    3            1         Item23          1          0.7868
+    ## 141     Item23    3            1         Item31          0          0.4360
+    ## 142     Item23    3            1         Item31          1          0.6688
+    ## 143     Item24    3            0     No Parents No Pattern          0.5984
+    ## 144     Item25    3            1         Item31          0          0.3543
+    ## 145     Item25    3            1         Item31          1          0.5483
+    ## 146     Item26    3            0     No Parents No Pattern          0.4555
+    ## 147     Item27    3            1         Item26          0          0.0977
+    ## 148     Item27    3            1         Item26          1          0.7606
+    ## 149     Item28    3            1         Item34          0          0.1633
+    ## 150     Item28    3            1         Item34          1          0.2946
+    ## 151     Item29    3            1         Item04          0          0.1713
+    ## 152     Item29    3            1         Item04          1          0.3011
+    ## 153     Item30    3            0     No Parents No Pattern          0.0821
+    ## 154     Item31    3            1         Item01          0          0.6618
+    ## 155     Item31    3            1         Item01          1          0.8333
+    ## 156     Item32    3            0     No Parents No Pattern          0.8141
+    ## 157     Item33    3            1         Item25          0          0.3665
+    ## 158     Item33    3            1         Item25          1          0.4800
+    ## 159     Item34    3            0     No Parents No Pattern          0.2321
+    ## 160     Item35    3            0     No Parents No Pattern          0.1546
+    ## 161     Item01    4            0     No Parents No Pattern          0.9497
+    ## 162     Item02    4            0     No Parents No Pattern          0.5947
+    ## 163     Item03    4            0     No Parents No Pattern          0.6182
+    ## 164     Item04    4            2 Item03, Item23         00          0.1572
+    ## 165     Item04    4            2 Item03, Item23         01          0.0821
+    ## 166     Item04    4            2 Item03, Item23         10          0.6769
+    ##  [ reached 'max' / getOption("max.print") -- omitted 103 rows ]
+    ## 
+    ## Marginal Item Reference Profile
+    ##        Rank 1 Rank 2 Rank 3 Rank 4 Rank 5
+    ## Item01 0.7104 0.8019 0.8766 0.9497  0.967
+    ## Item02 0.0957 0.2314 0.4172 0.5947  0.739
+    ## Item03 0.2360 0.3315 0.4774 0.6182  0.732
+    ## Item04 0.0789 0.1574 0.3078 0.4316  0.614
+    ## Item05 0.0608 0.1245 0.2751 0.3886  0.550
+    ## Item06 0.0400 0.0938 0.2827 0.3285  0.520
+    ## Item07 0.4183 0.4805 0.5768 0.6876  0.759
+    ## Item08 0.2581 0.2834 0.3445 0.4083  0.501
+    ## Item09 0.2308 0.2753 0.3750 0.4991  0.627
+    ## Item10 0.1916 0.2584 0.3665 0.4701  0.606
+    ## Item11 0.1325 0.2817 0.5008 0.7402  0.885
+    ## Item12 0.1111 0.1729 0.3162 0.4962  0.682
+    ## Item13 0.0884 0.1141 0.2012 0.3305  0.502
+    ## Item14 0.0134 0.0304 0.1007 0.1940  0.335
+    ## Item15 0.0139 0.0204 0.0888 0.1281  0.244
+    ## Item16 0.0578 0.0814 0.1848 0.2941  0.492
+    ## Item17 0.1253 0.1548 0.2474 0.3624  0.533
+    ## Item18 0.0303 0.0261 0.0408 0.0487  0.155
+    ## Item19 0.0384 0.0287 0.0450 0.0657  0.161
+    ## Item20 0.0283 0.0391 0.0495 0.0758  0.131
+    ## Item21 0.2576 0.4755 0.7174 0.8948  0.955
+    ## Item22 0.2256 0.4260 0.6539 0.8968  0.955
+    ## Item23 0.3027 0.4369 0.6292 0.8418  0.939
+    ## Item24 0.2312 0.3861 0.5984 0.8347  0.941
+    ## Item25 0.1329 0.2833 0.5152 0.8528  0.915
+    ## Item26 0.0922 0.2257 0.4555 0.7507  0.902
+    ## Item27 0.1058 0.1985 0.3572 0.6559  0.824
+    ## Item28 0.0180 0.0589 0.1966 0.3633  0.559
+    ## Item29 0.0643 0.1001 0.2182 0.3401  0.496
+    ## Item30 0.0275 0.0402 0.0821 0.1310  0.239
+    ## Item31 0.6844 0.7566 0.8254 0.8934  0.930
+    ## Item32 0.7139 0.7705 0.8141 0.8527  0.886
+    ## Item33 0.3122 0.3538 0.4217 0.5199  0.616
+    ## Item34 0.1866 0.1957 0.2321 0.2429  0.318
+    ## Item35 0.0985 0.1239 0.1546 0.1967  0.260
+    ## 
+    ## IRP Indices
+    ##        Alpha          A Beta         B Gamma            C
+    ## Item01     1 0.09147897    1 0.7104169  0.00  0.000000000
+    ## Item02     2 0.18575838    3 0.4171962  0.00  0.000000000
+    ## Item03     2 0.14596474    3 0.4774193  0.00  0.000000000
+    ## Item04     4 0.18270703    4 0.4316332  0.00  0.000000000
+    ## Item05     4 0.16182210    5 0.5504280  0.00  0.000000000
+    ## Item06     4 0.19192621    5 0.5204344  0.00  0.000000000
+    ## Item07     3 0.11078674    2 0.4804693  0.00  0.000000000
+    ## Item08     4 0.09271153    5 0.5009651  0.00  0.000000000
+    ## Item09     4 0.12790164    4 0.4991280  0.00  0.000000000
+    ## Item10     4 0.13606029    4 0.4700913  0.00  0.000000000
+    ## Item11     3 0.23945895    3 0.5007893  0.00  0.000000000
+    ## Item12     4 0.18559983    4 0.4961763  0.00  0.000000000
+    ## Item13     4 0.17168271    5 0.5022082  0.00  0.000000000
+    ## Item14     4 0.14087675    5 0.3348446  0.00  0.000000000
+    ## Item15     4 0.11578699    5 0.2438481  0.00  0.000000000
+    ## Item16     4 0.19823273    5 0.4923369  0.00  0.000000000
+    ## Item17     4 0.17017469    5 0.5325965  0.00  0.000000000
+    ## Item18     4 0.10679453    5 0.1554454  0.25 -0.004248974
+    ## Item19     4 0.09483464    5 0.1605088  0.25 -0.009740845
+    ## Item20     4 0.05504400    5 0.1308940  0.00  0.000000000
+    ## Item21     2 0.24190430    2 0.4755097  0.00  0.000000000
+    ## Item22     3 0.24291837    2 0.4259656  0.00  0.000000000
+    ## Item23     3 0.21261028    2 0.4369185  0.00  0.000000000
+    ## Item24     3 0.23639488    3 0.5983545  0.00  0.000000000
+    ## Item25     3 0.33752441    3 0.5152274  0.00  0.000000000
+    ## Item26     3 0.29514977    3 0.4555486  0.00  0.000000000
+    ## Item27     3 0.29864648    3 0.3572087  0.00  0.000000000
+    ## Item28     4 0.19588834    5 0.5591385  0.00  0.000000000
+    ## Item29     4 0.15593083    5 0.4960204  0.00  0.000000000
+    ## Item30     4 0.10842632    5 0.2394654  0.00  0.000000000
+    ## Item31     1 0.07218040    1 0.6843920  0.00  0.000000000
+    ## Item32     1 0.05661584    1 0.7139340  0.00  0.000000000
+    ## Item33     3 0.09815971    4 0.5199007  0.00  0.000000000
+    ## Item34     4 0.07524326    5 0.3181130  0.00  0.000000000
+    ## Item35     4 0.06353034    5 0.2601808  0.00  0.000000000
+    ## 
+    ## Test reference Profile and Latent Rank Distribution
+    ##                               Rank 1 Rank 2 Rank 3 Rank 4  Rank 5
+    ## Test Reference Profile         6.413  8.819 12.947 17.380  21.472
+    ## Latent Rank Ditribution      181.000 60.000 83.000 82.000 109.000
+    ## Rank Membership Distribution 165.388 78.163 81.015 80.658 109.777
+    ## [1] "Weakly ordinal alignment condition was satisfied."
+    ## 
+    ## Model Fit Indices
+    ##                    value
+    ## model_log_like -7796.306
+    ## bench_log_like -5891.314
+    ## null_log_like  -9862.114
+    ## model_Chi_sq    3809.985
+    ## null_Chi_sq     7941.601
+    ## model_df         921.000
+    ## null_df         1155.000
+    ## NFI                0.520
+    ## RFI                0.398
+    ## IFI                0.588
+    ## TLI                0.466
+    ## CFI                0.574
+    ## RMSEA              0.078
+    ## AIC             1967.985
+    ## CAIC           -1942.680
+    ## BIC            -1940.893
+
+### Local Dependence Biclustering
 
 Local Dependence Biclustering combines biclustering and Bayesian network
-models. The model requires three main components: - Number of latent
-classes/ranks - Field assignments for items - Network structure between
-fields at each rank
+models. The model requires three main components:
+
+- Number of latent classes/ranks
+- Field assignments for items
+- Network structure between fields at each rank
 
 Here’s an example implementation:
 
@@ -1826,244 +2613,134 @@ result.LDB
 
     ## Adjacency Matrix
     ## [[1]]
-    ##         Field01 Field02 Field03 Field04 Field05 Field06 Field07 Field08 Field09
-    ## Field01       0       0       0       0       0       0       0       0       0
-    ## Field02       0       0       0       0       0       0       0       0       0
-    ## Field03       0       0       0       0       0       0       0       0       0
-    ## Field04       0       0       0       0       0       0       0       0       0
-    ## Field05       0       0       0       0       0       0       0       0       0
-    ## Field06       0       0       0       0       0       0       0       0       0
-    ## Field07       0       0       0       0       0       0       0       0       0
-    ## Field08       0       0       0       0       0       0       0       0       0
-    ## Field09       0       0       0       0       0       0       0       0       0
-    ## Field10       0       0       0       0       0       0       0       0       0
-    ##         Field10
-    ## Field01       0
-    ## Field02       0
-    ## Field03       0
-    ## Field04       0
-    ## Field05       0
-    ## Field06       0
-    ## Field07       0
-    ## Field08       0
-    ## Field09       0
-    ## Field10       0
+    ##         Field01 Field02 Field03 Field04 Field05 Field06 Field07 Field08 Field09 Field10
+    ## Field01       0       0       0       0       0       0       0       0       0       0
+    ## Field02       0       0       0       0       0       0       0       0       0       0
+    ## Field03       0       0       0       0       0       0       0       0       0       0
+    ## Field04       0       0       0       0       0       0       0       0       0       0
+    ## Field05       0       0       0       0       0       0       0       0       0       0
+    ## Field06       0       0       0       0       0       0       0       0       0       0
+    ## Field07       0       0       0       0       0       0       0       0       0       0
+    ## Field08       0       0       0       0       0       0       0       0       0       0
+    ## Field09       0       0       0       0       0       0       0       0       0       0
+    ## Field10       0       0       0       0       0       0       0       0       0       0
     ## 
     ## [[2]]
-    ##         Field01 Field02 Field03 Field04 Field05 Field06 Field07 Field08 Field09
-    ## Field01       0       1       0       0       0       0       1       0       0
-    ## Field02       0       0       0       0       0       0       0       0       0
-    ## Field03       0       0       0       0       0       0       0       0       0
-    ## Field04       0       0       0       0       1       0       1       0       0
-    ## Field05       0       0       0       0       0       0       0       1       0
-    ## Field06       0       0       0       0       0       0       0       1       0
-    ## Field07       0       0       0       0       0       0       0       0       0
-    ## Field08       0       0       0       0       0       0       0       0       0
-    ## Field09       0       0       0       0       0       0       0       0       0
-    ## Field10       0       0       0       0       0       0       0       0       0
-    ##         Field10
-    ## Field01       0
-    ## Field02       0
-    ## Field03       0
-    ## Field04       0
-    ## Field05       0
-    ## Field06       0
-    ## Field07       0
-    ## Field08       0
-    ## Field09       0
-    ## Field10       0
+    ##         Field01 Field02 Field03 Field04 Field05 Field06 Field07 Field08 Field09 Field10
+    ## Field01       0       1       0       0       0       0       1       0       0       0
+    ## Field02       0       0       0       0       0       0       0       0       0       0
+    ## Field03       0       0       0       0       0       0       0       0       0       0
+    ## Field04       0       0       0       0       1       0       1       0       0       0
+    ## Field05       0       0       0       0       0       0       0       1       0       0
+    ## Field06       0       0       0       0       0       0       0       1       0       0
+    ## Field07       0       0       0       0       0       0       0       0       0       0
+    ## Field08       0       0       0       0       0       0       0       0       0       0
+    ## Field09       0       0       0       0       0       0       0       0       0       0
+    ## Field10       0       0       0       0       0       0       0       0       0       0
     ## 
     ## [[3]]
-    ##         Field01 Field02 Field03 Field04 Field05 Field06 Field07 Field08 Field09
-    ## Field01       0       0       0       0       0       0       0       0       0
-    ## Field02       0       0       0       1       0       0       0       0       0
-    ## Field03       0       0       0       0       1       0       0       0       0
-    ## Field04       0       0       0       0       0       1       1       1       0
-    ## Field05       0       0       0       0       0       0       0       0       0
-    ## Field06       0       0       0       0       0       0       0       1       0
-    ## Field07       0       0       0       0       0       0       0       0       0
-    ## Field08       0       0       0       0       0       0       0       0       0
-    ## Field09       0       0       0       0       0       0       0       0       0
-    ## Field10       0       0       0       0       0       0       0       0       0
-    ##         Field10
-    ## Field01       0
-    ## Field02       0
-    ## Field03       0
-    ## Field04       0
-    ## Field05       0
-    ## Field06       0
-    ## Field07       0
-    ## Field08       0
-    ## Field09       0
-    ## Field10       0
+    ##         Field01 Field02 Field03 Field04 Field05 Field06 Field07 Field08 Field09 Field10
+    ## Field01       0       0       0       0       0       0       0       0       0       0
+    ## Field02       0       0       0       1       0       0       0       0       0       0
+    ## Field03       0       0       0       0       1       0       0       0       0       0
+    ## Field04       0       0       0       0       0       1       1       1       0       0
+    ## Field05       0       0       0       0       0       0       0       0       0       0
+    ## Field06       0       0       0       0       0       0       0       1       0       0
+    ## Field07       0       0       0       0       0       0       0       0       0       0
+    ## Field08       0       0       0       0       0       0       0       0       0       0
+    ## Field09       0       0       0       0       0       0       0       0       0       0
+    ## Field10       0       0       0       0       0       0       0       0       0       0
     ## 
     ## [[4]]
-    ##         Field01 Field02 Field03 Field04 Field05 Field06 Field07 Field08 Field09
-    ## Field01       0       0       0       0       0       0       0       1       0
-    ## Field02       0       0       0       0       0       0       0       0       0
-    ## Field03       0       0       0       0       1       0       0       0       0
-    ## Field04       0       0       0       0       1       0       0       0       0
-    ## Field05       0       0       0       0       0       0       0       0       0
-    ## Field06       0       0       0       0       0       0       0       1       0
-    ## Field07       0       0       0       0       0       0       0       0       0
-    ## Field08       0       0       0       0       0       0       0       0       0
-    ## Field09       0       0       0       0       0       0       0       0       0
-    ## Field10       0       0       0       0       0       0       0       0       0
-    ##         Field10
-    ## Field01       0
-    ## Field02       0
-    ## Field03       0
-    ## Field04       0
-    ## Field05       0
-    ## Field06       0
-    ## Field07       0
-    ## Field08       0
-    ## Field09       0
-    ## Field10       0
+    ##         Field01 Field02 Field03 Field04 Field05 Field06 Field07 Field08 Field09 Field10
+    ## Field01       0       0       0       0       0       0       0       1       0       0
+    ## Field02       0       0       0       0       0       0       0       0       0       0
+    ## Field03       0       0       0       0       1       0       0       0       0       0
+    ## Field04       0       0       0       0       1       0       0       0       0       0
+    ## Field05       0       0       0       0       0       0       0       0       0       0
+    ## Field06       0       0       0       0       0       0       0       1       0       0
+    ## Field07       0       0       0       0       0       0       0       0       0       0
+    ## Field08       0       0       0       0       0       0       0       0       0       0
+    ## Field09       0       0       0       0       0       0       0       0       0       0
+    ## Field10       0       0       0       0       0       0       0       0       0       0
     ## 
     ## [[5]]
-    ##         Field01 Field02 Field03 Field04 Field05 Field06 Field07 Field08 Field09
-    ## Field01       0       0       0       0       0       0       0       0       0
-    ## Field02       0       0       0       0       0       0       0       0       0
-    ## Field03       0       0       0       0       0       0       0       0       0
-    ## Field04       0       0       0       0       0       0       0       0       0
-    ## Field05       0       0       0       0       0       0       0       0       0
-    ## Field06       0       0       0       0       0       0       0       1       0
-    ## Field07       0       0       0       0       0       0       0       0       1
-    ## Field08       0       0       0       0       0       0       0       0       0
-    ## Field09       0       0       0       0       0       0       0       0       0
-    ## Field10       0       0       0       0       0       0       0       0       0
-    ##         Field10
-    ## Field01       0
-    ## Field02       0
-    ## Field03       0
-    ## Field04       0
-    ## Field05       0
-    ## Field06       0
-    ## Field07       1
-    ## Field08       0
-    ## Field09       1
-    ## Field10       0
+    ##         Field01 Field02 Field03 Field04 Field05 Field06 Field07 Field08 Field09 Field10
+    ## Field01       0       0       0       0       0       0       0       0       0       0
+    ## Field02       0       0       0       0       0       0       0       0       0       0
+    ## Field03       0       0       0       0       0       0       0       0       0       0
+    ## Field04       0       0       0       0       0       0       0       0       0       0
+    ## Field05       0       0       0       0       0       0       0       0       0       0
+    ## Field06       0       0       0       0       0       0       0       1       0       0
+    ## Field07       0       0       0       0       0       0       0       0       1       1
+    ## Field08       0       0       0       0       0       0       0       0       0       0
+    ## Field09       0       0       0       0       0       0       0       0       0       1
+    ## Field10       0       0       0       0       0       0       0       0       0       0
 
-![](README_files/figure-gfm/unnamed-chunk-5-1.png)<!-- -->![](README_files/figure-gfm/unnamed-chunk-5-2.png)<!-- -->![](README_files/figure-gfm/unnamed-chunk-5-3.png)<!-- -->![](README_files/figure-gfm/unnamed-chunk-5-4.png)<!-- -->![](README_files/figure-gfm/unnamed-chunk-5-5.png)<!-- -->
+![](figures/unnamed-chunk-5-1.png)<!-- -->![](figures/unnamed-chunk-5-2.png)<!-- -->![](figures/unnamed-chunk-5-3.png)<!-- -->![](figures/unnamed-chunk-5-4.png)<!-- -->![](figures/unnamed-chunk-5-5.png)<!-- -->
 
     ## 
     ## Parameter Learning
     ## Rank 1 
-    ##         PIRP 0 PIRP 1 PIRP 2 PIRP 3 PIRP 4 PIRP 5 PIRP 6 PIRP 7 PIRP 8 PIRP 9
-    ## Field01 0.6538                                                               
-    ## Field02 0.0756                                                               
-    ## Field03 0.1835                                                               
-    ## Field04 0.3819                                                               
-    ## Field05 0.0500                                                               
-    ## Field06 0.0985                                                               
-    ## Field07 0.2176                                                               
-    ## Field08 0.0608                                                               
-    ## Field09 0.0563                                                               
-    ## Field10 0.0237                                                               
-    ##         PIRP 10 PIRP 11 PIRP 12
-    ## Field01                        
-    ## Field02                        
-    ## Field03                        
-    ## Field04                        
-    ## Field05                        
-    ## Field06                        
-    ## Field07                        
-    ## Field08                        
-    ## Field09                        
-    ## Field10                        
+    ##         PIRP 0 PIRP 1 PIRP 2 PIRP 3 PIRP 4 PIRP 5 PIRP 6 PIRP 7 PIRP 8 PIRP 9 PIRP 10 PIRP 11 PIRP 12
+    ## Field01 0.6538                                                                                       
+    ## Field02 0.0756                                                                                       
+    ## Field03 0.1835                                                                                       
+    ## Field04 0.3819                                                                                       
+    ## Field05 0.0500                                                                                       
+    ## Field06 0.0985                                                                                       
+    ## Field07 0.2176                                                                                       
+    ## Field08 0.0608                                                                                       
+    ## Field09 0.0563                                                                                       
+    ## Field10 0.0237                                                                                       
     ## Rank 2 
-    ##         PIRP 0 PIRP 1 PIRP 2 PIRP 3 PIRP 4 PIRP 5 PIRP 6 PIRP 7 PIRP 8 PIRP 9
-    ## Field01 0.8216                                                               
-    ## Field02 0.1463 0.3181  0.383  0.597                                          
-    ## Field03 0.3320                                                               
-    ## Field04 0.4931                                                               
-    ## Field05 0.1596 0.2552                                                        
-    ## Field06 0.2541                                                               
-    ## Field07 0.1232 0.2926  0.217  0.306  0.376                                   
-    ## Field08 0.0648 0.0887  0.236  0.443  0.196  0.285  0.624                     
-    ## Field09 0.1101                                                               
-    ## Field10 0.0359                                                               
-    ##         PIRP 10 PIRP 11 PIRP 12
-    ## Field01                        
-    ## Field02                        
-    ## Field03                        
-    ## Field04                        
-    ## Field05                        
-    ## Field06                        
-    ## Field07                        
-    ## Field08                        
-    ## Field09                        
-    ## Field10                        
+    ##         PIRP 0 PIRP 1 PIRP 2 PIRP 3 PIRP 4 PIRP 5 PIRP 6 PIRP 7 PIRP 8 PIRP 9 PIRP 10 PIRP 11 PIRP 12
+    ## Field01 0.8216                                                                                       
+    ## Field02 0.1463 0.3181  0.383  0.597                                                                  
+    ## Field03 0.3320                                                                                       
+    ## Field04 0.4931                                                                                       
+    ## Field05 0.1596 0.2552                                                                                
+    ## Field06 0.2541                                                                                       
+    ## Field07 0.1232 0.2926  0.217  0.306  0.376                                                           
+    ## Field08 0.0648 0.0887  0.236  0.443  0.196  0.285  0.624                                             
+    ## Field09 0.1101                                                                                       
+    ## Field10 0.0359                                                                                       
     ## Rank 3 
-    ##         PIRP 0 PIRP 1 PIRP 2 PIRP 3 PIRP 4 PIRP 5 PIRP 6 PIRP 7 PIRP 8 PIRP 9
-    ## Field01 0.8923                                                               
-    ## Field02 0.8736                                                               
-    ## Field03 0.8030                                                               
-    ## Field04 0.4730  0.492  0.650                                                 
-    ## Field05 0.2732  0.319  0.714                                                 
-    ## Field06 0.4025  0.486                                                        
-    ## Field07 0.3162  0.408                                                        
-    ## Field08 0.1028  0.166  0.177  0.439   0.59                                   
-    ## Field09 0.1799                                                               
-    ## Field10 0.0431                                                               
-    ##         PIRP 10 PIRP 11 PIRP 12
-    ## Field01                        
-    ## Field02                        
-    ## Field03                        
-    ## Field04                        
-    ## Field05                        
-    ## Field06                        
-    ## Field07                        
-    ## Field08                        
-    ## Field09                        
-    ## Field10                        
+    ##         PIRP 0 PIRP 1 PIRP 2 PIRP 3 PIRP 4 PIRP 5 PIRP 6 PIRP 7 PIRP 8 PIRP 9 PIRP 10 PIRP 11 PIRP 12
+    ## Field01 0.8923                                                                                       
+    ## Field02 0.8736                                                                                       
+    ## Field03 0.8030                                                                                       
+    ## Field04 0.4730  0.492  0.650                                                                         
+    ## Field05 0.2732  0.319  0.714                                                                         
+    ## Field06 0.4025  0.486                                                                                
+    ## Field07 0.3162  0.408                                                                                
+    ## Field08 0.1028  0.166  0.177  0.439   0.59                                                           
+    ## Field09 0.1799                                                                                       
+    ## Field10 0.0431                                                                                       
     ## Rank 4 
-    ##          PIRP 0   PIRP 1 PIRP 2 PIRP 3 PIRP 4 PIRP 5 PIRP 6 PIRP 7 PIRP 8
-    ## Field01 0.91975                                                          
-    ## Field02 0.97126                                                          
-    ## Field03 0.96955                                                          
-    ## Field04 0.70098                                                          
-    ## Field05 0.28691 0.476702  0.911  0.952                                   
-    ## Field06 0.72620                                                          
-    ## Field07 0.48152                                                          
-    ## Field08 0.00353 0.000122  0.370  0.370  0.401  0.532  0.779              
-    ## Field09 0.36220                                                          
-    ## Field10 0.08630                                                          
-    ##         PIRP 9 PIRP 10 PIRP 11 PIRP 12
-    ## Field01                               
-    ## Field02                               
-    ## Field03                               
-    ## Field04                               
-    ## Field05                               
-    ## Field06                               
-    ## Field07                               
-    ## Field08                               
-    ## Field09                               
-    ## Field10                               
+    ##          PIRP 0   PIRP 1 PIRP 2 PIRP 3 PIRP 4 PIRP 5 PIRP 6 PIRP 7 PIRP 8 PIRP 9 PIRP 10 PIRP 11 PIRP 12
+    ## Field01 0.91975                                                                                         
+    ## Field02 0.97126                                                                                         
+    ## Field03 0.96955                                                                                         
+    ## Field04 0.70098                                                                                         
+    ## Field05 0.28691 0.476702  0.911  0.952                                                                  
+    ## Field06 0.72620                                                                                         
+    ## Field07 0.48152                                                                                         
+    ## Field08 0.00353 0.000122  0.370  0.370  0.401  0.532  0.779                                             
+    ## Field09 0.36220                                                                                         
+    ## Field10 0.08630                                                                                         
     ## Rank 5 
-    ##         PIRP 0 PIRP 1 PIRP 2 PIRP 3 PIRP 4 PIRP 5 PIRP 6 PIRP 7 PIRP 8 PIRP 9
-    ## Field01 0.9627                                                               
-    ## Field02 0.9959                                                               
-    ## Field03 0.9947                                                               
-    ## Field04 0.8654                                                               
-    ## Field05 0.9939                                                               
-    ## Field06 0.9178                                                               
-    ## Field07 0.7334                                                               
-    ## Field08 0.5109 0.4442 0.5939 0.9174                                          
-    ## Field09 0.4062 0.5193 0.6496 0.6786  0.851                                   
-    ## Field10 0.0874 0.0278 0.0652 0.0429  0.110  0.117  0.118  0.163  0.217  0.275
-    ##         PIRP 10 PIRP 11 PIRP 12
-    ## Field01                        
-    ## Field02                        
-    ## Field03                        
-    ## Field04                        
-    ## Field05                        
-    ## Field06                        
-    ## Field07                        
-    ## Field08                        
-    ## Field09                        
-    ## Field10   0.262   0.257    0.95
+    ##         PIRP 0 PIRP 1 PIRP 2 PIRP 3 PIRP 4 PIRP 5 PIRP 6 PIRP 7 PIRP 8 PIRP 9 PIRP 10 PIRP 11 PIRP 12
+    ## Field01 0.9627                                                                                       
+    ## Field02 0.9959                                                                                       
+    ## Field03 0.9947                                                                                       
+    ## Field04 0.8654                                                                                       
+    ## Field05 0.9939                                                                                       
+    ## Field06 0.9178                                                                                       
+    ## Field07 0.7334                                                                                       
+    ## Field08 0.5109 0.4442 0.5939 0.9174                                                                  
+    ## Field09 0.4062 0.5193 0.6496 0.6786  0.851                                                           
+    ## Field10 0.0874 0.0278 0.0652 0.0429  0.110  0.117  0.118  0.163  0.217  0.275   0.262   0.257    0.95
     ## 
     ## Marginal Rankluster Reference Matrix
     ##         Rank 1 Rank 2 Rank 3 Rank 4 Rank 5
@@ -2096,10 +2773,8 @@ result.LDB
     ## Rank Membership Dsitribution 148.275 103.002 105.606 86.100 72.017
     ## 
     ## Latent Field Distribution
-    ##            Field 1 Field 2 Field 3 Field 4 Field 5 Field 6 Field 7 Field 8
-    ## N of Items       3       2       2       1       3       3       4       2
-    ##            Field 9 Field 10
-    ## N of Items       8        7
+    ##            Field 1 Field 2 Field 3 Field 4 Field 5 Field 6 Field 7 Field 8 Field 9 Field 10
+    ## N of Items       3       2       2       1       3       3       4       2       8        7
     ## 
     ## Model Fit Indices
     ##                    value
@@ -2129,35 +2804,35 @@ Of course, it also supports various types of plots.
 plot(result.LDB, type = "Array")
 ```
 
-![](README_files/figure-gfm/plot-ldb-1.png)<!-- -->
+![](figures/plot-ldb-1.png)<!-- -->
 
 ``` r
 # Test Response Profile
 plot(result.LDB, type = "TRP")
 ```
 
-![](README_files/figure-gfm/plot-ldb-2.png)<!-- -->
+![](figures/plot-ldb-2.png)<!-- -->
 
 ``` r
 # Latent Rank Distribution
 plot(result.LDB, type = "LRD")
 ```
 
-![](README_files/figure-gfm/plot-ldb-3.png)<!-- -->
+![](figures/plot-ldb-3.png)<!-- -->
 
 ``` r
 # Rank Membership Profiles for first 9 students
 plot(result.LDB, type = "RMP", students = 1:9, nc = 3, nr = 3)
 ```
 
-![](README_files/figure-gfm/plot-ldb-4.png)<!-- -->
+![](figures/plot-ldb-4.png)<!-- -->
 
 ``` r
 # Field Reference Profiles
 plot(result.LDB, type = "FRP", nc = 3, nr = 2)
 ```
 
-![](README_files/figure-gfm/plot-ldb-5.png)<!-- -->![](README_files/figure-gfm/plot-ldb-6.png)<!-- -->
+![](figures/plot-ldb-5.png)<!-- -->![](figures/plot-ldb-6.png)<!-- -->
 
 In this model, you can draw a Field PIRP Profile that visualizes the
 correct answer count for each rank and each field.
@@ -2166,9 +2841,9 @@ correct answer count for each rank and each field.
 plot(result.LDB, type = "FieldPIRP")
 ```
 
-![](README_files/figure-gfm/plot-ldb-fieldpirp-1.png)<!-- -->![](README_files/figure-gfm/plot-ldb-fieldpirp-2.png)<!-- -->![](README_files/figure-gfm/plot-ldb-fieldpirp-3.png)<!-- -->![](README_files/figure-gfm/plot-ldb-fieldpirp-4.png)<!-- -->![](README_files/figure-gfm/plot-ldb-fieldpirp-5.png)<!-- -->
+![](figures/plot-ldb-fieldpirp-1.png)<!-- -->![](figures/plot-ldb-fieldpirp-2.png)<!-- -->![](figures/plot-ldb-fieldpirp-3.png)<!-- -->![](figures/plot-ldb-fieldpirp-4.png)<!-- -->![](figures/plot-ldb-fieldpirp-5.png)<!-- -->
 
-## Bicluster Network Model
+### Bicluster Network Model
 
 Bicluster Network Model: BINET is a model that combines the Bayesian
 network model and Biclustering. BINET is very similar to LDB and LDR.
@@ -2231,36 +2906,22 @@ print(result.BINET)
 ```
 
     ## Total Graph
-    ##         Class01 Class02 Class03 Class04 Class05 Class06 Class07 Class08 Class09
-    ## Class01       0       1       0       0       0       0       0       0       0
-    ## Class02       0       0       1       1       0       0       0       0       0
-    ## Class03       0       0       0       0       1       0       0       0       0
-    ## Class04       0       0       0       0       1       0       1       0       0
-    ## Class05       0       0       0       0       0       1       0       0       0
-    ## Class06       0       0       0       0       0       0       0       1       1
-    ## Class07       0       0       0       0       0       0       0       0       0
-    ## Class08       0       0       0       0       0       0       0       0       0
-    ## Class09       0       0       0       0       0       0       0       0       0
-    ## Class10       0       0       0       0       0       0       0       0       0
-    ## Class11       0       0       0       0       0       0       0       0       0
-    ## Class12       0       0       0       0       0       0       0       0       0
-    ## Class13       0       0       0       0       0       0       0       0       0
-    ##         Class10 Class11 Class12 Class13
-    ## Class01       0       0       0       0
-    ## Class02       0       0       0       0
-    ## Class03       0       0       0       0
-    ## Class04       0       0       0       0
-    ## Class05       0       0       0       0
-    ## Class06       1       0       0       0
-    ## Class07       0       1       0       0
-    ## Class08       0       0       1       0
-    ## Class09       0       1       0       0
-    ## Class10       0       0       1       0
-    ## Class11       0       0       1       0
-    ## Class12       0       0       0       1
-    ## Class13       0       0       0       0
+    ##         Class01 Class02 Class03 Class04 Class05 Class06 Class07 Class08 Class09 Class10 Class11 Class12 Class13
+    ## Class01       0       1       0       0       0       0       0       0       0       0       0       0       0
+    ## Class02       0       0       1       1       0       0       0       0       0       0       0       0       0
+    ## Class03       0       0       0       0       1       0       0       0       0       0       0       0       0
+    ## Class04       0       0       0       0       1       0       1       0       0       0       0       0       0
+    ## Class05       0       0       0       0       0       1       0       0       0       0       0       0       0
+    ## Class06       0       0       0       0       0       0       0       1       1       1       0       0       0
+    ## Class07       0       0       0       0       0       0       0       0       0       0       1       0       0
+    ## Class08       0       0       0       0       0       0       0       0       0       0       0       1       0
+    ## Class09       0       0       0       0       0       0       0       0       0       0       1       0       0
+    ## Class10       0       0       0       0       0       0       0       0       0       0       0       1       0
+    ## Class11       0       0       0       0       0       0       0       0       0       0       0       1       0
+    ## Class12       0       0       0       0       0       0       0       0       0       0       0       0       1
+    ## Class13       0       0       0       0       0       0       0       0       0       0       0       0       0
 
-![](README_files/figure-gfm/model-binet-1.png)<!-- -->
+![](figures/model-binet-1.png)<!-- -->
 
     ## Estimation of Parameter set
     ## Field 1 
@@ -2444,99 +3105,64 @@ print(result.BINET)
     ## Class 12 2.26e-01                     
     ## Class 13 1.00e+00      1      1      1
     ## Local Dependence Passing Student Rate
-    ##     Field Field Item 1 Field Item 2 Field Item 3 Field Item 4 Parent Class
-    ## 1   1.000       Item01       Item31       Item32                     1.000
-    ## 2   2.000       Item11       Item21       Item22                     2.000
-    ## 3   2.000       Item11       Item21       Item22                     3.000
-    ## 4   3.000       Item23       Item24                                  4.000
-    ## 5   4.000       Item25       Item26       Item27                     5.000
-    ## 6   4.000       Item25       Item26       Item27                     7.000
-    ## 7   5.000       Item02       Item03       Item04                     2.000
-    ## 8   5.000       Item02       Item03       Item04                     4.000
-    ## 9   5.000       Item02       Item03       Item04                     6.000
-    ## 10  5.000       Item02       Item03       Item04                     8.000
-    ## 11  5.000       Item02       Item03       Item04                    10.000
-    ## 12  7.000       Item12       Item13       Item16       Item17        6.000
-    ## 13  8.000       Item28       Item29                                  6.000
-    ## 14  8.000       Item28       Item29                                 11.000
-    ## 15  9.000       Item05       Item06                                  8.000
-    ## 16  9.000       Item05       Item06                                  9.000
-    ## 17 12.000       Item18       Item19       Item20       Item30       12.000
-    ##    Parent CCR 1 Parent CCR 2 Parent CCR 3 Parent CCR 4 Child Class Child CCR 1
-    ## 1         0.000        0.000        0.000                    2.000       0.554
-    ## 2         0.005        0.018        0.003                    4.000       0.681
-    ## 3         0.034        0.068        0.016                    5.000       0.404
-    ## 4         0.221        0.190                                 5.000       0.189
-    ## 5         0.147        0.050        0.142                    6.000       0.613
-    ## 6         0.999        0.991        0.943                   11.000       0.941
-    ## 7         0.005        0.040        0.002                    3.000       0.073
-    ## 8         0.996        0.998        0.893                    7.000       0.145
-    ## 9         0.263        0.334        0.063                    9.000       0.294
-    ## 10        0.980        0.958        0.882                   12.000       1.000
-    ## 11        0.943        0.800        0.733                   12.000       1.000
-    ## 12        0.181        0.146        0.037        0.162      10.000       0.982
-    ## 13        0.009        0.129                                 8.000       0.165
-    ## 14        0.359        0.273                                12.000       1.000
-    ## 15        0.266        0.152                                12.000       0.781
-    ## 16        0.000        0.000                                11.000       1.000
-    ## 17        0.158        0.178        0.217        0.352      13.000       1.000
-    ##    Child CCR 2 Child CCR 3 Child CCR 4
-    ## 1        0.558       0.649            
-    ## 2        0.785       0.637            
-    ## 3        0.728       0.696            
-    ## 4        0.253                        
-    ## 5        0.436       0.179            
-    ## 6        0.925       0.757            
-    ## 7        0.330       0.068            
-    ## 8        0.265       0.006            
-    ## 9        0.298       0.121            
-    ## 10       1.000       1.000            
-    ## 11       1.000       1.000            
-    ## 12       0.883       0.933       0.975
-    ## 13       0.192                        
-    ## 14       1.000                        
-    ## 15       0.703                        
-    ## 16       1.000                        
-    ## 17       1.000       1.000       1.000
+    ##     Field Field Item 1 Field Item 2 Field Item 3 Field Item 4 Parent Class Parent CCR 1 Parent CCR 2 Parent CCR 3
+    ## 1   1.000       Item01       Item31       Item32                     1.000        0.000        0.000        0.000
+    ## 2   2.000       Item11       Item21       Item22                     2.000        0.005        0.018        0.003
+    ## 3   2.000       Item11       Item21       Item22                     3.000        0.034        0.068        0.016
+    ## 4   3.000       Item23       Item24                                  4.000        0.221        0.190             
+    ## 5   4.000       Item25       Item26       Item27                     5.000        0.147        0.050        0.142
+    ## 6   4.000       Item25       Item26       Item27                     7.000        0.999        0.991        0.943
+    ## 7   5.000       Item02       Item03       Item04                     2.000        0.005        0.040        0.002
+    ## 8   5.000       Item02       Item03       Item04                     4.000        0.996        0.998        0.893
+    ## 9   5.000       Item02       Item03       Item04                     6.000        0.263        0.334        0.063
+    ## 10  5.000       Item02       Item03       Item04                     8.000        0.980        0.958        0.882
+    ## 11  5.000       Item02       Item03       Item04                    10.000        0.943        0.800        0.733
+    ## 12  7.000       Item12       Item13       Item16       Item17        6.000        0.181        0.146        0.037
+    ## 13  8.000       Item28       Item29                                  6.000        0.009        0.129             
+    ## 14  8.000       Item28       Item29                                 11.000        0.359        0.273             
+    ## 15  9.000       Item05       Item06                                  8.000        0.266        0.152             
+    ## 16  9.000       Item05       Item06                                  9.000        0.000        0.000             
+    ## 17 12.000       Item18       Item19       Item20       Item30       12.000        0.158        0.178        0.217
+    ##    Parent CCR 4 Child Class Child CCR 1 Child CCR 2 Child CCR 3 Child CCR 4
+    ## 1                     2.000       0.554       0.558       0.649            
+    ## 2                     4.000       0.681       0.785       0.637            
+    ## 3                     5.000       0.404       0.728       0.696            
+    ## 4                     5.000       0.189       0.253                        
+    ## 5                     6.000       0.613       0.436       0.179            
+    ## 6                    11.000       0.941       0.925       0.757            
+    ## 7                     3.000       0.073       0.330       0.068            
+    ## 8                     7.000       0.145       0.265       0.006            
+    ## 9                     9.000       0.294       0.298       0.121            
+    ## 10                   12.000       1.000       1.000       1.000            
+    ## 11                   12.000       1.000       1.000       1.000            
+    ## 12        0.162      10.000       0.982       0.883       0.933       0.975
+    ## 13                    8.000       0.165       0.192                        
+    ## 14                   12.000       1.000       1.000                        
+    ## 15                   12.000       0.781       0.703                        
+    ## 16                   11.000       1.000       1.000                        
+    ## 17        0.352      13.000       1.000       1.000       1.000       1.000
     ## Marginal Bicluster Reference Matrix
-    ##         Class1 Class2 Class3 Class4 Class5 Class6 Class7 Class8 Class9 Class10
-    ## Field1       0  0.587  0.740  0.859  0.875  0.910  0.868  0.889  0.961   0.932
-    ## Field2       0  0.009  0.040  0.701  0.609  0.688  0.832  0.822  1.000   0.984
-    ## Field3       0  0.177  0.219  0.206  0.221  1.000  1.000  1.000  0.986   1.000
-    ## Field4       0  0.013  0.123  0.047  0.113  0.410  0.978  0.954  0.975   0.966
-    ## Field5       0  0.016  0.157  0.963  0.103  0.220  0.138  0.940  0.237   0.825
-    ## Field6       0  0.236  0.275  0.449  0.414  0.302  0.415  0.469  0.560   0.564
-    ## Field7       0  0.073  0.081  0.192  0.160  0.132  0.126  0.179  0.754   0.943
-    ## Field8       0  0.000  0.037  0.039  0.042  0.069  0.456  0.179  0.615   0.388
-    ## Field9       0  0.000  0.016  0.615  0.035  0.053  0.000  0.209  0.000   0.809
-    ## Field10      0  0.095  0.180  0.174  0.159  0.179  0.121  0.155  0.223   0.260
-    ## Field11      0  0.000  0.000  0.081  0.025  0.021  0.026  0.000  0.244   0.430
-    ## Field12      0  0.002  0.056  0.000  0.020  0.017  0.019  0.046  0.019   0.025
-    ##         Class11 Class12 Class13
-    ## Field1    0.898   0.975       1
-    ## Field2    1.000   1.000       1
-    ## Field3    0.973   1.000       1
-    ## Field4    0.874   1.000       1
-    ## Field5    0.912   1.000       1
-    ## Field6    0.614   0.764       1
-    ## Field7    0.305   0.786       1
-    ## Field8    0.316   1.000       1
-    ## Field9    1.000   0.742       1
-    ## Field10   0.172   0.311       1
-    ## Field11   0.038   0.586       1
-    ## Field12   0.000   0.226       1
-    ##                               Class 1 Class 2 Class 3 Class 4 Class 5 Class 6
-    ## Test Reference Profile          0.000   3.900   6.001  12.951   8.853  11.428
-    ## Latent Class Ditribution        2.000  95.000  73.000  37.000  60.000  44.000
-    ## Class Membership Dsitribution   1.987  82.567  86.281  37.258  60.781  43.222
-    ##                               Class 7 Class 8 Class 9 Class 10 Class 11
-    ## Test Reference Profile         14.305  17.148  19.544   23.589   20.343
-    ## Latent Class Ditribution       43.000  30.000  34.000   18.000   37.000
-    ## Class Membership Dsitribution  43.062  30.087  34.435   20.063   34.811
-    ##                               Class 12 Class 13
-    ## Test Reference Profile          27.076       35
-    ## Latent Class Ditribution        27.000       15
-    ## Class Membership Dsitribution   25.445       15
+    ##         Class1 Class2 Class3 Class4 Class5 Class6 Class7 Class8 Class9 Class10 Class11 Class12 Class13
+    ## Field1       0  0.587  0.740  0.859  0.875  0.910  0.868  0.889  0.961   0.932   0.898   0.975       1
+    ## Field2       0  0.009  0.040  0.701  0.609  0.688  0.832  0.822  1.000   0.984   1.000   1.000       1
+    ## Field3       0  0.177  0.219  0.206  0.221  1.000  1.000  1.000  0.986   1.000   0.973   1.000       1
+    ## Field4       0  0.013  0.123  0.047  0.113  0.410  0.978  0.954  0.975   0.966   0.874   1.000       1
+    ## Field5       0  0.016  0.157  0.963  0.103  0.220  0.138  0.940  0.237   0.825   0.912   1.000       1
+    ## Field6       0  0.236  0.275  0.449  0.414  0.302  0.415  0.469  0.560   0.564   0.614   0.764       1
+    ## Field7       0  0.073  0.081  0.192  0.160  0.132  0.126  0.179  0.754   0.943   0.305   0.786       1
+    ## Field8       0  0.000  0.037  0.039  0.042  0.069  0.456  0.179  0.615   0.388   0.316   1.000       1
+    ## Field9       0  0.000  0.016  0.615  0.035  0.053  0.000  0.209  0.000   0.809   1.000   0.742       1
+    ## Field10      0  0.095  0.180  0.174  0.159  0.179  0.121  0.155  0.223   0.260   0.172   0.311       1
+    ## Field11      0  0.000  0.000  0.081  0.025  0.021  0.026  0.000  0.244   0.430   0.038   0.586       1
+    ## Field12      0  0.002  0.056  0.000  0.020  0.017  0.019  0.046  0.019   0.025   0.000   0.226       1
+    ##                               Class 1 Class 2 Class 3 Class 4 Class 5 Class 6 Class 7 Class 8 Class 9 Class 10
+    ## Test Reference Profile          0.000   3.900   6.001  12.951   8.853  11.428  14.305  17.148  19.544   23.589
+    ## Latent Class Ditribution        2.000  95.000  73.000  37.000  60.000  44.000  43.000  30.000  34.000   18.000
+    ## Class Membership Dsitribution   1.987  82.567  86.281  37.258  60.781  43.222  43.062  30.087  34.435   20.063
+    ##                               Class 11 Class 12 Class 13
+    ## Test Reference Profile          20.343   27.076       35
+    ## Latent Class Ditribution        37.000   27.000       15
+    ## Class Membership Dsitribution   34.811   25.445       15
     ## 
     ## Model Fit Indices
     ##                Multigroup Model Saturated Moodel
@@ -2564,35 +3190,35 @@ Of course, it also supports various types of plots.
 plot(result.BINET, type = "Array")
 ```
 
-![](README_files/figure-gfm/plot-binet-1.png)<!-- -->
+![](figures/plot-binet-1.png)<!-- -->
 
 ``` r
 # Test Response Profile
 plot(result.BINET, type = "TRP")
 ```
 
-![](README_files/figure-gfm/plot-binet-2.png)<!-- -->
+![](figures/plot-binet-2.png)<!-- -->
 
 ``` r
 # Latent Rank Distribution
 plot(result.BINET, type = "LRD")
 ```
 
-![](README_files/figure-gfm/plot-binet-3.png)<!-- -->
+![](figures/plot-binet-3.png)<!-- -->
 
 ``` r
 # Rank Membership Profiles for first 9 students
 plot(result.BINET, type = "RMP", students = 1:9, nc = 3, nr = 3)
 ```
 
-![](README_files/figure-gfm/plot-binet-4.png)<!-- -->
+![](figures/plot-binet-4.png)<!-- -->
 
 ``` r
 # Field Reference Profiles
 plot(result.BINET, type = "FRP", nc = 3, nr = 2)
 ```
 
-![](README_files/figure-gfm/plot-binet-5.png)<!-- -->![](README_files/figure-gfm/plot-binet-6.png)<!-- -->
+![](figures/plot-binet-5.png)<!-- -->![](figures/plot-binet-6.png)<!-- -->
 
 LDPSR plot shows all Passing Student Rates for all locally dependent
 classes compared with their respective parents.
@@ -2602,9 +3228,9 @@ classes compared with their respective parents.
 plot(result.BINET, type = "LDPSR", nc = 3, nr = 2)
 ```
 
-![](README_files/figure-gfm/plot-binet-ldpsr-1.png)<!-- -->![](README_files/figure-gfm/plot-binet-ldpsr-2.png)<!-- -->![](README_files/figure-gfm/plot-binet-ldpsr-3.png)<!-- -->
+![](figures/plot-binet-ldpsr-1.png)<!-- -->![](figures/plot-binet-ldpsr-2.png)<!-- -->![](figures/plot-binet-ldpsr-3.png)<!-- -->
 
-## Table of Model and Plotting Option Correspondence
+### Table of Model and Plotting Option Correspondence
 
 | Model/Type   | IIC | ICC | TIC | IRP | FRP | TRP | LCD/LRD | CMP/RMP | Array | FieldPIRP | LDPSR |
 |--------------|:---:|:---:|:---:|:---:|:---:|:---:|:-------:|:-------:|:-----:|:---------:|:-----:|
@@ -2617,58 +3243,6 @@ plot(result.BINET, type = "LDPSR", nc = 3, nr = 2)
 | LDB          |     |     |     |     |  ◯  |  ◯  |    ◯    |    ◯    |   ◯   |     ◯     |       |
 | BINET        |     |     |     |     |  ◯  |  ◯  |    ◯    |    ◯    |   ◯   |           |   ◯   |
 
-## Common Issues and Solutions
-
-### Data Preparation
-
-- Missing Values
-  - NA values are supported
-  - Use `dataFormat()` to properly handle missing data
-  - Avoid empty strings or special missing codes
-- Data Structure
-  - Response data must be numeric
-  - Binary data should be 0/1
-  - Polytomous data should be ordered integers
-
-### Network Structure Specifications
-
-When using LDLRA, LDB, or BINET, common issues with network
-specifications include:
-
-- File Format
-  - CSV files must include headers
-  - Column names should match expected format
-  - Check for extra whitespace or hidden characters
-- Graph Structure
-  - Must be acyclic (DAG)
-  - Parent-child relationships should respect logical ordering
-  - Maximum number of parents per node should be reasonable
-
-### Convergence Issues
-
-For iterative procedures (IRT, LCA, LRA): - Try different starting
-values - Adjust maximum iterations - Consider reducing model complexity
-
-### Memory Management
-
-For large datasets: - Consider analyzing subsets first - Monitor memory
-usage with larger matrices - Use efficient data structures
-
-## Best Practices
-
-1.  Data Validation
-    - Always inspect data structure with `str()`
-    - Check for unexpected values with `summary()`
-    - Verify response patterns with `TestStatistics()`
-2.  Model Building
-    - Start with simpler models
-    - Incrementally add complexity
-    - Compare multiple model specifications
-3.  Result Interpretation
-    - Use multiple plot types
-    - Check model fit statistics
-    - Validate results against domain knowledge
-
 ## Community and Support
 
 We welcome community involvement and feedback to improve `exametrika`.
@@ -2676,27 +3250,31 @@ Here’s how you can participate and get support:
 
 ### Reporting Issues
 
-If you encounter bugs or have suggestions for improvements: - Open an
-issue on [GitHub
-Issues](https://github.com/kosugitti/exametrika/issues) - Provide a
-minimal reproducible example - Include your R session information
-(`sessionInfo()`)
+If you encounter bugs or have suggestions for improvements:
+
+- Open an issue on [GitHub
+  Issues](https://github.com/kosugitti/exametrika/issues)
+- Provide a minimal reproducible example
+- Include your R session information (`sessionInfo()`)
 
 ### Discussions and Community
 
-Join our community discussions: - Ask questions - Share your use cases -
-Discuss feature requests - Exchange tips and tricks - Get updates about
-package development
+Join our [GitHub
+Discussions](https://github.com/kosugitti/exametrika/discussions):
 
-Visit our [GitHub
-Discussions](https://github.com/kosugitti/exametrika/discussions) page
-to participate.
+- Ask questions
+- Share your use cases
+- Discuss feature requests
+- Exchange tips and tricks
+- Get updates about package development
 
 ### Contributing
 
-We appreciate contributions from the community: - Bug reports and
-feature requests through Issues - Usage examples and tips through
-Discussions - Code improvements through Pull Requests
+We appreciate contributions from the community:
+
+- Bug reports and feature requests through Issues
+- Usage examples and tips through Discussions
+- Code improvements through Pull Requests
 
 Please check our existing Issues and Discussions before posting to avoid
 duplicates.
@@ -2721,16 +3299,6 @@ Approaches to Human Behavior, 13),Springer.
   - Polytomous Latent Rank Model
   - Polytomous Latent Class Analysis
   - Extended Biclustering for polytomous data
-- Network Models
-  - LDLRA extension for polytomous responses
-  - Polytomous Local Dependence Biclustering
-
-#### Package Development
-
-- CRAN availability
-- Package logo and visual identity
-- Additional vignettes and documentation
-- Performance optimization for large datasets
 
 ### Current Development Status
 

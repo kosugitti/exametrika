@@ -49,3 +49,11 @@ This is a resubmission of version 1.1.0. In this version, I have addressed the f
 2. **Fixed the default value of the 'filename' argument** in R/ch08BNM_GA.R and R/ch09LDLRA_GA.R from "NULL" (string) to NULL to prevent unintended file writing behavior.
 
 These changes ensure proper testing of the package examples and correct handling of file operations. All examples now either run within the 5-second limit or include testable toy examples, and the file writing behavior works as intended with the corrected NULL default value.
+
+## RE-RESUBMISSION
+I apologize for my careless mistake with the file URIs. In this version, I have fixed the following issue:
+
+1. Corrected invalid file URIs in README.md by updating the links to point to the correct paths:
+
+  + Changed README.html to docs/index.html
+  + Changed README_ja.html to docs/ja.html

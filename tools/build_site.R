@@ -45,6 +45,9 @@ build_site <- function() {
 
   # 一時ファイルのYAMLヘッダーを修正
   content <- readLines(temp_rmd)
+  # docs/figures/ を figures/ に置換
+  content <- gsub("docs/figures/", "figures/", content)
+  writeLines(content, temp_rmd)
   yaml_end <- which(content == "---")[2]
   new_content <- c(
     "---",
@@ -58,7 +61,9 @@ build_site <- function() {
   # README.mdを生成
   rmarkdown::render(temp_rmd,
                     output_format = "github_document",
-                    output_file = "README.md")
+                    output_file = "README.md",
+                    output_dir = getwd(),     # 出力ディレクトリを明示的に指定
+                    knit_root_dir = getwd())  # knit実行のルートディレクトリを指定
 
 
   message("Documentation built successfully!")

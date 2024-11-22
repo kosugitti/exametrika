@@ -70,7 +70,7 @@ build_site <- function() {
   # 言語切り替えリンクを修正
   lang_link_idx <- grep("\\[English\\].*\\[日本語\\]", content)
   if (length(lang_link_idx) > 0) {
-    content[lang_link_idx] <- "[English](docs/index.html) | [日本語](docs/ja.html)"
+    content[lang_link_idx] <- ""
   }
 
   writeLines(content, "README.md")

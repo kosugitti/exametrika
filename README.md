@@ -1,6 +1,3 @@
-
-[English](docs/index.html) | [日本語](docs/ja.html)
-
 # exametrika
 
 ## Overview

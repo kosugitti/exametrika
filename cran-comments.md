@@ -3,7 +3,6 @@
 * GitHub Actions (ubuntu-latest): R-devel
 * GitHub Actions (windows-latest): R-devel
 * GitHub Actions (macOS-13): R-devel
-* GitHub Actions (macOS-latest, ARM64): R-devel
 * win-builder (devel)
 
 ## R CMD check results

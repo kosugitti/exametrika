@@ -15,7 +15,7 @@
 #'   diagonal elements represent the total number of responses for each item.
 #' @export
 
-JointSampleSize <- createBinaryFunction(
+JointSampleSize <- createCommonFunction(
   function(U, ...) {
     S_jk <- t(U$Z) %*% U$Z
     structure(S_jk, class = c("exametrika", "matrix"))

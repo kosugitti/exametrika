@@ -1,6 +1,8 @@
 
 # exametrika
 
+![sticker](sticker.png){width=30%}
+
 ## Overview
 
 The `exametrika` package provides comprehensive Test Data Engineering tools for analyzing educational test data. Based on the methods described in Shojima (2022), this package enables researchers and practitioners to:

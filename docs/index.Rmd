@@ -2,11 +2,8 @@
 layout: default
 title: exametrika
 ---
+![](sticker.png){style="float: right; width: 150px; margin-left: 20px;"}
 
-<div class="title-with-logo">
-  <h1>exametrika</h1>
-  ![](sticker.png)
-</div>
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(

@@ -3,10 +3,7 @@ layout: default
 title: exametrika
 ---
 
-<div class="title-with-logo">
-  <h1>exametrika</h1>
-  ![](sticker.png)
-</div>
+![](sticker.png){style="float: right; width: 150px; margin-left: 20px;"}
 
 [English](index.html) | [日本語](ja.html)
 

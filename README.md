@@ -1,3 +1,5 @@
+![](sticker.png){style="float: right; width: 150px; margin-left: 20px;"}
+
 
 ## Overview
 

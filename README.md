@@ -1,4 +1,5 @@
-![](sticker.png){style="float: right; width: 150px; margin-left: 20px;"}
+
+# exametrika <img src="man/figures/sticker.png" align="right" height="139" />
 
 
 ## Overview

@@ -2,7 +2,8 @@
 layout: default
 title: exametrika
 ---
-![](sticker.png){style="float: right; width: 150px; margin-left: 20px;"}
+
+![](../man/figures/sticker.png){style="float: right; width: 150px; margin-left: 20px;"}
 
 
 ```{r setup, include=FALSE}

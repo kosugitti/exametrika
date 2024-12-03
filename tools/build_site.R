@@ -29,18 +29,28 @@ build_site <- function() {
   yaml_end <- which(content == "---")[2]
   content <- content[(yaml_end + 1):length(content)]
 
-  # setup chunkを削除（新しいパターンに対応）
+  # setup chunkを削除
   setup_start <- which(grepl("^```\\{r setup,|^```\\{r setup\\}", content))
   if (length(setup_start) > 0) {
     setup_end <- setup_start + which(grepl("^```$", content[setup_start:length(content)]))[1] - 1
     content <- content[-(setup_start:setup_end)]
   }
 
-  # title-with-logoのdivとその中身を削除
-  title_div_start <- which(grepl("<div class=\"title-with-logo\">", content))
-  if (length(title_div_start) > 0) {
-    title_div_end <- title_div_start + which(grepl("</div>", content[title_div_start:length(content)]))[1]
-    content <- content[-(title_div_start:title_div_end)]
+  # Stickerの画像行を修正
+  img_line <- grep("^\\!\\[\\]\\(", content)
+  if (length(img_line) > 0) {
+    # GitHubスタイルの画像タグに変換
+    content[img_line] <- "# exametrika <img src=\"man/figures/sticker.png\" align=\"right\" height=\"139\" />"
+    # スタイル行を削除
+    style_line <- grep("\\{style=", content)
+    if (length(style_line) > 0) {
+      content <- content[-style_line]
+    }
+    # 元のタイトル行を削除
+    title_line <- grep("^# exametrika$", content)
+    if (length(title_line) > 0) {
+      content <- content[-title_line]
+    }
   }
 
   # 言語切り替えリンクと前の空行を削除
@@ -61,5 +71,4 @@ build_site <- function() {
   writeLines(content, "README.md")
   message("\nDocumentation built successfully!")
 }
-
 build_site()

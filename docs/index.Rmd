@@ -1,13 +1,25 @@
 ---
 layout: default
-title: Home
+title: exametrika
 ---
 
+<div class="title-with-logo">
+  <h1>exametrika</h1>
+  ![](sticker.png)
+</div>
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "figures/",
+  out.width = "100%",
+  cache = TRUE,
+  cache.path = "_cache/index_cache/"
+)
+```
+
 [English](index.html) | [日本語](ja.html)
-
-# exametrika
-
-![sticker](sticker.png){width=30%}
 
 ## Overview
 

@@ -1,13 +1,14 @@
 ---
 layout: default
-title: Home
+title: exametrika
 ---
 
+<div class="title-with-logo">
+  <h1>exametrika</h1>
+  ![](sticker.png)
+</div>
+
 [English](index.html) | [日本語](ja.html)
-
-# exametrika
-
-![sticker](sticker.png){width=30%}
 
 ## 概要
 
@@ -494,7 +495,7 @@ unlink(edgeFile)
 
 PBILアルゴリズムを使用して、各ランクの項目間相互作用グラフを学習することができます。様々なオプションに加えて、学習プロセスには非常に長い計算時間が必要です。また、結果は実行可能な解の1つに過ぎず、必ずしも最適解ではないことに注意することが重要です。
 
-```{r model-pbil-ldlra, message=FALSE, warning=FALSE,eval=T}
+```{r model-pbil-ldlra, message=FALSE, warning=FALSE,eval=FALSE}
 result.LDLRA.PBIL <- StrLearningPBIL_LDLRA(J35S515,
   seed = 123,
   ncls = 5,

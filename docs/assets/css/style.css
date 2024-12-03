@@ -88,3 +88,45 @@ footer {
   border-top: 1px solid var(--border-color);
   text-align: center;
 }
+
+/* stickerの配置 */
+img[alt="sticker"] {
+  float: right;
+  max-width: 200px;
+  margin-left: 20px;
+  margin-bottom: 20px;
+}
+
+/* その他の図の基本スタイル */
+.figure {
+  text-align: center;
+  margin: 20px 0;
+}
+
+.figure img {
+  max-width: 100%;
+  height: auto;
+}
+
+.figure-caption {
+  margin-top: 10px;
+  font-style: italic;
+  color: #666;
+}
+
+.title-with-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 1rem;
+}
+
+.title-with-logo h1 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.title-with-logo img {
+  width: 50px;
+  height: auto;
+}

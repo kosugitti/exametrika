@@ -27,3 +27,4 @@
 #' @format A data frame with 5000 students and 12 items
 #' @source \url{http://shojima.starfree.jp/tde/index.htm}
 "J12S5000"
+

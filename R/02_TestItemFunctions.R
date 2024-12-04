@@ -6,22 +6,30 @@
 #' @param Z Z is a missing indicator matrix of the type matrix or data.frame
 #' @param w w is item weight vector
 #' @param na na argument specifies the numbers or characters to be treated as missing values.
-#' @param ... Internal parameters for maintaining compatibility with the binary data
-#'            processing system. Not intended for direct use.
 #' @note This function is implemented using a binary data compatibility wrapper and
 #'       will raise an error if used with polytomous data.
 #' @return Returns a matrix of class c("exametrika", "matrix") where each element (i,j)
 #'   represents the number of students who responded to both item i and item j. The
 #'   diagonal elements represent the total number of responses for each item.
 #' @export
-
-JointSampleSize <- createCommonFunction(
-  function(U, ...) {
-    S_jk <- t(U$Z) %*% U$Z
-    structure(S_jk, class = c("exametrika", "matrix"))
-  },
-  "JointSmapleSize"
-)
+JointSampleSize <- function(U, na = NULL, Z = NULL, w = NULL) {
+  UseMethod("JointSampleSize")
+}
+#' @export
+JointSampleSize.default <- function(U, na = NULL, Z = NULL, w = NULL) {
+  if (!inherits(U, "exametrika")) {
+    U <- dataFormat(U, na = na, Z = Z, w = w)
+  }
+  if (U$response.type != "binary") {
+    response_type_error(U$response.type, "JointSampleSize")
+  }
+  JointSampleSize.binary(U, na, Z, w)
+}
+#' @export
+JointSampleSize.binary <- function(U, na = NULL, Z = NULL, w = NULL) {
+  S_jk <- t(U$Z) %*% U$Z
+  structure(S_jk, class = c("exametrika", "matrix"))
+}
 
 #' @title Joint Correct Response Rate
 #' @description
@@ -31,8 +39,6 @@ JointSampleSize <- createCommonFunction(
 #' @param Z Z is a missing indicator matrix of the type matrix or data.frame
 #' @param w w is item weight vector
 #' @param na na argument specifies the numbers or characters to be treated as missing values.
-#' @param ... Internal parameters for maintaining compatibility with the binary data
-#'            processing system. Not intended for direct use.
 #' @note This function is implemented using a binary data compatibility wrapper and
 #'       will raise an error if used with polytomous data.
 #' @return A matrix of joint correct response rates with exametrika class.
@@ -43,13 +49,24 @@ JointSampleSize <- createCommonFunction(
 #' # Calculate JCRR using sample dataset J5S10
 #' JCRR(J5S10)
 #' @export
-JCRR <- createBinaryFunction(
-  function(U, ...) {
-    P_J <- t(U$Z * U$U) %*% (U$Z * U$U) / (t(U$Z) %*% U$Z)
-    structure(P_J, class = c("exametrika", "matrix"))
-  },
-  "JCRR"
-)
+JCRR <- function(U, na = NULL, Z = NULL, w = NULL) {
+  UseMethod("JCRR")
+}
+#' @export
+JCRR.default <- function(U, na = NULL, Z = NULL, w = NULL) {
+  if (!inherits(U, "exametrika")) {
+    U <- dataFormat(U, na = na, Z = Z, w = w)
+  }
+  if (U$response.type != "binary") {
+    response_type_error(U$response.type, "JCRR")
+  }
+  JCRR.binary(U, na, Z, w)
+}
+#' @export
+JCRR.binary <- function(U, na = NULL, Z = NULL, w = NULL) {
+  P_J <- t(U$Z * U$U) %*% (U$Z * U$U) / (t(U$Z) %*% U$Z)
+  structure(P_J, class = c("exametrika", "matrix"))
+}
 
 #' @title Conditional Correct Response Rate
 #' @description
@@ -60,8 +77,6 @@ JCRR <- createBinaryFunction(
 #' @param Z Z is a missing indicator matrix of the type matrix or data.frame
 #' @param w w is item weight vector
 #' @param na na argument specifies the numbers or characters to be treated as missing values.
-#' @param ... Internal parameters for maintaining compatibility with the binary data
-#'            processing system. Not intended for direct use.
 #' @note This function is implemented using a binary data compatibility wrapper and
 #'       will raise an error if used with polytomous data.
 #' @return A matrix of conditional correct response rates with exametrika class.
@@ -72,17 +87,28 @@ JCRR <- createBinaryFunction(
 #' # Calculate CCRR using sample dataset J5S10
 #' CCRR(J5S10)
 #' @export
-CCRR <- createBinaryFunction(
-  function(U, ...) {
-    Z <- U$Z
-    OneJ <- rep(1, ncol(U$U))
-    Pj <- JCRR(U)
-    p <- crr(U)
-    P_C <- Pj / (p %*% t(OneJ))
-    structure(P_C, class = c("exametrika", "matrix"))
-  },
-  "CCRR"
-)
+CCRR <- function(U, na = NULL, Z = NULL, w = NULL) {
+  UseMethod("CCRR")
+}
+#' @export
+CCRR.default <- function(U, na = NULL, Z = NULL, w = NULL) {
+  if (!inherits(U, "exametrika")) {
+    U <- dataFormat(U, na = na, Z = Z, w = w)
+  }
+  if (U$response.type != "binary") {
+    response_type_error(U$response.type, "CCRR")
+  }
+  CCRR.binary(U, na, Z, w)
+}
+#' @export
+CCRR.binary <- function(U, na = NULL, Z = NULL, w = NULL) {
+  Z <- U$Z
+  OneJ <- rep(1, ncol(U$U))
+  Pj <- JCRR(U)
+  p <- crr(U)
+  P_C <- Pj / (p %*% t(OneJ))
+  structure(P_C, class = c("exametrika", "matrix"))
+}
 
 #' @title Item Lift
 #' @description
@@ -94,8 +120,6 @@ CCRR <- createBinaryFunction(
 #' @param Z Z is a missing indicator matrix of the type matrix or data.frame
 #' @param w w is item weight vector
 #' @param na na argument specifies the numbers or characters to be treated as missing values.
-#' @param ... Internal parameters for maintaining compatibility with the binary data
-#'            processing system. Not intended for direct use.
 #' @note This function is implemented using a binary data compatibility wrapper and
 #'       will raise an error if used with polytomous data.
 #' @return A matrix of item lift values with exametrika class.
@@ -110,16 +134,27 @@ CCRR <- createBinaryFunction(
 #' # Calculate ItemLift using sample dataset J5S10
 #' ItemLift(J5S10)
 #' @export
-ItemLift <- createBinaryFunction(
-  function(U, ...) {
-    OneJ <- rep(1, ncol(U$U))
-    Pc <- CCRR(U)
-    p <- crr(U)
-    P_L <- Pc / (OneJ %*% t(p))
-    structure(P_L, class = c("exametrika", "matrix"))
-  },
-  "ItemLift"
-)
+ItemLift <- function(U, na = NULL, Z = NULL, w = NULL) {
+  UseMethod("ItemLift")
+}
+#' @export
+ItemLift.default <- function(U, na = NULL, Z = NULL, w = NULL) {
+  if (!inherits(U, "exametrika")) {
+    U <- dataFormat(U, na = na, Z = Z, w = w)
+  }
+  if (U$response.type != "binary") {
+    response_type_error(U$response.type, "ItemLift")
+  }
+  ItemLift.binary(U, na, Z, w)
+}
+#' @export
+ItemLift.binary <- function(U, na = NULL, Z = NULL, w = NULL) {
+  OneJ <- rep(1, ncol(U$U))
+  Pc <- CCRR(U)
+  p <- crr(U)
+  P_L <- Pc / (OneJ %*% t(p))
+  structure(P_L, class = c("exametrika", "matrix"))
+}
 
 #' @title Mutual Information
 #' @description
@@ -131,8 +166,6 @@ ItemLift <- createBinaryFunction(
 #' @param Z Z is a missing indicator matrix of the type matrix or data.frame
 #' @param w w is item weight vector
 #' @param na na argument specifies the numbers or characters to be treated as missing values.
-#' @param ... Internal parameters for maintaining compatibility with the binary data
-#'            processing system. Not intended for direct use.
 #' @note This function is implemented using a binary data compatibility wrapper and
 #'       will raise an error if used with polytomous data.
 #' @return A matrix of mutual information values with exametrika class.
@@ -143,41 +176,51 @@ ItemLift <- createBinaryFunction(
 #' # Calculate Mutual Information using sample dataset J15S500
 #' MutualInformation(J15S500)
 #' @export
-MutualInformation <- createBinaryFunction(
-  function(U, ...) {
-    p <- crr(U)
+MutualInformation <- function(U, na = NULL, Z = NULL, w = NULL) {
+  UseMethod("MutualInformation")
+}
+#' @export
+MutualInformation.default <- function(U, na = NULL, Z = NULL, w = NULL) {
+  if (!inherits(U, "exametrika")) {
+    U <- dataFormat(U, na = na, Z = Z, w = w)
+  }
+  if (U$response.type != "binary") {
+    response_type_error(U$response.type, "MutualInformation")
+  }
+  MutualInformation.binary(U, na, Z, w)
+}
+#' @export
+MutualInformation.binary <- function(U, na = NULL, Z = NULL, w = NULL) {
+  p <- crr(U)
+  # Calculate joint response matrix
+  S <- list()
+  S$S_11 <- t(U$Z * U$U) %*% (U$Z * U$U)
+  S$S_10 <- t(U$Z * U$U) %*% (U$Z * (1 - U$U))
+  S$S_01 <- t(U$Z * (1 - U$U)) %*% (U$Z * U$U)
+  S$S_00 <- t(U$Z * (1 - U$U)) %*% (U$Z * (1 - U$U))
 
-    # Calculate joint response matrix
-    S <- list()
-    S$S_11 <- t(U$Z * U$U) %*% (U$Z * U$U)
-    S$S_10 <- t(U$Z * U$U) %*% (U$Z * (1 - U$U))
-    S$S_01 <- t(U$Z * (1 - U$U)) %*% (U$Z * U$U)
-    S$S_00 <- t(U$Z * (1 - U$U)) %*% (U$Z * (1 - U$U))
+  # Calculate joint probability matrix
+  P <- lapply(S, function(x) x / (t(U$Z) %*% U$Z))
 
-    # Calculate joint probability matrix
-    P <- lapply(S, function(x) x / (t(U$Z) %*% U$Z))
+  # Calculate lift matrix
+  L <- list()
+  L$L_11 <- P$S_11 / (p %*% t(p))
+  L$L_10 <- P$S_10 / (p %*% t(1 - p))
+  L$L_01 <- P$S_01 / ((1 - p) %*% t(p))
+  L$L_00 <- P$S_00 / ((1 - p) %*% t(1 - p))
 
-    # Calculate lift matrix
-    L <- list()
-    L$L_11 <- P$S_11 / (p %*% t(p))
-    L$L_10 <- P$S_10 / (p %*% t(1 - p))
-    L$L_01 <- P$S_01 / ((1 - p) %*% t(p))
-    L$L_00 <- P$S_00 / ((1 - p) %*% t(1 - p))
+  # Calculate mutual information
+  MI <- P$S_00 * log(L$L_00, base = 2) +
+    P$S_01 * log(L$L_01, base = 2) +
+    P$S_10 * log(L$L_10, base = 2) +
+    P$S_11 * log(L$L_11, base = 2)
 
-    # Calculate mutual information
-    MI <- P$S_00 * log(L$L_00, base = 2) +
-      P$S_01 * log(L$L_01, base = 2) +
-      P$S_10 * log(L$L_10, base = 2) +
-      P$S_11 * log(L$L_11, base = 2)
+  # Adjust diagonal elements
+  diag(MI) <- diag(P$S_00 * log(L$L_00, base = 2) +
+    P$S_11 * log(L$L_11, base = 2))
 
-    # Adjust diagonal elements
-    diag(MI) <- diag(P$S_00 * log(L$L_00, base = 2) +
-      P$S_11 * log(L$L_11, base = 2))
-
-    structure(MI, class = c("exametrika", "matrix"))
-  },
-  "MutualInformation"
-)
+  structure(MI, class = c("exametrika", "matrix"))
+}
 
 #' @title Phi-Coefficient
 #' @description
@@ -189,8 +232,6 @@ MutualInformation <- createBinaryFunction(
 #' @param Z Z is a missing indicator matrix of the type matrix or data.frame
 #' @param w w is item weight vector
 #' @param na na argument specifies the numbers or characters to be treated as missing values.
-#' @param ... Internal parameters for maintaining compatibility with the binary data
-#'            processing system. Not intended for direct use.
 #' @note This function is implemented using a binary data compatibility wrapper and
 #'       will raise an error if used with polytomous data.
 #' @return A matrix of phi coefficients with exametrika class.
@@ -201,27 +242,38 @@ MutualInformation <- createBinaryFunction(
 #' # Calculate Phi-Coefficient using sample dataset J15S500
 #' PhiCoefficient(J15S500)
 #' @export
-PhiCoefficient <- createBinaryFunction(
-  function(U, ...) {
-    p <- crr(U)
-    OneS <- rep(1, nrow(U$U))
-    OneJ <- rep(1, ncol(U$U))
+PhiCoefficient <- function(U, na = NULL, Z = NULL, w = NULL) {
+  UseMethod("PhiCoefficient")
+}
+#' @export
+PhiCoefficient.default <- function(U, na = NULL, Z = NULL, w = NULL) {
+  if (!inherits(U, "exametrika")) {
+    U <- dataFormat(U, na = na, Z = Z, w = w)
+  }
+  if (U$response.type != "binary") {
+    response_type_error(U$response.type, "PhiCoefficient")
+  }
+  PhiCoefficient.binary(U, na, Z, w)
+}
+#' @export
+PhiCoefficient.binary <- function(U, na = NULL, Z = NULL, w = NULL) {
+  p <- crr(U)
+  OneS <- rep(1, nrow(U$U))
+  OneJ <- rep(1, ncol(U$U))
 
-    # Calculate centered cross-product matrix
-    C <- t(U$Z * (U$U - OneS %*% t(p))) %*%
-      (U$Z * (U$U - OneS %*% t(p))) /
-      (t(U$Z) %*% U$Z - OneJ %*% t(OneJ))
+  # Calculate centered cross-product matrix
+  C <- t(U$Z * (U$U - OneS %*% t(p))) %*%
+    (U$Z * (U$U - OneS %*% t(p))) /
+    (t(U$Z) %*% U$Z - OneJ %*% t(OneJ))
 
-    # Calculate standard deviations
-    v <- diag(C)
+  # Calculate standard deviations
+  v <- diag(C)
 
-    # Calculate correlation matrix
-    phi <- C / sqrt(v) %*% t(sqrt(v))
+  # Calculate correlation matrix
+  phi <- C / sqrt(v) %*% t(sqrt(v))
 
-    structure(phi, class = c("exametrika", "matrix"))
-  },
-  "PhiCoefficient"
-)
+  structure(phi, class = c("exametrika", "matrix"))
+}
 
 #' @title Tetrachoric Correlation
 #' @description
@@ -315,8 +367,6 @@ tetrachoric <- function(x, y) {
 #' @param Z Z is a missing indicator matrix of the type matrix or data.frame
 #' @param w w is item weight vector
 #' @param na na argument specifies the numbers or characters to be treated as missing values.
-#' @param ... Internal parameters for maintaining compatibility with the binary data
-#'            processing system. Not intended for direct use.
 #' @note This function is implemented using a binary data compatibility wrapper and
 #'       will raise an error if used with polytomous data.
 #' @return A matrix of tetrachoric correlations with exametrika class.
@@ -328,28 +378,39 @@ tetrachoric <- function(x, y) {
 #' TetrachoricCorrelationMatrix(J15S500)
 #' }
 #' @export
-TetrachoricCorrelationMatrix <- createBinaryFunction(
-  function(U, ...) {
-    tmp <- dataFormat(data = U, na = na, Z = Z, w = w)
-    tmp$U[tmp$Z == 0] <- NA
-    Una <- tmp$U
-    m <- ncol(Una)
-    mat <- matrix(NA, ncol = m, nrow = m)
-    colnames(mat) <- tmp$ItemLabel
-    rownames(mat) <- tmp$ItemLabel
-    for (i in 1:(m - 1)) {
-      for (j in (i + 1):m) {
-        x <- Una[, i]
-        y <- Una[, j]
-        mat[i, j] <- tetrachoric(x, y)
-        mat[j, i] <- mat[i, j]
-      }
+TetrachoricCorrelationMatrix <- function(U, na = NULL, Z = NULL, w = NULL) {
+  UseMethod("TetrachoricCorrelationMatrix")
+}
+#' @export
+TetrachoricCorrelationMatrix.default <- function(U, na = NULL, Z = NULL, w = NULL) {
+  if (!inherits(U, "exametrika")) {
+    U <- dataFormat(U, na = na, Z = Z, w = w)
+  }
+  if (U$response.type != "binary") {
+    response_type_error(U$response.type, "TetrachoricCorrelationMatrix")
+  }
+  TetrachoricCorrelationMatrix.binary(U, na, Z, w)
+}
+#' @export
+TetrachoricCorrelationMatrix.binary <- function(U, na = NULL, Z = NULL, w = NULL) {
+  tmp <- dataFormat(data = U, na = na, Z = Z, w = w)
+  tmp$U[tmp$Z == 0] <- NA
+  Una <- tmp$U
+  m <- ncol(Una)
+  mat <- matrix(NA, ncol = m, nrow = m)
+  colnames(mat) <- tmp$ItemLabel
+  rownames(mat) <- tmp$ItemLabel
+  for (i in 1:(m - 1)) {
+    for (j in (i + 1):m) {
+      x <- Una[, i]
+      y <- Una[, j]
+      mat[i, j] <- tetrachoric(x, y)
+      mat[j, i] <- mat[i, j]
     }
-    diag(mat) <- 1
-    structure(mat, class = c("exametrika", "matrix"))
-  },
-  "TetrachoricCorrelationMatrix"
-)
+  }
+  diag(mat) <- 1
+  structure(mat, class = c("exametrika", "matrix"))
+}
 
 #' @title Inter-Item Analysis
 #' @description
@@ -369,8 +430,6 @@ TetrachoricCorrelationMatrix <- createBinaryFunction(
 #' @param Z Z is a missing indicator matrix of the type matrix or data.frame
 #' @param w w is item weight vector
 #' @param na na argument specifies the numbers or characters to be treated as missing values.
-#' @param ... Internal parameters for maintaining compatibility with the binary data
-#'            processing system. Not intended for direct use.
 #' @note This function is implemented using a binary data compatibility wrapper and
 #'       will raise an error if used with polytomous data.
 #' @return A list of class "exametrika" and "IIAnalysis" containing the following matrices:
@@ -388,32 +447,42 @@ TetrachoricCorrelationMatrix <- createBinaryFunction(
 #' InterItemAnalysis(J15S500)
 #' }
 #' @export
-InterItemAnalysis <- createBinaryFunction(
-  function(U, ...) {
-    # Calculate all matrices
-    JSS <- JointSampleSize(U)
-    JCRR <- JCRR(U)
-    IL <- ItemLift(U)
-    MI <- MutualInformation(U)
-    Phi <- PhiCoefficient(U)
-    Tet <- TetrachoricCorrelationMatrix(U)
+InterItemAnalysis <- function(U, na = NULL, Z = NULL, w = NULL) {
+  UseMethod("InterItemAnalysis")
+}
+#' @export
+InterItemAnalysis.default <- function(U, na = NULL, Z = NULL, w = NULL) {
+  if (!inherits(U, "exametrika")) {
+    U <- dataFormat(U, na = na, Z = Z, w = w)
+  }
+  if (U$response.type != "binary") {
+    response_type_error(U$response.type, "InterItemAnalysis")
+  }
+  InterItemAnalysis.binary(U, na, Z, w)
+}
+#' @export
+InterItemAnalysis.binary <- function(U, na = NULL, Z = NULL, w = NULL) {
+  # Calculate all matrices
+  JSS <- JointSampleSize(U)
+  JCRR <- JCRR(U)
+  IL <- ItemLift(U)
+  MI <- MutualInformation(U)
+  Phi <- PhiCoefficient(U)
+  Tet <- TetrachoricCorrelationMatrix(U)
 
-    # Create return structure
-    structure(
-      list(
-        JSS = JSS,
-        JCRR = JCRR,
-        IL = IL,
-        MI = MI,
-        Phi = Phi,
-        Tetrachoric = Tet
-      ),
-      class = c("exametrika", "IIAnalysis")
-    )
-  },
-  "InterItemAnalysis"
-)
-
+  # Create return structure
+  structure(
+    list(
+      JSS = JSS,
+      JCRR = JCRR,
+      IL = IL,
+      MI = MI,
+      Phi = Phi,
+      Tetrachoric = Tet
+    ),
+    class = c("exametrika", "IIAnalysis")
+  )
+}
 #' @title Correct Response Rate
 #' @description
 #' The correct response rate (CRR) is one of the most basic and important
@@ -428,8 +497,6 @@ InterItemAnalysis <- createBinaryFunction(
 #' @param Z Z is a missing indicator matrix of the type matrix or data.frame
 #' @param w w is item weight vector
 #' @param na na argument specifies the numbers or characters to be treated as missing values.
-#' @param ... Internal parameters for maintaining compatibility with the binary data
-#'            processing system. Not intended for direct use.
 #' @note This function is implemented using a binary data compatibility wrapper and
 #'       will raise an error if used with polytomous data.
 #' @return A numeric vector of weighted correct response rates for each item.
@@ -443,22 +510,33 @@ InterItemAnalysis <- createBinaryFunction(
 #' # using sample datasaet
 #' crr(J15S500)
 #' @export
-crr <- createBinaryFunction(
-  function(U, ...) {
-    # Create unit vector for summation
-    OneS <- rep(1, length = nrow(U$U))
+crr <- function(U, na = NULL, Z = NULL, w = NULL) {
+  UseMethod("crr")
+}
+#' @export
+crr.default <- function(U, na = NULL, Z = NULL, w = NULL) {
+  if (!inherits(U, "exametrika")) {
+    U <- dataFormat(U, na = na, Z = Z, w = w)
+  }
+  if (U$response.type != "binary") {
+    response_type_error(U$response.type, "crr")
+  }
+  crr.binary(U, na, Z, w)
+}
+#' @export
+crr.binary <- function(U, na = NULL, Z = NULL, w = NULL) {
+  # Create unit vector for summation
+  OneS <- rep(1, length = nrow(U$U))
 
-    # Calculate correct response rate
-    # (sum of correct responses) / (sum of non-missing responses)
-    p <- t(U$Z * U$U) %*% OneS / t(U$Z) %*% OneS
+  # Calculate correct response rate
+  # (sum of correct responses) / (sum of non-missing responses)
+  p <- t(U$Z * U$U) %*% OneS / t(U$Z) %*% OneS
 
-    # Apply item weights
-    pW <- U$w * p
+  # Apply item weights
+  pW <- U$w * p
 
-    return(pW)
-  },
-  "crr"
-)
+  return(pW)
+}
 
 #' @title Item Odds
 #' @description
@@ -475,8 +553,6 @@ crr <- createBinaryFunction(
 #' @param Z Z is a missing indicator matrix of the type matrix or data.frame
 #' @param w w is item weight vector
 #' @param na na argument specifies the numbers or characters to be treated as missing values.
-#' @param ... Internal parameters for maintaining compatibility with the binary data
-#'            processing system. Not intended for direct use.
 #' @note This function is implemented using a binary data compatibility wrapper and
 #'       will raise an error if used with polytomous data.
 #' @return A numeric vector of odds values for each item. Values range from 0 to infinity,
@@ -490,18 +566,30 @@ crr <- createBinaryFunction(
 #' # using sample dataset
 #' ItemOdds(J5S10)
 #' @export
-ItemOdds <- createBinaryFunction(
-  function(U, ...) {
-    # Calculate correct response rates
-    p <- crr(U)
+ItemOdds <- function(U, na = NULL, Z = NULL, w = NULL) {
+  UseMethod("ItemOdds")
+}
+#' @export
+ItemOdds.default <- function(U, na = NULL, Z = NULL, w = NULL) {
+  if (!inherits(U, "exametrika")) {
+    U <- dataFormat(U, na = na, Z = Z, w = w)
+  }
+  if (U$response.type != "binary") {
+    response_type_error(U$response.type, "ItemOdds")
+  }
+  ItemOdds.binary(U, na, Z, w)
+}
+#' @export
+ItemOdds.binary <- function(U, na = NULL, Z = NULL, w = NULL) {
+  # Calculate correct response rates
+  p <- crr(U)
 
-    # Calculate odds
-    o <- p / (1 - p)
+  # Calculate odds
+  o <- p / (1 - p)
 
-    return(o)
-  },
-  "ItemOdds"
-)
+  return(o)
+}
+
 
 #' @title Item Threshold
 #' @description
@@ -519,8 +607,6 @@ ItemOdds <- createBinaryFunction(
 #' @param Z Z is a missing indicator matrix of the type matrix or data.frame
 #' @param w w is item weight vector
 #' @param na na argument specifies the numbers or characters to be treated as missing values.
-#' @param ... Internal parameters for maintaining compatibility with the binary data
-#'            processing system. Not intended for direct use.
 #' @note This function is implemented using a binary data compatibility wrapper and
 #'       will raise an error if used with polytomous data.
 #' @return A numeric vector of threshold values for each item on the standard normal scale.
@@ -535,18 +621,29 @@ ItemOdds <- createBinaryFunction(
 #' # using sample dataset
 #' ItemThreshold(J5S10)
 #' @export
-ItemThreshold <- createBinaryFunction(
-  function(U, ...) {
-    # Calculate correct response rates
-    p <- crr(U)
+ItemThreshold <- function(U, na = NULL, Z = NULL, w = NULL) {
+  UseMethod("ItemThreshold")
+}
+#' @export
+ItemThreshold.default <- function(U, na = NULL, Z = NULL, w = NULL) {
+  if (!inherits(U, "exametrika")) {
+    U <- dataFormat(U, na = na, Z = Z, w = w)
+  }
+  if (U$response.type != "binary") {
+    response_type_error(U$response.type, "ItemThreshold")
+  }
+  ItemThreshold.binary(U, na, Z, w)
+}
+#' @export
+ItemThreshold.binary <- function(U, na = NULL, Z = NULL, w = NULL) {
+  # Calculate correct response rates
+  p <- crr(U)
 
-    # Calculate thresholds using inverse normal distribution
-    tau <- qnorm(1 - p)
+  # Calculate thresholds using inverse normal distribution
+  tau <- qnorm(1 - p)
 
-    return(tau)
-  },
-  "ItemThreshold"
-)
+  return(tau)
+}
 
 #' @title Item Entropy
 #' @description
@@ -572,8 +669,6 @@ ItemThreshold <- createBinaryFunction(
 #' @param Z Z is a missing indicator matrix of the type matrix or data.frame
 #' @param w w is item weight vector
 #' @param na na argument specifies the numbers or characters to be treated as missing values.
-#' @param ... Internal parameters for maintaining compatibility with the binary data
-#'            processing system. Not intended for direct use.
 #' @note This function is implemented using a binary data compatibility wrapper and
 #'       will raise an error if used with polytomous data.
 #' @return A numeric vector of entropy values for each item, measured in bits.
@@ -587,21 +682,31 @@ ItemThreshold <- createBinaryFunction(
 #' @examples
 #' # using sample dataset
 #' ItemEntropy(J5S10)
-#'
 #' @export
-ItemEntropy <- createBinaryFunction(
-  function(U, ...) {
-    # Calculate correct response rates
-    p <- crr(U)
+ItemEntropy <- function(U, na = NULL, Z = NULL, w = NULL) {
+  UseMethod("ItemEntropy")
+}
+#' @export
+ItemEntropy.default <- function(U, na = NULL, Z = NULL, w = NULL) {
+  if (!inherits(U, "exametrika")) {
+    U <- dataFormat(U, na = na, Z = Z, w = w)
+  }
+  if (U$response.type != "binary") {
+    response_type_error(U$response.type, "ItemEntropy")
+  }
+  ItemEntropy.binary(U, na, Z, w)
+}
+#' @export
+ItemEntropy.binary <- function(U, na = NULL, Z = NULL, w = NULL) {
+  # Calculate correct response rates
+  p <- crr(U)
 
-    # Calculate entropy in bits
-    # Using log base 2 for information content in bits
-    itemE <- -p * log(p, base = 2) - (1 - p) * log(1 - p, base = 2)
+  # Calculate entropy in bits
+  # Using log base 2 for information content in bits
+  itemE <- -p * log(p, base = 2) - (1 - p) * log(1 - p, base = 2)
 
-    return(itemE)
-  },
-  "ItemEntropy"
-)
+  return(itemE)
+}
 
 
 #' @title Item-Total Correlation
@@ -624,8 +729,6 @@ ItemEntropy <- createBinaryFunction(
 #' @param Z Z is a missing indicator matrix of the type matrix or data.frame
 #' @param w w is item weight vector
 #' @param na na argument specifies the numbers or characters to be treated as missing values.
-#' @param ... Internal parameters for maintaining compatibility with the binary data
-#'            processing system. Not intended for direct use.
 #' @note This function is implemented using a binary data compatibility wrapper and
 #'       will raise an error if used with polytomous data.
 #' @return A numeric vector of item-total correlations. Values typically range
@@ -644,37 +747,48 @@ ItemEntropy <- createBinaryFunction(
 #' ItemTotalCorr(J15S500)
 #'
 #' @export
-ItemTotalCorr <- createBinaryFunction(
-  function(U, ...) {
-    # Calculate item probabilities
-    p <- crr(U)
+ItemTotalCorr <- function(U, na = NULL, Z = NULL, w = NULL) {
+  UseMethod("ItemTotalCorr")
+}
+#' @export
+ItemTotalCorr.default <- function(U, na = NULL, Z = NULL, w = NULL) {
+  if (!inherits(U, "exametrika")) {
+    U <- dataFormat(U, na = na, Z = Z, w = w)
+  }
+  if (U$response.type != "binary") {
+    response_type_error(U$response.type, "ItemTotalCorr")
+  }
+  ItemTotalCorr.binary(U, na, Z, w)
+}
+#' @export
+ItemTotalCorr.binary <- function(U, na = NULL, Z = NULL, w = NULL) {
+  # Calculate item probabilities
+  p <- crr(U)
 
-    # Calculate total scores
-    Zeta <- sscore(U)
+  # Calculate total scores
+  Zeta <- sscore(U)
 
-    # Create probability matrix (repeating p for each student)
-    TBL <- matrix(rep(p, each = NROW(U$U)),
-      nrow = NROW(U$U),
-      byrow = FALSE
-    )
+  # Create probability matrix (repeating p for each student)
+  TBL <- matrix(rep(p, each = NROW(U$U)),
+    nrow = NROW(U$U),
+    byrow = FALSE
+  )
 
-    # Handle missing values in response matrix
-    Una <- ifelse(is.na(U$U), 0, U$U)
+  # Handle missing values in response matrix
+  Una <- ifelse(is.na(U$U), 0, U$U)
 
-    # Calculate deviations from expected values
-    dev <- U$Z * (Una - TBL)
+  # Calculate deviations from expected values
+  dev <- U$Z * (Una - TBL)
 
-    # Calculate item variances
-    V <- colSums(dev^2) / (colSums(U$Z) - 1)
-    SD <- sqrt(V)
+  # Calculate item variances
+  V <- colSums(dev^2) / (colSums(U$Z) - 1)
+  SD <- sqrt(V)
 
-    # Calculate correlations
-    rho_Zi <- t(dev) %*% Zeta / SD / colSums(U$Z)
+  # Calculate correlations
+  rho_Zi <- t(dev) %*% Zeta / SD / colSums(U$Z)
 
-    return(rho_Zi)
-  },
-  "ItemTotalCorr"
-)
+  return(rho_Zi)
+}
 
 
 
@@ -733,7 +847,7 @@ Biserial_Correlation <- function(i, t) {
 #' @param Z Z is a missing indicator matrix of the type matrix or data.frame
 #' @param w w is item weight vector
 #' @param na na argument specifies the numbers or characters to be treated as missing values.
-#' @param ... Internal parameters for maintaining compatibility with the binary data
+#'  Internal parameters for maintaining compatibility with the binary data
 #'            processing system. Not intended for direct use.
 #' @note This function is implemented using a binary data compatibility wrapper and
 #'       will raise an error if used with polytomous data.
@@ -752,24 +866,36 @@ Biserial_Correlation <- function(i, t) {
 #' # using sample dataset
 #' ITBiserial(J15S500)
 #' @export
-ITBiserial <- createBinaryFunction(
-  function(U, ...) {
-    # Calculate total scores
-    Zeta <- sscore(U)
+ITBiserial <- function(U, na = NULL, Z = NULL, w = NULL) {
+  UseMethod("ITBiserial")
+}
+#' @export
+ITBiserial.default <- function(U, na = NULL, Z = NULL, w = NULL) {
+  if (!inherits(U, "exametrika")) {
+    U <- dataFormat(U, na = na, Z = Z, w = w)
+  }
+  if (U$response.type != "binary") {
+    response_type_error(U$response.type, "ITBiserial")
+  }
+  ITBiserial.binary(U, na, Z, w)
+}
+#' @export
+ITBiserial.binary <- function(U, na = NULL, Z = NULL, w = NULL) {
+  # Calculate total scores
+  Zeta <- sscore(U)
 
-    # Handle missing values
-    U_data <- U$U
-    U_data[U$Z == 0] <- NA
+  # Handle missing values
+  U_data <- U$U
+  U_data[U$Z == 0] <- NA
 
-    # Calculate biserial correlation for each item
-    ITB <- vapply(seq_len(ncol(U_data)), function(i) {
-      Biserial_Correlation(U_data[, i], Zeta)
-    }, numeric(1))
+  # Calculate biserial correlation for each item
+  ITB <- vapply(seq_len(ncol(U_data)), function(i) {
+    Biserial_Correlation(U_data[, i], Zeta)
+  }, numeric(1))
 
-    return(ITB)
-  },
-  "ITBiserial"
-)
+  return(ITB)
+}
+
 
 #' @title Number Right Score
 #' @description
@@ -789,8 +915,6 @@ ITBiserial <- createBinaryFunction(
 #' @param Z Z is a missing indicator matrix of the type matrix or data.frame
 #' @param w w is item weight vector
 #' @param na na argument specifies the numbers or characters to be treated as missing values.
-#' @param ... Internal parameters for maintaining compatibility with the binary data
-#'            processing system. Not intended for direct use.
 #' @note This function is implemented using a binary data compatibility wrapper and
 #'       will raise an error if used with polytomous data.
 #' @return A numeric vector containing the Number-Right Score for each examinee.
@@ -804,17 +928,27 @@ ITBiserial <- createBinaryFunction(
 #' # using sample dataset
 #' nrs(J15S500)
 #' @export
-nrs <- createBinaryFunction(
-  function(U, ...) {
-    # Calculate weighted sum of correct responses
-    # Z * U gives correct answers accounting for missing data
-    # Multiply by weights and sum across items
-    total_weighted_score <- (U$Z * U$U) %*% U$w
-
-    return(total_weighted_score)
-  },
-  "nrs"
-)
+nrs <- function(U, na = NULL, Z = NULL, w = NULL) {
+  UseMethod("nrs")
+}
+#' @export
+nrs.default <- function(U, na = NULL, Z = NULL, w = NULL) {
+  if (!inherits(U, "exametrika")) {
+    U <- dataFormat(U, na = na, Z = Z, w = w)
+  }
+  if (U$response.type != "binary") {
+    response_type_error(U$response.type, "nrs")
+  }
+  nrs.binary(U, na, Z, w)
+}
+#' @export
+nrs.binary <- function(U, na = NULL, Z = NULL, w = NULL) {
+  # Calculate weighted sum of correct responses
+  # Z * U gives correct answers accounting for missing data
+  # Multiply by weights and sum across items
+  total_weighted_score <- (U$Z * U$U) %*% U$w
+  return(total_weighted_score)
+}
 
 #' @title Passage Rate of Student
 #' @description
@@ -834,8 +968,6 @@ nrs <- createBinaryFunction(
 #' @param Z Z is a missing indicator matrix of the type matrix or data.frame
 #' @param w w is item weight vector
 #' @param na na argument specifies the numbers or characters to be treated as missing values.
-#' @param ... Internal parameters for maintaining compatibility with the binary data
-#'            processing system. Not intended for direct use.
 #' @note This function is implemented using a binary data compatibility wrapper and
 #'       will raise an error if used with polytomous data.
 #' @return A numeric vector containing the passage rate for each student.
@@ -854,22 +986,33 @@ nrs <- createBinaryFunction(
 #' passage(J15S500)
 #'
 #' @export
-passage <- createBinaryFunction(
-  function(U, ...) {
-    # Calculate Number-Right Score
-    total_score <- nrs(U)
+passage <- function(U, na = NULL, Z = NULL, w = NULL) {
+  UseMethod("passage")
+} 
+#' @export
+passage.default <- function(U, na = NULL, Z = NULL, w = NULL) {
+  if (!inherits(U, "exametrika")) {
+    U <- dataFormat(U, na = na, Z = Z, w = w)
+  }
+  if (U$response.type != "binary") {
+    response_type_error(U$response.type, "passage")
+  }
+  passage.binary(U, na, Z, w)
+}
+#' @export
+passage.binary <- function(U, na = NULL, Z = NULL, w = NULL) {
+  # Calculate Number-Right Score
+  total_score <- nrs(U)
 
-    # Calculate number of items presented to each student
-    items_attempted <- NCOL(U$U) - rowSums(1 - U$Z)
+  # Calculate number of items presented to each student
+  items_attempted <- NCOL(U$U) - rowSums(1 - U$Z)
 
-    # Calculate passage rate
-    # Divide total score by number of items attempted
-    passage_rate <- total_score / items_attempted
+  # Calculate passage rate
+  # Divide total score by number of items attempted
+  passage_rate <- total_score / items_attempted
 
-    return(passage_rate)
-  },
-  "passage"
-)
+  return(passage_rate)
+}
 
 #' @title Standardized Score
 #' @description
@@ -889,8 +1032,6 @@ passage <- createBinaryFunction(
 #' @param Z Z is a missing indicator matrix of the type matrix or data.frame
 #' @param w w is item weight vector
 #' @param na na argument specifies the numbers or characters to be treated as missing values.
-#' @param ... Internal parameters for maintaining compatibility with the binary data
-#'            processing system. Not intended for direct use.
 #' @note This function is implemented using a binary data compatibility wrapper and
 #'       will raise an error if used with polytomous data.
 #' @return A numeric vector of standardized scores for each student. The scores follow
@@ -910,31 +1051,42 @@ passage <- createBinaryFunction(
 #' # using sample dataset
 #' sscore(J5S10)
 #' @export
-sscore <- createBinaryFunction(
-  function(U, ...) {
-    # Get number of students
-    S <- nrow(U$U)
+sscore <- function(U, na = NULL, Z = NULL, w = NULL) {
+  UseMethod("sscore")
+}
+#' @export
+sscore.default <- function(U, na = NULL, Z = NULL, w = NULL) {
+  if (!inherits(U, "exametrika")) {
+    U <- dataFormat(U, na = na, Z = Z, w = w)
+  }
+  if (U$response.type != "binary") {
+    response_type_error(U$response.type, "sscore")
+  }
+  sscore.binary(U, na, Z, w)
+}
+#' @export
+sscore.binary <- function(U, na = NULL, Z = NULL, w = NULL) {
+  # Get number of students
+  S <- nrow(U$U)
 
-    # Create unit vector
-    OneS <- rep(1, length = S)
+  # Create unit vector
+  OneS <- rep(1, length = S)
 
-    # Calculate passage rates
-    passage_rates <- passage(U)
+  # Calculate passage rates
+  passage_rates <- passage(U)
 
-    # Calculate mean passage rate
-    mean_rate <- mean(passage_rates, na.rm = TRUE)
+  # Calculate mean passage rate
+  mean_rate <- mean(passage_rates, na.rm = TRUE)
 
-    # Calculate variance of passage rates
-    centered_rates <- passage_rates - mean_rate
-    var_rates <- sum(centered_rates^2, na.rm = TRUE) / (S - 1)
+  # Calculate variance of passage rates
+  centered_rates <- passage_rates - mean_rate
+  var_rates <- sum(centered_rates^2, na.rm = TRUE) / (S - 1)
 
-    # Calculate standardized scores
-    z_scores <- centered_rates / sqrt(var_rates)
+  # Calculate standardized scores
+  z_scores <- centered_rates / sqrt(var_rates)
 
-    return(z_scores)
-  },
-  "sscore"
-)
+  return(z_scores)
+}
 
 
 #' @title Student Percentile Ranks
@@ -950,8 +1102,6 @@ sscore <- createBinaryFunction(
 #' @param Z Z is a missing indicator matrix of the type matrix or data.frame
 #' @param w w is item weight vector
 #' @param na na argument specifies the numbers or characters to be treated as missing values.
-#' @param ... Internal parameters for maintaining compatibility with the binary data
-#'            processing system. Not intended for direct use.
 #' @note This function is implemented using a binary data compatibility wrapper and
 #'       will raise an error if used with polytomous data.
 #' @return A numeric vector of percentile ranks (1-100) for each student, where:
@@ -970,22 +1120,33 @@ sscore <- createBinaryFunction(
 #'
 #' @importFrom stats ecdf
 #' @export
-percentile <- createBinaryFunction(
-  function(U, ...) {
-    # Calculate standardized scores
-    standardized_scores <- sscore(U)
+percentile <- function(U, na = NULL, Z = NULL, w = NULL) {
+  UseMethod("percentile")
+}
+#' @export
+percentile.default <- function(U, na = NULL, Z = NULL, w = NULL) {
+  if (!inherits(U, "exametrika")) {
+    U <- dataFormat(U, na = na, Z = Z, w = w)
+  }
+  if (U$response.type != "binary") {
+    response_type_error(U$response.type, "percentile")
+  }
+  percentile.binary(U, na, Z, w)
+}
+#' @export
+percentile.binary <- function(U, na = NULL, Z = NULL, w = NULL) {
+  # Calculate standardized scores
+  standardized_scores <- sscore(U)
 
-    # Calculate empirical cumulative distribution function
-    empirical_dist <- ecdf(standardized_scores)
+  # Calculate empirical cumulative distribution function
+  empirical_dist <- ecdf(standardized_scores)
 
-    # Convert to percentiles (1-100)
-    # Ceiling function ensures minimum of 1 and handles rounding
-    percentile_ranks <- ceiling(empirical_dist(standardized_scores) * 100)
+  # Convert to percentiles (1-100)
+  # Ceiling function ensures minimum of 1 and handles rounding
+  percentile_ranks <- ceiling(empirical_dist(standardized_scores) * 100)
 
-    return(percentile_ranks)
-  },
-  "percentile"
-)
+  return(percentile_ranks)
+}
 
 #' @title Stanine Scores
 #' @description
@@ -1009,8 +1170,6 @@ percentile <- createBinaryFunction(
 #' @param Z Z is a missing indicator matrix of the type matrix or data.frame
 #' @param w w is item weight vector
 #' @param na na argument specifies the numbers or characters to be treated as missing values.
-#' @param ... Internal parameters for maintaining compatibility with the binary data
-#'            processing system. Not intended for direct use.
 #' @note This function is implemented using a binary data compatibility wrapper and
 #'       will raise an error if used with polytomous data.
 #' @return A list containing two elements:
@@ -1038,172 +1197,53 @@ percentile <- createBinaryFunction(
 #' # View individual scores
 #' result$stanineScore
 #' @export
-stanine <- createBinaryFunction(
-  function(U, ...) {
-    # Define stanine boundaries (cumulative proportions)
-    stanine_bounds <- cumsum(c(0.04, 0.07, 0.12, 0.17, 0.20, 0.17, 0.12, 0.07))
-
-    # Calculate raw scores
-    raw_scores <- nrs(U)
-
-    # Calculate score boundaries using raw scores
-    stanine_boundaries <- quantile(raw_scores,
-      probs = stanine_bounds,
-      na.rm = TRUE
-    )
-
-    # Calculate percentile scores
-    percentile_scores <- percentile(U)
-
-    # Calculate stanine boundaries using percentile scores
-    stanine_percentile_bounds <- quantile(percentile_scores,
-      probs = stanine_bounds
-    )
-
-    # Assign stanine scores
-    stanine_scores <- cut(percentile_scores,
-      breaks = c(-Inf, stanine_percentile_bounds, Inf),
-      right = FALSE,
-      labels = 1:9
-    )
-
-    # Return results
-    list(
-      stanine = stanine_boundaries,
-      stanineScore = stanine_scores
-    )
-  },
-  "stanine"
-)
-
-
-#' @title StudentAnalysis
-#' @description
-#' The StudentAnalysis function returns descriptive statistics for each individual student.
-#' Specifically, it provides the number of responses, the number of correct answers,
-#' the passage rate, the standardized score, the percentile, and the stanine.
-#' @param U U is a data matrix of the type matrix or data.frame.
-#' @param Z Z is a missing indicator matrix of the type matrix or data.frame
-#' @param w w is item weight vector
-#' @param na na argument specifies the numbers or characters to be treated as missing values.
-#'   \itemize{
-#'     \item ID: Student identifier
-#'     \item NR: Number of responses
-#'     \item NRS: Number-right score (total correct answers)
-#'     \item PR: Passage rate (proportion correct)
-#'     \item SS: Standardized score (z-score)
-#'     \item Percentile: Student's percentile rank
-#'     \item Stanine: Student's stanine score (1-9)
-#'   }
-#' @return Returns a data frame containing the following columns for each student:
-#'   \itemize{
-#'     \item ID: Student identifier
-#'     \item NR: Number of responses
-#'     \item NRS: Number-right score (total correct answers)
-#'     \item PR: Passage rate (proportion correct)
-#'     \item SS: Standardized score (z-score)
-#'     \item Percentile: Student's percentile rank
-#'     \item Stanine: Student's stanine score (1-9)
-#'   }
-#' @examples
-#' # using sample dataset
-#' StudentAnalysis(J15S500)
-#' @export
-#'
-
-StudentAnalysis <- function(U, na = NULL, Z = NULL, w = NULL) {
-  tmp <- dataFormat(data = U, na = na, Z = Z, w = w)
-  NRS <- nrs(U = tmp$U, Z = tmp$Z, w = tmp$w)
-  NR <- NCOL(tmp$U) - rowSums(is.na(tmp$U))
-  PR <- passage(U = tmp$U, Z = tmp$Z, w = tmp$w)
-  SS <- sscore(U = tmp$U, Z = tmp$Z, w = tmp$w)
-  Ptile <- percentile(U = tmp$U, Z = tmp$Z, w = tmp$w)
-  ST <- stanine(U = tmp$U, Z = tmp$Z, w = tmp$w)
-  ret <- data.frame(
-    ID = tmp$ID,
-    NR = NR,
-    NRS = NRS,
-    PR = PR,
-    SS = SS,
-    Percentile = Ptile,
-    Stanine = ST$stanineScore
-  )
-  return(ret)
+stanine <- function(U, na = NULL, Z = NULL, w = NULL) {
+  UseMethod("stanine")
 }
-
-#' @title Simple Test Statistics
-#' @description
-#' Statistics regarding the total score.
-#' @param U U is a data matrix of the type matrix or data.frame.
-#' @param Z Z is a missing indicator matrix of the type matrix or data.frame
-#' @param w w is item weight vector
-#' @param na na argument specifies the numbers or characters to be treated as missing values.
-#' @return
-#' \describe{
-#' \item{TestLength}{Length of the test. The number of items included in the test.}
-#' \item{SampleSize}{Sample size. The number of rows in the dataset.}
-#' \item{Mean}{Average number of correct answers.}
-#' \item{SEofMean}{Standard error of mean}
-#' \item{Variance}{Variance}
-#' \item{SD}{Standard Deviation}
-#' \item{Skewness}{Skewness}
-#' \item{Kurtosis}{Kurtosis}
-#' \item{Min}{Minimum score}
-#' \item{Max}{Max score}
-#' \item{Range}{Range of score}
-#' \item{Q1}{First quartile. Same as the 25th percentile.}
-#' \item{Median}{Median.Same as the 50th percentile.}
-#' \item{Q3}{Third quartile. Same as the 75th percentile.}
-#' \item{IQR}{Interquartile range. It is calculated by subtracting the first quartile from the third quartile.}
-#' \item{Stanine}{see [stanine]}
-#' }
-#' @importFrom stats sd var
-#' @examples
-#' # using sample dataset
-#' TestStatistics(J15S500)
 #' @export
+stanine.default <- function(U, na = NULL, Z = NULL, w = NULL) {
+  if (!inherits(U, "exametrika")) {
+    U <- dataFormat(U, na = na, Z = Z, w = w)
+  }
+  if (U$response.type != "binary") {
+    response_type_error(U$response.type, "stanine")
+  }
+  stanine.binary(U, na, Z, w)
+}
+#' @export
+stanine.binary <- function(U, na = NULL, Z = NULL, w = NULL) {
+  # Define stanine boundaries (cumulative proportions)
+  stanine_bounds <- cumsum(c(0.04, 0.07, 0.12, 0.17, 0.20, 0.17, 0.12, 0.07))
 
-TestStatistics <- function(U, na = NULL, Z = NULL, w = NULL) {
-  tmp <- dataFormat(data = U, na = na, Z = Z, w = w)
-  tW <- nrs(tmp)
-  TestLength <- NCOL(tmp$Z)
-  SampleSize <- NROW(tmp$Z)
-  Mean <- mean(tW)
-  SEofMean <- sd(tW) / sqrt(SampleSize)
-  Variance <- var(tW)
-  SD <- sd(tW)
-  SDs <- sqrt(mean((tW - Mean)^2))
-  tmpZ <- (tW - Mean) / SDs
-  Skewness <- mean(tmpZ^3)
-  Kurtosis <- mean(tmpZ^4) - 3
-  Min <- min(tW)
-  Max <- max(tW)
-  Range <- Max - Min
-  Q1 <- quantile(tW, probs = 0.25, na.rm = TRUE)
-  Median <- quantile(tW, probs = 0.5, na.rm = TRUE)
-  Q3 <- quantile(tW, probs = 0.75, na.rm = TRUE)
-  IQR <- Q3 - Q1
-  Stanine <- stanine(tmp)
-  ret <-
-    structure(list(
-      TestLength = TestLength,
-      SampleSize = SampleSize,
-      Mean = Mean,
-      SEofMean = SEofMean,
-      Variance = Variance,
-      SD = SD,
-      Skewness = Skewness,
-      Kurtosis = Kurtosis,
-      Min = Min,
-      Max = Max,
-      Range = Range,
-      Q1 = Q1,
-      Median = Median,
-      Q3 = Q3,
-      IQR = IQR,
-      Stanine = Stanine$stanine
-    ), class = c("exametrika", "TestStatistics"))
-  return(ret)
+  # Calculate raw scores
+  raw_scores <- nrs(U)
+
+  # Calculate score boundaries using raw scores
+  stanine_boundaries <- quantile(raw_scores,
+    probs = stanine_bounds,
+    na.rm = TRUE
+  )
+
+  # Calculate percentile scores
+  percentile_scores <- percentile(U)
+
+  # Calculate stanine boundaries using percentile scores
+  stanine_percentile_bounds <- quantile(percentile_scores,
+    probs = stanine_bounds
+  )
+
+  # Assign stanine scores
+  stanine_scores <- cut(percentile_scores,
+    breaks = c(-Inf, stanine_percentile_bounds, Inf),
+    right = FALSE,
+    labels = 1:9
+  )
+
+  # Return results
+  list(
+    stanine = stanine_boundaries,
+    stanineScore = stanine_scores
+  )
 }
 
 #' @title Dimensionality
@@ -1241,43 +1281,5 @@ Dimensionality <- function(U, na = NULL, Z = NULL, w = NULL) {
       class = c("exametrika", "Dimensionality")
     )
 
-  return(ret)
-}
-
-#' @title Simple Item Statistics
-#' @description
-#' This function calculates statistics for each item.
-#' @param U U is a data matrix of the type matrix or data.frame.
-#' @param Z Z is a missing indicator matrix of the type matrix or data.frame
-#' @param w w is item weight vector
-#' @param na na argument specifies the numbers or characters to be treated as missing values.
-#' @return
-#' \describe{
-#' \item{NR}{Number of Respondents}
-#' \item{CRR}{Correct Response Rate denoted as $p_j$.}
-#' \item{ODDs}{Item Odds is the ratio of the correct response rate to the incorrect response rate.
-#' Defined as \eqn{o_j = \frac{p_j}{1-p_j}}}
-#' \item{Threshold}{Item Threshold is a measure of difficulty based on a standard normal distribution.}
-#' \item{Entropy}{Item Entropy is an indicator of the variability or randomness of the responses.
-#' Defined as \eqn{e_j=-p_j \log_2 p_j - (1-p_j)\log_2(1-p_j)}}
-#' \item{ITCrr}{Item-total Correlation is a Pearson's correlation fo an item with the number of Number-Right score.}
-#' }
-#' @examples
-#' # using sample dataset
-#' ItemStatistics(J15S500)
-#' @export
-
-ItemStatistics <- function(U, na = NULL, Z = NULL, w = NULL) {
-  tmp <- dataFormat(data = U, na = na, Z = Z, w = w)
-  ret <-
-    structure(list(
-      ItemLabel = tmp$ItemLabel,
-      NR = colSums(tmp$Z),
-      CRR = crr(tmp),
-      ODDs = ItemOdds(tmp),
-      Threshold = ItemThreshold(tmp),
-      Entropy = ItemEntropy(tmp),
-      ITCrr = ItemTotalCorr(tmp)
-    ), class = c("exametrika", "ItemStatistics"))
   return(ret)
 }

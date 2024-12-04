@@ -79,20 +79,20 @@ dataFormat <- function(data, na = NULL, id = 1, Z = NULL, w = NULL,
   is_all_binary <- all(sapply(data[, check_cols], is_binary, na_value = na))
 
   if (is.null(response.type)) {
-    if(is_all_binary){
-      response.type = "binary"
-    }else{
-      if(!is.null(CA)){
-        response.type = "rated"
-      }else{
-        response.type = "nominal"
+    if (is_all_binary) {
+      response.type <- "binary"
+    } else {
+      if (!is.null(CA)) {
+        response.type <- "rated"
+      } else {
+        response.type <- "nominal"
       }
     }
   }
 
   # Validate manually specified response type
   if (!response.type %in% c("binary", "ordinal", "rated", "nominal")) {
-      stop("response.type must be one of: binary, ordinal, rated, nominal")
+    stop("response.type must be one of: binary, ordinal, rated, nominal")
   }
 
   data <- as.data.frame(unclass(data))
@@ -242,7 +242,7 @@ dataFormat <- function(data, na = NULL, id = 1, Z = NULL, w = NULL,
     }
 
     for (i in 1:length(CA)) {
-      if (!CA[i] %in% unique(response.matrix[,i][response.matrix[,i] != -1])) {
+      if (!CA[i] %in% unique(response.matrix[, i][response.matrix[, i] != -1])) {
         stop(paste("CA for item", i, "is not a valid response category"))
       }
     }
@@ -387,13 +387,15 @@ longdataFormat <- function(data, na = NULL,
       response.type <- if (!is.null(CA)) "rated" else "nominal"
     }
   } else {
-    response.type <- match.arg(response.type,
-                               c("binary", "ordinal", "rated", "nominal"))
+    response.type <- match.arg(
+      response.type,
+      c("binary", "ordinal", "rated", "nominal")
+    )
   }
 
   # Validate responses based on response_type
   if (response.type == "binary" &&
-      !all(Resp_vec[!is.na(Resp_vec)] %in% c(0, 1))) {
+    !all(Resp_vec[!is.na(Resp_vec)] %in% c(0, 1))) {
     stop("Binary response type specified but data contains non-binary values")
   }
 
@@ -470,7 +472,7 @@ longdataFormat <- function(data, na = NULL,
 
   # Return with appropriate class structure
   ret <- structure(ret_list,
-                   class = c("exametrika", "exametrikaData")
+    class = c("exametrika", "exametrikaData")
   )
   return(ret)
 }

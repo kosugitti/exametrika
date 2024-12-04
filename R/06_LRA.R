@@ -189,7 +189,6 @@ LRA <- function(U, nrank = 2, na = NULL, Z = NULL, w = NULL,
           FLG <- FALSE
         }
       }
-      show.progress(somt, maxiter * ifelse(BIC.check, 10, 1), msg = sum(item_ell))
     }
 
     fit <- list(

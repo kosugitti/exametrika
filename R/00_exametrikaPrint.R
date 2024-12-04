@@ -60,13 +60,21 @@ print.exametrika <- function(x, digits = 3, ...) {
         cat("Binary Response Pattern\n")
         print(x$U)
       } else {
-        cat("Polytomous Response Pattern\n")
+        cat("Polytomous Response Pattern (", x$response.type, ")\n")
         print(x$Q)
+        if (x$response.type == "rated") {
+          cat("\nCorrect Answers\n")
+          print(x$CA)
+        }
       }
-      cat("Missing Pattern\n")
+      cat("\nMissing Pattern\n")
       print(x$Z)
-      cat("Weight\n")
+      cat("\nWeight\n")
       print(x$w)
+      if (!is.null(x$factor_labels)) {
+        cat("\nFactor Labels\n")
+        print(x$factor_labels)
+      }
     },
     IIAnalysis = {
       cat("Joint Sample Size\n")

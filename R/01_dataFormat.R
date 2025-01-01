@@ -34,7 +34,7 @@
 #' \item{w}{Item weight vector}
 #' \item{response.type}{Character string indicating the type of response data:
 #'  "binary", "ordinal", "rated", or "nominal"}
-#' \item{factor_labels}{List containing the original factor labels when polytomous responses
+#' \item{CategoryLabel}{List containing the original factor labels when polytomous responses
 #'  are provided as factors. NULL if no factor data is present.}
 #' \item{categories}{Numeric vector containing the number of response categories for each item.}
 #' \item{CA}{For rated polytomous data, a numeric vector of correct answers. NULL for other types.}
@@ -97,11 +97,13 @@ dataFormat <- function(data, na = NULL, id = 1, Z = NULL, w = NULL,
 
   data <- as.data.frame(unclass(data))
   data[data == na] <- NA
-  # Store factor labels if exists
-  factor_labels <- list()
+
+  # Store factor labels and convert factors to numeric
+  CategoryLabel <- list()
   for (col in names(data)) {
     if (is.factor(data[[col]])) {
-      factor_labels[[col]] <- levels(data[[col]])
+      # Store labels before conversion
+      CategoryLabel[[col]] <- levels(data[[col]])
       # Convert to numeric (starting from 1)
       data[[col]] <- as.numeric(data[[col]])
     }
@@ -230,8 +232,15 @@ dataFormat <- function(data, na = NULL, id = 1, Z = NULL, w = NULL,
   # Add category information
   categories <- apply(response.matrix, 2, function(x) length(unique(x[x != -1])))
 
+  # Process category labels for each item
+  for (i in seq_len(ncol(response.matrix))) {
+    item_name <- ItemLabel[i]
+    column_data <- response.matrix[, i]
+    if (!item_name %in% names(CategoryLabel)) { # If not already processed as factor
+      CategoryLabel[[item_name]] <- generate_category_labels(column_data, item_name)
+    }
+  }
   CA <- as.vector(unlist(CA))
-
   # check correct_answer
   if (response.type == "rated") {
     if (is.null(CA)) {
@@ -262,10 +271,7 @@ dataFormat <- function(data, na = NULL, id = 1, Z = NULL, w = NULL,
     ret.list$U <- response.matrix
   } else {
     ret.list$Q <- response.matrix
-    # Add factor labels only for polytomous data
-    if (length(factor_labels) > 0) {
-      ret.list$factor_labels <- factor_labels
-    }
+    ret.list$CategoryLabel <- CategoryLabel
     ret.list$CA <- CA
   }
 
@@ -310,7 +316,7 @@ dataFormat <- function(data, na = NULL, id = 1, Z = NULL, w = NULL,
 #' \item{w}{Item weight vector}
 #' \item{response.type}{Character string indicating the type of response data:
 #'  "binary", "ordinal", "rated", or "nominal"}
-#' \item{factor_labels}{List containing the original factor labels when polytomous responses
+#' \item{CategoryLabel}{List containing the original factor labels when polytomous responses
 #'  are provided as factors. NULL if no factor data is present.}
 #' \item{categories}{Numeric vector containing the number of response categories for each item.}
 #' \item{CA}{For rated polytomous data, a numeric vector of correct answers. NULL for other types.}
@@ -372,9 +378,9 @@ longdataFormat <- function(data, na = NULL,
   }
 
   # Process Response vector and determine response type if not specified
-  factor_labels <- NULL
+  CategoryLabel <- NULL
   if (is.factor(Resp_vec)) {
-    factor_labels <- levels(Resp_vec)
+    CategoryLabel <- levels(Resp_vec)
     Resp_vec <- as.numeric(Resp_vec)
   } else {
     Resp_vec <- as.numeric(Resp_vec)
@@ -462,8 +468,8 @@ longdataFormat <- function(data, na = NULL,
     ret_list$U <- response_matrix
   } else {
     ret_list$Q <- response_matrix
-    if (!is.null(factor_labels)) {
-      ret_list$factor_labels <- list(response = factor_labels)
+    if (!is.null(CategoryLabel)) {
+      ret_list$CategoryLabel <- list(response = CategoryLabel)
     }
     if (!is.null(CA)) {
       ret_list$CA <- CA

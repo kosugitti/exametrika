@@ -54,6 +54,12 @@ print.exametrika <- function(x, digits = 3, ...) {
       rownames(tmp) <- NULL
       print(tmp, digits = digits)
     },
+    QitemStatistics = {
+      cat("Item Statics\n")
+      tmp <- as.data.frame(unclass(x))
+      rownames(tmp) <- NULL
+      print(tmp, digits = digits)
+    },
     exametrikaData = {
       cat("Response Type:", x$response.type, "\n")
       if (x$response.type == "binary") {

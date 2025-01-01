@@ -27,15 +27,35 @@
 #' }
 #' For rated polytomous data:
 #' \describe{
-#' [Same as binary data, with scores calculated based on correct answers]
-#' }
+#' \item{TestLength}{Length of the test. The number of items included in the test.}
+#' \item{SampleSize}{Sample size. The number of rows in the dataset.}
+#' \item{Mean}{Average number of correct answers.}
+#' \item{SEofMean}{Standard error of mean}
+#' \item{Variance}{Variance}
+#' \item{SD}{Standard Deviation}
+#' \item{Skewness}{Skewness}
+#' \item{Kurtosis}{Kurtosis}
+#' \item{Min}{Minimum score}
+#' \item{Max}{Max score}
+#' \item{Range}{Range of score}
+#' #' }
 #' For ordinal polytomous data:
 #' \describe{
-#' [Same as binary data, with scores representing response levels]
+#' \item{TestLength}{Length of the test. The number of items included in the test.}
+#' \item{SampleSize}{Sample size. The number of rows in the dataset.}
+#' \item{Mean}{Average number of correct answers.}
+#' \item{SEofMean}{Standard error of mean}
+#' \item{Variance}{Variance}
+#' \item{SD}{Standard Deviation}
+#' \item{Skewness}{Skewness}
+#' \item{Kurtosis}{Kurtosis}
+#' \item{Min}{Minimum score}
+#' \item{Max}{Max score}
+#' \item{Range}{Range of score}
 #' }
 #' For nominal polytomous data:
 #' \describe{
-#' [Same as binary data, with scores representing response levels]
+#' Same as binary data, with scores representing response levels
 #' }
 #' @importFrom stats sd var
 #' @examples
@@ -109,8 +129,7 @@ TestStatistics.binary <- function(U, na = NULL, Z = NULL, w = NULL) {
 TestStatistics.ordinal <- function(U, na = NULL, Z = NULL, w = NULL) {
   # ordinal / rated common functions
   tmp <- dataFormat(data = U, na = na, Z = Z, w = w)
-  TestLength <- NCOL(tmp$Z)
-  SampleSize <- NROW(tmp$Z)
+  scorereport <- ScoreReport(tmp)
 }
 
 #' @export

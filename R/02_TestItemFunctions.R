@@ -988,7 +988,7 @@ nrs.binary <- function(U, na = NULL, Z = NULL, w = NULL) {
 #' @export
 passage <- function(U, na = NULL, Z = NULL, w = NULL) {
   UseMethod("passage")
-} 
+}
 #' @export
 passage.default <- function(U, na = NULL, Z = NULL, w = NULL) {
   if (!inherits(U, "exametrika")) {

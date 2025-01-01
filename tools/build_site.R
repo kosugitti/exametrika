@@ -13,13 +13,15 @@ build_site <- function() {
 
   # 英語版
   rmarkdown::render("index.Rmd",
-                    output_format = "html_document",
-                    output_file = "index.html")
+    output_format = "html_document",
+    output_file = "index.html"
+  )
 
   # 日本語版
   rmarkdown::render("ja.Rmd",
-                    output_format = "html_document",
-                    output_file = "ja.html")
+    output_format = "html_document",
+    output_file = "ja.html"
+  )
 
   # READMEの生成
   setwd(old_dir)

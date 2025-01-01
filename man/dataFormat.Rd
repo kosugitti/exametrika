@@ -55,7 +55,7 @@ If the data contains NA values, -1 is assigned.}
 \item{w}{Item weight vector}
 \item{response.type}{Character string indicating the type of response data:
 "binary", "ordinal", "rated", or "nominal"}
-\item{factor_labels}{List containing the original factor labels when polytomous responses
+\item{CategoryLabel}{List containing the original factor labels when polytomous responses
 are provided as factors. NULL if no factor data is present.}
 \item{categories}{Numeric vector containing the number of response categories for each item.}
 \item{CA}{For rated polytomous data, a numeric vector of correct answers. NULL for other types.}

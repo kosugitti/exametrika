@@ -55,7 +55,7 @@
 #' }
 #' For nominal polytomous data:
 #' \describe{
-#' Same as binary data, with scores representing response levels
+#' \item{Response Data}{Same as binary data, with scores representing response levels}
 #' }
 #' @importFrom stats sd var
 #' @examples

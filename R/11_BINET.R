@@ -404,9 +404,8 @@ BINET <- function(U, Z = NULL, w = NULL, na = NULL,
   for (s in 1:nobs) {
     path_way <- lapply(adj_list, function(mat) {
       return(which(mat[cls[s], ] == 1))
-    }) |>
-      unlist() |>
-      as.vector()
+    })
+    path_way <- as.vector(unlist(path_way))
     if (length(path_way) == 0) {
       path_way <- NA
     } else {

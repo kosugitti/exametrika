@@ -124,12 +124,23 @@ dataFormat <- function(data, na = NULL, id = 1, Z = NULL, w = NULL,
       return(FALSE)
     }
 
-    # Check if all non-NA values are numeric
+    # if contains character
+    if (is.character(x)) {
+      return(FALSE)
+    }
     if (!all(suppressWarnings(!is.na(as.numeric(x_clean))))) {
       return(FALSE)
     }
 
     x_num <- suppressWarnings(as.numeric(x_clean))
+
+    if (length(x_num) > 1) {
+      sorted_x <- sort(x_num)
+      if (all(diff(sorted_x) == 1) &&
+        length(unique(x_num)) == length(x_num)) {
+        return(FALSE)
+      }
+    }
 
     if (response.type == "binary") {
       return(all(x_num %in% c(0, 1)))
@@ -255,7 +266,12 @@ dataFormat <- function(data, na = NULL, id = 1, Z = NULL, w = NULL,
         stop(paste("CA for item", i, "is not a valid response category"))
       }
     }
+    U <- matrix(NA, nrow = nrow(response.matrix), ncol = ncol(response.matrix))
+    for (i in 1:nrow(response.matrix)) {
+      U[i, ] <- ifelse(response.matrix[i, ] == CA, 1, 0)
+    }
   }
+
 
   # Create return list with appropriate matrix name based on response type
   ret.list <- list(
@@ -273,6 +289,9 @@ dataFormat <- function(data, na = NULL, id = 1, Z = NULL, w = NULL,
     ret.list$Q <- response.matrix
     ret.list$CategoryLabel <- CategoryLabel
     ret.list$CA <- CA
+  }
+  if (response.type == "rated") {
+    ret.list$U <- U
   }
 
   # Return with appropriate class structure

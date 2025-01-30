@@ -151,7 +151,7 @@ BNM <- function(U, Z = NULL, w = NULL, na = NULL,
       colnames(mat) <- colnames(tmp$U)[adj[, i] == 1]
       return(mat)
     } else {
-      mat <- as.matrix(rep(0, nrow(tmp$U)))
+      mat <- as.matrix(rep(0, nobs))
       colnames(mat) <- "No Parents"
       return(mat)
     }
@@ -192,8 +192,9 @@ BNM <- function(U, Z = NULL, w = NULL, na = NULL,
   colnames(param) <- paste("PIRP", 1:ncol(param))
 
   # Model Fit
-  const <- exp(-testlength)
-  model_loglike <- sum(n_PIRP_1 * log(param * denom0 + const) + n_PIRP_0 * log(1 - param * denom0 + const), na.rm = T)
+  const <- pmin(exp(-testlength), 1e-10)
+  bounded <- pmax(pmin((param * denom0 + const), 1 - const), const)
+  model_loglike <- sum(n_PIRP_1 * log(bounded) + n_PIRP_0 * log(1 - bounded), na.rm = T)
   model_nparam <- sum(denom0)
   FitIndices <- TestFit(tmp$U, tmp$Z, model_loglike, model_nparam)
 

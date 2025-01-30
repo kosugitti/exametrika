@@ -110,7 +110,7 @@ IRM <- function(U, Z = NULL, w = NULL, na = NULL,
   ## Initial Field
   nfld <- testlength
   field <- 1:testlength
-  crr <- crr(tmp$U)
+  crr <- crr(tmp)
   df_tmp <- data.frame(field, crr)
   df_tmp <- df_tmp[order(crr, decreasing = T), ]
   sorted_list <- df_tmp$field
@@ -386,8 +386,14 @@ IRM <- function(U, Z = NULL, w = NULL, na = NULL,
     }
     if (verbose) {
       message(
-        "iter ", iter, " Exact match count of field elements. ",
-        limit_count, " nfld ", nfld, " ncls ", ncls
+        sprintf(
+          "\r%-80s",
+          paste0(
+            "iter ", iter, " Exact match count of field elements. ",
+            limit_count, " nfld ", nfld, " ncls ", ncls
+          )
+        ),
+        appendLF = FALSE
       )
     }
     if (limit_count == stable_limit || iter == max_iter) {

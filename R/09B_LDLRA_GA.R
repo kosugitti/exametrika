@@ -218,10 +218,15 @@ StrLearningPBIL_LDLRA <- function(U, Z = NULL, w = NULL, na = NULL,
         ret.LDparam <- LD_param_est(tmp, adj_list, ret.emclus$classRefMat, ncls, smoothpost)
         if (verbose) {
           message(
-            "\rGen ", generation, " ID.", i,
-            " BIC ", format(round(ret.LDparam$FitIndices$BIC, 3), nsmall = 3),
-            " BEST ", format(round(bestfit, 3), nsmall = 3),
-            " limit count ", limit_count,
+            sprintf(
+              "\r%-80s",
+              paste0(
+                "Gen ", generation, " ID.", i,
+                " BIC ", format(round(ret.LDparam$FitIndices$BIC, 3), nsmall = 3),
+                " BEST ", format(round(bestfit, 3), nsmall = 3),
+                " limit count ", limit_count
+              )
+            ),
             appendLF = FALSE
           )
         }

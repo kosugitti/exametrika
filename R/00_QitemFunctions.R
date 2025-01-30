@@ -50,6 +50,9 @@ ScoreReport <- function(U, na = NULL, Z = NULL, w = NULL) {
   if (U$response.type == "binary") {
     response_type_error(dat$response.type, "ScoreReport")
   }
+  if (U$response.type == "rated") {
+    dat$Q <- U$U
+  }
 
   nobs <- nrow(dat$Q)
   nitems <- ncol(dat$Q)
@@ -67,7 +70,7 @@ ScoreReport <- function(U, na = NULL, Z = NULL, w = NULL) {
   score.skew <- m3 / s3
   m4 <- sum((score - mean(score))^4) / nobs
   s4 <- (sum((score - mean(score))^2) / nobs)^2
-  score.kurt <- m4 / s4
+  score.kurt <- m4 / s4 - 3
 
   ##
   zzzTotal <- apply(dat$Z, 2, sum)
@@ -119,7 +122,7 @@ ItemReport <- function(U, na = NULL, Z = NULL, w = NULL) {
   if (U$response.type == "binary") {
     response_type_error(dat$response.type, "ScoreReport")
   }
-
+  score <- rowSums(dat$Z * dat$Q)
   maxscore <- sum(apply(dat$Q, 2, max))
   score.dist <- table(factor(score, levels = 0:maxscore))
 
@@ -137,7 +140,7 @@ ItemReport <- function(U, na = NULL, Z = NULL, w = NULL) {
   zzzScoreReminderMean <- colSums(scoreRemainder) / zzzTotal
   zzzScoreRemainderSD <- sqrt(colSums(scoreRemainder^2) / zzzTotal - zzzScoreReminderMean^2)
 
-  itemScoreRemainderCorr <- rep(NA, nitems)
+  itemScoreRemainderCorr <- rep(NA, ncol(dat$Q))
   for (j in 1:ncol(dat$Q)) {
     term1 <- sum((dat$Z[, j] * dat$Q[, j] * scoreRemainder[, j]) / zzzTotal[j])
     term2 <- itemMean[j] * sum((scoreRemainder[, j]) / zzzTotal[j])

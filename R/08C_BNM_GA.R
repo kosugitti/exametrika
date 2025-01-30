@@ -124,8 +124,9 @@ StrLearningGA_BNM <- function(U, Z = NULL, w = NULL, na = NULL,
     generation <- generation + 1
     if (verbose) {
       message(
-        "gen. ", generation, " best BIC ", format(bestfit, digits = 6),
-        " limit count ", limit_count
+        "\rgen. ", generation, " best BIC ", format(bestfit, digits = 6),
+        " limit count ", limit_count,
+        appendLF = FALSE
       )
     }
     fitness <- numeric(population)
@@ -222,7 +223,7 @@ StrLearningGA_BNM <- function(U, Z = NULL, w = NULL, na = NULL,
   adj[upper.tri(adj)] <- adj_best
   GA_g <- graph_from_adjacency_matrix(adj)
 
-  ret <- BNM(tmp$U, g = GA_g)
+  ret <- BNM(tmp, g = GA_g)
 
   if (!is.null(filename)) {
     write.table(igraph::as_data_frame(GA_g),
@@ -379,8 +380,14 @@ StrLearningPBIL_BNM <- function(U, Z = NULL, w = NULL, na = NULL,
     generation <- generation + 1
     if (verbose) {
       message(
-        "gen. ", generation, " best BIC ", format(bestfit, digits = 6),
-        " limit count ", limit_count
+        sprintf(
+          "\r%-80s",
+          paste0(
+            "gen. ", generation, " best BIC ", format(bestfit, digits = 6),
+            " limit count ", limit_count
+          )
+        ),
+        appendLF = FALSE
       )
     }
     fitness <- numeric(population)
@@ -448,7 +455,7 @@ StrLearningPBIL_BNM <- function(U, Z = NULL, w = NULL, na = NULL,
 
   GA_g <- graph_from_adjacency_matrix(adj)
 
-  ret <- BNM(tmp$U, g = GA_g)
+  ret <- BNM(tmp, g = GA_g)
 
   if (!is.null(filename)) {
     write.table(igraph::as_data_frame(GA_g),

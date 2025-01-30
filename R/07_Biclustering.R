@@ -273,7 +273,15 @@ Biclustering <- function(U, ncls = 2, nfld = 2,
 
     testell <- sum(cfr * log(PiFR + const) + ffr * log(1 - PiFR + const))
     if (verbose) {
-      message("\riter ", emt, " logLik ", format(testell, digits = 6), appendLF = FALSE)
+      message(
+        sprintf(
+          "\r%-80s",
+          paste0(
+            "iter ", emt, " logLik ", format(testell, digits = 6)
+          )
+        ),
+        appendLF = FALSE
+      )
     }
     if (testell - oldtestell <= 0) {
       PiFR <- oldPiFR

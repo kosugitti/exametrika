@@ -43,6 +43,7 @@ emclus <- function(U, Z, ncls, Fil, beta1, beta2, maxiter = 100, mic = FALSE, ve
 
     old_classRefMat <- classRefMat
     classRefMat <- (correct_cls + beta1 - 1) / (correct_cls + incorrect_cls + beta1 + beta2 - 2)
+    classRefMat <- pmax(pmin(classRefMat, 1 - const), const)
     if (mic) {
       classRefMat <- apply(classRefMat, 2, sort)
     }
@@ -50,7 +51,15 @@ emclus <- function(U, Z, ncls, Fil, beta1, beta2, maxiter = 100, mic = FALSE, ve
     itemEll <- colSums(correct_cls * log(classRefMat + const) + incorrect_cls * log(1 - classRefMat + const))
     testEll <- sum(itemEll)
     if (verbose) {
-      message(paste("iter", emt, "LogLik", testEll, "\r"))
+      message(
+        sprintf(
+          "\r%-80s",
+          paste0(
+            "iter ", emt, " LogLik ", format(testEll, digits = 6)
+          )
+        ),
+        appendLF = FALSE
+      )
     }
     if (testEll - oldtestEll <= 0) {
       classRefMat <- old_classRefMat

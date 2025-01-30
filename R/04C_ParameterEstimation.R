@@ -316,7 +316,15 @@ IRT <- function(U, model = 2, na = NULL, Z = NULL, w = NULL, verbose = TRUE) {
     }
     loglike <- totalLogLike
     if (verbose) {
-      message("\riter ", emt, " LogLik ", format(totalLogLike, digits = 6), appendLF = FALSE)
+      message(
+        sprintf(
+          "\r%-80s",
+          paste0(
+            "iter ", emt, " LogLik ", format(totalLogLike, digits = 6)
+          )
+        ),
+        appendLF = FALSE
+      )
     }
   }
   if (verbose) {

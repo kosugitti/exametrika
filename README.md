@@ -707,7 +707,6 @@ Shojima, Kojiro (2022) Test Data Engineering: Latent Rank Analysis, Biclustering
 - Item Response Theory
   - Graded Response Model (GRM)
   - Partial Credit Model (PCM)
-  - Generalized Partial Credit Model (GPCM)
 - Latent Structure Analysis
   - Polytomous Latent Rank Model
   - Polytomous Latent Class Analysis

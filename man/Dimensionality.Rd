@@ -17,11 +17,11 @@ Dimensionality(U, na = NULL, Z = NULL, w = NULL)
 }
 \value{
 Returns a list of class c("exametrika", "Dimensionality") containing:
-\itemize{
-\item Component: Sequence of component numbers
-\item Eigenvalue: Eigenvalues of the tetrachoric correlation matrix
-\item PerOfVar: Percentage of variance explained by each component
-\item CumOfPer: Cumulative percentage of variance explained
+\describe{
+\item{Component}{Sequence of component numbers}
+\item{Eigenvalue}{Eigenvalues of the tetrachoric correlation matrix}
+\item{PerOfVar}{Percentage of variance explained by each component}
+\item{CumOfPer}{Cumulative percentage of variance explained}
 }
 }
 \description{

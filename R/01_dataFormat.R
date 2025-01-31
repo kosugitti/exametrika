@@ -299,7 +299,7 @@ dataFormat <- function(data, na = NULL, id = 1, Z = NULL, w = NULL,
   return(ret)
 }
 
-#' @title longdataFormat
+#' @title Long Format Data Conversion
 #' @description
 #' A function to reshape long data into a dataset suitable for exametrika.
 #' @param data is a data matrix of the type matrix or data.frame. This must

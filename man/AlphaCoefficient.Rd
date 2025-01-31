@@ -19,10 +19,10 @@ AlphaCoefficient(x, na = NULL, Z = NULL, w = NULL)
 For a correlation/covariance matrix input, returns a single numeric value
 representing the alpha coefficient. For a data matrix input, returns a list with
 three components:
-\itemize{
-\item AlphaCov: Alpha coefficient calculated from covariance matrix
-\item AlphaPhi: Alpha coefficient calculated from phi coefficient matrix
-\item AlphaTetrachoric: Alpha coefficient calculated from tetrachoric correlation matrix
+\describe{
+\item{AlphaCov}{Alpha coefficient calculated from covariance matrix}
+\item{AlphaPhi}{Alpha coefficient calculated from phi coefficient matrix}
+\item{AlphaTetrachoric}{Alpha coefficient calculated from tetrachoric correlation matrix}
 }
 }
 \description{

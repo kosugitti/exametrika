@@ -16,15 +16,15 @@
 \value{
 Prints a formatted summary of the exametrika object to the console, with content
 varying by object class:
-\itemize{
-\item TestStatistics: Basic descriptive statistics of the test
-\item Dimensionality: Eigenvalue analysis results with scree plot
-\item ItemStatistics: Item-level statistics
-\item CTT: Classical Test Theory reliability measures
-\item IRT: Item parameters and fit indices
-\item LCA/LRA: Class/Rank profiles and model fit information
-\item Biclustering/IRM: Cluster profiles and model diagnostics
-\item Network models (LDLRA/LDB/BINET): Network visualizations and parameter estimates
+\describe{
+\item{TestStatistics}{Basic descriptive statistics of the test}
+\item{Dimensionality}{Eigenvalue analysis results with scree plot}
+\item{ItemStatistics}{Item-level statistics}
+\item{CTT}{Classical Test Theory reliability measures}
+\item{IRT}{Item parameters and fit indices}
+\item{LCA/LRA}{Class/Rank profiles and model fit information}
+\item{Biclustering/IRM}{Cluster profiles and model diagnostics}
+\item{Network models (LDLRA/LDB/BINET)}{Network visualizations and parameter estimates}
 }
 }
 \description{

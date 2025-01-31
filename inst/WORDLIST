@@ -28,6 +28,7 @@ NRS
 PBIL
 PIRP
 PLM
+PCM
 POS
 PSD
 RDO
@@ -57,6 +58,7 @@ emclus
 examinee
 examinees
 exploratively
+FieldAnalysis
 GRM
 GPCM
 igraph

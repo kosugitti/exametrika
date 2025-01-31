@@ -5,7 +5,7 @@
 #' @return A character vector of category labels
 #' @details
 #' If the input is a factor, returns its levels.
-#' Otherwise, generates labels in the format "ItemName-Category-N"
+#' Otherwise, generates labels in the format "Item name-Category-N"
 #' @keywords internal
 generate_category_labels <- function(data_column, item_name) {
   # For factor type data, preserve existing levels

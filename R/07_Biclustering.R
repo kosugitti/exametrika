@@ -392,23 +392,21 @@ Biclustering <- function(U, ncls = 2, nfld = 2,
 
 
 #' @title Field Analysis
-#' @description
-#' output for Field Analysis
+#' @description Output for Field Analysis
 #' @param x Biclustering Objects yielded by Biclustering Function
 #' @param digits printed digits
 #' @return Returns a list of class c("exametrika", "Biclustering", "FieldAnalysis") containing:
 #'   \describe{
 #'     \item{FieldAnalysisMatrix}{A matrix showing field analysis results with rows
 #'       representing items and columns showing:
-#'       \itemize{
-#'         \item CRR: Correct Response Rate
-#'         \item LFE: Latent Field Estimation
-#'         \item Field1...FieldN: Field membership values
+#'       \describe{
+#'         \item{CRR}{Correct Response Rate}
+#'         \item{LFE}{Latent Field Estimation}
+#'         \item{Field1...FieldN}{Field membership values}
 #'       }
 #'     }
 #'   }
 #' @export
-#'
 
 FieldAnalysis <- function(x, digits = 4) {
   # data format

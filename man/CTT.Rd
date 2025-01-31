@@ -17,12 +17,12 @@ CTT(U, na = NULL, Z = NULL, w = NULL)
 }
 \value{
 Returns a list of class c("exametrika", "CTT") containing two data frames:
-\itemize{
-\item Reliability: A data frame with overall reliability coefficients
+\describe{
+\item{Reliability}{A data frame with overall reliability coefficients
 (Alpha and Omega) calculated using different correlation matrices
-(Covariance, Phi, and Tetrachoric)
-\item ReliabilityExcludingItem: A data frame showing alpha coefficients
-when each item is excluded, calculated using different correlation matrices
+(Covariance, Phi, and Tetrachoric)}
+\item{ReliabilityExcludingItem}{A data frame showing alpha coefficients
+when each item is excluded, calculated using different correlation matrices}
 }
 }
 \description{

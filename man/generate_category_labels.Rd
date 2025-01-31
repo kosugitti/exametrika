@@ -19,6 +19,6 @@ Generate category labels for response data
 }
 \details{
 If the input is a factor, returns its levels.
-Otherwise, generates labels in the format "ItemName-Category-N"
+Otherwise, generates labels in the format "Item name-Category-N"
 }
 \keyword{internal}

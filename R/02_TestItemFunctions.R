@@ -1255,11 +1255,11 @@ stanine.binary <- function(U, na = NULL, Z = NULL, w = NULL) {
 #' @param w w is item weight vector
 #' @param na na argument specifies the numbers or characters to be treated as missing values.
 #' @return Returns a list of class c("exametrika", "Dimensionality") containing:
-#'   \itemize{
-#'     \item Component: Sequence of component numbers
-#'     \item Eigenvalue: Eigenvalues of the tetrachoric correlation matrix
-#'     \item PerOfVar: Percentage of variance explained by each component
-#'     \item CumOfPer: Cumulative percentage of variance explained
+#'   \describe{
+#'     \item{Component}{Sequence of component numbers}
+#'     \item{Eigenvalue}{Eigenvalues of the tetrachoric correlation matrix}
+#'     \item{PerOfVar}{Percentage of variance explained by each component}
+#'     \item{CumOfPer}{Cumulative percentage of variance explained}
 #'   }
 #' @export
 

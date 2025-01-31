@@ -16,14 +16,14 @@ Returns a list of class c("exametrika", "Biclustering", "FieldAnalysis") contain
 \describe{
 \item{FieldAnalysisMatrix}{A matrix showing field analysis results with rows
 representing items and columns showing:
-\itemize{
-\item CRR: Correct Response Rate
-\item LFE: Latent Field Estimation
-\item Field1...FieldN: Field membership values
+\describe{
+\item{CRR}{Correct Response Rate}
+\item{LFE}{Latent Field Estimation}
+\item{Field1...FieldN}{Field membership values}
 }
 }
 }
 }
 \description{
-output for Field Analysis
+Output for Field Analysis
 }

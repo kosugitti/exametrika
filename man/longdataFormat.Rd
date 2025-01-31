@@ -2,7 +2,7 @@
 % Please edit documentation in R/01_dataFormat.R
 \name{longdataFormat}
 \alias{longdataFormat}
-\title{longdataFormat}
+\title{Long Format Data Conversion}
 \usage{
 longdataFormat(
   data,

@@ -8,10 +8,10 @@
 #' @return For a correlation/covariance matrix input, returns a single numeric value
 #'   representing the alpha coefficient. For a data matrix input, returns a list with
 #'   three components:
-#'   \itemize{
-#'     \item AlphaCov: Alpha coefficient calculated from covariance matrix
-#'     \item AlphaPhi: Alpha coefficient calculated from phi coefficient matrix
-#'     \item AlphaTetrachoric: Alpha coefficient calculated from tetrachoric correlation matrix
+#'   \describe{
+#'     \item{AlphaCov}{Alpha coefficient calculated from covariance matrix}
+#'     \item{AlphaPhi}{Alpha coefficient calculated from phi coefficient matrix}
+#'     \item{AlphaTetrachoric}{Alpha coefficient calculated from tetrachoric correlation matrix}
 #'   }
 #' @references Cronbach, L. J. (1951). Coefficient alpha and the internal structure of a test. Psychometrika, 16,297–334.
 #' @importFrom stats cov
@@ -109,10 +109,10 @@ AlphaIfDel <- function(x, delItem = NULL, na = NULL, Z = NULL, w = NULL) {
 #' @return For a correlation/covariance matrix input, returns a single numeric value
 #'   representing the omega coefficient. For a data matrix input, returns a list with
 #'   three components:
-#'   \itemize{
-#'     \item OmegaCov: Omega coefficient calculated from covariance matrix
-#'     \item OmegaPhi: Omega coefficient calculated from phi coefficient matrix
-#'     \item OmegaTetrachoric: Omega coefficient calculated from tetrachoric correlation matrix
+#'   \describe{
+#'     \item{OmegaCov}{Omega coefficient calculated from covariance matrix}
+#'     \item{OmegaPhi}{Omega coefficient calculated from phi coefficient matrix}
+#'     \item{OmegaTetrachoric}{Omega coefficient calculated from tetrachoric correlation matrix}
 #'   }
 #' @importFrom stats cov runif
 #' @export
@@ -174,12 +174,12 @@ OmegaCoefficient <- function(x, na = NULL, Z = NULL, w = NULL) {
 #' @param w w is item weight vector
 #' @param na na argument specifies the numbers or characters to be treated as missing values.
 #' @return Returns a list of class c("exametrika", "CTT") containing two data frames:
-#'   \itemize{
-#'     \item Reliability: A data frame with overall reliability coefficients
+#'   \describe{
+#'     \item{Reliability}{A data frame with overall reliability coefficients
 #'       (Alpha and Omega) calculated using different correlation matrices
-#'       (Covariance, Phi, and Tetrachoric)
-#'     \item ReliabilityExcludingItem: A data frame showing alpha coefficients
-#'       when each item is excluded, calculated using different correlation matrices
+#'       (Covariance, Phi, and Tetrachoric)}
+#'     \item{ReliabilityExcludingItem}{A data frame showing alpha coefficients
+#'       when each item is excluded, calculated using different correlation matrices}
 #'   }
 #' @examples
 #' \donttest{

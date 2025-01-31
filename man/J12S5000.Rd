@@ -3,7 +3,7 @@
 \docType{data}
 \name{J12S5000}
 \alias{J12S5000}
-\title{J12S5000.rda}
+\title{J12S5000}
 \format{
 An exametrika class object with 5000 students and 12 items containing binary (0/1) responses
 }

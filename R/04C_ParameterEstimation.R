@@ -182,7 +182,7 @@ PSD_item_params <- function(model, Lambda, quadrature, marginal_posttheta) {
 
 IRT <- function(U, model = 2, na = NULL, Z = NULL, w = NULL, verbose = TRUE) {
   # data format
-  if (class(U)[1] != "exametrika") {
+  if (!inherits(U, "exametrika")) {
     tmp <- dataFormat(data = U, na = na, Z = Z, w = w)
   } else {
     tmp <- U
@@ -326,9 +326,6 @@ IRT <- function(U, model = 2, na = NULL, Z = NULL, w = NULL, verbose = TRUE) {
         appendLF = FALSE
       )
     }
-  }
-  if (verbose) {
-    message("")
   }
 
   #### Warning

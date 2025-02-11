@@ -28,7 +28,7 @@ print.exametrika <- function(x, digits = 3, ...) {
 
   switch(value,
     TestStatistics = {
-      cat("Test Statics\n")
+      cat("Test Statistics\n")
       tmp <- as.data.frame(unlist(x))
       colnames(tmp) <- "value"
       print(tmp)
@@ -49,13 +49,13 @@ print.exametrika <- function(x, digits = 3, ...) {
       )
     },
     ItemStatistics = {
-      cat("Item Statics\n")
+      cat("Item Statistics\n")
       tmp <- as.data.frame(unclass(x))
       rownames(tmp) <- NULL
       print(tmp, digits = digits)
     },
     QitemStatistics = {
-      cat("Item Statics\n")
+      cat("Item Statistics\n")
       tmp <- as.data.frame(unclass(x))
       rownames(tmp) <- NULL
       print(tmp, digits = digits)
@@ -145,7 +145,7 @@ print.exametrika <- function(x, digits = 3, ...) {
       print(round(y, digits))
     },
     LRA = {
-      cat(paste("estimating method is ", x$method))
+      cat(paste("estimating method is ", x$method, "\n"))
       if (x$mic) {
         cat("\n Monotonic increasing IRP option is TRUE.\n")
       }
@@ -154,20 +154,49 @@ print.exametrika <- function(x, digits = 3, ...) {
       cat("\nItem Reference Profile Indices\n")
       print(x$IRPIndex, digits = digits)
       cat("\nTest Profile\n")
-      y <- rbind(x$TRP, x$LCD, x$CMD)
+      y <- rbind(x$TRP, x$LRD, x$RMD)
       rownames(y) <- c(
         "Test Reference Profile",
-        "Latent Class Ditribution",
-        "Class Membership Distribution"
+        "Latent Rank Ditribution",
+        "Rank Membership Distribution"
       )
-      colnames(y) <- paste("Class", 1:x$Nclass)
+      colnames(y) <- paste("Rank", 1:x$Nrank)
       print(round(y, digits))
       cat("\nItem Fit Indices\n")
       y <- unclass(x$ItemFitIndices)
       y <- as.data.frame(y)
       print(round(y, digits))
       cat("\nModel Fit Indices\n")
-      cat(paste("Number of Latent class:", x$Nclass))
+      cat(paste("Number of Latent rank:", x$Nrank))
+      cat(paste("\nNumber of EM cycle:", x$N_Cycle, "\n"))
+      y <- unclass(x$TestFitIndices)
+      y <- t(as.data.frame(y))
+      colnames(y) <- "value"
+      print(round(y, digits))
+    },
+    LRAordinal = {
+      if (x$mic) {
+        cat("\n Monotonic increasing IRP option is TRUE.\n")
+      }
+      print(x$ScoreReport, digits = digits)
+      print(x$ItemReport, digits = digits)
+      cat("Item Category Reference Profile\n")
+      print(x$ICRP, digits = digits)
+      cat("\nTest Profile\n")
+      y <- rbind(x$TRP, x$LRD, x$RMD)
+      rownames(y) <- c(
+        "Test Reference Profile",
+        "Latent Rank Ditribution",
+        "Rank Membership Distribution"
+      )
+      colnames(y) <- paste("Rank", 1:x$Nrank)
+      print(round(y, digits))
+      cat("\nItem Fit Indices\n")
+      y <- unclass(x$ItemFitIndices)
+      y <- as.data.frame(y)
+      print(round(y, digits))
+      cat("\nModel Fit Indices\n")
+      cat(paste("Number of Latent rank:", x$Nrank))
       cat(paste("\nNumber of EM cycle:", x$N_Cycle, "\n"))
       y <- unclass(x$TestFitIndices)
       y <- t(as.data.frame(y))
@@ -392,7 +421,7 @@ print.exametrika <- function(x, digits = 3, ...) {
       ycoord <- lay.tree[, 2]
       xcoord <- xcoord[order(rowSums(x$adj_list[[1]]))]
       ycoord <- ycoord[order(colSums(x$adj_list[[1]]))]
-      for (i in 1:x$Nclass) {
+      for (i in 1:x$Nrank) {
         plot.igraph(x$g_list[[i]],
           layout = cbind(xcoord, ycoord),
           main = paste("Graph at Rank", i)
@@ -400,7 +429,7 @@ print.exametrika <- function(x, digits = 3, ...) {
       }
 
       cat("\nParameter Learning\n")
-      for (i in 1:x$Nclass) {
+      for (i in 1:x$Nrank) {
         tbl <- x$IRP[i, , ]
         tbl[tbl == 0] <- NA
         rownames(tbl) <- x$FieldLabel
@@ -420,7 +449,7 @@ print.exametrika <- function(x, digits = 3, ...) {
         "Latent Rank Ditribution",
         "Rank Membership Dsitribution"
       )
-      colnames(y) <- paste("Rank", 1:x$Nclass)
+      colnames(y) <- paste("Rank", 1:x$Nrank)
       print(round(y, digits))
 
       cat("\nLatent Field Distribution\n")

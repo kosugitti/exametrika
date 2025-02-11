@@ -7,7 +7,7 @@
 softmax(x)
 }
 \arguments{
-\item{x}{numericvector}
+\item{x}{numeric vector}
 }
 \description{
 to avoid overflow

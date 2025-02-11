@@ -8,7 +8,7 @@
 An exametrika class object with 400 students and 20 items containing binary (0/1) responses
 }
 \source{
-\url{http://shojima.starfree.jp/tde/index.htm}
+\url{http://sh0j1ma.stars.ne.jp/exmk/}
 }
 \usage{
 J20S400

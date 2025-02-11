@@ -27,7 +27,7 @@ AlphaCoefficient <- function(x, na = NULL, Z = NULL, w = NULL) {
   }
 
   if (NROW(x) != NCOL(x)) {
-    if (class(x)[1] != "exametrika") {
+    if (!inherits(x, "exametrika")) {
       tmp <- dataFormat(data = x, na = na, Z = Z, w = w)
     } else {
       tmp <- x
@@ -76,7 +76,7 @@ AlphaIfDel <- function(x, delItem = NULL, na = NULL, Z = NULL, w = NULL) {
     }
   }
 
-  if (class(x)[1] != "exametrika") {
+  if (!inherits(x, "exametrika")) {
     tmp <- dataFormat(data = x, na = na, Z = Z, w = w)
   } else {
     tmp <- x
@@ -141,7 +141,7 @@ OmegaCoefficient <- function(x, na = NULL, Z = NULL, w = NULL) {
   }
 
   if (NROW(x) != NCOL(x)) {
-    if (class(x)[1] != "exametrika") {
+    if (!inherits(x, "exametrika")) {
       tmp <- dataFormat(data = x, na = na, Z = Z, w = w)
     } else {
       tmp <- x

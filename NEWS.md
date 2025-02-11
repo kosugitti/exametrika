@@ -1,3 +1,18 @@
+# Exametrika 1.3.0 on Feb 11, 2025
+
+* Added implementation of latent rank model for ordinal scale data
+
++ New function LRA() now supports ordinal response data
+  + Added visualization methods for ordinal scale analysis:
+    + Score frequency with rank thresholds (ScoreFreq)
+    + Score-rank probability heatmap (ScoreRank)
+    + Item category boundary reference (ICBR)
+    + Item category response profile (ICRP)
+
++ Bug fixes and improvements
++ Standardized terminology: unified the usage of "class" and "rank" throughout the package
++ Various minor bug fixes
+
 # Exametrika 1.2.0 on Jan 30, 2025.
 
 * Improved numerical stability for model estimation

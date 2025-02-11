@@ -71,7 +71,7 @@ StrLearningGA_BNM <- function(U, Z = NULL, w = NULL, na = NULL,
                               elitism = 0, filename = NULL,
                               verbose = TRUE) {
   # data format
-  if (class(U)[1] != "exametrika") {
+  if (!inherits(U, "exametrika")) {
     tmp <- dataFormat(data = U, na = na, Z = Z, w = w)
   } else {
     tmp <- U
@@ -319,7 +319,7 @@ StrLearningPBIL_BNM <- function(U, Z = NULL, w = NULL, na = NULL,
                                 filename = NULL,
                                 verbose = TRUE) {
   # data format
-  if (class(U)[1] != "exametrika") {
+  if (!inherits(U, "exametrika")) {
     tmp <- dataFormat(data = U, na = na, Z = Z, w = w)
   } else {
     tmp <- U

@@ -230,7 +230,7 @@ LDLRA <- function(U, Z = NULL, w = NULL, na = NULL,
                   g_list = NULL, adj_list = NULL, adj_file = NULL,
                   verbose = FALSE) {
   # data format
-  if (class(U)[1] != "exametrika") {
+  if (!inherits(U, "exametrika")) {
     tmp <- dataFormat(data = U, na = na, Z = Z, w = w)
   } else {
     tmp <- U

@@ -32,6 +32,18 @@
 #'   options, you should ensure the ability to display multiple figures.}
 #'   \item{RMP}{Rank Membership Profile. The difference between RMP and CMP is whether the horizontal
 #'    axis represents classes or ranks.}
+#'   \item{ScoreFreq}{A frequency polygon corresponding to the score frequency distribution,
+#'    plotted together with rank thresholds.}
+#'   \item{ScoreRank}{A heatmap representing the probabilities of score membership for each rank.}
+#'   \item{ICRP}{A visualization that displays the relationship between ranks (x-axis)
+#'    and category response probabilities (y-axis). For each item, multiple lines are plotted,
+#'    each representing the probability of selecting a specific response category. These lines
+#'    show how the likelihood of choosing each response category changes across different ranks.}
+#'   \item{ICBR}{A visualization that shows the relationship between ranks (x-axis)
+#'    and cumulative category probabilities (y-axis). For each item, multiple boundary lines are plotted,
+#'    each representing the probability of scoring at or above a specific category threshold.
+#'    These lines illustrate how the cumulative probabilities of reaching each category boundary
+#'    change across different ranks.}
 #'   \item{FRP}{Field Reference Profile. "FRP is a diagram depicting the correspondence between the field
 #'   and the latent class/rank. It represents the expected correct answer rate of members belonging to
 #'   a particular latent class/rank using a line graph.}
@@ -81,6 +93,9 @@
 #'     \item For LDLRA/LDB/BINET models: Various network and profile plots specific to each model
 #'   }
 #'   The function returns NULL invisibly.
+#' @importFrom grDevices gray
+#' @importFrom graphics abline image
+#' @importFrom stats density
 #' @export
 
 plot.exametrika <- function(x,
@@ -88,7 +103,8 @@ plot.exametrika <- function(x,
                               "IIC", "ICC", "TIC",
                               "IRP", "TRP", "LCD", "CMP",
                               "FRP", "RMP", "LRD", "Array",
-                              "FieldPIRP", "LDPSR"
+                              "FieldPIRP", "LDPSR",
+                              "ScoreFreq", "ScoreRank", "ICRP", "ICBR"
                             ),
                             items = NULL,
                             students = NULL,
@@ -105,6 +121,7 @@ plot.exametrika <- function(x,
     IRT = c("IIC", "ICC", "TIC"),
     LCA = c("IRP", "TRP", "LCD", "CMP", "FRP"),
     LRA = c("IRP", "FRP", "TRP", "LRD", "RMP"),
+    LRAordinal = c("ScoreFreq", "ScoreRank", "ICRP", "ICBR", "RMP"),
     Biclustering = c("IRP", "FRP", "TRP", "LCD", "LRD", "CMP", "RMP", "Array"),
     IRM = c("FRP", "TRP", "Array"),
     LDLRA = c("IRP", "TRP", "LRD", "RMP"),
@@ -147,6 +164,11 @@ plot.exametrika <- function(x,
     if (type == "IRP") {
       # Item Reference Profile ----------------------------------------
       params <- x$IRP[plotItemID, ]
+      if (is.null(x$Nclass)) {
+        steps <- x$Nrank
+      } else {
+        steps <- x$Nclass
+      }
       if (type == "CMP") {
         msg <- "Class"
       } else {
@@ -162,7 +184,7 @@ plot.exametrika <- function(x,
           xaxt = "n",
           main = paste("Item", i)
         )
-        axis(1, at = 1:x$Nclass)
+        axis(1, at = 1:steps)
       }
     }
     if (type == "TRP") {
@@ -170,18 +192,25 @@ plot.exametrika <- function(x,
       old_par <- par(no.readonly = TRUE)
       on.exit(par(old_par), add = TRUE)
       par(mar = c(5, 4, 4, 4) + 0.1)
-      if (value == "LCA" | value == "LRA" | value == "IRM" | value == "BINET") {
+      if (value == "LCA" | value == "IRM" | value == "BINET") {
         target <- x$LCD
         msg <- "Class"
-      } else if (value == "Biclustering" | value == "LDLRA" | value == "LDB") {
+      } else if (value == "Biclustering" | value == "LRA" | value == "LDLRA" | value == "LDB") {
         target <- x$LRD
         msg <- "Rank"
       }
+
+      if (is.null(x$Nclass)) {
+        steps <- x$Nrank
+      } else {
+        steps <- x$Nclass
+      }
+      names.arg <- 1:steps
+
       bp <- barplot(target,
-        names.arg = 1:x$Nclass,
         width = .9,
         ylim = c(0, max(target) + 10),
-        xlim = c(0, x$Nclass + 1),
+        xlim = c(0, steps + 1),
         xlab = paste("Latent", msg),
         ylab = "Number of Students"
       )
@@ -192,7 +221,7 @@ plot.exametrika <- function(x,
         axes = FALSE, xaxt = "n", xlab = "", ylab = "",
         bty = "n",
         ylim = c(0, testlength),
-        xlim = c(0, x$Nclass + 1),
+        xlim = c(0, steps + 1),
       )
       axis(4, at = pretty(range(0, testlength)))
       mtext("Expected Score", side = 4, line = 3)
@@ -202,10 +231,10 @@ plot.exametrika <- function(x,
       old_par <- par(no.readonly = TRUE)
       on.exit(par(old_par), add = TRUE)
       par(mar = c(5, 4, 4, 4) + 0.1)
-      if (value == "LCA" | value == "LRA" | value == "BINET") {
+      if (value == "LCA" | value == "BINET") {
         target1 <- x$LCD
         target2 <- x$CMD
-      } else if (value == "Biclustering" | value == "LDLRA" | value == "LDB") {
+      } else if (value == "Biclustering" | value == "LRA" | value == "LDLRA" | value == "LDB") {
         target1 <- x$LRD
         target2 <- x$RMD
       }
@@ -214,12 +243,16 @@ plot.exametrika <- function(x,
       } else {
         msg <- "Class"
       }
-
+      if (is.null(x$Nclass)) {
+        steps <- x$Nrank
+      } else {
+        steps <- x$Nclass
+      }
       bp <- barplot(target1,
-        names.arg = 1:x$Nclass,
+        names.arg = 1:steps,
         width = .9,
         ylim = c(0, max(target1) + 10),
-        xlim = c(0, x$Nclass + 1),
+        xlim = c(0, steps + 1),
         xlab = paste("Latent", msg),
         ylab = "Number of Students"
       )
@@ -230,19 +263,24 @@ plot.exametrika <- function(x,
         axes = FALSE, xaxt = "n", xlab = "", ylab = "",
         bty = "n",
         ylim = c(0, max(target1) + 10),
-        xlim = c(0, x$Nclass + 1),
+        xlim = c(0, steps + 1),
       )
       axis(4, at = pretty(range(0, max(target2) + 10)))
       mtext("Frequency", side = 4, line = 3)
     }
     if (type == "CMP" | type == "RMP") {
       # Class Membership Profile ----------------------------------------
-      params <- x$Students[plotStudentID, 1:x$Nclass]
       if (type == "CMP") {
         msg <- "Class"
       } else {
         msg <- "Rank"
       }
+      if (is.null(x$Nclass)) {
+        steps <- x$Nrank
+      } else {
+        steps <- x$Nclass
+      }
+      params <- x$Students[plotStudentID, 1:steps]
       for (i in 1:NROW(params)) {
         y <- params[i, ]
         plot(y,
@@ -327,7 +365,12 @@ plot.exametrika <- function(x,
       lines(x = c(vl[i] * stepx, vl[i] * stepx), y = c(0, 600), col = "red")
     }
     hl <- nobs - cumsum(table(sort(x$ClassEstimated)))
-    for (j in 1:(x$Nclass - 1)) {
+    if (is.null(x$Nclass)) {
+      steps <- x$Nrank
+    } else {
+      steps <- x$Nclass
+    }
+    for (j in 1:(steps - 1)) {
       lines(x = c(0, 300), y = c(hl[j] * stepy, hl[j] * stepy), col = "red")
     }
   }
@@ -335,10 +378,10 @@ plot.exametrika <- function(x,
   field_PIRP <- function() {
     target <- x$IRP
     ## rank x field x nrs
-    nrank <- dim(target)[1]
+    Nrank <- dim(target)[1]
     nfld <- dim(target)[2]
     nrs <- dim(target)[3]
-    for (i in 1:nrank) {
+    for (i in 1:Nrank) {
       mat <- target[i, , ]
       mat[mat == 0] <- NA
       x <- 0:nrs
@@ -450,6 +493,88 @@ plot.exametrika <- function(x,
     },
     LRA = {
       graph_common()
+    },
+    LRAordinal = {
+      if (type == "ScoreFreq") {
+        tmp <- as.data.frame(x$Students)
+        sc <- tmp$Score
+        rank <- tmp$Estimate
+        thresholds <- numeric(length(unique(rank)) - 1)
+        for (i in 1:(length(unique(rank)) - 1)) {
+          max_rank_i <- max(sc[rank == i])
+          min_rank_next <- min(sc[rank == (i + 1)])
+          thresholds[i] <- (max_rank_i + min_rank_next) / 2
+        }
+        plot(density(sc),
+          xlab = "Score",
+          ylab = "Frequency",
+          main = "Latent Rank"
+        )
+        abline(
+          v = thresholds,
+          col = "red",
+          lty = 2
+        )
+      } else if (type == "ScoreRank") {
+        score_rank_matrix <- x$ScoreRank
+        image(
+          x = 1:ncol(score_rank_matrix),
+          y = as.numeric(rownames(score_rank_matrix)),
+          z = t(score_rank_matrix),
+          col = gray(seq(1, 0, length.out = 100)),
+          xlab = "Latent Rank",
+          ylab = "Score",
+          main = "Score-Rank Distribution",
+          xaxt = "n"
+        )
+        axis(1, at = 1:ncol(score_rank_matrix))
+      } else if (type == "ICBR") {
+        par(mar = c(4, 4, 2, 1))
+        tmp <- x$ICBR
+        label <- x$U$ItemLabel
+        yRange <- range(tmp[, -c(1:2)])
+        for (i in 1:testlength) {
+          slice <- tmp[tmp$ItemLabel == label[i], ]
+          slice <- unname(as.matrix(slice[, -c(1:2)]))
+          plot(slice[1, ],
+            type = "l", lty = 1, col = 1, ylim = yRange,
+            xlab = "Rank", ylab = "Probability", main = label[i],
+            xaxt = "n"
+          )
+          axis(1, at = 1:ncol(slice), labels = 1:x$Nrank)
+          for (j in 1:nrow(slice)) {
+            lines(slice[j, ], lty = j)
+            text(
+              x = ncol(slice), y = slice[j, ncol(slice)],
+              labels = j, cex = 0.8, ylim = yRange
+            )
+          }
+        }
+      } else if (type == "ICRP") {
+        par(mar = c(4, 4, 2, 1))
+        tmp <- x$ICRP
+        label <- x$U$ItemLabel
+        yRange <- range(tmp[, -c(1:2)])
+        for (i in 1:testlength) {
+          slice <- tmp[tmp$ItemLabel == label[i], ]
+          slice <- unname(as.matrix(slice[, -c(1:2)]))
+          plot(slice[1, ],
+            type = "l", lty = 1, col = 1, ylim = yRange,
+            xlab = "Rank", ylab = "Probability", main = label[i],
+            xaxt = "n"
+          )
+          axis(1, at = 1:ncol(slice), labels = 1:x$Nrank)
+          for (j in 1:nrow(slice)) {
+            lines(slice[j, ], lty = j)
+            text(
+              x = ncol(slice), y = slice[j, ncol(slice)],
+              labels = j, cex = 0.8, ylim = yRange
+            )
+          }
+        }
+      } else if (type == "RMP") {
+        graph_common()
+      }
     },
     Biclustering = {
       if (type == "Array") {

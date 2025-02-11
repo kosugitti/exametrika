@@ -91,7 +91,7 @@ fill_adj <- function(g, ItemLabel) {
 BNM <- function(U, Z = NULL, w = NULL, na = NULL,
                 g = NULL, adj_file = NULL, adj_matrix = NULL) {
   # data format
-  if (class(U)[1] != "exametrika") {
+  if (!inherits(U, "exametrika")) {
     tmp <- dataFormat(data = U, na = na, Z = Z, w = w)
   } else {
     tmp <- U

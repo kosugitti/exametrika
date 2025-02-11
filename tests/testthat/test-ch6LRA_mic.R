@@ -9,13 +9,8 @@ student <- read_excel("../../develop/Chapter06LRA(GTMmic1).xlsx", sheet = "Stude
 
 
 ### Target
-dat <- read_csv("../../develop/sampleData/J15S500.csv") %>%
-  mutate(Student = as.factor(Student))
 
-tmp <- dataFormat(dat, na = -99)
-U <- ifelse(is.na(tmp$U), 0, tmp$U) * tmp$Z
-
-model <- LRA(tmp, nrank = 6, mic = TRUE)
+model <- LRA(J15S500, nrank = 6, mic = TRUE)
 
 ### test
 test_that("LCA Test Info", {
@@ -41,14 +36,14 @@ test_that("LRA Class Info", {
     unlist() |>
     unname() |>
     as.numeric()
-  result <- model$LCD |> as.numeric()
+  result <- model$LRD |> as.numeric()
   expect_equal(result, expect, tolerance = 1e-3)
   ## CMD
   expect <- class[3, 2:7] |>
     unlist() |>
     unname() |>
     as.numeric()
-  result <- model$CMD |> as.numeric()
+  result <- model$RMD |> as.numeric()
   expect_equal(result, expect, tolerance = 1e-4)
 })
 

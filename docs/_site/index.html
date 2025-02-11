@@ -548,7 +548,7 @@ requirements.</p>
 </div>
 <div id="data-formatting" class="section level3">
 <h3>Data Formatting</h3>
-<p>The <code>dataFormat</code> function preprocesses input data for
+<p>The <code>dataFormat</code> function processes input data before
 analysis:</p>
 <ul>
 <li><strong>Functions</strong>
@@ -613,6 +613,16 @@ testing and learning:</p>
 <ul>
 <li>Used in Biclustering and network model examples</li>
 </ul></li>
+<li>J15S3810: Ordinal scale dataset (15 items with 4-point scale, 3810
+examinees)
+<ul>
+<li>Used in ordinal latent rank model examples</li>
+</ul></li>
+<li>J35S5000: Multiple-choice dataset (35 items, 5000 examinees)
+<ul>
+<li>Includes both response categories and correct answer data</li>
+<li>Used in nominal scale latent rank model examples</li>
+</ul></li>
 </ul>
 </div>
 </div>
@@ -621,7 +631,7 @@ testing and learning:</p>
 <div id="test-statistics" class="section level3">
 <h3>Test Statistics</h3>
 <pre class="r"><code>TestStatistics(J15S500)
-#&gt; Test Statics
+#&gt; Test Statistics
 #&gt;                   value
 #&gt; TestLength   15.0000000
 #&gt; SampleSize  500.0000000
@@ -650,7 +660,7 @@ testing and learning:</p>
 <div id="itemstatistics" class="section level3">
 <h3>ItemStatistics</h3>
 <pre class="r"><code>ItemStatistics(J15S500)
-#&gt; Item Statics
+#&gt; Item Statistics
 #&gt;    ItemLabel  NR   CRR  ODDs Threshold Entropy ITCrr
 #&gt; 1     Item01 500 0.746 2.937    -0.662   0.818 0.375
 #&gt; 2     Item02 500 0.754 3.065    -0.687   0.805 0.393
@@ -736,7 +746,7 @@ result.IRT
 #&gt; Item09       -321.920       -300.492      -327.842       42.856      54.700
 #&gt; Item10       -309.318       -288.198      -319.850       42.240      63.303
 #&gt; Item11       -248.409       -224.085      -299.265       48.647     150.360
-#&gt; Item12       -238.877       -214.797      -293.598       48.161     157.603
+#&gt; Item12       -238.877       -214.797      -293.598       48.160     157.603
 #&gt; Item13       -293.472       -262.031      -328.396       62.882     132.730
 #&gt; Item14       -223.473       -204.953      -273.212       37.040     136.519
 #&gt; Item15       -271.903       -254.764      -302.847       34.279      96.166
@@ -751,8 +761,8 @@ result.IRT
 #&gt; Item08       11      13 0.527 0.441 0.599 0.514 0.589 0.076 21.111 -25.272
 #&gt; Item09       11      13 0.217 0.074 0.271 0.097 0.236 0.076 20.856 -25.527
 #&gt; Item10       11      13 0.333 0.211 0.403 0.266 0.379 0.075 20.240 -26.143
-#&gt; Item11       11      13 0.676 0.618 0.730 0.676 0.726 0.083 26.647 -19.735
-#&gt; Item12       11      13 0.694 0.639 0.747 0.696 0.743 0.082 26.161 -20.222
+#&gt; Item11       11      13 0.676 0.618 0.730 0.676 0.726 0.083 26.647 -19.736
+#&gt; Item12       11      13 0.694 0.639 0.747 0.696 0.743 0.082 26.160 -20.223
 #&gt; Item13       11      13 0.526 0.440 0.574 0.488 0.567 0.097 40.882  -5.501
 #&gt; Item14       11      13 0.729 0.679 0.793 0.751 0.789 0.069 15.040 -31.343
 #&gt; Item15       11      13 0.644 0.579 0.727 0.669 0.720 0.065 12.279 -34.104
@@ -768,7 +778,7 @@ result.IRT
 #&gt; Item09 -25.505
 #&gt; Item10 -26.121
 #&gt; Item11 -19.714
-#&gt; Item12 -20.200
+#&gt; Item12 -20.201
 #&gt; Item13  -5.479
 #&gt; Item14 -31.321
 #&gt; Item15 -34.082
@@ -790,17 +800,17 @@ result.IRT
 #&gt; RMSEA              0.076
 #&gt; AIC              311.528
 #&gt; CAIC            -384.212
-#&gt; BIC             -383.882</code></pre>
+#&gt; BIC             -383.883</code></pre>
 <p>The estimated population of subjects is included in the returned
 object.</p>
 <pre class="r"><code>head(result.IRT$ability)
 #&gt;       tmp$ID         EAP       PSD
-#&gt; 1 Student001 -0.75526733 0.5805702
-#&gt; 2 Student002 -0.17398690 0.5473606
-#&gt; 3 Student003  0.01382372 0.5530503
-#&gt; 4 Student004  0.57628106 0.5749110
-#&gt; 5 Student005 -0.97449507 0.5915606
-#&gt; 6 Student006  0.85233054 0.5820544</code></pre>
+#&gt; 1 Student001 -0.75526724 0.5805699
+#&gt; 2 Student002 -0.17398776 0.5473603
+#&gt; 3 Student003  0.01382256 0.5530499
+#&gt; 4 Student004  0.57628288 0.5749104
+#&gt; 5 Student005 -0.97449524 0.5915604
+#&gt; 6 Student006  0.85232884 0.5820539</code></pre>
 <p>The plots offer options for Item Characteristic Curves (ICC), Item
 Information Curves (IIC), and Test Information Curves (TIC), which can
 be specified through options. Items can be specified using the
@@ -943,7 +953,8 @@ on each, please refer to Shojima (2022).</p>
 <p>Latent Rank Analysis requires specifying the dataset and the number
 of classes.</p>
 <pre class="r"><code>LRA(J15S500, nrank = 6)
-#&gt; estimating method is  GTMItem Reference Profile
+#&gt; estimating method is  GTM 
+#&gt; Item Reference Profile
 #&gt;          IRP1   IRP2  IRP3  IRP4  IRP5  IRP6
 #&gt; Item01 0.5851 0.6319 0.708 0.787 0.853 0.898
 #&gt; Item02 0.5247 0.6290 0.755 0.845 0.883 0.875
@@ -980,10 +991,10 @@ of classes.</p>
 #&gt; Item15     2 0.1817    2 0.574   0.2 -0.00123
 #&gt; 
 #&gt; Test Profile
-#&gt;                               Class 1 Class 2 Class 3 Class 4 Class 5 Class 6
-#&gt; Test Reference Profile          6.389   7.675   9.496  10.631  11.432  12.144
-#&gt; Latent Class Ditribution       96.000  60.000  91.000  77.000  73.000 103.000
-#&gt; Class Membership Distribution  83.755  78.691  81.853  84.918  84.238  86.545
+#&gt;                              Rank 1 Rank 2 Rank 3 Rank 4 Rank 5  Rank 6
+#&gt; Test Reference Profile        6.389  7.675  9.496 10.631 11.432  12.144
+#&gt; Latent Rank Ditribution      96.000 60.000 91.000 77.000 73.000 103.000
+#&gt; Rank Membership Distribution 83.755 78.691 81.853 84.918 84.238  86.545
 #&gt; 
 #&gt; Item Fit Indices
 #&gt;        model_log_like bench_log_like null_log_like model_Chi_sq null_Chi_sq
@@ -1036,7 +1047,7 @@ of classes.</p>
 #&gt; Item15 -31.319
 #&gt; 
 #&gt; Model Fit Indices
-#&gt; Number of Latent class: 6
+#&gt; Number of Latent rank: 6
 #&gt; Number of EM cycle: 17 
 #&gt;                    value
 #&gt; model_log_like -3857.982
@@ -1061,20 +1072,20 @@ is assumed for the latent classes, rank-up odds and rank-down odds are
 calculated.</p>
 <pre class="r"><code>result.LRA &lt;- LRA(J15S500, nrank = 6)
 head(result.LRA$Students)
-#&gt;            Membership 1 Membership 2 Membership 3 Membership 4 Membership 5
-#&gt; Student001 0.2704649921  0.357479353   0.27632327  0.084988078  0.010069050
-#&gt; Student002 0.0276546965  0.157616072   0.47438958  0.279914853  0.053715813
-#&gt; Student003 0.0228189795  0.138860955   0.37884545  0.284817610  0.120794858
-#&gt; Student004 0.0020140858  0.015608542   0.09629429  0.216973334  0.362406292
-#&gt; Student005 0.5582996437  0.397431414   0.03841668  0.003365601  0.001443909
-#&gt; Student006 0.0003866603  0.003168853   0.04801344  0.248329964  0.428747502
-#&gt;            Membership 6 Estimate Rank-Up Odds Rank-Down Odds
-#&gt; Student001 0.0006752546        2    0.7729769      0.7565891
-#&gt; Student002 0.0067089816        3    0.5900527      0.3322503
-#&gt; Student003 0.0538621490        3    0.7518042      0.3665372
-#&gt; Student004 0.3067034562        5    0.8462973      0.5987019
-#&gt; Student005 0.0010427491        1    0.7118604             NA
-#&gt; Student006 0.2713535842        5    0.6328983      0.5791986</code></pre>
+#&gt;      Membership 1 Membership 2 Membership 3 Membership 4 Membership 5
+#&gt; [1,] 0.2704649921  0.357479353   0.27632327  0.084988078  0.010069050
+#&gt; [2,] 0.0276546965  0.157616072   0.47438958  0.279914853  0.053715813
+#&gt; [3,] 0.0228189795  0.138860955   0.37884545  0.284817610  0.120794858
+#&gt; [4,] 0.0020140858  0.015608542   0.09629429  0.216973334  0.362406292
+#&gt; [5,] 0.5582996437  0.397431414   0.03841668  0.003365601  0.001443909
+#&gt; [6,] 0.0003866603  0.003168853   0.04801344  0.248329964  0.428747502
+#&gt;      Membership 6 Estimate Rank-Up Odds Rank-Down Odds
+#&gt; [1,] 0.0006752546        2    0.7729769      0.7565891
+#&gt; [2,] 0.0067089816        3    0.5900527      0.3322503
+#&gt; [3,] 0.0538621490        3    0.7518042      0.3665372
+#&gt; [4,] 0.3067034562        5    0.8462973      0.5987019
+#&gt; [5,] 0.0010427491        1    0.7118604             NA
+#&gt; [6,] 0.2713535842        5    0.6328983      0.5791986</code></pre>
 <pre class="r"><code>plot(result.LRA, type = &quot;IRP&quot;, items = 1:6, nc = 2, nr = 3)</code></pre>
 <p><img src="figures/plot-lra-1.png" width="100%" /></p>
 <pre class="r"><code>plot(result.LRA, type = &quot;RMP&quot;, students = 1:9, nc = 3, nr = 3)</code></pre>
@@ -1083,6 +1094,52 @@ head(result.LRA$Students)
 <p><img src="figures/plot-lra-3.png" width="100%" /></p>
 <pre class="r"><code>plot(result.LRA, type = &quot;LRD&quot;)</code></pre>
 <p><img src="figures/plot-lra-4.png" width="100%" /></p>
+</div>
+<div id="lra-for-ordinal-data" class="section level3">
+<h3>LRA for ordinal data</h3>
+<p>LRA can also be applied to ordinal scale data. The sample dataset
+J15S3810 contains responses to 15 items on a 4-point scale, which we’ll
+classify into 3 ranks. The mic option enforces monotonic increasing
+constraints.</p>
+<pre class="r"><code>result.LRAord &lt;- LRA(J15S3810, nrank = 3, mic = TRUE)
+#&gt; Starting EM estimation for Saturation Model...
+#&gt; iter 1 logLik -0.715286                                                         iter 2 logLik -0.658925                                                         iter 3 logLik -0.650981                                                         iter 4 logLik -0.648033                                                         iter 5 logLik -0.646591                                                         iter 6 logLik -0.645385                                                         iter 7 logLik -0.644218                                                         iter 8 logLik -0.64299                                                          iter 9 logLik -0.641574                                                         iter 10 logLik -0.639918                                                        iter 11 logLik -0.638005                                                        iter 12 logLik -0.635832                                                        iter 13 logLik -0.63343                                                         iter 14 logLik -0.63086                                                         iter 15 logLik -0.628207                                                        iter 16 logLik -0.625554                                                        iter 17 logLik -0.622973                                                        iter 18 logLik -0.620517                                                        iter 19 logLik -0.618217                                                        iter 20 logLik -0.616089                                                        iter 21 logLik -0.614138                                                        iter 22 logLik -0.612356                                                        iter 23 logLik -0.610732                                                        iter 24 logLik -0.609254                                                        iter 25 logLik -0.607906                                                        iter 26 logLik -0.606672                                                        iter 27 logLik -0.605536                                                        iter 28 logLik -0.604488                                                        iter 29 logLik -0.603515                                                        iter 30 logLik -0.602612                                                        iter 31 logLik -0.601771                                                        iter 32 logLik -0.600989                                                        iter 33 logLik -0.600262                                                        iter 34 logLik -0.599589                                                        iter 35 logLik -0.598965                                                        iter 36 logLik -0.598389                                                        iter 37 logLik -0.597857                                                        iter 38 logLik -0.597367                                                        iter 39 logLik -0.596914                                                        iter 40 logLik -0.596497                                                        iter 41 logLik -0.596113                                                        iter 42 logLik -0.595757                                                        iter 43 logLik -0.595428                                                        iter 44 logLik -0.595121                                                        iter 45 logLik -0.594836                                                        iter 46 logLik -0.594568                                                        iter 47 logLik -0.594316                                                        iter 48 logLik -0.594078                                                        iter 49 logLik -0.59385                                                         iter 50 logLik -0.593631                                                        iter 51 logLik -0.593418                                                        iter 52 logLik -0.593211                                                        iter 53 logLik -0.59301                                                         iter 54 logLik -0.592816                                                        iter 55 logLik -0.59263                                                         iter 56 logLik -0.592452                                                        iter 57 logLik -0.592281                                                        iter 58 logLik -0.592118                                                        iter 59 logLik -0.591962                                                        iter 60 logLik -0.591813                                                        iter 61 logLik -0.591671                                                        iter 62 logLik -0.591534                                                        iter 63 logLik -0.591403                                                        iter 64 logLik -0.591277                                                        iter 65 logLik -0.591156                                                        iter 66 logLik -0.59104                                                         iter 67 logLik -0.590927                                                        iter 68 logLik -0.590819                                                        iter 69 logLik -0.590714                                                        iter 70 logLik -0.590613                                                        iter 71 logLik -0.590515                                                        iter 72 logLik -0.59042                                                         iter 73 logLik -0.590328                                                        iter 74 logLik -0.590238                                                        iter 75 logLik -0.590151                                                        iter 76 logLik -0.590065                                                        iter 77 logLik -0.589982                                                        iter 78 logLik -0.589899                                                        iter 79 logLik -0.589818                                                        iter 80 logLik -0.589738                                                        iter 81 logLik -0.589659                                                        iter 82 logLik -0.589581                                                        iter 83 logLik -0.589504                                                        iter 84 logLik -0.589427                                                        iter 85 logLik -0.589352                                                        iter 86 logLik -0.589277                                                        iter 87 logLik -0.589203                                                        iter 88 logLik -0.58913                                                         iter 89 logLik -0.589059                                                        iter 90 logLik -0.588988                                                        iter 91 logLik -0.588919                                                        iter 92 logLik -0.588851                                                        iter 93 logLik -0.588785                                                        iter 94 logLik -0.588721                                                        iter 95 logLik -0.588658                                                        iter 96 logLik -0.588597                                                        iter 97 logLik -0.588537                                                        iter 98 logLik -0.58848                                                         
+#&gt; Starting EM estimation for Restricted Model...
+#&gt; iter 1 logLik -0.601097                                                         iter 2 logLik -0.603759                                                         iter 3 logLik -0.605054                                                         iter 4 logLik -0.605668                                                         iter 5 logLik -0.605996                                                         iter 6 logLik -0.606186                                                         iter 7 logLik -0.606303                                                         iter 8 logLik -0.606378                                                         iter 9 logLik -0.606425</code></pre>
+<p>We can visualize the relationship between total scores from the
+ordinal scale and estimated ranks. ScoreFreq plots a frequency polygon
+of scores with rank thresholds, while ScoreRank shows the relationship
+between scores and rank membership probabilities as a heatmap.</p>
+<pre class="r"><code>plot(result.LRAord, type = &quot;ScoreFreq&quot;)</code></pre>
+<p><img src="figures/unnamed-chunk-2-1.png" width="100%" /></p>
+<pre class="r"><code>plot(result.LRAord, type = &quot;ScoreRank&quot;)</code></pre>
+<p><img src="figures/unnamed-chunk-2-2.png" width="100%" /></p>
+<p>The relationship between items and ranks can be visualized in two
+complementary ways using ICBR and ICRP plots. These visualizations help
+understand how items function across different ranks:</p>
+<ul>
+<li>ICBR (Item Category Boundary Reference) shows the cumulative
+probability curves for each category threshold. For each item, these
+lines represent the probability of scoring at or above each category
+boundary across ranks.</li>
+<li>ICRP (Item Category Response Profile) displays the probability of
+selecting each response category across ranks. These lines show how
+response patterns change as rank increases.</li>
+</ul>
+<pre class="r"><code>plot(result.LRAord, type = &quot;ICBR&quot;, nc = 3, nr = 5)</code></pre>
+<p><img src="figures/ICBR/ICRP%20plot-1.png" width="100%" /></p>
+<pre class="r"><code>plot(result.LRAord, type = &quot;ICRP&quot;, nc = 3, nr = 5)</code></pre>
+<p><img src="figures/ICBR/ICRP%20plot-2.png" width="100%" /></p>
+<p>Similar to binary data output, we can examine individual examinee
+characteristics through rank membership probability plots. This
+visualization shows the probability distribution of rank membership for
+each examinee, allowing us to understand the certainty of rank
+classifications. For the first 15 examinees in the dataset:</p>
+<pre class="r"><code>plot(result.LRAord, type = &quot;RMP&quot;, students = 1:15, nc = 3, nr = 5)</code></pre>
+<p><img src="figures/unnamed-chunk-3-1.png" width="100%" /></p>
+<p>Note: The layout parameters nc = 3 and nr = 5 control the arrangement
+of plots in a 3-column by 5-row grid, making it easier to compare
+multiple items or examinees simultaneously.</p>
 </div>
 <div id="biclusteringranklustering" class="section level3">
 <h3>Biclustering/Ranklustering</h3>
@@ -1144,13 +1201,13 @@ the help documentation.</p>
 #&gt; iter 1 logLik -8097.56                                                          iter 2 logLik -7669.21                                                          iter 3 logLik -7586.72                                                          iter 4 logLik -7568.24                                                          iter 5 logLik -7561.02                                                          iter 6 logLik -7557.34                                                          iter 7 logLik -7557.36                                                          iter 7 logLik -7557.36
 #&gt; Strongly ordinal alignment condition was satisfied.
 plot(result.Ranklustering, type = &quot;Array&quot;)</code></pre>
-<p><img src="figures/unnamed-chunk-2-1.png" width="100%" /></p>
+<p><img src="figures/unnamed-chunk-5-1.png" width="100%" /></p>
 <pre class="r"><code>plot(result.Ranklustering, type = &quot;FRP&quot;, nc = 2, nr = 3)</code></pre>
-<p><img src="figures/unnamed-chunk-2-2.png" width="100%" /></p>
+<p><img src="figures/unnamed-chunk-5-2.png" width="100%" /></p>
 <pre class="r"><code>plot(result.Ranklustering, type = &quot;RMP&quot;, students = 1:9, nc = 3, nr = 3)</code></pre>
-<p><img src="figures/unnamed-chunk-2-3.png" width="100%" /></p>
+<p><img src="figures/unnamed-chunk-5-3.png" width="100%" /></p>
 <pre class="r"><code>plot(result.Ranklustering, type = &quot;LRD&quot;)</code></pre>
-<p><img src="figures/unnamed-chunk-2-4.png" width="100%" /></p>
+<p><img src="figures/unnamed-chunk-5-4.png" width="100%" /></p>
 <p>To find the optimal number of classes and the optimal number of
 fields, the Infinite Relational Model is available.</p>
 <pre class="r"><code>result.IRM &lt;- IRM(J35S515, gamma_c = 1, gamma_f = 1, verbose = TRUE)
@@ -1165,11 +1222,11 @@ fields, the Infinite Relational Model is available.</p>
 #&gt; The minimum class member count is under the setting value.
 #&gt; bic -100001 nclass 17
 plot(result.IRM, type = &quot;Array&quot;)</code></pre>
-<p><img src="figures/unnamed-chunk-3-1.png" width="100%" /></p>
+<p><img src="figures/unnamed-chunk-6-1.png" width="100%" /></p>
 <pre class="r"><code>plot(result.IRM, type = &quot;FRP&quot;, nc = 3)</code></pre>
-<p><img src="figures/unnamed-chunk-3-2.png" width="100%" /><img src="figures/unnamed-chunk-3-3.png" width="100%" /><img src="figures/unnamed-chunk-3-4.png" width="100%" /><img src="figures/unnamed-chunk-3-5.png" width="100%" /></p>
+<p><img src="figures/unnamed-chunk-6-2.png" width="100%" /><img src="figures/unnamed-chunk-6-3.png" width="100%" /><img src="figures/unnamed-chunk-6-4.png" width="100%" /><img src="figures/unnamed-chunk-6-5.png" width="100%" /></p>
 <pre class="r"><code>plot(result.IRM, type = &quot;TRP&quot;)</code></pre>
-<p><img src="figures/unnamed-chunk-3-6.png" width="100%" /></p>
+<p><img src="figures/unnamed-chunk-6-6.png" width="100%" /></p>
 <p>Additionally, supplementary notes on the derivation of the Infinite
 Relational Model with Chinese restaurant process is <a
 href="https://kosugitti.github.io/kosugitti10/notes/IRM_memo.pdf">here</a>.</p>
@@ -1203,9 +1260,9 @@ DAG &lt;-
 ## graph object
 g &lt;- igraph::graph_from_data_frame(DAG)
 g
-#&gt; IGRAPH 7198f0e DN-- 5 5 -- 
+#&gt; IGRAPH d839b5b DN-- 5 5 -- 
 #&gt; + attr: name (v/c)
-#&gt; + edges from 7198f0e (vertex names):
+#&gt; + edges from d839b5b (vertex names):
 #&gt; [1] Item01-&gt;Item02 Item02-&gt;Item03 Item02-&gt;Item04 Item03-&gt;Item05 Item04-&gt;Item05
 ## Adjacency matrix
 adj_mat &lt;- as.matrix(igraph::get.adjacency(g))
@@ -1267,22 +1324,22 @@ result.BNM
 #&gt; 
 #&gt; Model Fit Indices
 #&gt;                  value
-#&gt; model_log_like -27.085
+#&gt; model_log_like -27.046
 #&gt; bench_log_like  -8.935
 #&gt; null_log_like  -28.882
-#&gt; model_Chi_sq    36.300
+#&gt; model_Chi_sq    36.222
 #&gt; null_Chi_sq     39.894
 #&gt; model_df        20.000
 #&gt; null_df         25.000
-#&gt; NFI              0.090
+#&gt; NFI              0.092
 #&gt; RFI              0.000
-#&gt; IFI              0.181
+#&gt; IFI              0.185
 #&gt; TLI              0.000
 #&gt; CFI              0.000
-#&gt; RMSEA            0.301
-#&gt; AIC             -3.700
-#&gt; CAIC           -11.658
-#&gt; BIC             -9.751</code></pre>
+#&gt; RMSEA            0.300
+#&gt; AIC             -3.778
+#&gt; CAIC           -11.736
+#&gt; BIC             -9.829</code></pre>
 <div id="structure-learning-for-bayesian-network-with-ga"
 class="section level4">
 <h4>Structure Learning for Bayesian network with GA</h4>
@@ -1331,22 +1388,22 @@ depending on the number of items and the size of the population.</p>
 #&gt; 
 #&gt; Model Fit Indices
 #&gt;                  value
-#&gt; model_log_like -27.633
+#&gt; model_log_like -27.600
 #&gt; bench_log_like  -8.935
 #&gt; null_log_like  -28.882
-#&gt; model_Chi_sq    37.396
+#&gt; model_Chi_sq    37.330
 #&gt; null_Chi_sq     39.894
 #&gt; model_df        24.000
 #&gt; null_df         25.000
-#&gt; NFI              0.063
-#&gt; RFI              0.024
-#&gt; IFI              0.157
-#&gt; TLI              0.063
-#&gt; CFI              0.101
-#&gt; RMSEA            0.249
-#&gt; AIC            -10.604
-#&gt; CAIC           -20.154
-#&gt; BIC            -17.866</code></pre>
+#&gt; NFI              0.064
+#&gt; RFI              0.025
+#&gt; IFI              0.161
+#&gt; TLI              0.068
+#&gt; CFI              0.105
+#&gt; RMSEA            0.248
+#&gt; AIC            -10.670
+#&gt; CAIC           -20.220
+#&gt; BIC            -17.932</code></pre>
 <p>The method of Population-Based incremental learning proposed by
 Fukuda (2014) can also be used for learning. This method has several
 variations for estimating the optimal adjacency matrix at the end, which
@@ -1359,7 +1416,7 @@ can be specified as options. See help or text Section 8.5.2.</p>
 #&gt;        Item01 Item02 Item03 Item04 Item05
 #&gt; Item01      0      0      0      1      0
 #&gt; Item02      0      0      0      0      0
-#&gt; Item03      0      0      0      0      0
+#&gt; Item03      1      0      0      0      0
 #&gt; Item04      0      0      0      0      0
 #&gt; Item05      0      0      0      0      0
 #&gt; [1] &quot;Your graph is an acyclic graph.&quot;
@@ -1368,39 +1425,40 @@ can be specified as options. See help or text Section 8.5.2.</p>
 <pre><code>#&gt; 
 #&gt; Parameter Learning
 #&gt;        PIRP 1 PIRP 2
-#&gt; Item01    0.6       
+#&gt; Item01    0.0  0.667
 #&gt; Item02    0.4       
 #&gt; Item03    0.9       
-#&gt; Item04    0.0    0.5
+#&gt; Item04    0.0  0.500
 #&gt; Item05    0.4       
 #&gt; 
 #&gt; Conditional Correct Response Rate
 #&gt;   Child Item N of Parents Parent Items       PIRP Conditional CRR
-#&gt; 1     Item01            0   No Parents No Pattern       0.6000000
-#&gt; 2     Item02            0   No Parents No Pattern       0.4000000
-#&gt; 3     Item03            0   No Parents No Pattern       0.9000000
-#&gt; 4     Item04            1       Item01          0       0.0000000
-#&gt; 5     Item04            1       Item01          1       0.5000000
-#&gt; 6     Item05            0   No Parents No Pattern       0.4000000
+#&gt; 1     Item01            1       Item03          0       0.0000000
+#&gt; 2     Item01            1       Item03          1       0.6666667
+#&gt; 3     Item02            0   No Parents No Pattern       0.4000000
+#&gt; 4     Item03            0   No Parents No Pattern       0.9000000
+#&gt; 5     Item04            1       Item01          0       0.0000000
+#&gt; 6     Item04            1       Item01          1       0.5000000
+#&gt; 7     Item05            0   No Parents No Pattern       0.4000000
 #&gt; 
 #&gt; Model Fit Indices
 #&gt;                  value
-#&gt; model_log_like -27.633
+#&gt; model_log_like -26.599
 #&gt; bench_log_like  -8.935
 #&gt; null_log_like  -28.882
-#&gt; model_Chi_sq    37.396
+#&gt; model_Chi_sq    35.327
 #&gt; null_Chi_sq     39.894
-#&gt; model_df        24.000
+#&gt; model_df        23.000
 #&gt; null_df         25.000
-#&gt; NFI              0.063
-#&gt; RFI              0.024
-#&gt; IFI              0.157
-#&gt; TLI              0.063
-#&gt; CFI              0.101
-#&gt; RMSEA            0.249
-#&gt; AIC            -10.604
-#&gt; CAIC           -20.154
-#&gt; BIC            -17.866</code></pre>
+#&gt; NFI              0.114
+#&gt; RFI              0.037
+#&gt; IFI              0.270
+#&gt; TLI              0.100
+#&gt; CFI              0.172
+#&gt; RMSEA            0.244
+#&gt; AIC            -10.673
+#&gt; CAIC           -19.825
+#&gt; BIC            -17.633</code></pre>
 </div>
 </div>
 <div id="local-dependence-latent-rank-analysis" class="section level3">
@@ -1472,36 +1530,36 @@ for (i in 1:5) {
 ## Example of graph list
 g_list
 #&gt; [[1]]
-#&gt; IGRAPH 5bd7ae7 DN-- 4 2 -- 
+#&gt; IGRAPH c738cfb DN-- 4 2 -- 
 #&gt; + attr: name (v/c)
-#&gt; + edges from 5bd7ae7 (vertex names):
+#&gt; + edges from c738cfb (vertex names):
 #&gt; [1] Item01-&gt;Item02 Item04-&gt;Item05
 #&gt; 
 #&gt; [[2]]
-#&gt; IGRAPH d3c47a9 DN-- 9 7 -- 
+#&gt; IGRAPH df544c0 DN-- 9 7 -- 
 #&gt; + attr: name (v/c)
-#&gt; + edges from d3c47a9 (vertex names):
+#&gt; + edges from df544c0 (vertex names):
 #&gt; [1] Item01-&gt;Item02 Item02-&gt;Item03 Item04-&gt;Item05 Item08-&gt;Item09 Item08-&gt;Item10
 #&gt; [6] Item09-&gt;Item10 Item08-&gt;Item11
 #&gt; 
 #&gt; [[3]]
-#&gt; IGRAPH a40c59b DN-- 9 7 -- 
+#&gt; IGRAPH 21db591 DN-- 9 7 -- 
 #&gt; + attr: name (v/c)
-#&gt; + edges from a40c59b (vertex names):
+#&gt; + edges from 21db591 (vertex names):
 #&gt; [1] Item01-&gt;Item02 Item02-&gt;Item03 Item04-&gt;Item05 Item08-&gt;Item09 Item08-&gt;Item10
 #&gt; [6] Item09-&gt;Item10 Item08-&gt;Item11
 #&gt; 
 #&gt; [[4]]
-#&gt; IGRAPH ee397af DN-- 10 8 -- 
+#&gt; IGRAPH 578a12d DN-- 10 8 -- 
 #&gt; + attr: name (v/c)
-#&gt; + edges from ee397af (vertex names):
+#&gt; + edges from 578a12d (vertex names):
 #&gt; [1] Item02-&gt;Item03 Item04-&gt;Item06 Item04-&gt;Item07 Item05-&gt;Item06 Item05-&gt;Item07
 #&gt; [6] Item08-&gt;Item10 Item08-&gt;Item11 Item09-&gt;Item11
 #&gt; 
 #&gt; [[5]]
-#&gt; IGRAPH b09578b DN-- 10 8 -- 
+#&gt; IGRAPH 8add03d DN-- 10 8 -- 
 #&gt; + attr: name (v/c)
-#&gt; + edges from b09578b (vertex names):
+#&gt; + edges from 8add03d (vertex names):
 #&gt; [1] Item02-&gt;Item03 Item04-&gt;Item06 Item04-&gt;Item07 Item05-&gt;Item06 Item05-&gt;Item07
 #&gt; [6] Item09-&gt;Item11 Item10-&gt;Item11 Item10-&gt;Item12</code></pre>
 <pre class="r"><code>### Example of adjacency list
@@ -3409,7 +3467,7 @@ result.LDB
 #&gt; Field08       0
 #&gt; Field09       1
 #&gt; Field10       0</code></pre>
-<p><img src="figures/unnamed-chunk-5-1.png" width="100%" /><img src="figures/unnamed-chunk-5-2.png" width="100%" /><img src="figures/unnamed-chunk-5-3.png" width="100%" /><img src="figures/unnamed-chunk-5-4.png" width="100%" /><img src="figures/unnamed-chunk-5-5.png" width="100%" /></p>
+<p><img src="figures/unnamed-chunk-8-1.png" width="100%" /><img src="figures/unnamed-chunk-8-2.png" width="100%" /><img src="figures/unnamed-chunk-8-3.png" width="100%" /><img src="figures/unnamed-chunk-8-4.png" width="100%" /><img src="figures/unnamed-chunk-8-5.png" width="100%" /></p>
 <pre><code>#&gt; 
 #&gt; Parameter Learning
 #&gt; Rank 1 
@@ -3643,7 +3701,7 @@ edgeFile &lt;- tempfile(fileext = &quot;.csv&quot;)
 write.csv(edges_data, file = edgeFile, row.names = FALSE)</code></pre>
 <p>The model requires three components:</p>
 <ol style="list-style-type: decimal">
-<li>Field assignments for items (conf vector)</li>
+<li>Field assignments for items (vector from configuration file)</li>
 <li>Network structure between classes for each field</li>
 <li>Number of classes and fields</li>
 </ol>
@@ -4004,50 +4062,23 @@ classes compared with their respective parents.</p>
 plot(result.BINET, type = &quot;LDPSR&quot;, nc = 3, nr = 2)</code></pre>
 <p><img src="figures/plot-binet-ldpsr-1.png" width="100%" /><img src="figures/plot-binet-ldpsr-2.png" width="100%" /><img src="figures/plot-binet-ldpsr-3.png" width="100%" /></p>
 </div>
-<div id="table-of-model-and-plotting-option-correspondence"
-class="section level3">
-<h3>Table of Model and Plotting Option Correspondence</h3>
+<div id="available-output-types-by-model" class="section level3">
+<h3>Available Output Types by Model</h3>
+<div id="pattern-analysis" class="section level4">
+<h4>Pattern Analysis</h4>
 <table>
-<colgroup>
-<col width="14%" />
-<col width="5%" />
-<col width="5%" />
-<col width="5%" />
-<col width="5%" />
-<col width="5%" />
-<col width="5%" />
-<col width="10%" />
-<col width="10%" />
-<col width="8%" />
-<col width="12%" />
-<col width="8%" />
-</colgroup>
 <thead>
 <tr class="header">
-<th>Model/Type</th>
-<th align="center">IIC</th>
-<th align="center">ICC</th>
-<th align="center">TIC</th>
+<th>Model</th>
 <th align="center">IRP</th>
 <th align="center">FRP</th>
 <th align="center">TRP</th>
-<th align="center">LCD/LRD</th>
-<th align="center">CMP/RMP</th>
-<th align="center">Array</th>
-<th align="center">FieldPIRP</th>
-<th align="center">LDPSR</th>
+<th align="center">ICRP</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
 <td>IRT</td>
-<td align="center">◯</td>
-<td align="center">◯</td>
-<td align="center">◯</td>
-<td align="center"></td>
-<td align="center"></td>
-<td align="center"></td>
-<td align="center"></td>
 <td align="center"></td>
 <td align="center"></td>
 <td align="center"></td>
@@ -4055,104 +4086,143 @@ class="section level3">
 </tr>
 <tr class="even">
 <td>LCA</td>
-<td align="center"></td>
-<td align="center"></td>
-<td align="center"></td>
-<td align="center">◯</td>
-<td align="center">◯</td>
-<td align="center">◯</td>
-<td align="center">◯</td>
-<td align="center">◯</td>
-<td align="center"></td>
-<td align="center"></td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
 <td align="center"></td>
 </tr>
 <tr class="odd">
 <td>LRA</td>
-<td align="center"></td>
-<td align="center"></td>
-<td align="center"></td>
-<td align="center">◯</td>
-<td align="center">◯</td>
-<td align="center">◯</td>
-<td align="center">◯</td>
-<td align="center">◯</td>
-<td align="center"></td>
-<td align="center"></td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
 <td align="center"></td>
 </tr>
 <tr class="even">
-<td>Biclustering</td>
+<td>LRAordinal</td>
 <td align="center"></td>
 <td align="center"></td>
 <td align="center"></td>
-<td align="center">◯</td>
-<td align="center">◯</td>
-<td align="center">◯</td>
-<td align="center">◯</td>
-<td align="center">◯</td>
-<td align="center">◯</td>
-<td align="center"></td>
-<td align="center"></td>
+<td align="center">✓</td>
 </tr>
 <tr class="odd">
+<td>Biclustering</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center"></td>
+</tr>
+<tr class="even">
 <td>IRM</td>
 <td align="center"></td>
-<td align="center"></td>
-<td align="center"></td>
-<td align="center"></td>
-<td align="center">◯</td>
-<td align="center">◯</td>
-<td align="center"></td>
-<td align="center"></td>
-<td align="center">◯</td>
-<td align="center"></td>
-<td align="center"></td>
-</tr>
-<tr class="even">
-<td>LDLRA</td>
-<td align="center"></td>
-<td align="center"></td>
-<td align="center"></td>
-<td align="center">◯</td>
-<td align="center"></td>
-<td align="center"></td>
-<td align="center">◯</td>
-<td align="center">◯</td>
-<td align="center"></td>
-<td align="center"></td>
+<td align="center">✓</td>
+<td align="center">✓</td>
 <td align="center"></td>
 </tr>
 <tr class="odd">
-<td>LDB</td>
+<td>LDLRA</td>
+<td align="center">✓</td>
 <td align="center"></td>
 <td align="center"></td>
-<td align="center"></td>
-<td align="center"></td>
-<td align="center">◯</td>
-<td align="center">◯</td>
-<td align="center">◯</td>
-<td align="center">◯</td>
-<td align="center">◯</td>
-<td align="center">◯</td>
 <td align="center"></td>
 </tr>
 <tr class="even">
+<td>LDB</td>
+<td align="center"></td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center"></td>
+</tr>
+<tr class="odd">
 <td>BINET</td>
 <td align="center"></td>
+<td align="center">✓</td>
+<td align="center">✓</td>
 <td align="center"></td>
-<td align="center"></td>
-<td align="center"></td>
-<td align="center">◯</td>
-<td align="center">◯</td>
-<td align="center">◯</td>
-<td align="center">◯</td>
-<td align="center">◯</td>
-<td align="center"></td>
-<td align="center">◯</td>
 </tr>
 </tbody>
 </table>
+</div>
+<div id="diagnostics-visualization" class="section level4">
+<h4>Diagnostics &amp; Visualization</h4>
+<table>
+<thead>
+<tr class="header">
+<th>Model</th>
+<th align="center">LCD/LRD</th>
+<th align="center">CMP/RMP</th>
+<th align="center">Array</th>
+<th>Other</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>IRT</td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+<td>IIC, ICC, TIC</td>
+</tr>
+<tr class="even">
+<td>LCA</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center"></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>LRA</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center"></td>
+<td></td>
+</tr>
+<tr class="even">
+<td>LRAordinal</td>
+<td align="center">ICBR</td>
+<td align="center">RMP</td>
+<td align="center"></td>
+<td>ScoreFreq, ScoreRank</td>
+</tr>
+<tr class="odd">
+<td>Biclustering</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>IRM</td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center">✓</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>LDLRA</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center"></td>
+<td></td>
+</tr>
+<tr class="even">
+<td>LDB</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td>FieldPIRP</td>
+</tr>
+<tr class="odd">
+<td>BINET</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td>LDPSR</td>
+</tr>
+</tbody>
+</table>
+<p>Note: ✓ indicates available output type for the model.</p>
+</div>
 </div>
 </div>
 <div id="community-and-support" class="section level2">
@@ -4213,7 +4283,6 @@ Approaches to Human Behavior, 13),Springer.</p>
 <ul>
 <li>Graded Response Model (GRM)</li>
 <li>Partial Credit Model (PCM)</li>
-<li>Generalized Partial Credit Model (GPCM)</li>
 </ul></li>
 <li>Latent Structure Analysis
 <ul>

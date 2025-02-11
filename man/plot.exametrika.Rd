@@ -7,7 +7,7 @@
 \method{plot}{exametrika}(
   x,
   type = c("IIC", "ICC", "TIC", "IRP", "TRP", "LCD", "CMP", "FRP", "RMP", "LRD", "Array",
-    "FieldPIRP", "LDPSR"),
+    "FieldPIRP", "LDPSR", "ScoreFreq", "ScoreRank", "ICRP", "ICBR"),
   items = NULL,
   students = NULL,
   nc = 1,
@@ -44,6 +44,18 @@ option allows you to specify which students to display. Additionally, with the '
 options, you should ensure the ability to display multiple figures.}
 \item{RMP}{Rank Membership Profile. The difference between RMP and CMP is whether the horizontal
 axis represents classes or ranks.}
+\item{ScoreFreq}{A frequency polygon corresponding to the score frequency distribution,
+plotted together with rank thresholds.}
+\item{ScoreRank}{A heatmap representing the probabilities of score membership for each rank.}
+\item{ICRP}{A visualization that displays the relationship between ranks (x-axis)
+and category response probabilities (y-axis). For each item, multiple lines are plotted,
+each representing the probability of selecting a specific response category. These lines
+show how the likelihood of choosing each response category changes across different ranks.}
+\item{ICBR}{A visualization that shows the relationship between ranks (x-axis)
+and cumulative category probabilities (y-axis). For each item, multiple boundary lines are plotted,
+each representing the probability of scoring at or above a specific category threshold.
+These lines illustrate how the cumulative probabilities of reaching each category boundary
+change across different ranks.}
 \item{FRP}{Field Reference Profile. "FRP is a diagram depicting the correspondence between the field
 and the latent class/rank. It represents the expected correct answer rate of members belonging to
 a particular latent class/rank using a line graph.}

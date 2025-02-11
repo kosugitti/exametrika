@@ -11,6 +11,6 @@ An exametrika class object with 3810 students and 15 items containing nominal re
 J15S3810
 }
 \description{
-A nominal response dataset for test analysis
+A ordinal response dataset for test analysis
 }
 \keyword{datasets}

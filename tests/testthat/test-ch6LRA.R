@@ -43,14 +43,14 @@ test_that("LRA Class Info", {
     unlist() |>
     unname() |>
     as.numeric()
-  result <- model$LCD |> as.numeric()
+  result <- model$LRD |> as.numeric()
   expect_equal(result, expect, tolerance = 1e-4)
   ## CMD
   expect <- class[3, 2:7] |>
     unlist() |>
     unname() |>
     as.numeric()
-  result <- model$CMD |> as.numeric()
+  result <- model$RMD |> as.numeric()
   expect_equal(result, expect, tolerance = 1e-4)
 })
 

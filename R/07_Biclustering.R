@@ -1,7 +1,7 @@
 #' @title softmax function
 #' @description
 #' to avoid overflow
-#' @param x numericvector
+#' @param x numeric vector
 #'
 
 softmax <- function(x) {
@@ -87,7 +87,7 @@ Biclustering <- function(U, ncls = 2, nfld = 2,
                          maxiter = 100,
                          verbose = TRUE) {
   # data format
-  if (class(U)[1] != "exametrika") {
+  if (!inherits(U, "exametrika")) {
     tmp <- dataFormat(data = U, na = na, Z = Z, w = w)
   } else {
     tmp <- U
@@ -410,7 +410,7 @@ Biclustering <- function(U, ncls = 2, nfld = 2,
 
 FieldAnalysis <- function(x, digits = 4) {
   # data format
-  if (class(x)[1] != "exametrika") {
+  if (!inherits(x, "exametrika")) {
     stop("Field Analysis needs exametrika Output.")
   }
   if (class(x)[2] != "Biclustering") {

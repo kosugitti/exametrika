@@ -180,6 +180,11 @@ Available datasets:
 - J20S400: Medium dataset (20 items, 400 examinees)
 - J35S515: Large item dataset (35 items, 515 examinees)
   - Used in Biclustering and network model examples
+- J15S3810: Ordinal scale dataset (15 items with 4-point scale, 3810 examinees)
+  - Used in ordinal latent rank model examples
+- J35S5000: Multiple-choice dataset (35 items, 5000 examinees)
+  - Includes both response categories and correct answer data
+  - Used in nominal scale latent rank model examples
 
 ## Examples
 
@@ -269,6 +274,39 @@ plot(result.LRA, type = "RMP", students = 1:9, nc = 3, nr = 3)
 plot(result.LRA, type = "TRP")
 plot(result.LRA, type = "LRD")
 ```
+
+### LRA for ordinal data
+
+LRA can also be applied to ordinal scale data. The sample dataset J15S3810 contains responses to 15 items on a 4-point scale, which we'll classify into 3 ranks. The mic option enforces monotonic increasing constraints.
+
+```{r}
+result.LRAord <- LRA(J15S3810, nrank = 3, mic = TRUE)
+```
+
+We can visualize the relationship between total scores from the ordinal scale and estimated ranks. ScoreFreq plots a frequency polygon of scores with rank thresholds, while ScoreRank shows the relationship between scores and rank membership probabilities as a heatmap.
+
+```{r}
+plot(result.LRAord, type = "ScoreFreq")
+plot(result.LRAord, type = "ScoreRank")
+```
+
+The relationship between items and ranks can be visualized in two complementary ways using ICBR and ICRP plots. These visualizations help understand how items function across different ranks:
+
++ ICBR (Item Category Boundary Reference) shows the cumulative probability curves for each category threshold. For each item, these lines represent the probability of scoring at or above each category boundary across ranks.
++ ICRP (Item Category Response Profile) displays the probability of selecting each response category across ranks. These lines show how response patterns change as rank increases.
+
+```{r ICBR/ICRP plot,fig.width=7, fig.height=5, }
+plot(result.LRAord, type = "ICBR", items = 1:4, nc = 2, nr = 2)
+plot(result.LRAord, type = "ICRP", items = 1:4, nc = 2, nr = 2)
+```
+
+Similar to binary data output, we can examine individual examinee characteristics through rank membership probability plots. This visualization shows the probability distribution of rank membership for each examinee, allowing us to understand the certainty of rank classifications. For the first 15 examinees in the dataset:
+
+```{r}
+plot(result.LRAord, type = "RMP", students = 1:15, nc = 3, nr = 5)
+```
+
+Note: The layout parameters nc = 3 and nr = 5 control the arrangement of plots in a 3-column by 5-row grid, making it easier to compare multiple items or examinees simultaneously.
 
 ### Biclustering/Ranklustering
 
@@ -648,19 +686,37 @@ plot(result.BINET, type = "LDPSR", nc = 3, nr = 2)
 ```
 
 
-### Table of Model and Plotting Option Correspondence
+### Available Output Types by Model
 
-| Model/Type | IIC | ICC | TIC | IRP | FRP | TRP | LCD/LRD | CMP/RMP | Array | FieldPIRP | LDPSR |
-|------------|:---:|:---:|:---:|:---:|:---:|:---:|:-------:|:-------:|:-----:|:---------:|:-----:|
-| IRT            |  ◯  |  ◯  |  ◯  |     |     |     |         |         |       |           |       |
-| LCA            |     |     |     |  ◯  |  ◯  |  ◯  |    ◯    |    ◯    |       |           |       |
-| LRA            |     |     |     |  ◯  |  ◯  |  ◯  |    ◯    |    ◯    |       |           |       |
-| Biclustering   |     |     |     |  ◯  |  ◯  |  ◯  |    ◯    |    ◯    |   ◯   |           |       |
-| IRM            |     |     |     |     |  ◯  |  ◯  |         |         |   ◯   |           |       |
-| LDLRA          |     |     |     |  ◯  |     |     |    ◯    |    ◯    |       |           |       |
-| LDB            |     |     |     |     |  ◯  |  ◯  |    ◯    |    ◯    |   ◯   |     ◯     |       |
-| BINET          |     |     |     |     |  ◯  |  ◯  |    ◯    |    ◯    |   ◯   |           |   ◯   |
+#### Pattern Analysis
 
+| Model | IRP | FRP | TRP | ICRP |
+|-------|:---:|:---:|:---:|:----:|
+| IRT | | | | |
+| LCA | ✓ | ✓ | ✓ | |
+| LRA | ✓ | ✓ | ✓ | |
+| LRAordinal | | | | ✓ |
+| Biclustering | ✓ | ✓ | ✓ | |
+| IRM | | ✓ | ✓ | |
+| LDLRA | ✓ | | | |
+| LDB | | ✓ | ✓ | |
+| BINET | | ✓ | ✓ | |
+
+#### Diagnostics & Visualization
+
+| Model | LCD/LRD | CMP/RMP | Array | Other |
+|-------|:--------:|:--------:|:-----:|-------|
+| IRT | | | | IIC, ICC, TIC |
+| LCA | ✓ | ✓ | | |
+| LRA | ✓ | ✓ | | |
+| LRAordinal | ICBR | RMP | | ScoreFreq, ScoreRank |
+| Biclustering | ✓ | ✓ | ✓ | |
+| IRM | | | ✓ | |
+| LDLRA | ✓ | ✓ | | |
+| LDB | ✓ | ✓ | ✓ | FieldPIRP |
+| BINET | ✓ | ✓ | ✓ | LDPSR |
+
+Note: ✓ indicates available output type for the model.
 
 ## Community and Support
 

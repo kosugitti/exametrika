@@ -52,7 +52,7 @@ test_that("Dimenosnality Analysis", {
 
 
 test_that("Reliability", {
-  result <- CTT(U, na = -99)
+  result <- CTT(dat)
   result <- result$Reliability[, 2] %>% as.matrix()
   expect <- CTTexpect[, 2] %>%
     as.matrix() %>%
@@ -61,7 +61,7 @@ test_that("Reliability", {
 })
 
 test_that("Item Del Reliability", {
-  result <- CTT(dat, na = -99)
+  result <- CTT(dat)
   result <- result$ReliabilityExcludingItem[, -1] %>% unname()
   expect <- Ch03Items[, 8:10] %>% unname()
   expect_equal(object = result, expected = expect, tolerance = 1e-4)

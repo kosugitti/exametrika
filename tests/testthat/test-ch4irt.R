@@ -14,9 +14,8 @@ dat <- read_csv("../../develop/sampleData/J15S500.csv") %>%
   mutate(Student = as.factor(Student))
 
 tmp <- dataFormat(dat, na = -99)
-U <- ifelse(is.na(tmp$U), 0, tmp$U) * tmp$Z
 
-result2 <- IRT(model = 2, U = U)
+result2 <- IRT(model = 2, tmp)
 
 test_that("2PL model Test Info", {
   expect <- pl2Test[13:28, 2] %>%
@@ -131,9 +130,8 @@ dat <- read_csv("../../develop/sampleData/J15S500.csv") %>%
   mutate(Student = as.factor(Student))
 
 tmp <- dataFormat(dat, na = -99)
-U <- ifelse(is.na(tmp$U), 0, tmp$U) * tmp$Z
 
-result3 <- IRT(model = 3, U = U)
+result3 <- IRT(model = 3, tmp)
 
 test_that("3PL model Test Info", {
   expect <- pl3Test[13:28, 2] %>%
@@ -231,9 +229,7 @@ dat <- read_csv("../../develop/sampleData/J15S500.csv") %>%
   mutate(Student = as.factor(Student))
 
 tmp <- dataFormat(dat, na = -99)
-U <- ifelse(is.na(tmp$U), 0, tmp$U) * tmp$Z
-
-result4 <- IRT(model = 4, U = U)
+result4 <- IRT(model = 4, tmp)
 
 test_that("4PL model Test Info", {
   expect <- pl4Test[13:28, 2] %>%

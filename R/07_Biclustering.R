@@ -92,6 +92,12 @@ Biclustering <- function(U, ncls = 2, nfld = 2,
   } else {
     tmp <- U
   }
+
+  if (U$response.type != "binary") {
+    response_type_error(U$response.type, "Biclustering")
+  }
+
+
   U <- tmp$U * tmp$Z
   testlength <- NCOL(tmp$U)
   nobs <- NROW(tmp$U)

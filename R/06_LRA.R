@@ -38,10 +38,12 @@ LRA.default <- function(U, na = NULL, Z = Z, w = w, ...) {
   if (inherits(U, "exametrika")) {
     if (U$response.type == "binary") {
       return(LRA.binary(U, ...))
-    } else if (U$response.type %in% c("rated", "ordinal")) {
+    } else if (U$response.type == "ordinal") {
       return(LRA.ordinal(U, ...))
-    } else {
-      return(LRA.nominal(U, ...))
+    } else if (U$response.type == "rated"){
+      return(LRA.rated(U, ...))
+    }else{
+      response_type_error(U$response.type, "LRA")
     }
   }
 

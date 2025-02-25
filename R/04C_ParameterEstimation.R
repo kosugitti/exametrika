@@ -187,6 +187,11 @@ IRT <- function(U, model = 2, na = NULL, Z = NULL, w = NULL, verbose = TRUE) {
   } else {
     tmp <- U
   }
+
+  if (U$response.type != "binary") {
+    response_type_error(U$response.type, "IRT")
+  }
+
   U <- tmp$U * tmp$Z
 
   rho <- exametrika::ItemTotalCorr(U)

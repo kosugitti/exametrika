@@ -122,6 +122,7 @@ plot.exametrika <- function(x,
     LCA = c("IRP", "TRP", "LCD", "CMP", "FRP"),
     LRA = c("IRP", "FRP", "TRP", "LRD", "RMP"),
     LRAordinal = c("ScoreFreq", "ScoreRank", "ICRP", "ICBR", "RMP"),
+    LRArated = c("ScoreFreq", "ScoreRank", "ICRP", "RMP"),
     Biclustering = c("IRP", "FRP", "TRP", "LCD", "LRD", "CMP", "RMP", "Array"),
     IRM = c("FRP", "TRP", "Array"),
     LDLRA = c("IRP", "TRP", "LRD", "RMP"),
@@ -430,6 +431,70 @@ plot.exametrika <- function(x,
     }
   }
 
+  score_freq_plot <- function() {
+    tmp <- as.data.frame(x$Students)
+    sc <- tmp$Score
+    rank <- tmp$Estimate
+    thresholds <- numeric(length(unique(rank)) - 1)
+    for (i in 1:(length(unique(rank)) - 1)) {
+      max_rank_i <- max(sc[rank == i])
+      min_rank_next <- min(sc[rank == (i + 1)])
+      thresholds[i] <- (max_rank_i + min_rank_next) / 2
+    }
+    plot(density(sc),
+      xlab = "Score",
+      ylab = "Frequency",
+      main = "Latent Rank"
+    )
+    abline(
+      v = thresholds,
+      col = "red",
+      lty = 2
+    )
+  }
+
+  score_rank_plot <- function() {
+    score_rank_matrix <- x$ScoreRank
+    image(
+      x = 1:ncol(score_rank_matrix),
+      y = as.numeric(rownames(score_rank_matrix)),
+      z = t(score_rank_matrix),
+      col = gray(seq(1, 0, length.out = 100)),
+      xlab = "Latent Rank",
+      ylab = "Score",
+      main = "Score-Rank Distribution",
+      xaxt = "n"
+    )
+    axis(1, at = 1:ncol(score_rank_matrix))
+  }
+
+  IC_RP_BR_plot <- function() {
+    # par(mar = c(3, 3, 2, 1))
+    label <- x$U$ItemLabel[plotItemID]
+    if (type == "ICRP") {
+      tmp <- x$ICRP[x$ICRP$ItemLabel %in% label, ]
+    } else if (type == "ICBR") {
+      tmp <- x$ICBR[x$ICBR$ItemLabel %in% label, ]
+    }
+    yRange <- range(tmp[, -c(1:2)])
+    for (i in 1:length(plotItemID)) {
+      slice <- tmp[tmp$ItemLabel == label[i], ]
+      slice <- unname(as.matrix(slice[, -c(1:2)]))
+      plot(slice[1, ],
+        type = "l", lty = 1, col = 1, ylim = yRange,
+        xlab = "Rank", ylab = "Probability", main = label[i],
+        xaxt = "n"
+      )
+      axis(1, at = 1:ncol(slice), labels = 1:x$Nrank)
+      for (j in 1:nrow(slice)) {
+        lines(slice[j, ], lty = j)
+        text(
+          x = ncol(slice), y = slice[j, ncol(slice)],
+          labels = j, cex = 0.8, ylim = yRange
+        )
+      }
+    }
+  }
   # Switching function (main) ----------------------------------------
 
   switch(value,
@@ -496,82 +561,24 @@ plot.exametrika <- function(x,
     },
     LRAordinal = {
       if (type == "ScoreFreq") {
-        tmp <- as.data.frame(x$Students)
-        sc <- tmp$Score
-        rank <- tmp$Estimate
-        thresholds <- numeric(length(unique(rank)) - 1)
-        for (i in 1:(length(unique(rank)) - 1)) {
-          max_rank_i <- max(sc[rank == i])
-          min_rank_next <- min(sc[rank == (i + 1)])
-          thresholds[i] <- (max_rank_i + min_rank_next) / 2
-        }
-        plot(density(sc),
-          xlab = "Score",
-          ylab = "Frequency",
-          main = "Latent Rank"
-        )
-        abline(
-          v = thresholds,
-          col = "red",
-          lty = 2
-        )
+        score_freq_plot()
       } else if (type == "ScoreRank") {
-        score_rank_matrix <- x$ScoreRank
-        image(
-          x = 1:ncol(score_rank_matrix),
-          y = as.numeric(rownames(score_rank_matrix)),
-          z = t(score_rank_matrix),
-          col = gray(seq(1, 0, length.out = 100)),
-          xlab = "Latent Rank",
-          ylab = "Score",
-          main = "Score-Rank Distribution",
-          xaxt = "n"
-        )
-        axis(1, at = 1:ncol(score_rank_matrix))
+        score_rank_plot()
       } else if (type == "ICBR") {
-        par(mar = c(4, 4, 2, 1))
-        tmp <- x$ICBR
-        label <- x$U$ItemLabel
-        yRange <- range(tmp[, -c(1:2)])
-        for (i in 1:testlength) {
-          slice <- tmp[tmp$ItemLabel == label[i], ]
-          slice <- unname(as.matrix(slice[, -c(1:2)]))
-          plot(slice[1, ],
-            type = "l", lty = 1, col = 1, ylim = yRange,
-            xlab = "Rank", ylab = "Probability", main = label[i],
-            xaxt = "n"
-          )
-          axis(1, at = 1:ncol(slice), labels = 1:x$Nrank)
-          for (j in 1:nrow(slice)) {
-            lines(slice[j, ], lty = j)
-            text(
-              x = ncol(slice), y = slice[j, ncol(slice)],
-              labels = j, cex = 0.8, ylim = yRange
-            )
-          }
-        }
+        IC_RP_BR_plot()
       } else if (type == "ICRP") {
-        par(mar = c(4, 4, 2, 1))
-        tmp <- x$ICRP
-        label <- x$U$ItemLabel
-        yRange <- range(tmp[, -c(1:2)])
-        for (i in 1:testlength) {
-          slice <- tmp[tmp$ItemLabel == label[i], ]
-          slice <- unname(as.matrix(slice[, -c(1:2)]))
-          plot(slice[1, ],
-            type = "l", lty = 1, col = 1, ylim = yRange,
-            xlab = "Rank", ylab = "Probability", main = label[i],
-            xaxt = "n"
-          )
-          axis(1, at = 1:ncol(slice), labels = 1:x$Nrank)
-          for (j in 1:nrow(slice)) {
-            lines(slice[j, ], lty = j)
-            text(
-              x = ncol(slice), y = slice[j, ncol(slice)],
-              labels = j, cex = 0.8, ylim = yRange
-            )
-          }
-        }
+        IC_RP_BR_plot()
+      } else if (type == "RMP") {
+        graph_common()
+      }
+    },
+    LRArated = {
+      if (type == "ScoreFreq") {
+        score_freq_plot()
+      } else if (type == "ScoreRank") {
+        score_rank_plot()
+      } else if (type == "ICRP") {
+        IC_RP_BR_plot()
       } else if (type == "RMP") {
         graph_common()
       }

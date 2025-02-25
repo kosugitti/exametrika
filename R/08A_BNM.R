@@ -96,6 +96,12 @@ BNM <- function(U, Z = NULL, w = NULL, na = NULL,
   } else {
     tmp <- U
   }
+
+  if (U$response.type != "binary") {
+    response_type_error(U$response.type, "BNM")
+  }
+
+
   U <- tmp$U * tmp$Z
   testlength <- NCOL(tmp$U)
   nobs <- NROW(tmp$U)

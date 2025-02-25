@@ -122,6 +122,9 @@ ItemReport <- function(U, na = NULL, Z = NULL, w = NULL) {
   if (U$response.type == "binary") {
     response_type_error(dat$response.type, "ScoreReport")
   }
+  if (U$response.type == "rated") {
+    dat$Q <- dat$U
+  }
   score <- rowSums(dat$Z * dat$Q)
   maxscore <- sum(apply(dat$Q, 2, max))
   score.dist <- table(factor(score, levels = 0:maxscore))

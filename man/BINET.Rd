@@ -129,7 +129,7 @@ write.csv(edges_data, file = tmp_file, row.names = FALSE)
 
 # Fit Bicluster Network Model
 result.BINET <- BINET(
-  U = J35S515,
+  J35S515,
   ncls = 13, # Maximum class number from edges (13)
   nfld = 12, # Maximum field number from conf (12)
   conf = conf, # Field configuration vector

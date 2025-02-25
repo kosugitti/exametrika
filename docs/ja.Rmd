@@ -307,17 +307,44 @@ plot(result.LRAord, type = "ScoreRank")
 + ICRP（項目カテゴリ反応プロファイル行列）は、各反応カテゴリが選択される確率をランクごとに表示します。これらの線は、ランクの上昇に伴う反応パターンの変化を示しています。
 
 ```{r}
-plot(result.LRAord, type = "ICBR", nc = 3, nr = 5)
-plot(result.LRAord, type = "ICRP", nc = 3, nr = 5)
+plot(result.LRAord, type = "ICBR", items = 1:4, nc = 2, nr = 2)
+plot(result.LRAord, type = "ICRP", items = 1:4, nc = 2, nr = 2)
 ```
 
 二値データの出力と同様に、ランク所属確率プロットを通じて個々の受験者の特性を検討することができます。この可視化は、各受験者のランク所属確率の分布を示し、ランク分類の確実性を理解することができます。以下はデータセットの最初の15人の受験者についての結果です：
 
 ```{r}
-plot(result.LRAord, type = "RMP", students = 1:15, nc = 3, nr = 5)
+plot(result.LRAord, type = "RMP", students = 1:9, nc = 3, nr = 3)
 ```
 
 注：レイアウトパラメータ nc = 3 と nr = 5 は、プロットを3列5行のグリッドに配置することを制御します。これにより、複数の項目や受験者を同時に比較しやすくなります。
+
+### LRA 名義尺度データへの適用
+
+もしあなたが多肢選択式テストのような、正答を選択させる名義尺度水準のデータを持っているなら、LRAを使って分析することができます。
+
+
+```{r}
+result.LRArated <- LRA(J35S5000, nrank = 10, mic = TRUE)
+```
+
+順序尺度データと同様に、スコアとランクの関係を可視化することができます。
+
+```{r}
+plot(result.LRArated, type = "ScoreFreq")
+plot(result.LRArated, type = "ScoreRank")
+```
+
+また、潜在ランクと項目の関係や、被験者の所属確率を可視化することも可能です。
+
+```{r ICBR/ICRP plot}
+plot(result.LRArated, type = "ICRP", items = 1:4, nc = 2, nr = 2)
+```
+
+```{r}
+plot(result.LRAord, type = "RMP", students = 1:9, nc = 3, nr = 3)
+```
+
 
 ### バイクラスタリング
 

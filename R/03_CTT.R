@@ -189,11 +189,17 @@ OmegaCoefficient <- function(x, na = NULL, Z = NULL, w = NULL) {
 #' @export
 
 CTT <- function(U, na = NULL, Z = NULL, w = NULL) {
-  if (class(U)[1] != "exametrika") {
-    tmp <- dataFormat(data = U, na = na, Z = Z, w = w)
+  if (inherits(U, "exametrika")) {
+    tmp <- dataFormat(U, na = na, Z = Z, w = w)
   } else {
     tmp <- U
   }
+
+  if (tmp$response.type != "binary") {
+    response_type_error(U$response.type, "CTT")
+  }
+
+
   alphaAll <- AlphaCoefficient(tmp)
   omegaAll <- OmegaCoefficient(tmp)
   eachAlpha <- AlphaIfDel(tmp)

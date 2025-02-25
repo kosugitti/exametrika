@@ -203,6 +203,37 @@ print.exametrika <- function(x, digits = 3, ...) {
       colnames(y) <- "value"
       print(round(y, digits))
     },
+    LRArated = {
+      if (x$mic) {
+        cat("\n Monotonic increasing IRP option is TRUE.\n")
+      }
+      print(x$ScoreReport, digits = digits)
+      print(x$ItemReport, digits = digits)
+      cat("Item Quantile Reference Matrix\n")
+      print(x$ItemQuantileRef, digits = digits)
+      cat("Item Category Reference Profile\n")
+      print(x$ICRP, digits = digits)
+      cat("\nTest Profile\n")
+      y <- rbind(x$TRP, x$LRD, x$RMD)
+      rownames(y) <- c(
+        "Test Reference Profile",
+        "Latent Rank Ditribution",
+        "Rank Membership Distribution"
+      )
+      colnames(y) <- paste("Rank", 1:x$Nrank)
+      print(round(y, digits))
+      cat("\nItem Fit Indices\n")
+      y <- unclass(x$ItemFitIndices)
+      y <- as.data.frame(y)
+      print(round(y, digits))
+      cat("\nModel Fit Indices\n")
+      cat(paste("Number of Latent rank:", x$Nrank))
+      cat(paste("\nNumber of EM cycle:", x$N_Cycle, "\n"))
+      y <- unclass(x$TestFitIndices)
+      y <- t(as.data.frame(y))
+      colnames(y) <- "value"
+      print(round(y, digits))
+    },
     Biclustering = {
       if (x$model == 1) {
         model <- "Biclustering"

@@ -44,8 +44,8 @@
 #' plot(result.LRAord, type = "ScoreFreq")
 #' plot(result.LRAord, type = "ScoreRank")
 #' # plot ICBR/ICRP
-#' plot(result.LRAord, type = "ICBR", nc = 3, nr = 5)
-#' plot(result.LRAord, type = "ICRP", nc = 3, nr = 5)
+#' plot(result.LRAord, type = "ICBR", items = 1:6, nc = 3, nr = 2)
+#' plot(result.LRAord, type = "ICRP", items = 1:6, nc = 3, nr = 2)
 #' # plot Rank membership profile
 #' plot(result.LRAord,
 #'   type = "RMP", students = 1:15,
@@ -181,7 +181,7 @@ LRA.ordinal <- function(U,
   } else {
     log_prior <- rep(1, nrank)
   }
-  logprior_NQmat <- matrix(rep(log_prior, nobs), byrow = TRUE, nrow = nobs)
+  logprior_NQmat <- matrix(rep(log(log_prior), nobs), byrow = TRUE, nrow = nobs)
 
   ## Design vector/Matrix
   keikakufunc <- function(x, y) 1

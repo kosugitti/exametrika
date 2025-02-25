@@ -66,6 +66,7 @@
 #' result.LDLRA.PBIL <- StrLearningPBIL_LDLRA(J35S515,
 #'   seed = 123, # Set random seed for reproducibility
 #'   ncls = 5, # Number of latent ranks
+#'   maxGeneration = 10,
 #'   method = "R", # Use rank model (vs. class model)
 #'   elitism = 1, # Keep best solution in each generation
 #'   successiveLimit = 15 # Convergence criterion
@@ -306,6 +307,6 @@ StrLearningPBIL_LDLRA <- function(U, Z = NULL, w = NULL, na = NULL,
   }
 
 
-  ret <- LDLRA(U = U, ncls = ncls, adj_list = adj_list)
+  ret <- LDLRA(tmp, ncls = ncls, adj_list = adj_list)
   return(ret)
 }

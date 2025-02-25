@@ -312,7 +312,7 @@ The relationship between items and ranks can be visualized in two complementary 
 + ICBR (Item Category Boundary Reference) shows the cumulative probability curves for each category threshold. For each item, these lines represent the probability of scoring at or above each category boundary across ranks.
 + ICRP (Item Category Response Profile) displays the probability of selecting each response category across ranks. These lines show how response patterns change as rank increases.
 
-```{r ICBR/ICRP plot,fig.width=7, fig.height=5, }
+```{r ICBR/ICRP plot}
 plot(result.LRAord, type = "ICBR", items = 1:4, nc = 2, nr = 2)
 plot(result.LRAord, type = "ICRP", items = 1:4, nc = 2, nr = 2)
 ```
@@ -320,10 +320,35 @@ plot(result.LRAord, type = "ICRP", items = 1:4, nc = 2, nr = 2)
 Similar to binary data output, we can examine individual examinee characteristics through rank membership probability plots. This visualization shows the probability distribution of rank membership for each examinee, allowing us to understand the certainty of rank classifications. For the first 15 examinees in the dataset:
 
 ```{r}
-plot(result.LRAord, type = "RMP", students = 1:15, nc = 3, nr = 5)
+plot(result.LRAord, type = "RMP", students = 1:9, nc = 3, nr = 3)
 ```
 
 Note: The layout parameters nc = 3 and nr = 5 control the arrangement of plots in a 3-column by 5-row grid, making it easier to compare multiple items or examinees simultaneously.
+
+### LRA for rated data
+
+If you have data where respondents select the correct answer from multiple choices, like in a multiple-choice test (nominal scale level), you can analyze it using LRA.
+
+```{r LRArated}
+result.LRArated <- LRA(J35S5000, nrank = 10, mic = TRUE)
+```
+
+You can visualize the relationship between scores and ranks, just like with ordinal scale data.
+
+```{r LRArated ScoreFreq}
+plot(result.LRArated, type = "ScoreFreq")
+plot(result.LRArated, type = "ScoreRank")
+```
+
+You can also visualize the relationship between latent ranks and items, or the probability of subjects belonging to certain ranks.
+
+```{r LRAratedplot}
+plot(result.LRArated, type = "ICRP", items = 1:4, nc = 2, nr = 2)
+```
+
+```{r LRAratedplot2 RMP}
+plot(result.LRAord, type = "RMP", students = 1:9, nc = 3, nr = 3)
+```
 
 ### Biclustering/Ranklustering
 
@@ -713,6 +738,7 @@ plot(result.BINET, type = "LDPSR", nc = 3, nr = 2)
 | LCA | ✓ | ✓ | ✓ | |
 | LRA | ✓ | ✓ | ✓ | |
 | LRAordinal | | | | ✓ |
+| LRArated | | | | ✓ |
 | Biclustering | ✓ | ✓ | ✓ | |
 | IRM | | ✓ | ✓ | |
 | LDLRA | ✓ | | | |
@@ -726,7 +752,8 @@ plot(result.BINET, type = "LDPSR", nc = 3, nr = 2)
 | IRT | | | | IIC, ICC, TIC |
 | LCA | ✓ | ✓ | | |
 | LRA | ✓ | ✓ | | |
-| LRAordinal | ICBR | RMP | | ScoreFreq, ScoreRank |
+| LRAordinal |  | ✓ | | | ICBR,ScoreFreq, ScoreRank |
+| LRArated |  | ✓ | | | ScoreFreq, ScoreRank |
 | Biclustering | ✓ | ✓ | ✓ | |
 | IRM | | | ✓ | |
 | LDLRA | ✓ | ✓ | | |

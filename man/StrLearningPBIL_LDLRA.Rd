@@ -110,6 +110,7 @@ For more details, please refer to Fukuda(2014) and Section
 result.LDLRA.PBIL <- StrLearningPBIL_LDLRA(J35S515,
   seed = 123, # Set random seed for reproducibility
   ncls = 5, # Number of latent ranks
+  maxGeneration = 10,
   method = "R", # Use rank model (vs. class model)
   elitism = 1, # Keep best solution in each generation
   successiveLimit = 15 # Convergence criterion

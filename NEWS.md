@@ -1,3 +1,8 @@
+# Exametrika 1.4.0 on Feb 25, 2025
+
++ New function LRA() now supports rated data
++ Hex icon avibable
+
 # Exametrika 1.3.0 on Feb 11, 2025
 
 * Added implementation of latent rank model for ordinal scale data

@@ -34,12 +34,12 @@
 
 StudentAnalysis <- function(U, na = NULL, Z = NULL, w = NULL) {
   tmp <- dataFormat(data = U, na = na, Z = Z, w = w)
-  NRS <- nrs(U = tmp$U, Z = tmp$Z, w = tmp$w)
+  NRS <- nrs(tmp)
   NR <- NCOL(tmp$U) - rowSums(is.na(tmp$U))
-  PR <- passage(U = tmp$U, Z = tmp$Z, w = tmp$w)
-  SS <- sscore(U = tmp$U, Z = tmp$Z, w = tmp$w)
-  Ptile <- percentile(U = tmp$U, Z = tmp$Z, w = tmp$w)
-  ST <- stanine(U = tmp$U, Z = tmp$Z, w = tmp$w)
+  PR <- passage(tmp)
+  SS <- sscore(tmp)
+  Ptile <- percentile(tmp)
+  ST <- stanine(tmp)
   ret <- data.frame(
     ID = tmp$ID,
     NR = NR,

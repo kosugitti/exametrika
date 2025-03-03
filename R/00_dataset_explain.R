@@ -37,3 +37,15 @@
 #' @description A rated response dataset for test analysis
 #' @format An exametrika class object with 5000 students and 35 items containing polytomous responses with correct answers
 "J35S5000"
+
+#' @title J5S1000
+#' @description A simulated ordinal dataset for test analysis. This is a synthetic dataset
+#'   generated using random number generation for demonstration and testing purposes.
+#' @format An exametrika class object with 1000 students and 5 items containing ordinal responses
+"J5S1000"
+
+#' @title J50S100
+#' @description A simulated binary dataset for test analysis. This is a synthetic dataset
+#'   generated using random number generation for demonstration and testing purposes.
+#' @format An exametrika class object with 100 students and 50 items containing binary responses
+"J50S100"

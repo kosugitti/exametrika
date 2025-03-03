@@ -20,9 +20,6 @@ JointSampleSize.default <- function(U, na = NULL, Z = NULL, w = NULL) {
   if (!inherits(U, "exametrika")) {
     U <- dataFormat(U, na = na, Z = Z, w = w)
   }
-  if (U$response.type != "binary") {
-    response_type_error(U$response.type, "JointSampleSize")
-  }
   JointSampleSize.binary(U, na, Z, w)
 }
 #' @export
@@ -35,6 +32,8 @@ JointSampleSize.binary <- function(U, na = NULL, Z = NULL, w = NULL) {
 #' @description
 #' The joint correct response rate (JCRR) is the rate of students who passed
 #' both items. This function is applicable only to binary response data.
+#' For non-binary data, it will automatically redirect to the JSR function
+#' with an appropriate message.
 #' @param U U is a data matrix of the type matrix or data.frame.
 #' @param Z Z is a missing indicator matrix of the type matrix or data.frame
 #' @param w w is item weight vector
@@ -54,18 +53,67 @@ JCRR <- function(U, na = NULL, Z = NULL, w = NULL) {
 }
 #' @export
 JCRR.default <- function(U, na = NULL, Z = NULL, w = NULL) {
-  if (!inherits(U, "exametrika")) {
+  if (inherits(U, "exametrika")) {
+    switch(U$response.type,
+      "binary" = JCRR.binary(U, na = NULL, Z = NULL, w = NULL),
+      "rated" = JCRR.nominal(U, na = NULL, Z = NULL, w = NULL),
+      "ordinal" = JCRR.nominal(U, na = NULL, Z = NULL, w = NULL),
+      "nominal" = JCRR.nominal(U, na = NULL, Z = NULL, w = NULL)
+    )
+  } else {
     U <- dataFormat(U, na = na, Z = Z, w = w)
+    ItemThreshold(U)
   }
-  if (U$response.type != "binary") {
-    response_type_error(U$response.type, "JCRR")
-  }
-  JCRR.binary(U, na, Z, w)
 }
 #' @export
 JCRR.binary <- function(U, na = NULL, Z = NULL, w = NULL) {
   P_J <- t(U$Z * U$U) %*% (U$Z * U$U) / (t(U$Z) %*% U$Z)
   structure(P_J, class = c("exametrika", "matrix"))
+}
+
+JCRR.nominal <- function(U, na = NULL, Z = NULL, w = NULL) {
+  message("JCRR is for binary data only. Using Joint Selection Rate for your polytomous data instead.")
+  JSR(U)
+}
+
+#' @title Joint Selection Rate
+#' @description Calculate the Joint Selection Rate (JSR) for polytomous data.
+#'   JSR measures the proportion of respondents who selected specific category
+#'   combinations between pairs of items. For each pair of items (j,k),
+#'   it returns a contingency table showing the joint probability of selecting
+#'   each category combination.
+#' @param U U is a data matrix of the type matrix or data.frame.
+#' @param Z Z is a missing indicator matrix of the type matrix or data.frame
+#' @param w w is item weight vector
+#' @param na na argument specifies the numbers or characters to be treated as missing values.
+#' @return A list of Joint Selection Rate matrices for each item pair.
+#' @examples
+#' # example code
+#' # Calculate JCRR using sample dataset J5S1000
+#' JSR(J5S1000)
+#' @export
+JSR <- function(U, na = NULL, Z = NULL, w = NULL) {
+  if (!inherits(U, "exametrika")) {
+    U <- dataFormat(U, na = na, Z = Z, w = w)
+  }
+  if (U$response.type == "binary") {
+    message("JSR is for non-binary data only. Using Joint Correct Response Rate for your binary data instead.")
+    JCRR(U)
+  }
+  nitems <- NCOL(U$Q)
+  ncat <- U$categories
+  U$Q[U$Z == 0] <- NA
+  JSR <- vector("list", nitems)
+  for (j in 1:nitems) {
+    JSR[[j]] <- vector("list", nitems)
+    for (k in 1:nitems) {
+      tbl <- table(U$Q[, j], U$Q[, k], useNA = "no") / sum(table(U$Q[, j], U$Q[, k], useNA = "no"))
+      colnames(tbl) <- unlist(U$CategoryLabel[k])
+      rownames(tbl) <- unlist(U$CategoryLabel[j])
+      JSR[[j]][[k]] <- tbl
+    }
+  }
+  return(JSR)
 }
 
 #' @title Conditional Correct Response Rate
@@ -419,6 +467,7 @@ TetrachoricCorrelationMatrix.binary <- function(U, na = NULL, Z = NULL, w = NULL
 #' \itemize{
 #'   \item JSS: Joint Sample Size
 #'   \item JCRR: Joint Correct Response Rate
+#'   \item CCRR: conditional Correct Response Rate
 #'   \item IL: Item Lift
 #'   \item MI: Mutual Information
 #'   \item Phi: Phi Coefficient
@@ -436,6 +485,7 @@ TetrachoricCorrelationMatrix.binary <- function(U, na = NULL, Z = NULL, w = NULL
 #' \describe{
 #'   \item{JSS}{Joint Sample Size matrix}
 #'   \item{JCRR}{Joint Correct Response Rate matrix}
+#'   \item{CCRR}{conditonal Correct Response Rate matrix}
 #'   \item{IL}{Item Lift matrix}
 #'   \item{MI}{Mutual Information matrix}
 #'   \item{Phi}{Phi Coefficient matrix}
@@ -465,6 +515,7 @@ InterItemAnalysis.binary <- function(U, na = NULL, Z = NULL, w = NULL) {
   # Calculate all matrices
   JSS <- JointSampleSize(U)
   JCRR <- JCRR(U)
+  CCRR <- CCRR(U)
   IL <- ItemLift(U)
   MI <- MutualInformation(U)
   Phi <- PhiCoefficient(U)
@@ -475,6 +526,7 @@ InterItemAnalysis.binary <- function(U, na = NULL, Z = NULL, w = NULL) {
     list(
       JSS = JSS,
       JCRR = JCRR,
+      CCRR = CCRR,
       IL = IL,
       MI = MI,
       Phi = Phi,
@@ -626,24 +678,40 @@ ItemThreshold <- function(U, na = NULL, Z = NULL, w = NULL) {
 }
 #' @export
 ItemThreshold.default <- function(U, na = NULL, Z = NULL, w = NULL) {
-  if (!inherits(U, "exametrika")) {
+  if (inherits(U, "exametrika")) {
+    switch(U$response.type,
+      "binary" = ItemThreshold.binary(U, na, Z, w),
+      "rated" = ItemThreshold.ordinal(U, na, Z, w),
+      "ordinal" = ItemThreshold.ordinal(U, na, Z, w),
+      "nominal" = response_type_error(U$response.type, "ItemThreshold")
+    )
+  } else {
     U <- dataFormat(U, na = na, Z = Z, w = w)
+    ItemThreshold(U)
   }
-  if (U$response.type != "binary") {
-    response_type_error(U$response.type, "ItemThreshold")
-  }
-  ItemThreshold.binary(U, na, Z, w)
 }
 #' @export
 ItemThreshold.binary <- function(U, na = NULL, Z = NULL, w = NULL) {
   # Calculate correct response rates
   p <- crr(U)
-
   # Calculate thresholds using inverse normal distribution
   tau <- qnorm(1 - p)
-
   return(tau)
 }
+
+#' @export
+ItemThreshold.ordinal <- function(U, na = NULL, Z = NULL, w = NULL) {
+  nitems <- ncol(U$Q)
+  ncat <- U$categories
+  U$Q[U$Z == 0] <- NA
+  threshold <- vector("list", nitems)
+  for (j in 1:nitems) {
+    tmp <- qnorm(cumsum(tabulate(U$Q[, j]) / sum(tabulate(U$Q[, j]))))
+    threshold[[j]] <- tmp[1:ncat[j] - 1]
+  }
+  return(threshold)
+}
+
 
 #' @title Item Entropy
 #' @description
@@ -688,25 +756,41 @@ ItemEntropy <- function(U, na = NULL, Z = NULL, w = NULL) {
 }
 #' @export
 ItemEntropy.default <- function(U, na = NULL, Z = NULL, w = NULL) {
-  if (!inherits(U, "exametrika")) {
+  if (inherits(U, "exametrika")) {
+    switch(U$response.type,
+      "binary" = ItemEntropy.binary(U, na, Z, w),
+      "rated" = ItemEntropy.ordinal(U, na, Z, w),
+      "ordinal" = ItemEntropy.ordinal(U, na, Z, w),
+      "nominal" = response_type_error(U$response.type, "ItemEntropy")
+    )
+  } else {
     U <- dataFormat(U, na = na, Z = Z, w = w)
+    ItemEntropy(U)
   }
-  if (U$response.type != "binary") {
-    response_type_error(U$response.type, "ItemEntropy")
-  }
-  ItemEntropy.binary(U, na, Z, w)
 }
 #' @export
 ItemEntropy.binary <- function(U, na = NULL, Z = NULL, w = NULL) {
   # Calculate correct response rates
   p <- crr(U)
-
   # Calculate entropy in bits
   # Using log base 2 for information content in bits
   itemE <- -p * log(p, base = 2) - (1 - p) * log(1 - p, base = 2)
-
   return(itemE)
 }
+
+#' @export
+ItemEntropy.ordinal <- function(U, na = NULL, Z = NULL, w = NULL) {
+  nitems <- ncol(U$Q)
+  ncat <- U$categories
+  U$Q[U$Z == 0] <- NA
+  entropy <- rep(0, nitems)
+  for (j in 1:nitems) {
+    vec <- tabulate(U$Q[, j]) / sum(tabulate(U$Q[, j]))
+    entropy[j] <- sum(vec * log(vec, base = ncat[j])) * -1
+  }
+  return(entropy)
+}
+
 
 
 #' @title Item-Total Correlation
@@ -872,7 +956,7 @@ ITBiserial <- function(U, na = NULL, Z = NULL, w = NULL) {
 #' @export
 ITBiserial.default <- function(U, na = NULL, Z = NULL, w = NULL) {
   if (!inherits(U, "exametrika")) {
-    U <- dataFormat(U, na = na, Z = Z, w = w)
+    tmp <- dataFormat(U, na = na, Z = Z, w = w)
   }
   if (U$response.type != "binary") {
     response_type_error(U$response.type, "ITBiserial")

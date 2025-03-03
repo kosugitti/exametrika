@@ -44,7 +44,7 @@ print.exametrika <- function(x, digits = 3, ...) {
       xdim <- x$Component
       ydim <- x$Eigenvalue
       plot(xdim, ydim,
-        xlab = "Number of Components",
+        xlab = "Number of Eigenvalues",
         ylab = "Eigenvalue", type = "b"
       )
     },
@@ -87,6 +87,8 @@ print.exametrika <- function(x, digits = 3, ...) {
       print(x$JSS, digits = digits)
       cat("\nJoint Correct Response Rate\n")
       print(x$JCRR, digits = digits)
+      cat("\nConditonal Correct Response Rate\n")
+      print(x$CCRR, digits = digits)
       cat("\nItem Lift\n")
       print(x$IL, digits = digits)
       cat("\nMutual Information\n")

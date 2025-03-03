@@ -23,6 +23,8 @@ answered both items i and j.
 \description{
 The joint correct response rate (JCRR) is the rate of students who passed
 both items. This function is applicable only to binary response data.
+For non-binary data, it will automatically redirect to the JSR function
+with an appropriate message.
 }
 \note{
 This function is implemented using a binary data compatibility wrapper and

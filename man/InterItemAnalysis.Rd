@@ -20,6 +20,7 @@ A list of class "exametrika" and "IIAnalysis" containing the following matrices:
 \describe{
 \item{JSS}{Joint Sample Size matrix}
 \item{JCRR}{Joint Correct Response Rate matrix}
+\item{CCRR}{conditonal Correct Response Rate matrix}
 \item{IL}{Item Lift matrix}
 \item{MI}{Mutual Information matrix}
 \item{Phi}{Phi Coefficient matrix}
@@ -32,6 +33,7 @@ This function is applicable only to binary response data. The following metrics 
 \itemize{
 \item JSS: Joint Sample Size
 \item JCRR: Joint Correct Response Rate
+\item CCRR: conditional Correct Response Rate
 \item IL: Item Lift
 \item MI: Mutual Information
 \item Phi: Phi Coefficient

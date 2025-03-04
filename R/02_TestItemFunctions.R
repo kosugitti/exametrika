@@ -321,14 +321,14 @@ MutualInformation <- function(U, na = NULL, Z = NULL, w = NULL, base = 2) {
 MutualInformation.default <- function(U, na = NULL, Z = NULL, w = NULL, base = 2) {
   if (inherits(U, "exametrika")) {
     switch(U$response.type,
-      "binary" = MutualInformation.binary(U, na, Z, w),
-      "rated" = MutualInformation.ordinal(U, na, Z, w),
-      "ordinal" = MutualInformation.ordinal(U, na, Z, w),
-      "nominal" = MutualInformation.ordinal(U, na, Z, w)
+      "binary" = MutualInformation.binary(U, na, Z, w, base = base),
+      "rated" = MutualInformation.ordinal(U, na, Z, w, base = base),
+      "ordinal" = MutualInformation.ordinal(U, na, Z, w, base = base),
+      "nominal" = MutualInformation.ordinal(U, na, Z, w, base = base)
     )
   } else {
     U <- dataFormat(U, na = na, Z = Z, w = w)
-    MutualInformation(U)
+    MutualInformation(U, na, Z, w, base = base)
   }
 }
 #' @export

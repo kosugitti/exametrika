@@ -100,7 +100,7 @@
 
 plot.exametrika <- function(x,
                             type = c(
-                              "IIC", "ICC", "TIC",
+                              "IIC", "ICC", "TIC", "IRF", "TRF",
                               "IRP", "TRP", "LCD", "CMP",
                               "FRP", "RMP", "LRD", "Array",
                               "FieldPIRP", "LDPSR",
@@ -109,7 +109,8 @@ plot.exametrika <- function(x,
                             items = NULL,
                             students = NULL,
                             nc = 1,
-                            nr = 1, ...) {
+                            nr = 1,
+                            overlay = FALSE, ...) {
   value <- if (length(class(x)) > 1) tail(class(x), 1) else "None"
   old_par <- par(no.readonly = TRUE)
   on.exit(par(old_par))
@@ -118,7 +119,7 @@ plot.exametrika <- function(x,
   nobs <- x$nobs
 
   valid_types <- list(
-    IRT = c("IIC", "ICC", "TIC"),
+    IRT = c("IIC", "ICC", "TIC", "IRF", "TRF"),
     LCA = c("IRP", "TRP", "LCD", "CMP", "FRP"),
     LRA = c("IRP", "FRP", "TRP", "LRD", "RMP"),
     LRAordinal = c("ScoreFreq", "ScoreRank", "ICRP", "ICBR", "RMP"),
@@ -499,49 +500,92 @@ plot.exametrika <- function(x,
 
   switch(value,
     IRT = {
-      valid_types <- c("ICC", "IIC", "TIC")
+      valid_types <- c("ICC", "IIC", "TIC", "IRF", "TRF")
       if (!(type %in% valid_types)) {
         stop("That type of output is not defined.")
       }
-      if ((type %in% c("IIC", "TIC") && any(plotItemID == 0)) ||
-        (type == "ICC" && all(plotItemID == 0))) {
+      if (type == "ICC") {
+        type <- "IRF"
+      }
+      if ((type %in% c("IIC", "TIC") && any(plotItemID == 0))) {
         type <- "TIC"
         plotItemID <- 1:testlength
-      } else if (type == "ICC" && any(plotItemID == 0)) {
-        plotItemID <- plotItemID[plotItemID != 0]
-        if (length(plotItemID) == 0) {
-          plotItemID <- 1:testlength
-        }
+      } else if (type == "IRF" && any(plotItemID == 0)) {
+        type <- "TRF"
+        plotItemID <- 1:testlength
+      }
+      if (length(plotItemID) == 0) {
+        plotItemID <- 1:testlength
       }
 
       ### IRT curve function
-      plotIRTCurve <- function(params, curveFunc, titleBase, ylab) {
-        for (i in 1:nrow(params)) {
-          a <- params[i, 1]
-          b <- params[i, 2]
-          c <- if (x$model > 2) params[i, 3] else 0
-          d <- if (x$model > 3) params[i, 4] else 1
-          title <- paste0(titleBase, ", item ", plotItemID[i])
-          curve(curveFunc(a, b, c, d, theta = x),
-            from = -4,
-            to = 4,
-            xlab = "ability", ylab = ylab,
-            main = title
+      plotIRTCurve <- function(params, curveFunc, titleBase, ylab, overlay) {
+        if (overlay) {
+          plot(NULL,
+            xlim = c(-4, 4),
+            ylim = c(0, 1),
+            xlab = "ability",
+            ylab = ylab,
+            main = titleBase
           )
+          for (i in 1:nrow(params)) {
+            a <- params[i, 1]
+            b <- params[i, 2]
+            c <- if (x$model > 2) params[i, 3] else 0
+            d <- if (x$model > 3) params[i, 4] else 1
+            curve(curveFunc(a, b, c, d, theta = x),
+              from = -4,
+              to = 4,
+              add = TRUE,
+              lty = i, # Different line types
+              col = i, # Different colors
+              lwd = 2
+            )
+          }
+          legend("topleft",
+            legend = paste("Item", plotItemID),
+            lty = 1:nrow(params),
+            col = 1:nrow(params),
+            lwd = 2
+          )
+        } else {
+          for (i in 1:nrow(params)) {
+            a <- params[i, 1]
+            b <- params[i, 2]
+            c <- if (x$model > 2) params[i, 3] else 0
+            d <- if (x$model > 3) params[i, 4] else 1
+            title <- paste0(titleBase, ", item ", plotItemID[i])
+            curve(curveFunc(a, b, c, d, theta = x),
+              from = -4,
+              to = 4,
+              xlab = "ability", ylab = ylab,
+              main = title
+            )
+          }
         }
       }
 
       params <- x$params[plotItemID, ]
-      if (type == "ICC") {
+      if (type == "IRF") {
         plotIRTCurve(
           params, exametrika::LogisticModel,
-          "Item Characteristic Curve", "probability"
+          "Item Response Function", "probability",
+          overlay
+        )
+      }
+      if (type == "TRF") {
+        curve(exametrika::TestResponseFunc(params, theta = x),
+          from = -4,
+          to = 4,
+          xlab = "ability", ylab = "probability",
+          main = "Test Response Function"
         )
       }
       if (type == "IIC") {
         plotIRTCurve(
           params, exametrika::ItemInformationFunc,
-          "Item Information Curve", "information"
+          "Item Information Curve", "information",
+          overlay
         )
       }
       if (type == "TIC") {

@@ -238,11 +238,13 @@ head(result.IRT$ability)
 ```
 
 
-The plots offer options for Item Characteristic Curves (ICC), Item Information Curves (IIC), and Test Information Curves (TIC), which can be specified through options. Items can be specified using the `items` argument, and if not specified, plots will be drawn for all items. The number of rows and columns for dividing the plotting area can be specified using `nr` and `nc`, respectively.
+The plots offer options for Item Response Function(also known as Item Characteristic Curves (ICC)),Test Response Function, Item Information Curves (IIC), and Test Information Curves (TIC), which can be specified through options. Items can be specified using the `items` argument, and if not specified, plots will be drawn for all items. The number of rows and columns for dividing the plotting area can be specified using `nr` and `nc`, respectively.
 
 ```{r plot-irt-curves, fig.width=7, fig.height=5, message=FALSE, warning=FALSE}
-plot(result.IRT, type = "ICC", items = 1:6, nc = 2, nr = 3)
+plot(result.IRT, type = "IRF", items = 1:6, nc = 2, nr = 3)
+plot(result.IRT, type = "IRF", overlay = TRUE)
 plot(result.IRT, type = "IIC", items = 1:6, nc = 2, nr = 3)
+plot(result.IRT, type = "TRF")
 plot(result.IRT, type = "TIC")
 ```
 

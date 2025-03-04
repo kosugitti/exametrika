@@ -6,12 +6,13 @@
 \usage{
 \method{plot}{exametrika}(
   x,
-  type = c("IIC", "ICC", "TIC", "IRP", "TRP", "LCD", "CMP", "FRP", "RMP", "LRD", "Array",
-    "FieldPIRP", "LDPSR", "ScoreFreq", "ScoreRank", "ICRP", "ICBR"),
+  type = c("IIC", "ICC", "TIC", "IRF", "TRF", "IRP", "TRP", "LCD", "CMP", "FRP", "RMP",
+    "LRD", "Array", "FieldPIRP", "LDPSR", "ScoreFreq", "ScoreRank", "ICRP", "ICBR"),
   items = NULL,
   students = NULL,
   nc = 1,
   nr = 1,
+  overlay = FALSE,
   ...
 )
 }

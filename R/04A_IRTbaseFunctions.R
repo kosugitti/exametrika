@@ -158,3 +158,42 @@ TestInformationFunc <- function(params, theta) {
   }
   return(tmp)
 }
+
+
+#' @title TRF for IRT
+#' @description
+#' Calculates the expected score across all items on a test for a given ability level (theta)
+#' using Item Response Theory. The Test Response Function (TRF) is essentially the sum of
+#' the Item Characteristic Curves (ICCs) for all items in the test.
+#'
+#' @details
+#' The Test Response Function computes the expected total score for an examinee with a given
+#' ability level (theta) across all items in the test. For each item, the function uses the
+#' logistic model with parameters a (discrimination), b (difficulty), c (guessing), and
+#' d (upper asymptote).
+#' @param params parameter matrix
+#' @param theta ability parameter
+#' @return A numeric vector with the same length as theta, containing the expected total score
+#'   for each ability level.
+#' @export
+#'
+TestResponseFunc <- function(params, theta) {
+  tl <- nrow(params)
+  tmp <- 0
+  for (i in 1:tl) {
+    a <- params[i, 1]
+    b <- params[i, 2]
+    if (ncol(params) > 2) {
+      c <- params[i, 3]
+    } else {
+      c <- 0
+    }
+    if (ncol(params) > 3) {
+      d <- params[i, 4]
+    } else {
+      d <- 1
+    }
+    tmp <- tmp + LogisticModel(a = a, b = b, c = c, d = d, theta)
+  }
+  return(tmp)
+}

@@ -225,12 +225,14 @@ head(result.IRT$ability)
 ```
 
 
-プロットでは、項目特性曲線（ICC）、項目情報曲線（IIC）、テスト情報曲線（TIC）のオプションが用意されており、それらはオプションで指定できます。項目は`items`引数で指定でき、指定しない場合はすべての項目についてプロットが描かれます。プロット領域の分割は`nr`と`nc`で行数と列数を指定できます。
+プロットでは、項目反応曲線（IRF、これは項目特製曲線ICCと呼ばれることもあります）、テスト反応曲線 ( TRF )、項目情報曲線（IIC）、テスト情報曲線（TIC）のオプションが用意されており、それらはオプションで指定できます。項目は`items`引数で指定でき、指定しない場合はすべての項目についてプロットが描かれます。プロット領域の分割は`nr`と`nc`で行数と列数を指定できます。
 
 
 ```{r plot-irt-curves, fig.width=7, fig.height=5, message=FALSE, warning=FALSE}
-plot(result.IRT, type = "ICC", items = 1:6, nc = 2, nr = 3)
+plot(result.IRT, type = "IRF", items = 1:6, nc = 2, nr = 3)
+plot(result.IRT, type = "IRF", overlay = TRUE)
 plot(result.IRT, type = "IIC", items = 1:6, nc = 2, nr = 3)
+plot(result.IRT, type = "TRF")
 plot(result.IRT, type = "TIC")
 ```
 

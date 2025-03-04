@@ -1,3 +1,11 @@
+# Exametrika 1.4.4 on March 3, 2025
+
++ In Exametrika 1.4.1, bug fixes were made.
++ In 1.4.2, it became possible to calculate polychoric correlation and polyserial correlation.
++ In 1.4.3, item analysis for polytomous items became available.
++ In 1.4.4, we renamed "ICC" to "IRF," although they refer to the same concept (Item Characteristic Curves and Item Response Functions are interchangeable terms). 
+The function will interpret "ICC" input as "IRF" automatically. Additionally, Test Response Function (TRF) output was also made available.
+
 # Exametrika 1.4.0 on Feb 25, 2025
 
 + New function LRA() now supports rated data

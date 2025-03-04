@@ -16,6 +16,7 @@ ItemStatistics(U, na = NULL, Z = NULL, w = NULL)
 \item{w}{w is item weight vector}
 }
 \value{
+For binary data:
 \describe{
 \item{NR}{Number of Respondents}
 \item{CRR}{Correct Response Rate denoted as $p_j$.}
@@ -26,11 +27,14 @@ Defined as \eqn{o_j = \frac{p_j}{1-p_j}}}
 Defined as \eqn{e_j=-p_j \log_2 p_j - (1-p_j)\log_2(1-p_j)}}
 \item{ITCrr}{Item-total Correlation is a Pearson's correlation fo an item with the number of Number-Right score.}
 }
+For ordinal polytomous data:
+\describe{
+}
 }
 \description{
 This function calculates statistics for each item.
 }
 \examples{
-# using sample dataset
+# using sample dataset(binary)
 ItemStatistics(J15S500)
 }

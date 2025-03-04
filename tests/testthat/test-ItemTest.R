@@ -60,7 +60,8 @@ test_that("Joint sample size", {
 })
 
 test_that("Joint Correct Response Rate", {
-  result <- JCRR(dat, na = -99) %>%
+  tmp <- dataFormat(dat, na = -99)
+  result <- JCRR(tmp) %>%
     unclass() %>%
     unname()
   expect <- data_list$Ch03JCRR %>% unname()
@@ -69,7 +70,8 @@ test_that("Joint Correct Response Rate", {
 
 
 test_that("Conditional Correct Repsonse Rate", {
-  result <- CCRR(dat, na = -99) %>%
+  tmp <- dataFormat(dat, na = -99)
+  result <- CCRR(tmp) %>%
     unclass() %>%
     unname()
   expect <- data_list$Ch03CCRR %>% unname()
@@ -117,7 +119,8 @@ test_that("Item Total Correlation", {
 
 
 test_that("Item Total Biserial Correlation", {
-  result <- ITBiserial(dat, na = -99) %>% as.vector()
+  tmp <- dataFormat(dat, na = -99)
+  result <- ITBiserial(tmp) %>% as.vector()
   expect <- data_list$Ch03Items[, 7] %>% as.vector()
   expect_equal(result, expect, tolerance = 1e-4)
 })

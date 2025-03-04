@@ -72,7 +72,7 @@ TestStatistics.default <- function(U, na = NULL, Z = NULL, w = NULL) {
       "binary" = TestStatistics.binary(U, na, Z, w),
       "rated" = TestStatistics.ordinal(U, na, Z, w),
       "ordinal" = TestStatistics.ordinal(U, na, Z, w),
-      "nominal" = TestStatistics.nominal(U, na, Z, w)
+      "nominal" = response_type_error(U$response.type, "TestStatistics")
     )
   } else {
     U <- dataFormat(U, na = na, Z = Z, w = w)
@@ -129,10 +129,5 @@ TestStatistics.binary <- function(U, na = NULL, Z = NULL, w = NULL) {
 TestStatistics.ordinal <- function(U, na = NULL, Z = NULL, w = NULL) {
   # ordinal / rated common functions
   tmp <- dataFormat(data = U, na = na, Z = Z, w = w)
-  scorereport <- ScoreReport(tmp)
-}
-
-#' @export
-TestStatistics.nominal <- function(U, na = NULL, Z = NULL, w = NULL) {
-  # nominal implementation
+  ScoreReport(tmp)
 }

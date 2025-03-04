@@ -85,9 +85,9 @@ print.exametrika <- function(x, digits = 3, ...) {
     IIAnalysis = {
       cat("Joint Sample Size\n")
       print(x$JSS, digits = digits)
-      cat("\nJoint Correct Response Rate\n")
+      cat("\nJoint Correct Response Ratio\n")
       print(x$JCRR, digits = digits)
-      cat("\nConditonal Correct Response Rate\n")
+      cat("\nConditonal Correct Response Ratio\n")
       print(x$CCRR, digits = digits)
       cat("\nItem Lift\n")
       print(x$IL, digits = digits)
@@ -97,6 +97,18 @@ print.exametrika <- function(x, digits = 3, ...) {
       print(x$Phi, digits = digits)
       cat("\nCorrelation Matrix\n")
       print(x$Tetrachoric, digits = digits)
+    },
+    IIAnalysis.ordinal = {
+      cat("Joint Sample Size\n")
+      print(x$JSS, digits = digits)
+      cat("\nJoint Selection Rateio\n")
+      print(x$JSR, digits = digits)
+      cat("\nConditonal Selection Ratio\n")
+      print(x$JSR, digits = digits)
+      cat("\nMutual Information\n")
+      print(x$MI, digits = digits)
+      cat("\nCorrelation Matrix\n")
+      print(x$Polychoric, digits = digits)
     },
     CTT = {
       cat("Realiability\n")

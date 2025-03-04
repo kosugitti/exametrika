@@ -62,7 +62,7 @@ JCRR.default <- function(U, na = NULL, Z = NULL, w = NULL) {
     )
   } else {
     U <- dataFormat(U, na = na, Z = Z, w = w)
-    ItemThreshold(U)
+    JCRR(U)
   }
 }
 #' @export
@@ -70,7 +70,7 @@ JCRR.binary <- function(U, na = NULL, Z = NULL, w = NULL) {
   P_J <- t(U$Z * U$U) %*% (U$Z * U$U) / (t(U$Z) %*% U$Z)
   structure(P_J, class = c("exametrika", "matrix"))
 }
-
+#' @export
 JCRR.nominal <- function(U, na = NULL, Z = NULL, w = NULL) {
   message("JCRR is for binary data only. Using Joint Selection Rate for your polytomous data instead.")
   JSR(U)
@@ -116,6 +116,65 @@ JSR <- function(U, na = NULL, Z = NULL, w = NULL) {
   return(JSR)
 }
 
+#' @title Conditional Selection Rate
+#' @description Calculate the Conditional Selection Rate (CSR) for polytomous data.
+#'   CSR measures the proportion of respondents who selected a specific category
+#'   in item K, given that they selected a particular category in item J.
+#' @details
+#'   The function returns a nested list structure CSR, where \code{CSR[[j]][[k]]} contains
+#'   a matrix of conditional probabilities. In this matrix, the element at row l and
+#'   column m represents P(K=m|J=l), which is the probability of selecting category m
+#'   for item K, given that category l was selected for item J.
+#'
+#'   Mathematically, for each cell (l,m) in the \code{CSR[[j]][[k]]} matrix:
+#'   \code{CSR[[j]][[k]][l,m] = P(Item K = category m | Item J = category l)}
+#'
+#'   This is calculated as the number of respondents who selected both category l for
+#'   item J and category m for item K, divided by the total number of respondents who
+#'   selected category l for item J.
+#' @param U U is a data matrix of the type matrix or data.frame.
+#' @param Z Z is a missing indicator matrix of the type matrix or data.frame
+#' @param w w is item weight vector
+#' @param na na argument specifies the numbers or characters to be treated as missing values.
+#' @return A list of Joint Selection Rate matrices for each item pair.
+#' @examples
+#' # example code
+#' # Calculate CSR using sample dataset J5S1000
+#' CSR(J5S1000)
+#'
+#' # Extract the conditional selection rates from item 1 to item 2
+#' csr_1_2 <- CSR(J5S1000)[[1]][[2]]
+#' # This shows the probability of selecting each category in item 2
+#' # given that a specific category was selected in item 1
+#' @export
+CSR <- function(U, na = NULL, Z = NULL, w = NULL) {
+  if (!inherits(U, "exametrika")) {
+    U <- dataFormat(U, na = na, Z = Z, w = w)
+  }
+  if (U$response.type == "binary") {
+    message("CSR is for non-binary data only. Using Conditional Correct Response Rate for your binary data instead.")
+    CCRR(U)
+  }
+  nitems <- NCOL(U$Q)
+  ncat <- U$categories
+  U$Q[U$Z == 0] <- NA
+  CSR <- vector("list", nitems)
+  for (j in 1:nitems) {
+    CSR[[j]] <- vector("list", nitems)
+    for (k in 1:nitems) {
+      tbl <- table(U$Q[, j], U$Q[, k], useNA = "no")
+      ccsr <- matrix(NA, nrow = ncat[j], ncol = ncat[k])
+      for (l in 1:ncat[j]) {
+        ccsr[l, ] <- tbl[l, ] / rowSums(tbl)[l]
+      }
+      rownames(ccsr) <- U$CategoryLabel[[j]]
+      colnames(ccsr) <- U$CategoryLabel[[k]]
+      CSR[[j]][[k]] <- ccsr
+    }
+  }
+  return(CSR)
+}
+
 #' @title Conditional Correct Response Rate
 #' @description
 #' The conditional correct response rate (CCRR) represents the ratio of the students
@@ -140,14 +199,19 @@ CCRR <- function(U, na = NULL, Z = NULL, w = NULL) {
 }
 #' @export
 CCRR.default <- function(U, na = NULL, Z = NULL, w = NULL) {
-  if (!inherits(U, "exametrika")) {
+  if (inherits(U, "exametrika")) {
+    switch(U$response.type,
+      "binary" = CCRR.binary(U, na = NULL, Z = NULL, w = NULL),
+      "rated" = CCRR.nominal(U, na = NULL, Z = NULL, w = NULL),
+      "ordinal" = CCRR.nominal(U, na = NULL, Z = NULL, w = NULL),
+      "nominal" = CCRR.nominal(U, na = NULL, Z = NULL, w = NULL)
+    )
+  } else {
     U <- dataFormat(U, na = na, Z = Z, w = w)
+    JCRR(U)
   }
-  if (U$response.type != "binary") {
-    response_type_error(U$response.type, "CCRR")
-  }
-  CCRR.binary(U, na, Z, w)
 }
+
 #' @export
 CCRR.binary <- function(U, na = NULL, Z = NULL, w = NULL) {
   Z <- U$Z
@@ -157,7 +221,11 @@ CCRR.binary <- function(U, na = NULL, Z = NULL, w = NULL) {
   P_C <- Pj / (p %*% t(OneJ))
   structure(P_C, class = c("exametrika", "matrix"))
 }
-
+#' @export
+CCRR.nominal <- function(U, na = NULL, Z = NULL, w = NULL) {
+  message("CCRR is for binary data only. Conditional Selection Rate for your polytomous data instead.")
+  CSR(U)
+}
 #' @title Item Lift
 #' @description
 #' The lift is a commonly used index in a POS data analysis.
@@ -207,13 +275,35 @@ ItemLift.binary <- function(U, na = NULL, Z = NULL, w = NULL) {
 #' @title Mutual Information
 #' @description
 #' Mutual Information is a measure that represents the degree of interdependence
-#' between two items. This function is applicable only to binary response data.
+#' between two items. This function is applicable to both binary and polytomous response data.
 #' The measure is calculated using the joint probability distribution of responses
 #' between item pairs and their marginal probabilities.
+#' @details
+#' For binary data, the following formula is used:
+#' \deqn{
+#' MI_{jk} = p_{00} \log_2 \frac{p_{00}}{(1-p_j)(1-p_k)} + p_{01} \log_2 \frac{p_{01}}{(1-p_j)p_k}
+#'  + p_{10} \log_2 \frac{p_{10}}{p_j(1-p_k)} + p_{11} \log_2 \frac{p_{11}}{p_jp_k}
+#' }
+#' Where:
+#' \itemize{
+#'   \item \eqn{p_{00}} is the joint probability of incorrect responses to both items j and k
+#'   \item \eqn{p_{01}} is the joint probability of incorrect response to item j and correct to item k
+#'   \item \eqn{p_{10}} is the joint probability of correct response to item j and incorrect to item k
+#'   \item \eqn{p_{11}} is the joint probability of correct responses to both items j and k
+#' }
+#'
+#' For polytomous data, the following formula is used:
+#' \deqn{MI_{jk} = \sum_{j=1}^{C_j}\sum_{k=1}^{C_k}p_{jk}\log \frac{p_{jk}}{p_{j.}p_{.k}}}
+#'
+#' The base of the logarithm can be the number of rows, number of columns, min(rows, columns),
+#' base-10 logarithm, natural logarithm (e), etc.
 #' @param U U is a data matrix of the type matrix or data.frame.
-#' @param Z Z is a missing indicator matrix of the type matrix or data.frame
-#' @param w w is item weight vector
-#' @param na na argument specifies the numbers or characters to be treated as missing values.
+#' @param Z Z is a missing indicator matrix of the type matrix or data.frame.
+#' @param w w is item weight vector.
+#' @param na The na argument specifies the numbers or characters to be treated as missing values.
+#' @param base The base for the logarithm. Default is 2. For polytomous data,
+#'   you can use "V" to set the base to min(rows, columns), "e" for natural logarithm (base e),
+#'   or any other number to use that specific base.
 #' @note This function is implemented using a binary data compatibility wrapper and
 #'       will raise an error if used with polytomous data.
 #' @return A matrix of mutual information values with exametrika class.
@@ -224,21 +314,25 @@ ItemLift.binary <- function(U, na = NULL, Z = NULL, w = NULL) {
 #' # Calculate Mutual Information using sample dataset J15S500
 #' MutualInformation(J15S500)
 #' @export
-MutualInformation <- function(U, na = NULL, Z = NULL, w = NULL) {
+MutualInformation <- function(U, na = NULL, Z = NULL, w = NULL, base = 2) {
   UseMethod("MutualInformation")
 }
 #' @export
-MutualInformation.default <- function(U, na = NULL, Z = NULL, w = NULL) {
-  if (!inherits(U, "exametrika")) {
+MutualInformation.default <- function(U, na = NULL, Z = NULL, w = NULL, base = 2) {
+  if (inherits(U, "exametrika")) {
+    switch(U$response.type,
+      "binary" = MutualInformation.binary(U, na, Z, w),
+      "rated" = MutualInformation.ordinal(U, na, Z, w),
+      "ordinal" = MutualInformation.ordinal(U, na, Z, w),
+      "nominal" = MutualInformation.ordinal(U, na, Z, w)
+    )
+  } else {
     U <- dataFormat(U, na = na, Z = Z, w = w)
+    MutualInformation(U)
   }
-  if (U$response.type != "binary") {
-    response_type_error(U$response.type, "MutualInformation")
-  }
-  MutualInformation.binary(U, na, Z, w)
 }
 #' @export
-MutualInformation.binary <- function(U, na = NULL, Z = NULL, w = NULL) {
+MutualInformation.binary <- function(U, na = NULL, Z = NULL, w = NULL, base = 2) {
   p <- crr(U)
   # Calculate joint response matrix
   S <- list()
@@ -268,6 +362,48 @@ MutualInformation.binary <- function(U, na = NULL, Z = NULL, w = NULL) {
     P$S_11 * log(L$L_11, base = 2))
 
   structure(MI, class = c("exametrika", "matrix"))
+}
+
+#' @export
+MutualInformation.ordinal <- function(U, na = NULL, Z = NULL, w = NULL, base = 2) {
+  if (is.character(base)) {
+    if (base != "V" & base != "v" & base != "e") {
+      stop("The base of the logarithm must be a number, 'V', or 'e'.")
+    }
+  }
+  nitems <- NCOL(U$Z)
+  ncat <- apply(U$Q, 2, max)
+  mat <- matrix(ncol = nitems, nrow = nitems)
+  for (i in 1:nitems) {
+    for (j in 1:nitems) {
+      x <- U$Q[, i]
+      y <- U$Q[, j]
+      x[x == -1] <- NA
+      y[y == -1] <- NA
+      pairwise <- !is.na(x + y)
+      x <- x[pairwise]
+      y <- y[pairwise]
+      tbl <- table(x, y) / sum(length(x))
+
+      if (base == "V" | base == "v") {
+        tei <- min(ncat[i], ncat[j])
+      } else if (base == "e") {
+        tei <- exp(1)
+      } else {
+        tei <- as.numeric(base)
+      }
+      mi <- 0
+      cSum <- colSums(tbl)
+      rSum <- rowSums(tbl)
+      for (k in 1:NROW(tbl)) {
+        for (m in 1:NCOL(tbl)) {
+          mi <- mi + (tbl[k, m] * (log(tbl[k, m] / rSum[k] / cSum[m], base = tei)))
+        }
+      }
+      mat[i, j] <- mi
+    }
+  }
+  return(mat)
 }
 
 #' @title Phi-Coefficient
@@ -405,6 +541,134 @@ tetrachoric <- function(x, y) {
   return(ret)
 }
 
+#' @title Polychoric Correlation
+#' @description
+#' Calculate the polychoric correlation coefficient between two polytomous (categorical ordinal) variables.
+#' Polychoric correlation estimates the correlation between two theorized normally distributed
+#' continuous latent variables from two observed ordinal variables.
+#'
+#' @param x A polytomous vector (categorical ordinal variable)
+#' @param y A polytomous vector (categorical ordinal variable)
+#' @return The polychoric correlation coefficient between x and y
+#' @details
+#' This function handles missing values (coded as -1 or NA) using pairwise deletion.
+#' The estimation uses maximum likelihood approach with Brent's method for optimization.
+#' @examples
+#' # Example with simulated data
+#' set.seed(123)
+#' x <- sample(1:5, 100, replace = TRUE)
+#' y <- sample(1:4, 100, replace = TRUE)
+#' polychoric(x, y)
+#' @export
+polychoric <- function(x, y) {
+  x[x == -1] <- NA
+  y[y == -1] <- NA
+  pairwise <- !is.na(x + y)
+  x <- x[pairwise]
+  y <- y[pairwise]
+  mat <- table(x, y)
+  fit <- optim(
+    par = 0,
+    fn = polychoric_likelihood,
+    mat = mat,
+    method = "Brent",
+    lower = -1,
+    upper = 1
+  )
+  if (fit$convergence != 0) {
+    stop("Failed to converge when calculating polychoric correlation. Try with different initial values or check your data.")
+  }
+  cor <- fit$par
+  return(cor)
+}
+
+
+#' @title Polyserial Correlation
+#' @description Calculates the polyserial correlation coefficient between a continuous variable and an ordinal variable.
+#' @details This function implements Olsson et al.'s ad hoc method for estimating the polyserial correlation
+#' coefficient. The method assumes that the continuous variable follows a normal distribution and
+#' that the ordinal variable is derived from an underlying continuous normal variable through
+#' thresholds.
+#' @param x A numeric vector representing the continuous variable.
+#' @param y A numeric vector representing the ordinal variable (must be integer values).
+#' @return A numeric value representing the estimated polyserial correlation coefficient.
+#' @references U.Olsson, F.Drasgow, and N.Dorans (1982).
+#' The polyserial correlation coefficient. Psychometrika, 47,337-347.
+#' @examples
+#' n <- 300
+#' x <- rnorm(n)
+#' y <- sample(1:5, size = n, replace = TRUE)
+#' polyserial(x, y)
+#' @importFrom stats dnorm
+#' @export
+#'
+polyserial <- function(x, y) {
+  x[x == -1] <- NA
+  y[y == -1] <- NA
+  pairwise <- !is.na(x + y)
+  x <- x[pairwise]
+  y <- y[pairwise]
+  nobs <- length(y)
+  ncat <- max(as.numeric(as.factor(y)))
+
+  tbl <- tabulate(y)
+  freq <- tbl / sum(tbl)
+  cum_freq <- cumsum(freq)
+
+  thresholds <- qnorm(cum_freq)[-ncat]
+  tau <- dnorm(thresholds)
+  sum_tau <- sum(tau)
+
+  rxy <- cor(x, y)
+  sd_y <- sqrt(var(y) * (nobs - 1) / nobs)
+  rho <- rxy * sd_y / sum_tau
+  rho <- pmin(pmax(rho, -1), 1)
+  return(rho)
+}
+
+#' @title Polychoric Correlation Matrix
+#' @param U U is a data matrix of the type matrix or data.frame.
+#' @param Z Z is a missing indicator matrix of the type matrix or data.frame
+#' @param w w is item weight vector
+#' @param na na argument specifies the numbers or characters to be treated as missing values.
+#' @return A matrix of tetrachoric correlations with exametrika class.
+#' Each element (i,j) represents the tetrachoric correlation between items i and j.
+#' The matrix is symmetric with ones on the diagonal.
+#' @examples
+#' \donttest{
+#' # example code
+#' PolychoricCorrelationMatrix(J5S1000)
+#' }
+#' @export
+PolychoricCorrelationMatrix <- function(U, na = NULL, Z = NULL, w = NULL) {
+  UseMethod("PolychoricCorrelationMatrix")
+}
+#' @export
+PolychoricCorrelationMatrix.default <- function(U, na = NULL, Z = NULL, w = NULL) {
+  if (!inherits(U, "exametrika")) {
+    tmp <- dataFormat(U, na = na, Z = Z, w = w)
+  }
+  if (U$response.type != "ordinal") {
+    response_type_error(tmp$response.type, "PolychoricCorrelationMatrix")
+  }
+  PolychoricCorrelationMatrix.ordinal(U, na, Z, w)
+}
+#' @export
+PolychoricCorrelationMatrix.ordinal <- function(U, na = NULL, Z = NULL, w = NULL) {
+  tmp <- dataFormat(data = U, na = na, Z = Z, w = w)
+  nitems <- NCOL(tmp$Z)
+  tmp$Q[tmp$Z == 0] <- NA
+  ret.mat <- matrix(NA, ncol = nitems, nrow = nitems)
+  for (i in 1:(nitems - 1)) {
+    for (j in (i + 1):nitems) {
+      x <- tmp$Q[, i]
+      y <- tmp$Q[, j]
+      ret.mat[i, j] <- ret.mat[j, i] <- polychoric(x, y)
+    }
+  }
+  diag(ret.mat) <- 1
+  return(ret.mat)
+}
 
 #' @title Tetrachoric Correlation Matrix
 #' @description
@@ -460,81 +724,6 @@ TetrachoricCorrelationMatrix.binary <- function(U, na = NULL, Z = NULL, w = NULL
   structure(mat, class = c("exametrika", "matrix"))
 }
 
-#' @title Inter-Item Analysis
-#' @description
-#' Inter-Item Analysis returns various metrics for analyzing relationships between pairs of items.
-#' This function is applicable only to binary response data. The following metrics are calculated:
-#' \itemize{
-#'   \item JSS: Joint Sample Size
-#'   \item JCRR: Joint Correct Response Rate
-#'   \item CCRR: conditional Correct Response Rate
-#'   \item IL: Item Lift
-#'   \item MI: Mutual Information
-#'   \item Phi: Phi Coefficient
-#'   \item Tetrachoric: Tetrachoric Correlation
-#' }
-#' Each metric is returned in matrix form where element (i,j) represents the relationship
-#' between items i and j.
-#' @param U U is a data matrix of the type matrix or data.frame.
-#' @param Z Z is a missing indicator matrix of the type matrix or data.frame
-#' @param w w is item weight vector
-#' @param na na argument specifies the numbers or characters to be treated as missing values.
-#' @note This function is implemented using a binary data compatibility wrapper and
-#'       will raise an error if used with polytomous data.
-#' @return A list of class "exametrika" and "IIAnalysis" containing the following matrices:
-#' \describe{
-#'   \item{JSS}{Joint Sample Size matrix}
-#'   \item{JCRR}{Joint Correct Response Rate matrix}
-#'   \item{CCRR}{conditonal Correct Response Rate matrix}
-#'   \item{IL}{Item Lift matrix}
-#'   \item{MI}{Mutual Information matrix}
-#'   \item{Phi}{Phi Coefficient matrix}
-#'   \item{Tetrachoric}{Tetrachoric Correlation matrix}
-#' }
-#' @examples
-#' \donttest{
-#' # example code
-#' InterItemAnalysis(J15S500)
-#' }
-#' @export
-InterItemAnalysis <- function(U, na = NULL, Z = NULL, w = NULL) {
-  UseMethod("InterItemAnalysis")
-}
-#' @export
-InterItemAnalysis.default <- function(U, na = NULL, Z = NULL, w = NULL) {
-  if (!inherits(U, "exametrika")) {
-    U <- dataFormat(U, na = na, Z = Z, w = w)
-  }
-  if (U$response.type != "binary") {
-    response_type_error(U$response.type, "InterItemAnalysis")
-  }
-  InterItemAnalysis.binary(U, na, Z, w)
-}
-#' @export
-InterItemAnalysis.binary <- function(U, na = NULL, Z = NULL, w = NULL) {
-  # Calculate all matrices
-  JSS <- JointSampleSize(U)
-  JCRR <- JCRR(U)
-  CCRR <- CCRR(U)
-  IL <- ItemLift(U)
-  MI <- MutualInformation(U)
-  Phi <- PhiCoefficient(U)
-  Tet <- TetrachoricCorrelationMatrix(U)
-
-  # Create return structure
-  structure(
-    list(
-      JSS = JSS,
-      JCRR = JCRR,
-      CCRR = CCRR,
-      IL = IL,
-      MI = MI,
-      Phi = Phi,
-      Tetrachoric = Tet
-    ),
-    class = c("exametrika", "IIAnalysis")
-  )
-}
 #' @title Correct Response Rate
 #' @description
 #' The correct response rate (CRR) is one of the most basic and important
@@ -836,43 +1025,51 @@ ItemTotalCorr <- function(U, na = NULL, Z = NULL, w = NULL) {
 }
 #' @export
 ItemTotalCorr.default <- function(U, na = NULL, Z = NULL, w = NULL) {
-  if (!inherits(U, "exametrika")) {
+  if (inherits(U, "exametrika")) {
+    switch(U$response.type,
+      "binary" = ItemTotalCorr.binary(U, na, Z, w),
+      "rated" = ItemTotalCorr.binary(U, na, Z, w),
+      "ordinal" = ItemTotalCorr.ordinal(U, na, Z, w),
+      "nominal" = response_type_error(U$response.type, "ItemTotalCorr")
+    )
+  } else {
     U <- dataFormat(U, na = na, Z = Z, w = w)
+    ItemTotalCorr(U)
   }
-  if (U$response.type != "binary") {
-    response_type_error(U$response.type, "ItemTotalCorr")
-  }
-  ItemTotalCorr.binary(U, na, Z, w)
 }
 #' @export
 ItemTotalCorr.binary <- function(U, na = NULL, Z = NULL, w = NULL) {
   # Calculate item probabilities
   p <- crr(U)
-
   # Calculate total scores
   Zeta <- sscore(U)
-
   # Create probability matrix (repeating p for each student)
   TBL <- matrix(rep(p, each = NROW(U$U)),
     nrow = NROW(U$U),
     byrow = FALSE
   )
-
   # Handle missing values in response matrix
   Una <- ifelse(is.na(U$U), 0, U$U)
-
   # Calculate deviations from expected values
   dev <- U$Z * (Una - TBL)
-
   # Calculate item variances
   V <- colSums(dev^2) / (colSums(U$Z) - 1)
   SD <- sqrt(V)
-
   # Calculate correlations
   rho_Zi <- t(dev) %*% Zeta / SD / colSums(U$Z)
-
   return(rho_Zi)
 }
+#' @export
+ItemTotalCorr.ordinal <- function(U, na = NULL, Z = NULL, w = NULL) {
+  total <- rowSums(U$Q)
+  nitems <- NCOL(U$Z)
+  rho_Zi <- numeric(nitems)
+  for (j in 1:nitems) {
+    rho_Zi[j] <- polyserial(total, U$Q[, j])
+  }
+  return(rho_Zi)
+}
+
 
 
 
@@ -1348,8 +1545,71 @@ stanine.binary <- function(U, na = NULL, Z = NULL, w = NULL) {
 #' @export
 
 Dimensionality <- function(U, na = NULL, Z = NULL, w = NULL) {
+  UseMethod("Dimensionality")
+}
+#' @export
+Dimensionality.default <- function(U, na = NULL, Z = NULL, w = NULL) {
+  if (inherits(U, "exametrika")) {
+    switch(U$response.type,
+      "binary" = Dimensionality.binary(U, na = NULL, Z = NULL, w = NULL),
+      "rated" = Dimensionality.rated(U, na = NULL, Z = NULL, w = NULL),
+      "ordinal" = Dimensionality.ordinal(U, na = NULL, Z = NULL, w = NULL),
+      "nominal" = response_type_error(U$response.type, "Dimensionality")
+    )
+  } else {
+    U <- dataFormat(U, na = na, Z = Z, w = w)
+    Dimensionality(U)
+  }
+}
+
+#' @export
+Dimensionality.binary <- function(U, na = NULL, Z = NULL, w = NULL) {
   tmp <- dataFormat(data = U, na = na, Z = Z, w = w)
   R <- TetrachoricCorrelationMatrix(tmp)
+  Esystem <- eigen(R)
+  Eval <- Esystem$values
+  EvalVariance <- Esystem$values / length(Eval) * 100
+  CumVari <- cumsum(EvalVariance)
+  ret <-
+    structure(
+      list(
+        Component = seq(1:length(Eval)),
+        Eigenvalue = Eval,
+        PerOfVar = EvalVariance,
+        CumOfPer = CumVari
+      ),
+      class = c("exametrika", "Dimensionality")
+    )
+
+  return(ret)
+}
+
+#' @export
+Dimensionality.rated <- function(U, na = NULL, Z = NULL, w = NULL) {
+  tmp <- dataFormat(data = U, na = na, Z = Z, w = w)
+  R <- TetrachoricCorrelationMatrix(tmp$U)
+  Esystem <- eigen(R)
+  Eval <- Esystem$values
+  EvalVariance <- Esystem$values / length(Eval) * 100
+  CumVari <- cumsum(EvalVariance)
+  ret <-
+    structure(
+      list(
+        Component = seq(1:length(Eval)),
+        Eigenvalue = Eval,
+        PerOfVar = EvalVariance,
+        CumOfPer = CumVari
+      ),
+      class = c("exametrika", "Dimensionality")
+    )
+
+  return(ret)
+}
+
+#' @export
+Dimensionality.ordinal <- function(U, na = NULL, Z = NULL, w = NULL) {
+  tmp <- dataFormat(data = U, na = na, Z = Z, w = w)
+  R <- PolychoricCorrelationMatrix(tmp)
   Esystem <- eigen(R)
   Eval <- Esystem$values
   EvalVariance <- Esystem$values / length(Eval) * 100

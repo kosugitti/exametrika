@@ -56,14 +56,14 @@ result.IRT <- IRT(J15S500, model = 3)
 # Display the first few rows of estimated student abilities
 head(result.IRT$ability)
 
-# Plot Item Characteristic Curves (ICC) for items 1-6 in a 2x3 grid
-plot(result.IRT, type = "ICC", items = 1:6, nc = 2, nr = 3)
+# Plot Item Response Function (IRF) for items 1-6 in a 2x3 grid
+plot(result.IRT, type = "IRF", items = 1:6, nc = 2, nr = 3)
 
-# Plot Item Information Curves (IIC) for items 1-6 in a 2x3 grid
-plot(result.IRT, type = "IIC", items = 1:6, nc = 2, nr = 3)
+# Plot Item Information Function (IIF) for items 1-6 in a 2x3 grid
+plot(result.IRT, type = "IIF", items = 1:6, nc = 2, nr = 3)
 
-# Plot the Test Information Curve (TIC) for all items
-plot(result.IRT, type = "TIC")
+# Plot the Test Information Function (TIF) for all items
+plot(result.IRT, type = "TIF")
 }
 }
 \references{

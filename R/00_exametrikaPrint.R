@@ -134,6 +134,19 @@ print.exametrika <- function(x, digits = 3, ...) {
       colnames(y) <- "value"
       print(round(y, digits))
     },
+    GRM = {
+      cat("Item Parameter\n")
+      print(x$params, digits = digits)
+      cat("\nItem Fit Indices\n")
+      y <- unclass(x$ItemFitIndices)
+      y <- as.data.frame(y)
+      print(round(y, digits))
+      cat("\nModel Fit Indices\n")
+      y <- unclass(x$TestFitIndices)
+      y <- t(as.data.frame(y))
+      colnames(y) <- "value"
+      print(round(y, digits))
+    },
     LCA = {
       cat("\nItem Reference Profile\n")
       print(x$IRP, digits = digits)

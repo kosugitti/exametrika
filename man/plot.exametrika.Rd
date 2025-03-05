@@ -6,8 +6,9 @@
 \usage{
 \method{plot}{exametrika}(
   x,
-  type = c("IIC", "ICC", "TIC", "IRF", "TRF", "IRP", "TRP", "LCD", "CMP", "FRP", "RMP",
-    "LRD", "Array", "FieldPIRP", "LDPSR", "ScoreFreq", "ScoreRank", "ICRP", "ICBR"),
+  type = c("IRF", "TRF", "IIF", "TIF", "IIC", "ICC", "TIC", "IRP", "TRP", "LCD", "CMP",
+    "FRP", "RMP", "LRD", "Array", "FieldPIRP", "LDPSR", "ScoreFreq", "ScoreRank", "ICRP",
+    "ICBR"),
   items = NULL,
   students = NULL,
   nc = 1,
@@ -19,13 +20,17 @@
 \arguments{
 \item{x}{exametrika Class object}
 
-\item{type}{Plot type.The selectable type names are as follows: IIC, ICC, TIC, IRP, TRP,
+\item{type}{Plot type.The selectable type names are as follows: IIF, IRF, TIF, IRP, TRP,
 LCD, CMP, FRP, RMP, LRD, Array, FieldPRIP, LDPSR.
 \describe{
-\item{ICC}{Item Characteristic Curve. For \link{IRT} model}
-\item{IIC}{Item Information Curve. For \link{IRT} model. When specifying the item numbers
-with the \code{items} option, giving 0 will make it TIC.}
-\item{TIC}{Test Information Curve. For \link{IRT} model}
+\item{IRF}{Item Response Function. For \link{IRT} model.Also known as 'ICC' (Item Characteristic Curve).
+Note: 'ICC' will be internally processed as 'IRF'.}
+\item{TRF}{Test Response Function. For \link{IRT} model}
+\item{IIF}{Item Information Function. For \link{IRT} model.When specifying the item numbers
+with the \code{items} option, giving 0 will make it TIF. Also known as 'IIC' (Item Information Curve).
+Note: 'IIC' will be internally processed as 'IIF'.}
+\item{TIF}{Test Information Function. For \link{IRT} model. Also known as 'TIC' (Test Information Curve).
+Note: 'TIC' will be internally processed as 'TIF'.}
 \item{IRP}{Item Reference Profile.IRP is a line graph with items and latent classes/ranks
 on the horizontal axis, and membership probability on the vertical axis. This type can be
 selected when using \link{LCA},\link{LRA},\link{Biclustering} and \link{LDB} model.}
@@ -84,13 +89,15 @@ If not specifically designated, all students will be included.}
 
 \item{nr}{Specifying the number of rows when there are many plots to be drawn. The default is 1.}
 
+\item{overlay}{Set the overlay option to TRUE when you want to overlay elements such as IRFs. The default value is FALSE}
+
 \item{...}{other options}
 }
 \value{
 Produces different types of plots depending on the class of the input object and the specified type:
 \itemize{
-\item For IRT models: ICC (Item Characteristic Curves), IIC (Item Information Curves),
-or TIC (Test Information Curves)
+\item For IRT models: IRF (Item Response Function), TIF (Test Reponse Function),
+IIF (Item Information Function) or TIF (Test Information Function)
 \item For LCA/LRA models: IRP (Item Reference Profile), TRP (Test Reference Profile),
 LCD/LRD (Latent Class/Rank Distribution), CMP/RMP (Class/Rank Membership Profile)
 \item For Biclustering/IRM models: Array plots showing clustering patterns
@@ -101,13 +108,13 @@ The function returns NULL invisibly.
 \description{
 The calculation results of the exametrika package have an exametrika class attribute.
 In addition, the class name of the analysis model is also assigned.
-The models are listed as follows: IRT, LCA, LRA, Biclustering, IRM, LDLRA, LDB,
+The models are listed as follows: IRT, GRM, LCA, LRA, Biclustering, IRM, LDLRA, LDB,
 BINET. A plot is made for each model. Although the analysis results are visualized
 from various perspectives, they correspond by specifying the 'type' variable when plotting.
 }
 \details{
 \itemize{
-\item "IRT": Can only have types "ICC", "IIC", "TIC".
+\item "IRT": Can only have types "IRF", "TRF", "IIF","TIF","ICC", "IIC", "TIC".
 \item "LCA": Can only have types "IRP", "FRP", "TRP", "LCD", "CMP".
 \item "LRA": Can only have types "IRP", "FRP", "TRP", "LRD", "RMP".
 \item "Biclustering": Can only have types "IRP", "FRP", "LCD", "LRD", "CMP", "RMP", "Array".

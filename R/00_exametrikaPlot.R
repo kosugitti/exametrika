@@ -2,17 +2,21 @@
 #' @description
 #' The calculation results of the exametrika package have an exametrika class attribute.
 #' In addition, the class name of the analysis model is also assigned.
-#' The models are listed as follows: IRT, LCA, LRA, Biclustering, IRM, LDLRA, LDB,
+#' The models are listed as follows: IRT, GRM, LCA, LRA, Biclustering, IRM, LDLRA, LDB,
 #' BINET. A plot is made for each model. Although the analysis results are visualized
 #' from various perspectives, they correspond by specifying the 'type' variable when plotting.
 #' @param x exametrika Class object
-#' @param type Plot type.The selectable type names are as follows: IIC, ICC, TIC, IRP, TRP,
+#' @param type Plot type.The selectable type names are as follows: IIF, IRF, TIF, IRP, TRP,
 #' LCD, CMP, FRP, RMP, LRD, Array, FieldPRIP, LDPSR.
 #' \describe{
-#'  \item{ICC}{Item Characteristic Curve. For [IRT] model}
-#'  \item{IIC}{Item Information Curve. For [IRT] model. When specifying the item numbers
-#'  with the `items` option, giving 0 will make it TIC.}
-#'  \item{TIC}{Test Information Curve. For [IRT] model}
+#'  \item{IRF}{Item Response Function. For [IRT] model.Also known as 'ICC' (Item Characteristic Curve).
+#'  Note: 'ICC' will be internally processed as 'IRF'.}
+#'  \item{TRF}{Test Response Function. For [IRT] model}
+#'  \item{IIF}{Item Information Function. For [IRT] model.When specifying the item numbers
+#'  with the `items` option, giving 0 will make it TIF. Also known as 'IIC' (Item Information Curve).
+#'  Note: 'IIC' will be internally processed as 'IIF'.}
+#'  \item{TIF}{Test Information Function. For [IRT] model. Also known as 'TIC' (Test Information Curve).
+#'  Note: 'TIC' will be internally processed as 'TIF'.}
 #'  \item{IRP}{Item Reference Profile.IRP is a line graph with items and latent classes/ranks
 #'   on the horizontal axis, and membership probability on the vertical axis. This type can be
 #'   selected when using [LCA],[LRA],[Biclustering] and [LDB] model.}
@@ -66,10 +70,11 @@
 #' If not specifically designated, all students will be included.
 #' @param nc Specifying the number of columns when there are many plots to be drawn. The default is 1.
 #' @param nr Specifying the number of rows when there are many plots to be drawn. The default is 1.
+#' @param overlay Set the overlay option to TRUE when you want to overlay elements such as IRFs. The default value is FALSE
 #' @param ... other options
 #' @details
 #' \itemize{
-#'     \item "IRT": Can only have types "ICC", "IIC", "TIC".
+#'     \item "IRT": Can only have types "IRF", "TRF", "IIF","TIF","ICC", "IIC", "TIC".
 #'     \item "LCA": Can only have types "IRP", "FRP", "TRP", "LCD", "CMP".
 #'     \item "LRA": Can only have types "IRP", "FRP", "TRP", "LRD", "RMP".
 #'     \item "Biclustering": Can only have types "IRP", "FRP", "LCD", "LRD", "CMP", "RMP", "Array".
@@ -81,12 +86,12 @@
 #' @importFrom graphics curve
 #' @importFrom graphics title
 #' @importFrom utils tail
-#' @importFrom graphics axis barplot mtext par text lines rect
+#' @importFrom graphics axis barplot mtext par text lines rect legend
 #' @importFrom stats runif
 #' @return Produces different types of plots depending on the class of the input object and the specified type:
 #'   \itemize{
-#'     \item For IRT models: ICC (Item Characteristic Curves), IIC (Item Information Curves),
-#'           or TIC (Test Information Curves)
+#'     \item For IRT models: IRF (Item Response Function), TIF (Test Reponse Function),
+#'     IIF (Item Information Function) or TIF (Test Information Function)
 #'     \item For LCA/LRA models: IRP (Item Reference Profile), TRP (Test Reference Profile),
 #'           LCD/LRD (Latent Class/Rank Distribution), CMP/RMP (Class/Rank Membership Profile)
 #'     \item For Biclustering/IRM models: Array plots showing clustering patterns
@@ -100,7 +105,7 @@
 
 plot.exametrika <- function(x,
                             type = c(
-                              "IIC", "ICC", "TIC", "IRF", "TRF",
+                              "IRF", "TRF", "IIF", "TIF", "IIC", "ICC", "TIC",
                               "IRP", "TRP", "LCD", "CMP",
                               "FRP", "RMP", "LRD", "Array",
                               "FieldPIRP", "LDPSR",
@@ -119,7 +124,8 @@ plot.exametrika <- function(x,
   nobs <- x$nobs
 
   valid_types <- list(
-    IRT = c("IIC", "ICC", "TIC", "IRF", "TRF"),
+    IRT = c("IRF", "TRF", "IIF", "TIF", "IIC", "ICC", "TIC"),
+    GRM = c("IRF", "IIF", "TIF", "IIC", "TIC"),
     LCA = c("IRP", "TRP", "LCD", "CMP", "FRP"),
     LRA = c("IRP", "FRP", "TRP", "LRD", "RMP"),
     LRAordinal = c("ScoreFreq", "ScoreRank", "ICRP", "ICBR", "RMP"),
@@ -500,15 +506,19 @@ plot.exametrika <- function(x,
 
   switch(value,
     IRT = {
-      valid_types <- c("ICC", "IIC", "TIC", "IRF", "TRF")
+      valid_types <- c("IRF", "TRF", "TIF", "IIF", "ICC", "IIC", "TIC")
       if (!(type %in% valid_types)) {
         stop("That type of output is not defined.")
       }
-      if (type == "ICC") {
-        type <- "IRF"
-      }
-      if ((type %in% c("IIC", "TIC") && any(plotItemID == 0))) {
-        type <- "TIC"
+      # rename type option
+      type <- switch(type,
+        "ICC" = "IRF",
+        "IIC" = "IIF",
+        "TIC" = "TIF",
+        type
+      )
+      if ((type %in% c("IIF", "TIF") && any(plotItemID == 0))) {
+        type <- "TIF"
         plotItemID <- 1:testlength
       } else if (type == "IRF" && any(plotItemID == 0)) {
         type <- "TRF"
@@ -581,19 +591,117 @@ plot.exametrika <- function(x,
           main = "Test Response Function"
         )
       }
-      if (type == "IIC") {
+      if (type == "IIF") {
         plotIRTCurve(
           params, exametrika::ItemInformationFunc,
-          "Item Information Curve", "information",
+          "Item Information Function", "information",
           overlay
         )
       }
-      if (type == "TIC") {
+      if (type == "TIF") {
         curve(exametrika::TestInformationFunc(params, theta = x),
           from = -4,
           to = 4,
           xlab = "ability", ylab = "Information",
-          main = "Test Informaiton Curve"
+          main = "Test Informaiton Function"
+        )
+      }
+    },
+    GRM = {
+      valid_types <- c("IRF", "TIF", "IIF", "ICC", "IIC", "TIC")
+      if (!(type %in% valid_types)) {
+        stop("That type of output is not defined.")
+      }
+      # rename type option
+      type <- switch(type,
+        "ICC" = "IRF",
+        "IIC" = "IIF",
+        "TIC" = "TIF",
+        type
+      )
+      if ((type %in% c("IIF", "TIF") && any(plotItemID == 0))) {
+        type <- "TIF"
+        plotItemID <- 1:testlength
+      } else if (type == "IRF" && any(plotItemID == 0)) {
+        type <- "TRF"
+        plotItemID <- 1:testlength
+      }
+      if (length(plotItemID) == 0) {
+        plotItemID <- 1:testlength
+      }
+      ### GRM curve function
+      grm_IRF <- function(a, b, title) {
+        thetas <- seq(-4, 4, 0.01)
+        n_theta <- length(thetas)
+        K <- length(b) + 1
+        colors <- c(
+          "#999999", "#E69F00", "#56B4E9", "#009E73",
+          "#F0E442", "#0072B2", "#D55E00", "#CC79A7"
+        )
+        probs <- matrix(0, nrow = n_theta, ncol = K)
+        for (i in 1:n_theta) {
+          probs[i, ] <- grm_prob(thetas[i], a, b)
+        }
+        plot(thetas, probs[, 1],
+          type = "l",
+          col = colors[1],
+          ylim = c(0, 1),
+          xlab = expression(theta),
+          main = title
+        )
+        for (k in 2:K) {
+          lines(thetas, probs[, k], col = colors[k])
+        }
+        category_labels <- paste("Category", 1:K)
+        legend("topright", legend = category_labels, col = colors, lty = 1)
+      }
+
+      grm_IIC <- function(a, b, title) {
+        thetas <- seq(-4, 4, 0.01)
+        I <- sapply(thetas, function(theta) grm_iif(theta, a, b))
+
+        plot(thetas, I,
+          type = "l",
+          xlab = expression(theta),
+          ylab = "Item Information",
+          main = title
+        )
+      }
+
+      params <- x$params[plotItemID, ]
+      if (type == "IRF") {
+        for (j in plotItemID) {
+          a <- params[j, 1]
+          b <- params[j, -1]
+          b <- b[!is.na(b)]
+          title <- paste("Test Response Function for item", j)
+          grm_IRF(a, b, title)
+        }
+      }
+      if (type == "IIF") {
+        for (j in plotItemID) {
+          a <- params[j, 1]
+          b <- params[j, -1]
+          b <- b[!is.na(b)]
+          title <- paste("Item Information Function for item", j)
+          grm_IIC(a, b, title)
+        }
+      }
+      if (type == "TIF") {
+        thetas <- seq(-4, 4, 0.01)
+        I <- matrix(nrow = testlength, ncol = length(thetas))
+        for (j in 1:NROW(params)) {
+          a <- params[j, 1]
+          b <- params[j, -1]
+          b <- b[!is.na(b)]
+          I[j, ] <- sapply(thetas, function(theta) grm_iif(theta, a, b))
+        }
+        TestInfo <- colSums(I, na.rm = T)
+        plot(thetas,  TestInfo,
+          type = "l",
+          xlab = expression(theta),
+          ylab = "Information",
+          main = "Test Information Function"
         )
       }
     },

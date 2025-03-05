@@ -231,7 +231,24 @@ plot(result.IRT, type = "TRF")
 plot(result.IRT, type = "TIC")
 ```
 
-### LCA Example
+### GRM: IRT for Polytomous Cases
+
+The Graded Response Model (Samejima, 1969) can be considered an extension of IRT to polytomous response models. In this package, it can be implemented using the GRM function. However, the estimation accuracy is somewhat inferior to packages such as ltm, so it might be better to use different packages for more sophisticated analyses.
+
+```{r GRM}
+result.GRM <- GRM(J5S1000)
+result.GRM
+```
+
+Similar output to IRT is also possible.
+
+```{r GRM plot}
+plot(result.GRM, type = "IRF", nr = 3, nc = 3)
+plot(result.GRM, type = "IIF", nr = 3, nc = 3)
+plot(result.GRM, type = "TIF")
+```
+
+### LCA
 
 Latent Class Analysis requires specifying the dataset and the number of classes.
 
@@ -255,7 +272,7 @@ plot(result.LCA, type = "TRP")
 plot(result.LCA, type = "LCD")
 ```
 
-### LRA Example
+### LRA
 
 Latent Rank Analysis requires specifying the dataset and the number of classes.
 
@@ -781,7 +798,8 @@ Please check our existing Issues and Discussions before posting to avoid duplica
 
 ## Reference
 
-Shojima, Kojiro (2022) Test Data Engineering: Latent Rank Analysis, Biclustering, and Bayesian Network (Behaviormetrics: Quantitative Approaches to Human Behavior, 13),Springer.
++ Shojima, Kojiro (2022) Test Data Engineering: Latent Rank Analysis, Biclustering, and Bayesian Network (Behaviormetrics: Quantitative Approaches to Human Behavior, 13),Springer.
++ Samejima, F. (1969). Estimation of latent ability using a response pattern of graded scores. Psychometrika, 34(S1), 1-97.
 
 ## Future Updates
 

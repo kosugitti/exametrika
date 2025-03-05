@@ -1,6 +1,6 @@
 # exametrika 1.5.0 on March 5, 2025
 
-+ New function GRM() is available!
++ New function GRM is available!
 
 # exametrika 1.4.4 on March 3, 2025
 

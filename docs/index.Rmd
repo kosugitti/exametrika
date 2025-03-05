@@ -825,18 +825,15 @@ Please check our existing Issues and Discussions before posting to avoid duplica
 #### Polytomous Data Support
 
 - Item Response Theory
-  - Graded Response Model (GRM)
   - Partial Credit Model (PCM)
 - Latent Structure Analysis
-  - Polytomous Latent Rank Model
-  - Polytomous Latent Class Analysis
   - Extended Biclustering for polytomous data
 
 ### Current Development Status
 
 - Binary response models: ✅ Implemented
 - Polytomous response models: 🚧 Under development
-- CRAN submission: 🚧 In review
+- CRAN submission: ✅  Now on CRAN!
 
 Follow our [GitHub repository](https://github.com/kosugitti/exametrika) and join the [Discussions](https://github.com/kosugitti/exametrika/discussions) to stay updated on development progress and provide feedback on desired features.
 

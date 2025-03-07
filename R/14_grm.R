@@ -211,7 +211,6 @@ log_lik_grm <- function(target, dat, verbose) {
     log_p_max <- max(log_p)
     ll <- ll + log_p_max + log(sum(exp(log_p - log_p_max)))
   }
-  cat("log lik.", ll, "\r")
   return(ll)
 }
 
@@ -442,10 +441,12 @@ GRM <- function(U, na = NULL, Z = NULL, w = NULL, verbose = TRUE) {
     control = list(
       maxit = 300,
       reltol = 1e-16,
-      fnscale = -1
+      fnscale = -1,
+      trace = if (verbose) 1 else 0
     ),
     dat = tmp$Q
   )
+
 
   est_params <- target_to_params_jac(fit$par, nitems, ncat)
   est_a <- esvalueest_a <- est_params$a

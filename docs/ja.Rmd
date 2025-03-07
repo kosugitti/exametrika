@@ -249,8 +249,8 @@ result.GRM
 IRTと同様の出力も可能である。
 
 ```{r GRM plot}
-plot(result.GRM, type = "IRF", nr = 3, nc = 3)
-plot(result.GRM, type = "IIF", nr = 3, nc = 3)
+plot(result.GRM, type = "IRF")
+plot(result.GRM, type = "IIF")
 plot(result.GRM, type = "TIF")
 ```
 

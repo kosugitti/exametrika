@@ -235,7 +235,7 @@ plot(result.IRT, type = "TIC")
 
 The Graded Response Model (Samejima, 1969) can be considered an extension of IRT to polytomous response models. In this package, it can be implemented using the GRM function. However, the estimation accuracy is somewhat inferior to packages such as ltm, so it might be better to use different packages for more sophisticated analyses.
 
-```{r GRM}
+```{r GRM, message=FALSE,warning = FALSE}
 result.GRM <- GRM(J5S1000)
 result.GRM
 ```
@@ -243,8 +243,8 @@ result.GRM
 Similar output to IRT is also possible.
 
 ```{r GRM plot}
-plot(result.GRM, type = "IRF", nr = 3, nc = 3)
-plot(result.GRM, type = "IIF", nr = 3, nc = 3)
+plot(result.GRM, type = "IRF")
+plot(result.GRM, type = "IIF")
 plot(result.GRM, type = "TIF")
 ```
 
@@ -808,18 +808,15 @@ Please check our existing Issues and Discussions before posting to avoid duplica
 #### Polytomous Data Support
 
 - Item Response Theory
-  - Graded Response Model (GRM)
   - Partial Credit Model (PCM)
 - Latent Structure Analysis
-  - Polytomous Latent Rank Model
-  - Polytomous Latent Class Analysis
   - Extended Biclustering for polytomous data
 
 ### Current Development Status
 
 - Binary response models: ✅ Implemented
 - Polytomous response models: 🚧 Under development
-- CRAN submission: 🚧 In review
+- CRAN submission: ✅  Now on CRAN!
 
 Follow our [GitHub repository](https://github.com/kosugitti/exametrika) and join the [Discussions](https://github.com/kosugitti/exametrika/discussions) to stay updated on development progress and provide feedback on desired features.
 

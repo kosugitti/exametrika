@@ -81,6 +81,7 @@ LCA <- function(U, ncls = 2, na = NULL, Z = NULL, w = NULL, maxiter = 100) {
   CMD <- colSums(fit$postDist)
   StudentClass <- cbind(fit$postDist, clsNum)
   colnames(StudentClass) <- c(paste("Membership", 1:ncls), "Estimate")
+  rownames(StudentClass) <- tmp$ID
   ### Item Information
   IRP <- t(fit$classRefMat)
   colnames(IRP) <- paste0("IRP", 1:ncls)

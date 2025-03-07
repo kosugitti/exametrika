@@ -40,9 +40,9 @@ LRA.default <- function(U, na = NULL, Z = Z, w = w, ...) {
       return(LRA.binary(U, ...))
     } else if (U$response.type == "ordinal") {
       return(LRA.ordinal(U, ...))
-    } else if (U$response.type == "rated"){
+    } else if (U$response.type == "rated") {
       return(LRA.rated(U, ...))
-    }else{
+    } else {
       response_type_error(U$response.type, "LRA")
     }
   }
@@ -255,7 +255,7 @@ LRA.binary <- function(U,
     paste("Membership", 1:ncls), "Estimate",
     "Rank-Up Odds", "Rank-Down Odds"
   )
-  rownames(StudentClass) <- tmp$IDas.
+  rownames(StudentClass) <- tmp$ID
   ### Item Information
   IRP <- t(fit$classRefMat)
   colnames(IRP) <- paste0("IRP", 1:ncls)

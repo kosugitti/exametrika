@@ -31,7 +31,7 @@ generate_category_labels <- function(data_column, item_name) {
 #' @param b Numeric value, the upper limit for the second variable.
 #' @param rho Numeric value between -1 and 1, the correlation coefficient.
 #'
-#' @return The probability P(X ≤ a, Y ≤ b), a value between 0 and 1.
+#' @return The probability P(X <= a, Y <= b), a value between 0 and 1.
 #'
 #' @details
 #' The implementation uses numerical integration with Gauss-Legendre quadrature
@@ -40,6 +40,10 @@ generate_category_labels <- function(data_column, item_name) {
 #' @keywords internal
 
 qBiNormal <- function(a, b, rho) {
+  if (is.na(a) || is.na(b) || is.na(rho)) {
+    warning("NA values detected in qBiNormal inputs")
+    return(NA)
+  }
   # support function
   f <- function(x, y, aprime, bprime, rho) {
     exp(aprime * (2 * x - aprime) + bprime * (2 * y - bprime) +

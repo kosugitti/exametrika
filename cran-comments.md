@@ -16,6 +16,16 @@
 ### Downstream dependencies
 There are currently no downstream dependencies for this package.
 
-### Version 1.2.0
-This is an update from version 1.1.0 that improves numerical stability
-for model estimation and fixes bugs in log-likelihood calculation.
+### Version 1.5.1
+
+This is a major update since version 1.2.0, adding several new features:
+
+* Added support for polytomous and ordinal response data
+* Implemented new models: LRA for ordinal data, GRM
+* Added visualization capabilities for various analyses
+* Improved numerical stability and standardized terminology
+* Added field analysis for Biclustering and Class/Rank Reference Vector plots
+* Added functionality for polychoric/polyserial correlation calculation
+* Bug fixes and performance improvements
+
+All tests pass with 0 errors, 0 warnings, and 0 notes across all test environments.

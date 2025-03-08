@@ -176,6 +176,13 @@ plot.exametrika <- function(x,
 
     if (type == "IRP") {
       # Item Reference Profile ----------------------------------------
+      if (value == "LCA") {
+        msg <- "Class"
+      } else if (value == "LRA") {
+        msg <- "Rank"
+      } else if (value == "LDLRA") {
+        msg <- "Rank"
+      }
       params <- x$IRP[plotItemID, ]
       if (is.null(x$Nclass)) {
         steps <- x$Nrank
@@ -740,9 +747,11 @@ plot.exametrika <- function(x,
       }
     },
     LCA = {
+      model <- class(x)[2]
       graph_common()
     },
     LRA = {
+      model <- class(x)[2]
       graph_common()
     },
     LRAordinal = {

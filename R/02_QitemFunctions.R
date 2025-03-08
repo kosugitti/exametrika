@@ -24,7 +24,7 @@ generate_category_labels <- function(data_column, item_name) {
 #' @title bivariate normal CDF
 #' @description
 #' Calculates the cumulative distribution function (CDF) of a bivariate normal distribution.
-#' This function computes P(X ≤ a, Y ≤ b) where X and Y follow a bivariate normal
+#' This function computes P(X <= a, Y <= b) where X and Y follow a bivariate normal
 #' distribution with correlation coefficient rho.
 #'
 #' @param a Numeric value, the upper limit for the first variable.

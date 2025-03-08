@@ -18,7 +18,7 @@ The probability P(X <= a, Y <= b), a value between 0 and 1.
 }
 \description{
 Calculates the cumulative distribution function (CDF) of a bivariate normal distribution.
-This function computes P(X ≤ a, Y ≤ b) where X and Y follow a bivariate normal
+This function computes P(X <= a, Y <= b) where X and Y follow a bivariate normal
 distribution with correlation coefficient rho.
 }
 \details{

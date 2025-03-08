@@ -290,14 +290,12 @@ print.exametrika <- function(x, digits = 3, ...) {
       colnames(y) <- paste(msg2, 1:x$Nclass)
       print(round(y, digits))
 
-      if (x$model == 2) {
-        cat("\nField Membership Profile\n")
-        y <- format(
-          round(as.data.frame(x$FieldMembership), digits),
-          nsmall = digits
-        )
-        print(y)
-      }
+      cat("\nField Membership Profile\n")
+      y <- format(
+        round(as.data.frame(x$FieldAnalysis), digits),
+        nsmall = digits
+      )
+      print(y)
 
       cat("Latent Field Distribution\n")
       y <- matrix(x$LFD, byrow = T, nrow = 1)
@@ -318,19 +316,6 @@ print.exametrika <- function(x, digits = 3, ...) {
       if (x$WOACflg) {
         cat("Weakly Ordinal Alignment Condition is Satisfied.\n")
       }
-    },
-    FieldAnalysis = {
-      cat("Field Analysis Matrix\n")
-      nr <- NROW(x$FieldAnalysisMatrix)
-      nc <- NCOL(x$FieldAnalysisMatrix)
-      rnames <- rownames(x$FieldAnalysisMatrix)
-      cnames <- colnames(x$FieldAnalysisMatrix)
-      yy <- x$FieldAnalysisMatrix
-      crr <- round(yy[, 1], digits)
-      LFE <- yy[, 2]
-      Fields <- round(yy[, -(1:2)], digits)
-      y <- cbind(crr, LFE, Fields)
-      print(y)
     },
     IRM = {
       cat(paste("Bicluster Reference Matrix\n"))

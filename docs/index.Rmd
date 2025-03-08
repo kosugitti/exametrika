@@ -374,17 +374,20 @@ plot(result.LRAord, type = "RMP", students = 1:9, nc = 3, nr = 3)
 Biclustering and Ranklustering algorithms are almost the same, differing only in whether they include a filtering matrix or not. The difference is specified using the `method` option in the `Biclustering()` function. For more details, please refer to the help documentation.
 
 ```{r}
+## Biclustering
 Biclustering(J35S515, nfld = 5, ncls = 6, method = "B")
 ```
 
-
 ```{r}
+## Ranklustering
 result.Ranklustering <- Biclustering(J35S515, nfld = 5, ncls = 6, method = "R")
 plot(result.Ranklustering, type = "Array")
 plot(result.Ranklustering, type = "FRP", nc = 2, nr = 3)
+plot(result.Ranklustering, type = "RRV")
 plot(result.Ranklustering, type = "RMP", students = 1:9, nc = 3, nr = 3)
 plot(result.Ranklustering, type = "LRD")
 ```
+
 
 To find the optimal number of classes and the optimal number of fields, the Infinite Relational Model is available.
 
@@ -751,18 +754,18 @@ plot(result.BINET, type = "LDPSR", nc = 3, nr = 2)
 
 #### Pattern Analysis
 
-| Model | IRP | FRP | TRP | ICRP |
-|-------|:---:|:---:|:---:|:----:|
-| IRT | | | | |
-| LCA | ✓ | ✓ | ✓ | |
-| LRA | ✓ | ✓ | ✓ | |
-| LRAordinal | | | | ✓ |
-| LRArated | | | | ✓ |
-| Biclustering | ✓ | ✓ | ✓ | |
-| IRM | | ✓ | ✓ | |
-| LDLRA | ✓ | | | |
-| LDB | | ✓ | ✓ | |
-| BINET | | ✓ | ✓ | |
+| Model | IRP | FRP | TRP | ICRP | C/R RV |
+|-------|:---:|:---:|:---:|:----:|:----:|
+| IRT | | | | | |
+| LCA | ✓ | ✓ | ✓ | | |
+| LRA | ✓ | ✓ | ✓ | | |
+| LRAordinal | | | | ✓ | |
+| LRArated | | | | ✓ | |
+| Biclustering |  | ✓ | ✓ | |✓ | |
+| IRM | | ✓ | ✓ | | |
+| LDLRA | ✓ | | | | |
+| LDB | | ✓ | ✓ | | |
+| BINET | | ✓ | ✓ | | |
 
 #### Diagnostics & Visualization
 

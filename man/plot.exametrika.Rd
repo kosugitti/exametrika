@@ -7,8 +7,8 @@
 \method{plot}{exametrika}(
   x,
   type = c("IRF", "TRF", "IIF", "TIF", "IIC", "ICC", "TIC", "IRP", "TRP", "LCD", "CMP",
-    "FRP", "RMP", "LRD", "Array", "FieldPIRP", "LDPSR", "ScoreFreq", "ScoreRank", "ICRP",
-    "ICBR"),
+    "FRP", "RMP", "LRD", "Array", "CRV", "RRV", "FieldPIRP", "LDPSR", "ScoreFreq",
+    "ScoreRank", "ICRP", "ICBR"),
   items = NULL,
   students = NULL,
   nc = 1,
@@ -21,7 +21,7 @@
 \item{x}{exametrika Class object}
 
 \item{type}{Plot type.The selectable type names are as follows: IIF, IRF, TIF, IRP, TRP,
-LCD, CMP, FRP, RMP, LRD, Array, FieldPRIP, LDPSR.
+LCD, CMP, FRP, RMP, LRD, RRV, Array, FieldPRIP, LDPSR.
 \describe{
 \item{IRF}{Item Response Function. For \link{IRT} model.Also known as 'ICC' (Item Characteristic Curve).
 Note: 'ICC' will be internally processed as 'IRF'.}
@@ -33,7 +33,10 @@ Note: 'IIC' will be internally processed as 'IIF'.}
 Note: 'TIC' will be internally processed as 'TIF'.}
 \item{IRP}{Item Reference Profile.IRP is a line graph with items and latent classes/ranks
 on the horizontal axis, and membership probability on the vertical axis. This type can be
-selected when using \link{LCA},\link{LRA},\link{Biclustering} and \link{LDB} model.}
+selected when using \link{LCA},\link{LRA}, and \link{LDB} model.}
+\item{CRV/RRV}{Class/Rank Reference Vector. For \link{Biclustering}, RV is a Class/Rank Reference Vector that
+plots the correct answer rate for each class or rank, with fields on the horizontal axis and correct
+answer rates on the vertical axis.}
 \item{TRP}{Test Reference Profile. TRP is a representation that uses the latent classes/ranks
 on the horizontal axis. It simultaneously displays the number of members belonging to each
 class/rank) as a bar graph and the expected test scores as a line graph.This type can be
@@ -62,9 +65,11 @@ and cumulative category probabilities (y-axis). For each item, multiple boundary
 each representing the probability of scoring at or above a specific category threshold.
 These lines illustrate how the cumulative probabilities of reaching each category boundary
 change across different ranks.}
-\item{FRP}{Field Reference Profile. "FRP is a diagram depicting the correspondence between the field
+\item{FRP}{Field Reference Profile. FRP is a diagram depicting the correspondence between the field
 and the latent class/rank. It represents the expected correct answer rate of members belonging to
 a particular latent class/rank using a line graph.}
+\item{RRV}{Rank Reference Vector. RRV plots the correct answer rate for each class or rank,
+with fields on the horizontal axis and correct answer rates on the vertical axis. }
 \item{Array}{Array plot for Biclustering/Ranklustering.An Array plot is a diagram coloring the
 matrix cells, in which the larger the cell value, the darker the cell color. In this plot of the binary
 raw data, the corrected responses are shaded in black, and the black-and-white pattern appears to be
@@ -117,7 +122,7 @@ from various perspectives, they correspond by specifying the 'type' variable whe
 \item "IRT": Can only have types "IRF", "TRF", "IIF","TIF","ICC", "IIC", "TIC".
 \item "LCA": Can only have types "IRP", "FRP", "TRP", "LCD", "CMP".
 \item "LRA": Can only have types "IRP", "FRP", "TRP", "LRD", "RMP".
-\item "Biclustering": Can only have types "IRP", "FRP", "LCD", "LRD", "CMP", "RMP", "Array".
+\item "Biclustering": Can only have types "IRP", "FRP", "LCD", "LRD", "CMP", "RMP", "CRV", "RRV", "Array".
 \item "IRM": Can only have types "FRP", "TRP", "Array".
 \item "LDLRA": Can only have types "IRP", "TRP", "LRD", "RMP".
 \item "LDB": Can only have types "FRP", "TRP", "LRD", "RMP", "Array", "FieldPIRP".

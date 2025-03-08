@@ -7,7 +7,7 @@
 #' from various perspectives, they correspond by specifying the 'type' variable when plotting.
 #' @param x exametrika Class object
 #' @param type Plot type.The selectable type names are as follows: IIF, IRF, TIF, IRP, TRP,
-#' LCD, CMP, FRP, RMP, LRD, Array, FieldPRIP, LDPSR.
+#' LCD, CMP, FRP, RMP, LRD, RRV, Array, FieldPRIP, LDPSR.
 #' \describe{
 #'  \item{IRF}{Item Response Function. For [IRT] model.Also known as 'ICC' (Item Characteristic Curve).
 #'  Note: 'ICC' will be internally processed as 'IRF'.}
@@ -19,8 +19,11 @@
 #'  Note: 'TIC' will be internally processed as 'TIF'.}
 #'  \item{IRP}{Item Reference Profile.IRP is a line graph with items and latent classes/ranks
 #'   on the horizontal axis, and membership probability on the vertical axis. This type can be
-#'   selected when using [LCA],[LRA],[Biclustering] and [LDB] model.}
-#'   \item{TRP}{Test Reference Profile. TRP is a representation that uses the latent classes/ranks
+#'   selected when using [LCA],[LRA], and [LDB] model.}
+#'  \item{CRV/RRV}{Class/Rank Reference Vector. For [Biclustering], RV is a Class/Rank Reference Vector that
+#'  plots the correct answer rate for each class or rank, with fields on the horizontal axis and correct
+#'  answer rates on the vertical axis.}
+#'  \item{TRP}{Test Reference Profile. TRP is a representation that uses the latent classes/ranks
 #'    on the horizontal axis. It simultaneously displays the number of members belonging to each
 #'    class/rank) as a bar graph and the expected test scores as a line graph.This type can be
 #'    selected for all models except IRT.}
@@ -48,9 +51,11 @@
 #'    each representing the probability of scoring at or above a specific category threshold.
 #'    These lines illustrate how the cumulative probabilities of reaching each category boundary
 #'    change across different ranks.}
-#'   \item{FRP}{Field Reference Profile. "FRP is a diagram depicting the correspondence between the field
+#'   \item{FRP}{Field Reference Profile. FRP is a diagram depicting the correspondence between the field
 #'   and the latent class/rank. It represents the expected correct answer rate of members belonging to
 #'   a particular latent class/rank using a line graph.}
+#'   \item{RRV}{Rank Reference Vector. RRV plots the correct answer rate for each class or rank,
+#'   with fields on the horizontal axis and correct answer rates on the vertical axis. }
 #'   \item{Array}{Array plot for Biclustering/Ranklustering.An Array plot is a diagram coloring the
 #'   matrix cells, in which the larger the cell value, the darker the cell color. In this plot of the binary
 #'   raw data, the corrected responses are shaded in black, and the black-and-white pattern appears to be
@@ -77,7 +82,7 @@
 #'     \item "IRT": Can only have types "IRF", "TRF", "IIF","TIF","ICC", "IIC", "TIC".
 #'     \item "LCA": Can only have types "IRP", "FRP", "TRP", "LCD", "CMP".
 #'     \item "LRA": Can only have types "IRP", "FRP", "TRP", "LRD", "RMP".
-#'     \item "Biclustering": Can only have types "IRP", "FRP", "LCD", "LRD", "CMP", "RMP", "Array".
+#'     \item "Biclustering": Can only have types "IRP", "FRP", "LCD", "LRD", "CMP", "RMP", "CRV", "RRV", "Array".
 #'     \item "IRM": Can only have types "FRP", "TRP", "Array".
 #'     \item "LDLRA": Can only have types "IRP", "TRP", "LRD", "RMP".
 #'     \item "LDB": Can only have types "FRP", "TRP", "LRD", "RMP", "Array", "FieldPIRP".
@@ -107,7 +112,7 @@ plot.exametrika <- function(x,
                             type = c(
                               "IRF", "TRF", "IIF", "TIF", "IIC", "ICC", "TIC",
                               "IRP", "TRP", "LCD", "CMP",
-                              "FRP", "RMP", "LRD", "Array",
+                              "FRP", "RMP", "LRD", "Array", "CRV", "RRV",
                               "FieldPIRP", "LDPSR",
                               "ScoreFreq", "ScoreRank", "ICRP", "ICBR"
                             ),
@@ -130,7 +135,7 @@ plot.exametrika <- function(x,
     LRA = c("IRP", "FRP", "TRP", "LRD", "RMP"),
     LRAordinal = c("ScoreFreq", "ScoreRank", "ICRP", "ICBR", "RMP"),
     LRArated = c("ScoreFreq", "ScoreRank", "ICRP", "RMP"),
-    Biclustering = c("IRP", "FRP", "TRP", "LCD", "LRD", "CMP", "RMP", "Array"),
+    Biclustering = c("FRP", "TRP", "LCD", "LRD", "CMP", "RMP", "CRV", "RRV", "Array"),
     IRM = c("FRP", "TRP", "Array"),
     LDLRA = c("IRP", "TRP", "LRD", "RMP"),
     LDB = c("FRP", "TRP", "LRD", "RMP", "Array", "FieldPIRP"),
@@ -164,7 +169,7 @@ plot.exametrika <- function(x,
   }
 
   graph_common <- function() {
-    valid_types <- c("IRP", "TRP", "LCD", "LRD", "CMP", "RMP", "FRP")
+    valid_types <- c("IRP", "TRP", "LCD", "LRD", "CMP", "RMP", "FRP", "CRV", "RRV")
     if (!(type %in% valid_types)) {
       stop("That type of output is not defined.")
     }
@@ -176,11 +181,6 @@ plot.exametrika <- function(x,
         steps <- x$Nrank
       } else {
         steps <- x$Nclass
-      }
-      if (type == "CMP") {
-        msg <- "Class"
-      } else {
-        msg <- "Rank"
       }
       for (i in 1:nrow(params)) {
         y <- params[i, ]
@@ -195,6 +195,57 @@ plot.exametrika <- function(x,
         axis(1, at = 1:steps)
       }
     }
+    if (type == "FRP") {
+      # Item Reference Profile ----------------------------------------
+      params <- x$FRP
+      if (value == "LDB") {
+        msg <- "Rank"
+      } else {
+        msg <- "Class"
+      }
+      for (i in 1:nrow(params)) {
+        y <- params[i, ]
+        plot(y,
+          type = "b",
+          ylab = "Correct Response Rate",
+          xlab = paste("Latent", msg),
+          ylim = c(0, 1),
+          main = paste("Field", i)
+        )
+      }
+    }
+    if (type == "CRV" | type == "RRV") {
+      # Rank Reference Vector -------------------------------------------
+      if (x$model == 1) {
+        msg <- "Class"
+      } else {
+        msg <- "Rank"
+      }
+      RRV <- t(x$FRP)
+      plot(1:x$Nfield, RRV[1, ],
+        type = "n",
+        ylim = c(0, 1.1),
+        xlab = "Field",
+        ylab = "Correct Response Rate",
+        main = paste(msg, "Reference Vector"),
+        xaxt = "n", bty = "n"
+      )
+      axis(1, at = 1:x$Nfield, labels = colnames(RRV))
+      for (i in 1:x$Nclass) {
+        lines(1:x$Nfield, RRV[i, ], type = "o", lty = i)
+        for (j in 1:x$Nfield) {
+          text(j, RRV[i, j], labels = i, pos = 3, offset = 0.5, cex = 0.8)
+        }
+      }
+      legend("top",
+        legend = rownames(RRV),
+        lty = 1:x$Nclass,
+        lwd = 2,
+        ncol = x$Nclass,
+        bty = "n"
+      )
+    }
+
     if (type == "TRP") {
       # Test Reference Profile ----------------------------------------
       old_par <- par(no.readonly = TRUE)
@@ -300,26 +351,9 @@ plot.exametrika <- function(x,
         )
       }
     }
-    if (type == "FRP") {
-      # Item Reference Profile ----------------------------------------
-      params <- x$FRP
-      if (value == "LDB") {
-        msg <- "Rank"
-      } else {
-        msg <- "Class"
-      }
-      for (i in 1:nrow(params)) {
-        y <- params[i, ]
-        plot(y,
-          type = "b",
-          ylab = "Correct Response Rate",
-          xlab = paste("Latent", msg),
-          ylim = c(0, 1),
-          main = paste("Field", i)
-        )
-      }
-    }
   }
+
+
 
   array_plot <- function() {
     old_par <- par(no.readonly = TRUE)

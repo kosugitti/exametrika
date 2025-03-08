@@ -1,3 +1,9 @@
+# exameterika 1.5.5 on March 8, 2025
+
++ Field analysis for Biclustering is included in the Biclustering() function
++ Class/Rank Reference Vector plot is now available.
+
+
 # exametrika 1.5.0 on March 5, 2025
 
 + New function GRM is available!

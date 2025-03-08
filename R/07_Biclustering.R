@@ -49,6 +49,14 @@ softmax <- function(x) {
 #' rank membership profile of Student s, namely the posterior probability distribution representing the student's
 #' belonging to the respective latent classes. It also includes the rank with the maximum estimated membership probability,
 #' as well as the rank-up odds and rank-down odds.}
+#'  \item{FieldAnalysis}{A matrix showing field analysis results with rows
+#'       representing items and columns showing:
+#'       \describe{
+#'         \item{CRR}{Correct Response Rate}
+#'         \item{LFE}{Latent Field Estimation}
+#'         \item{Field1...FieldN}{Field membership values}
+#'       }
+#'     }
 #'  \item{LRD}{Latent Rank Distribution. see also [plot.exametrika]}
 #'  \item{LCD}{Latent Class Distribution. see also [plot.exametrika]}
 #'  \item{LFD}{Latent Field Distribution. see also [plot.exametrika]}
@@ -294,9 +302,6 @@ Biclustering <- function(U, ncls = 2, nfld = 2,
       break
     }
   }
-  if (verbose) {
-    message("iter ", emt, " logLik ", format(testell, digits = 6))
-  }
   #### OUTPUT
 
   cls <- apply(clsmemb, 1, which.max)
@@ -365,6 +370,18 @@ Biclustering <- function(U, ncls = 2, nfld = 2,
   nparam <- ifelse(model == 1, ncls * nfld, sum(diag(Fil)) * nfld)
   FitIndices <- TestFit(tmp$U, tmp$Z, testell, nparam)
 
+  ### Field Analysis
+  crr <- crr(tmp$U)
+  fieldAnalysis <- as.data.frame(fldmemb)
+  fieldAnalysis <- cbind(crr, fld, fieldAnalysis)
+  colnames(fieldAnalysis) <- c("CRR", "LFE", paste0("Field", 1:nfld))
+  fieldAnalysis <- fieldAnalysis[order(fieldAnalysis$CRR, decreasing = TRUE), ]
+  fieldAnalysis <- fieldAnalysis[order(fieldAnalysis$LFE), ]
+  rownames_tmp <- rownames(fieldAnalysis)
+  fieldAnalysis <- matrix(as.numeric(as.matrix(fieldAnalysis)), ncol = NCOL(fieldAnalysis), nrow = NROW(fieldAnalysis))
+  colnames(fieldAnalysis) <- c("CRR", "LFE", paste0("Field", 1:nfld))
+  rownames(fieldAnalysis) <- rownames_tmp
+
   ret <- structure(list(
     model = model,
     mic = mic,
@@ -388,54 +405,10 @@ Biclustering <- function(U, ncls = 2, nfld = 2,
     FieldEstimated = fld,
     ClassEstimated = cls,
     Students = StudentRank,
+    FieldAnalysis = fieldAnalysis,
     TestFitIndices = FitIndices,
     SOACflg = SOACflg,
     WOACflg = WOACflg
   ), class = c("exametrika", "Biclustering"))
   return(ret)
-}
-
-
-
-#' @title Field Analysis
-#' @description Output for Field Analysis
-#' @param x Biclustering Objects yielded by Biclustering Function
-#' @param digits printed digits
-#' @return Returns a list of class c("exametrika", "Biclustering", "FieldAnalysis") containing:
-#'   \describe{
-#'     \item{FieldAnalysisMatrix}{A matrix showing field analysis results with rows
-#'       representing items and columns showing:
-#'       \describe{
-#'         \item{CRR}{Correct Response Rate}
-#'         \item{LFE}{Latent Field Estimation}
-#'         \item{Field1...FieldN}{Field membership values}
-#'       }
-#'     }
-#'   }
-#' @export
-
-FieldAnalysis <- function(x, digits = 4) {
-  # data format
-  if (!inherits(x, "exametrika")) {
-    stop("Field Analysis needs exametrika Output.")
-  }
-  if (class(x)[2] != "Biclustering") {
-    stop("Field Analysis needs Biclustering Output.")
-  }
-  y <- x$FieldMembership
-  crr <- crr(x$U)
-  yy <- as.data.frame(y)
-  yy <- cbind(crr, x$FieldEstimated, yy)
-  colnames(yy) <- c("CRR", "LFE", paste0("Field", 1:x$Nfield))
-  yy <- yy[order(yy$CRR, decreasing = TRUE), ]
-  yy <- yy[order(yy$LFE), ]
-  nr <- NROW(yy)
-  nc <- NCOL(yy)
-  rownames_tmp <- rownames(yy)
-  yy <- matrix(as.numeric(as.matrix(yy)), ncol = nc, nrow = nr)
-  colnames(yy) <- c("CRR", "LFE", paste0("Field", 1:x$Nfield))
-  rownames(yy) <- rownames_tmp
-  return(structure(list(
-    FieldAnalysisMatrix = yy
-  ), class = c("exametrika", "Biclustering", "FieldAnalysis")))
 }

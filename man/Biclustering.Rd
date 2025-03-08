@@ -67,6 +67,14 @@ the slope parameters A and Alpha, and the monotonicity indices C and Gamma.}
 rank membership profile of Student s, namely the posterior probability distribution representing the student's
 belonging to the respective latent classes. It also includes the rank with the maximum estimated membership probability,
 as well as the rank-up odds and rank-down odds.}
+\item{FieldAnalysis}{A matrix showing field analysis results with rows
+representing items and columns showing:
+\describe{
+\item{CRR}{Correct Response Rate}
+\item{LFE}{Latent Field Estimation}
+\item{Field1...FieldN}{Field membership values}
+}
+}
 \item{LRD}{Latent Rank Distribution. see also \link{plot.exametrika}}
 \item{LCD}{Latent Class Distribution. see also \link{plot.exametrika}}
 \item{LFD}{Latent Field Distribution. see also \link{plot.exametrika}}

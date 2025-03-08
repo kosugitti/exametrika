@@ -575,7 +575,7 @@ plot.exametrika <- function(x,
         }
       }
 
-      params <- x$params[plotItemID, ]
+      params <- x$params[plotItemID, , drop = FALSE]
       if (type == "IRF") {
         plotIRTCurve(
           params, exametrika::LogisticModel,
@@ -668,9 +668,9 @@ plot.exametrika <- function(x,
         )
       }
 
-      params <- x$params[plotItemID, ]
+      params <- x$params[plotItemID, , drop = FALSE]
       if (type == "IRF") {
-        for (j in plotItemID) {
+        for (j in 1:nrow(params)) {
           a <- params[j, 1]
           b <- params[j, -1]
           b <- b[!is.na(b)]
@@ -679,7 +679,7 @@ plot.exametrika <- function(x,
         }
       }
       if (type == "IIF") {
-        for (j in plotItemID) {
+        for (j in 1:nrow(params)) {
           a <- params[j, 1]
           b <- params[j, -1]
           b <- b[!is.na(b)]

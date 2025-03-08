@@ -566,7 +566,7 @@ GRM <- function(U, na = NULL, Z = NULL, w = NULL, verbose = TRUE) {
   ret <- structure(list(
     testlength = nitems,
     nobs = nobs,
-    params = est_mat,
+    params = as.data.frame(est_mat),
     EAP = EAP,
     MAP = MAP,
     PSD = PSD,

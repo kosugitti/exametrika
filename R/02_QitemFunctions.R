@@ -142,7 +142,7 @@ qBiNormal <- function(a, b, rho) {
 #' The function estimates thresholds from the marginal distributions and
 #' calculates the expected probabilities based on a bivariate normal distribution.
 #' It then computes the log-likelihood by comparing observed and expected frequencies.
-#'
+#' @importFrom mvtnorm pmvnorm
 #' @keywords internal
 #'
 polychoric_likelihood <- function(rho, mat) {
@@ -168,11 +168,13 @@ polychoric_likelihood <- function(rho, mat) {
         (-Inf)
       }
       b_high <- b[j]
+      sigma <- matrix(c(1, rho, rho, 1), 2, 2)
 
-      exp_probs[i, j] <- qBiNormal(a_high, b_high, rho) -
-        qBiNormal(a_high, b_low, rho) -
-        qBiNormal(a_low, b_high, rho) +
-        qBiNormal(a_low, b_low, rho)
+
+      exp_probs[i, j] <- pmvnorm(lower = c(-Inf, -Inf), upper = c(a_high, b_high), sigma = sigma) -
+        pmvnorm(lower = c(-Inf, -Inf), upper = c(a_high, b_low), sigma = sigma) -
+        pmvnorm(lower = c(-Inf, -Inf), upper = c(a_low, b_high), sigma = sigma) +
+        pmvnorm(lower = c(-Inf, -Inf), upper = c(a_low, b_low), sigma = sigma)
     }
   }
 

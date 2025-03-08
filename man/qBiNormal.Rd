@@ -14,7 +14,7 @@ qBiNormal(a, b, rho)
 \item{rho}{Numeric value between -1 and 1, the correlation coefficient.}
 }
 \value{
-The probability P(X ≤ a, Y ≤ b), a value between 0 and 1.
+The probability P(X <= a, Y <= b), a value between 0 and 1.
 }
 \description{
 Calculates the cumulative distribution function (CDF) of a bivariate normal distribution.

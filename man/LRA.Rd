@@ -83,7 +83,35 @@ results in a uniform prior distribution.}
 \item{minFreqRatio}{Minimum frequency ratio for response categories (default = 0).
 Categories with occurrence rates below this threshold will be excluded from analysis.
 For example, if set to 0.1, response categories that appear in less than 10\% of
-responses for an item will be omitted.
+responses for an item will be omitted.}
+}
+\value{
+\describe{
+\item{nobs}{Sample size. The number of rows in the dataset.}
+\item{testlength}{Length of the test. The number of items included in the test.}
+\item{Nrank}{number of rnaks you set}
+\item{N_Cycle}{Number of EM algorithm iterations}
+\item{TRP}{Test Reference Profile matrix. The TRP is the column sum vector of estimated class reference matrix,
+\eqn{\hat{\Pi}_c}}
+\item{LRD}{Latent Rank Distribution table.see also \link{plot.exametrika}}
+\item{RMD}{Rank Membership Distribution table. see also \link{plot.exametrika}}
+\item{Students}{Rank Membership Profile matrix.The s-th row vector of \eqn{\hat{M}_c}, \eqn{\hat{m}_c}, is the
+rank membership profile of Student s, namely the posterior probability distribution representing the student's
+belonging to the respective latent ranks. It also includes the rank with the maximum estimated membership probability,
+as well as the rank-up odds and rank-down odds.}
+\item{ItemFitIndices}{Fit index for each item.See also \link{ItemFit}}
+\item{TestFitIndices}{Overall fit index for the test.See also \link{TestFit}}
+}
+
+For Binary Data:
+\describe{
+\item{IRP}{Item Reference Profile matrix.The IRP of item j is the j-th row vector in the class reference matrix,
+\eqn{\hat{\pi}_c}}
+\item{IRPIndex}{The IRP information includes the item location parameters B and Beta,
+the slope parameters A and Alpha, and the monotonicity indices C and Gamma.}
+}
+
+For Ordinal Data:
 \describe{
 \item{ScoreReport}{Basic descriptive statistics of the test performance, containing
 fundamental measures such as sample size, test length, central tendency (mean, median),
@@ -91,6 +119,9 @@ variability (SD, range), distribution characteristics(skewness, kurtosis), and i
 consistency (Cronbach's Alpha)}
 \item{ItemReport}{Basic statistics for each item: number of observations, proportion of responses,
 item mean, standard deviation, item-total correlation, and corrected item-total correlation}
+\item{ICBR}{Item Category Boundary Reference matrix containing cumulative probabilities
+for each rank to score at or above each category threshold. The matrix shows these boundary
+probabilities for each item-category combination across all ranks}
 \item{ICRP}{Item Category Reference Profile matrix containing the probability of responding to
 each category for each item across different ranks. The matrix shows the probability that
 an examinee in a specific rank would select or score each response category}
@@ -108,33 +139,9 @@ and quantile-based groupings of examinees}
 both the overall selection ratio and its distribution across quantile groups (Q1, Q2, Q3, etc.).
 For each item and response category combination, it provides the total proportion of responses
 and the proportion within each quantile}
-}}
-}
-\value{
-\describe{
-\item{nobs}{Sample size. The number of rows in the dataset.}
-\item{testlength}{Length of the test. The number of items included in the test.}
-\item{Nrank}{number of rnaks you set}
-\item{N_Cycle}{Number of EM algorithm iterations}
-\item{TRP}{Test Reference Profile matrix. The TRP is the column sum vector of estimated class reference matrix,
-\eqn{\hat{\Pi}_c}}
-\item{LRD}{Latent Rank Distribution table.see also \link{plot.exametrika}}
-\item{RMD}{Rank Membership Distribution table. see also \link{plot.exametrika}}
-\item{ItemFitIndices}{Fit index for each item.See also \link{ItemFit}}
-\item{TestFitIndices}{Overall fit index for the test.See also \link{TestFit}}
 }
 
-\describe{
-\item{Students}{Rank Membership Profile matrix.The s-th row vector of \eqn{\hat{M}_c}, \eqn{\hat{m}_c}, is the
-rank membership profile of Student s, namely the posterior probability distribution representing the student's
-belonging to the respective latent ranks. It also includes the rank with the maximum estimated membership probability,
-as well as the rank-up odds and rank-down odds.}
-\item{IRP}{Item Reference Profile matrix.The IRP of item j is the j-th row vector in the class reference matrix,
-\eqn{\hat{\pi}_c}}
-\item{IRPIndex}{The IRP information includes the item location parameters B and Beta,
-the slope parameters A and Alpha, and the monotonicity indices C and Gamma.}
-}
-
+For Rated Data:
 \describe{
 \item{ScoreReport}{Basic descriptive statistics of the test performance, containing
 fundamental measures such as sample size, test length, central tendency (mean, median),
@@ -142,9 +149,6 @@ variability (SD, range), distribution characteristics(skewness, kurtosis), and i
 consistency (Cronbach's Alpha)}
 \item{ItemReport}{Basic statistics for each item: number of observations, proportion of responses,
 item mean, standard deviation, item-total correlation, and corrected item-total correlation}
-\item{ICBR}{Item Category Boundary Reference matrix containing cumulative probabilities
-for each rank to score at or above each category threshold. The matrix shows these boundary
-probabilities for each item-category combination across all ranks}
 \item{ICRP}{Item Category Reference Profile matrix containing the probability of responding to
 each category for each item across different ranks. The matrix shows the probability that
 an examinee in a specific rank would select or score each response category}

@@ -8,6 +8,7 @@
 #' @param eps Convergence threshold for parameter updates. Default is 1e-4.
 #' @param verbose verbose output Flag. default is TRUE
 #' @return
+#' For Ordinal Data:
 #' \describe{
 #' \item{ScoreReport}{Basic descriptive statistics of the test performance, containing
 #' fundamental measures such as sample size, test length, central tendency (mean, median),

@@ -11,6 +11,8 @@
 #' Categories with occurrence rates below this threshold will be excluded from analysis.
 #' For example, if set to 0.1, response categories that appear in less than 10% of
 #' responses for an item will be omitted.
+#' @return
+#' For Rated Data:
 #' \describe{
 #' \item{ScoreReport}{Basic descriptive statistics of the test performance, containing
 #' fundamental measures such as sample size, test length, central tendency (mean, median),

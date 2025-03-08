@@ -20,6 +20,10 @@
 #' \eqn{\hat{\Pi}_c}}
 #'  \item{LRD}{Latent Rank Distribution table.see also [plot.exametrika]}
 #'  \item{RMD}{Rank Membership Distribution table. see also [plot.exametrika]}
+#'  \item{Students}{Rank Membership Profile matrix.The s-th row vector of \eqn{\hat{M}_c}, \eqn{\hat{m}_c}, is the
+#' rank membership profile of Student s, namely the posterior probability distribution representing the student's
+#' belonging to the respective latent ranks. It also includes the rank with the maximum estimated membership probability,
+#' as well as the rank-up odds and rank-down odds.}
 #'  \item{ItemFitIndices}{Fit index for each item.See also [ItemFit]}
 #'  \item{TestFitIndices}{Overall fit index for the test.See also [TestFit]}
 #' }
@@ -60,11 +64,8 @@ LRA.default <- function(U, na = NULL, Z = Z, w = w, ...) {
 #' @param seed random seed for SOM
 #' @param verbose verbose output Flag. default is TRUE
 #' @return
+#' For Binary Data:
 #' \describe{
-#'  \item{Students}{Rank Membership Profile matrix.The s-th row vector of \eqn{\hat{M}_c}, \eqn{\hat{m}_c}, is the
-#' rank membership profile of Student s, namely the posterior probability distribution representing the student's
-#' belonging to the respective latent ranks. It also includes the rank with the maximum estimated membership probability,
-#' as well as the rank-up odds and rank-down odds.}
 #'  \item{IRP}{Item Reference Profile matrix.The IRP of item j is the j-th row vector in the class reference matrix,
 #' \eqn{\hat{\pi}_c}}
 #'  \item{IRPIndex}{The IRP information includes the item location parameters B and Beta,

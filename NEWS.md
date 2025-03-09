@@ -1,8 +1,8 @@
-# exameterika 1.5.5 on March 8, 2025
+# exameterika 1.5.1 on March 8, 2025
 
 + Field analysis for Biclustering is included in the Biclustering() function
 + Class/Rank Reference Vector plot is now available.
-
++ Bug Fix for polychoric correlations
 
 # exametrika 1.5.0 on March 5, 2025
 

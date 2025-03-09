@@ -2,10 +2,12 @@
 #' @description
 #' The joint sample size is a matrix whose elements are the number of
 #' individuals who responded to each pair of items.
-#' @param U U is a data matrix of the type matrix or data.frame.
-#' @param Z Z is a missing indicator matrix of the type matrix or data.frame
-#' @param w w is item weight vector
-#' @param na na argument specifies the numbers or characters to be treated as missing values.
+#' @param U Either an object of class "exametrika" or raw data. When raw data is given,
+#'   it is converted to the exametrika class with the \code{\link{dataFormat}} function.
+#' @param Z Missing indicator matrix of type matrix or data.frame. Values of 1 indicate
+#'   observed responses, while 0 indicates missing data.
+#' @param w Item weight vector specifying the relative importance of each item.
+#' @param na Values to be treated as missing values.
 #' @note This function is implemented using a binary data compatibility wrapper and
 #'       will raise an error if used with polytomous data.
 #' @return Returns a matrix of class c("exametrika", "matrix") where each element (i,j)
@@ -15,6 +17,7 @@
 JointSampleSize <- function(U, na = NULL, Z = NULL, w = NULL) {
   UseMethod("JointSampleSize")
 }
+#' @rdname JointSampleSize
 #' @export
 JointSampleSize.default <- function(U, na = NULL, Z = NULL, w = NULL) {
   if (!inherits(U, "exametrika")) {
@@ -22,6 +25,8 @@ JointSampleSize.default <- function(U, na = NULL, Z = NULL, w = NULL) {
   }
   JointSampleSize.binary(U, na, Z, w)
 }
+
+#' @rdname JointSampleSize
 #' @export
 JointSampleSize.binary <- function(U, na = NULL, Z = NULL, w = NULL) {
   S_jk <- t(U$Z) %*% U$Z
@@ -34,10 +39,12 @@ JointSampleSize.binary <- function(U, na = NULL, Z = NULL, w = NULL) {
 #' both items. This function is applicable only to binary response data.
 #' For non-binary data, it will automatically redirect to the JSR function
 #' with an appropriate message.
-#' @param U U is a data matrix of the type matrix or data.frame.
-#' @param Z Z is a missing indicator matrix of the type matrix or data.frame
-#' @param w w is item weight vector
-#' @param na na argument specifies the numbers or characters to be treated as missing values.
+#' @param U Either an object of class "exametrika" or raw data. When raw data is given,
+#'   it is converted to the exametrika class with the \code{\link{dataFormat}} function.
+#' @param Z Missing indicator matrix of type matrix or data.frame. Values of 1 indicate
+#'   observed responses, while 0 indicates missing data.
+#' @param w Item weight vector specifying the relative importance of each item.
+#' @param na Values to be treated as missing values.
 #' @note This function is implemented using a binary data compatibility wrapper and
 #'       will raise an error if used with polytomous data.
 #' @return A matrix of joint correct response rates with exametrika class.
@@ -51,6 +58,8 @@ JointSampleSize.binary <- function(U, na = NULL, Z = NULL, w = NULL) {
 JCRR <- function(U, na = NULL, Z = NULL, w = NULL) {
   UseMethod("JCRR")
 }
+
+#' @rdname JCRR
 #' @export
 JCRR.default <- function(U, na = NULL, Z = NULL, w = NULL) {
   if (inherits(U, "exametrika")) {
@@ -65,11 +74,15 @@ JCRR.default <- function(U, na = NULL, Z = NULL, w = NULL) {
     JCRR(U)
   }
 }
+
+#' @rdname JCRR
 #' @export
 JCRR.binary <- function(U, na = NULL, Z = NULL, w = NULL) {
   P_J <- t(U$Z * U$U) %*% (U$Z * U$U) / (t(U$Z) %*% U$Z)
   structure(P_J, class = c("exametrika", "matrix"))
 }
+
+#' @rdname JCRR
 #' @export
 JCRR.nominal <- function(U, na = NULL, Z = NULL, w = NULL) {
   message("JCRR is for binary data only. Using Joint Selection Rate for your polytomous data instead.")
@@ -82,10 +95,12 @@ JCRR.nominal <- function(U, na = NULL, Z = NULL, w = NULL) {
 #'   combinations between pairs of items. For each pair of items (j,k),
 #'   it returns a contingency table showing the joint probability of selecting
 #'   each category combination.
-#' @param U U is a data matrix of the type matrix or data.frame.
-#' @param Z Z is a missing indicator matrix of the type matrix or data.frame
-#' @param w w is item weight vector
-#' @param na na argument specifies the numbers or characters to be treated as missing values.
+#' @param U Either an object of class "exametrika" or raw data. When raw data is given,
+#'   it is converted to the exametrika class with the \code{\link{dataFormat}} function.
+#' @param Z Missing indicator matrix of type matrix or data.frame. Values of 1 indicate
+#'   observed responses, while 0 indicates missing data.
+#' @param w Item weight vector specifying the relative importance of each item.
+#' @param na Values to be treated as missing values.
 #' @return A list of Joint Selection Rate matrices for each item pair.
 #' @examples
 #' # example code
@@ -132,10 +147,12 @@ JSR <- function(U, na = NULL, Z = NULL, w = NULL) {
 #'   This is calculated as the number of respondents who selected both category l for
 #'   item J and category m for item K, divided by the total number of respondents who
 #'   selected category l for item J.
-#' @param U U is a data matrix of the type matrix or data.frame.
-#' @param Z Z is a missing indicator matrix of the type matrix or data.frame
-#' @param w w is item weight vector
-#' @param na na argument specifies the numbers or characters to be treated as missing values.
+#' @param U Either an object of class "exametrika" or raw data. When raw data is given,
+#'   it is converted to the exametrika class with the \code{\link{dataFormat}} function.
+#' @param Z Missing indicator matrix of type matrix or data.frame. Values of 1 indicate
+#'   observed responses, while 0 indicates missing data.
+#' @param w Item weight vector specifying the relative importance of each item.
+#' @param na Values to be treated as missing values.
 #' @return A list of Joint Selection Rate matrices for each item pair.
 #' @examples
 #' # example code
@@ -180,10 +197,12 @@ CSR <- function(U, na = NULL, Z = NULL, w = NULL) {
 #' The conditional correct response rate (CCRR) represents the ratio of the students
 #' who passed Item C (consequent item) to those who passed Item A (antecedent item).
 #' This function is applicable only to binary response data.
-#' @param U U is a data matrix of the type matrix or data.frame.
-#' @param Z Z is a missing indicator matrix of the type matrix or data.frame
-#' @param w w is item weight vector
-#' @param na na argument specifies the numbers or characters to be treated as missing values.
+#' @param U Either an object of class "exametrika" or raw data. When raw data is given,
+#'   it is converted to the exametrika class with the \code{\link{dataFormat}} function.
+#' @param Z Missing indicator matrix of type matrix or data.frame. Values of 1 indicate
+#'   observed responses, while 0 indicates missing data.
+#' @param w Item weight vector specifying the relative importance of each item.
+#' @param na Values to be treated as missing values.
 #' @note This function is implemented using a binary data compatibility wrapper and
 #'       will raise an error if used with polytomous data.
 #' @return A matrix of conditional correct response rates with exametrika class.
@@ -194,9 +213,12 @@ CSR <- function(U, na = NULL, Z = NULL, w = NULL) {
 #' # Calculate CCRR using sample dataset J5S10
 #' CCRR(J5S10)
 #' @export
+
 CCRR <- function(U, na = NULL, Z = NULL, w = NULL) {
   UseMethod("CCRR")
 }
+
+#' @rdname CCRR
 #' @export
 CCRR.default <- function(U, na = NULL, Z = NULL, w = NULL) {
   if (inherits(U, "exametrika")) {
@@ -212,6 +234,7 @@ CCRR.default <- function(U, na = NULL, Z = NULL, w = NULL) {
   }
 }
 
+#' @rdname CCRR
 #' @export
 CCRR.binary <- function(U, na = NULL, Z = NULL, w = NULL) {
   Z <- U$Z
@@ -221,6 +244,8 @@ CCRR.binary <- function(U, na = NULL, Z = NULL, w = NULL) {
   P_C <- Pj / (p %*% t(OneJ))
   structure(P_C, class = c("exametrika", "matrix"))
 }
+
+#' @rdname CCRR
 #' @export
 CCRR.nominal <- function(U, na = NULL, Z = NULL, w = NULL) {
   message("CCRR is for binary data only. Conditional Selection Rate for your polytomous data instead.")
@@ -232,10 +257,12 @@ CCRR.nominal <- function(U, na = NULL, Z = NULL, w = NULL) {
 #' The item lift of Item k to Item j is defined as follow:
 #' \eqn{ l_{jk} = \frac{p_{k\mid j}}{p_k} }
 #' This function is applicable only to binary response data.
-#' @param U U is a data matrix of the type matrix or data.frame.
-#' @param Z Z is a missing indicator matrix of the type matrix or data.frame
-#' @param w w is item weight vector
-#' @param na na argument specifies the numbers or characters to be treated as missing values.
+#' @param U Either an object of class "exametrika" or raw data. When raw data is given,
+#'   it is converted to the exametrika class with the \code{\link{dataFormat}} function.
+#' @param Z Missing indicator matrix of type matrix or data.frame. Values of 1 indicate
+#'   observed responses, while 0 indicates missing data.
+#' @param w Item weight vector specifying the relative importance of each item.
+#' @param na Values to be treated as missing values.
 #' @note This function is implemented using a binary data compatibility wrapper and
 #'       will raise an error if used with polytomous data.
 #' @return A matrix of item lift values with exametrika class.
@@ -253,6 +280,8 @@ CCRR.nominal <- function(U, na = NULL, Z = NULL, w = NULL) {
 ItemLift <- function(U, na = NULL, Z = NULL, w = NULL) {
   UseMethod("ItemLift")
 }
+
+#' @rdname ItemLift
 #' @export
 ItemLift.default <- function(U, na = NULL, Z = NULL, w = NULL) {
   if (!inherits(U, "exametrika")) {
@@ -263,6 +292,8 @@ ItemLift.default <- function(U, na = NULL, Z = NULL, w = NULL) {
   }
   ItemLift.binary(U, na, Z, w)
 }
+
+#' @rdname ItemLift
 #' @export
 ItemLift.binary <- function(U, na = NULL, Z = NULL, w = NULL) {
   OneJ <- rep(1, ncol(U$U))
@@ -297,10 +328,12 @@ ItemLift.binary <- function(U, na = NULL, Z = NULL, w = NULL) {
 #'
 #' The base of the logarithm can be the number of rows, number of columns, min(rows, columns),
 #' base-10 logarithm, natural logarithm (e), etc.
-#' @param U U is a data matrix of the type matrix or data.frame.
-#' @param Z Z is a missing indicator matrix of the type matrix or data.frame.
-#' @param w w is item weight vector.
-#' @param na The na argument specifies the numbers or characters to be treated as missing values.
+#' @param U Either an object of class "exametrika" or raw data. When raw data is given,
+#'   it is converted to the exametrika class with the \code{\link{dataFormat}} function.
+#' @param Z Missing indicator matrix of type matrix or data.frame. Values of 1 indicate
+#'   observed responses, while 0 indicates missing data.
+#' @param w Item weight vector specifying the relative importance of each item.
+#' @param na Values to be treated as missing values.
 #' @param base The base for the logarithm. Default is 2. For polytomous data,
 #'   you can use "V" to set the base to min(rows, columns), "e" for natural logarithm (base e),
 #'   or any other number to use that specific base.
@@ -317,6 +350,8 @@ ItemLift.binary <- function(U, na = NULL, Z = NULL, w = NULL) {
 MutualInformation <- function(U, na = NULL, Z = NULL, w = NULL, base = 2) {
   UseMethod("MutualInformation")
 }
+
+#' @rdname MutualInformation
 #' @export
 MutualInformation.default <- function(U, na = NULL, Z = NULL, w = NULL, base = 2) {
   if (inherits(U, "exametrika")) {
@@ -331,6 +366,8 @@ MutualInformation.default <- function(U, na = NULL, Z = NULL, w = NULL, base = 2
     MutualInformation(U, na, Z, w, base = base)
   }
 }
+
+#' @rdname MutualInformation
 #' @export
 MutualInformation.binary <- function(U, na = NULL, Z = NULL, w = NULL, base = 2) {
   p <- crr(U)
@@ -364,6 +401,7 @@ MutualInformation.binary <- function(U, na = NULL, Z = NULL, w = NULL, base = 2)
   structure(MI, class = c("exametrika", "matrix"))
 }
 
+#' @rdname MutualInformation
 #' @export
 MutualInformation.ordinal <- function(U, na = NULL, Z = NULL, w = NULL, base = 2) {
   if (is.character(base)) {
@@ -412,10 +450,12 @@ MutualInformation.ordinal <- function(U, na = NULL, Z = NULL, w = NULL, base = 2
 #' between two binary items. This function is applicable only to binary response data.
 #' The coefficient ranges from -1 to 1, where 1 indicates perfect positive correlation,
 #' -1 indicates perfect negative correlation, and 0 indicates no correlation.
-#' @param U U is a data matrix of the type matrix or data.frame.
-#' @param Z Z is a missing indicator matrix of the type matrix or data.frame
-#' @param w w is item weight vector
-#' @param na na argument specifies the numbers or characters to be treated as missing values.
+#' @param U Either an object of class "exametrika" or raw data. When raw data is given,
+#'   it is converted to the exametrika class with the \code{\link{dataFormat}} function.
+#' @param Z Missing indicator matrix of type matrix or data.frame. Values of 1 indicate
+#'   observed responses, while 0 indicates missing data.
+#' @param w Item weight vector specifying the relative importance of each item.
+#' @param na Values to be treated as missing values.
 #' @note This function is implemented using a binary data compatibility wrapper and
 #'       will raise an error if used with polytomous data.
 #' @return A matrix of phi coefficients with exametrika class.
@@ -429,6 +469,8 @@ MutualInformation.ordinal <- function(U, na = NULL, Z = NULL, w = NULL, base = 2
 PhiCoefficient <- function(U, na = NULL, Z = NULL, w = NULL) {
   UseMethod("PhiCoefficient")
 }
+
+#' @rdname PhiCoefficient
 #' @export
 PhiCoefficient.default <- function(U, na = NULL, Z = NULL, w = NULL) {
   if (!inherits(U, "exametrika")) {
@@ -439,6 +481,8 @@ PhiCoefficient.default <- function(U, na = NULL, Z = NULL, w = NULL) {
   }
   PhiCoefficient.binary(U, na, Z, w)
 }
+
+#' @rdname PhiCoefficient
 #' @export
 PhiCoefficient.binary <- function(U, na = NULL, Z = NULL, w = NULL) {
   p <- crr(U)
@@ -559,6 +603,7 @@ tetrachoric <- function(x, y) {
 #' x <- sample(1:5, 100, replace = TRUE)
 #' y <- sample(1:4, 100, replace = TRUE)
 #' polychoric(x, y)
+#'
 #' @export
 polychoric <- function(x, y) {
   x[x == -1] <- NA
@@ -627,12 +672,14 @@ polyserial <- function(x, y) {
 }
 
 #' @title Polychoric Correlation Matrix
-#' @param U U is a data matrix of the type matrix or data.frame.
-#' @param Z Z is a missing indicator matrix of the type matrix or data.frame
-#' @param w w is item weight vector
-#' @param na na argument specifies the numbers or characters to be treated as missing values.
-#' @return A matrix of tetrachoric correlations with exametrika class.
-#' Each element (i,j) represents the tetrachoric correlation between items i and j.
+#' @param U Either an object of class "exametrika" or raw data. When raw data is given,
+#'   it is converted to the exametrika class with the \code{\link{dataFormat}} function.
+#' @param Z Missing indicator matrix of type matrix or data.frame. Values of 1 indicate
+#'   observed responses, while 0 indicates missing data.
+#' @param w Item weight vector specifying the relative importance of each item.
+#' @param na Values to be treated as missing values.
+#' @return A matrix of polychoric correlations with exametrika class.
+#' Each element (i,j) represents the polychoric correlation between items i and j.
 #' The matrix is symmetric with ones on the diagonal.
 #' @examples
 #' \donttest{
@@ -640,9 +687,12 @@ polyserial <- function(x, y) {
 #' PolychoricCorrelationMatrix(J5S1000)
 #' }
 #' @export
+#'
 PolychoricCorrelationMatrix <- function(U, na = NULL, Z = NULL, w = NULL) {
   UseMethod("PolychoricCorrelationMatrix")
 }
+
+#' @rdname PolychoricCorrelationMatrix
 #' @export
 PolychoricCorrelationMatrix.default <- function(U, na = NULL, Z = NULL, w = NULL) {
   if (!inherits(U, "exametrika")) {
@@ -653,6 +703,8 @@ PolychoricCorrelationMatrix.default <- function(U, na = NULL, Z = NULL, w = NULL
   }
   PolychoricCorrelationMatrix.ordinal(U, na, Z, w)
 }
+
+#' @rdname PolychoricCorrelationMatrix
 #' @export
 PolychoricCorrelationMatrix.ordinal <- function(U, na = NULL, Z = NULL, w = NULL) {
   tmp <- dataFormat(data = U, na = na, Z = Z, w = w)
@@ -675,10 +727,12 @@ PolychoricCorrelationMatrix.ordinal <- function(U, na = NULL, Z = NULL, w = NULL
 #' Calculates the matrix of tetrachoric correlations between all pairs of items.
 #' Tetrachoric Correlation is superior to the phi coefficient as a measure of the
 #' relation of an item pair. This function is applicable only to binary response data.
-#' @param U U is a data matrix of the type matrix or data.frame.
-#' @param Z Z is a missing indicator matrix of the type matrix or data.frame
-#' @param w w is item weight vector
-#' @param na na argument specifies the numbers or characters to be treated as missing values.
+#' @param U Either an object of class "exametrika" or raw data. When raw data is given,
+#'   it is converted to the exametrika class with the \code{\link{dataFormat}} function.
+#' @param Z Missing indicator matrix of type matrix or data.frame. Values of 1 indicate
+#'   observed responses, while 0 indicates missing data.
+#' @param w Item weight vector specifying the relative importance of each item.
+#' @param na Values to be treated as missing values.
 #' @note This function is implemented using a binary data compatibility wrapper and
 #'       will raise an error if used with polytomous data.
 #' @return A matrix of tetrachoric correlations with exametrika class.
@@ -693,6 +747,8 @@ PolychoricCorrelationMatrix.ordinal <- function(U, na = NULL, Z = NULL, w = NULL
 TetrachoricCorrelationMatrix <- function(U, na = NULL, Z = NULL, w = NULL) {
   UseMethod("TetrachoricCorrelationMatrix")
 }
+
+#' @rdname TetrachoricCorrelationMatrix
 #' @export
 TetrachoricCorrelationMatrix.default <- function(U, na = NULL, Z = NULL, w = NULL) {
   if (!inherits(U, "exametrika")) {
@@ -703,6 +759,8 @@ TetrachoricCorrelationMatrix.default <- function(U, na = NULL, Z = NULL, w = NUL
   }
   TetrachoricCorrelationMatrix.binary(U, na, Z, w)
 }
+
+#' @rdname TetrachoricCorrelationMatrix
 #' @export
 TetrachoricCorrelationMatrix.binary <- function(U, na = NULL, Z = NULL, w = NULL) {
   tmp <- dataFormat(data = U, na = na, Z = Z, w = w)
@@ -734,10 +792,12 @@ TetrachoricCorrelationMatrix.binary <- function(U, na = NULL, Z = NULL, w = NULL
 #' The CRR for each item is calculated as:
 #' \deqn{p_j = \frac{\sum_{i=1}^n z_{ij}u_{ij}}{\sum_{i=1}^n z_{ij}}}
 #' where \eqn{z_{ij}} is the missing indicator and \eqn{u_{ij}} is the response.
-#' @param U U is a data matrix of the type matrix or data.frame.
-#' @param Z Z is a missing indicator matrix of the type matrix or data.frame
-#' @param w w is item weight vector
-#' @param na na argument specifies the numbers or characters to be treated as missing values.
+#' @param U Either an object of class "exametrika" or raw data. When raw data is given,
+#'   it is converted to the exametrika class with the \code{\link{dataFormat}} function.
+#' @param Z Missing indicator matrix of type matrix or data.frame. Values of 1 indicate
+#'   observed responses, while 0 indicates missing data.
+#' @param w Item weight vector specifying the relative importance of each item.
+#' @param na Values to be treated as missing values.
 #' @note This function is implemented using a binary data compatibility wrapper and
 #'       will raise an error if used with polytomous data.
 #' @return A numeric vector of weighted correct response rates for each item.
@@ -754,6 +814,8 @@ TetrachoricCorrelationMatrix.binary <- function(U, na = NULL, Z = NULL, w = NULL
 crr <- function(U, na = NULL, Z = NULL, w = NULL) {
   UseMethod("crr")
 }
+
+#' @rdname crr
 #' @export
 crr.default <- function(U, na = NULL, Z = NULL, w = NULL) {
   if (!inherits(U, "exametrika")) {
@@ -764,6 +826,8 @@ crr.default <- function(U, na = NULL, Z = NULL, w = NULL) {
   }
   crr.binary(U, na, Z, w)
 }
+
+#' @rdname crr
 #' @export
 crr.binary <- function(U, na = NULL, Z = NULL, w = NULL) {
   # Create unit vector for summation
@@ -790,10 +854,12 @@ crr.binary <- function(U, na = NULL, Z = NULL, w = NULL) {
 #' The odds value represents how many times more likely a correct response is
 #' compared to an incorrect response. For example, an odds of 2 means students
 #' are twice as likely to answer correctly as incorrectly.
-#' @param U U is a data matrix of the type matrix or data.frame.
-#' @param Z Z is a missing indicator matrix of the type matrix or data.frame
-#' @param w w is item weight vector
-#' @param na na argument specifies the numbers or characters to be treated as missing values.
+#' @param U Either an object of class "exametrika" or raw data. When raw data is given,
+#'   it is converted to the exametrika class with the \code{\link{dataFormat}} function.
+#' @param Z Missing indicator matrix of type matrix or data.frame. Values of 1 indicate
+#'   observed responses, while 0 indicates missing data.
+#' @param w Item weight vector specifying the relative importance of each item.
+#' @param na Values to be treated as missing values.
 #' @note This function is implemented using a binary data compatibility wrapper and
 #'       will raise an error if used with polytomous data.
 #' @return A numeric vector of odds values for each item. Values range from 0 to infinity,
@@ -810,6 +876,8 @@ crr.binary <- function(U, na = NULL, Z = NULL, w = NULL) {
 ItemOdds <- function(U, na = NULL, Z = NULL, w = NULL) {
   UseMethod("ItemOdds")
 }
+
+#' @rdname ItemOdds
 #' @export
 ItemOdds.default <- function(U, na = NULL, Z = NULL, w = NULL) {
   if (!inherits(U, "exametrika")) {
@@ -820,6 +888,8 @@ ItemOdds.default <- function(U, na = NULL, Z = NULL, w = NULL) {
   }
   ItemOdds.binary(U, na, Z, w)
 }
+
+#' @rdname ItemOdds
 #' @export
 ItemOdds.binary <- function(U, na = NULL, Z = NULL, w = NULL) {
   # Calculate correct response rates
@@ -844,10 +914,12 @@ ItemOdds.binary <- function(U, na = NULL, Z = NULL, w = NULL) {
 #'
 #' Higher threshold values indicate more difficult items, as they represent the
 #' point on the standard normal scale above which examinees tend to answer incorrectly.
-#' @param U U is a data matrix of the type matrix or data.frame.
-#' @param Z Z is a missing indicator matrix of the type matrix or data.frame
-#' @param w w is item weight vector
-#' @param na na argument specifies the numbers or characters to be treated as missing values.
+#' @param U Either an object of class "exametrika" or raw data. When raw data is given,
+#'   it is converted to the exametrika class with the \code{\link{dataFormat}} function.
+#' @param Z Missing indicator matrix of type matrix or data.frame. Values of 1 indicate
+#'   observed responses, while 0 indicates missing data.
+#' @param w Item weight vector specifying the relative importance of each item.
+#' @param na Values to be treated as missing values.
 #' @note This function is implemented using a binary data compatibility wrapper and
 #'       will raise an error if used with polytomous data.
 #' @return A numeric vector of threshold values for each item on the standard normal scale.
@@ -879,6 +951,8 @@ ItemThreshold.default <- function(U, na = NULL, Z = NULL, w = NULL) {
     ItemThreshold(U)
   }
 }
+
+#' @rdname ItemThreshold
 #' @export
 ItemThreshold.binary <- function(U, na = NULL, Z = NULL, w = NULL) {
   # Calculate correct response rates
@@ -888,6 +962,7 @@ ItemThreshold.binary <- function(U, na = NULL, Z = NULL, w = NULL) {
   return(tau)
 }
 
+#' @rdname ItemThreshold
 #' @export
 ItemThreshold.ordinal <- function(U, na = NULL, Z = NULL, w = NULL) {
   nitems <- ncol(U$Q)
@@ -922,10 +997,12 @@ ItemThreshold.ordinal <- function(U, na = NULL, Z = NULL, w = NULL) {
 #'   \item Higher values indicate more balanced response patterns
 #'   \item Lower values indicate more predictable response patterns
 #' }
-#' @param U U is a data matrix of the type matrix or data.frame.
-#' @param Z Z is a missing indicator matrix of the type matrix or data.frame
-#' @param w w is item weight vector
-#' @param na na argument specifies the numbers or characters to be treated as missing values.
+#' @param U Either an object of class "exametrika" or raw data. When raw data is given,
+#'   it is converted to the exametrika class with the \code{\link{dataFormat}} function.
+#' @param Z Missing indicator matrix of type matrix or data.frame. Values of 1 indicate
+#'   observed responses, while 0 indicates missing data.
+#' @param w Item weight vector specifying the relative importance of each item.
+#' @param na Values to be treated as missing values.
 #' @note This function is implemented using a binary data compatibility wrapper and
 #'       will raise an error if used with polytomous data.
 #' @return A numeric vector of entropy values for each item, measured in bits.
@@ -943,6 +1020,8 @@ ItemThreshold.ordinal <- function(U, na = NULL, Z = NULL, w = NULL) {
 ItemEntropy <- function(U, na = NULL, Z = NULL, w = NULL) {
   UseMethod("ItemEntropy")
 }
+
+#' @rdname ItemEntropy
 #' @export
 ItemEntropy.default <- function(U, na = NULL, Z = NULL, w = NULL) {
   if (inherits(U, "exametrika")) {
@@ -957,6 +1036,8 @@ ItemEntropy.default <- function(U, na = NULL, Z = NULL, w = NULL) {
     ItemEntropy(U)
   }
 }
+
+#' @rdname ItemEntropy
 #' @export
 ItemEntropy.binary <- function(U, na = NULL, Z = NULL, w = NULL) {
   # Calculate correct response rates
@@ -967,6 +1048,7 @@ ItemEntropy.binary <- function(U, na = NULL, Z = NULL, w = NULL) {
   return(itemE)
 }
 
+#' @rdname ItemEntropy
 #' @export
 ItemEntropy.ordinal <- function(U, na = NULL, Z = NULL, w = NULL) {
   nitems <- ncol(U$Q)
@@ -998,10 +1080,12 @@ ItemEntropy.ordinal <- function(U, na = NULL, Z = NULL, w = NULL) {
 #' }
 #' Higher positive correlations indicate items that better discriminate between
 #' high and low ability examinees.
-#' @param U U is a data matrix of the type matrix or data.frame.
-#' @param Z Z is a missing indicator matrix of the type matrix or data.frame
-#' @param w w is item weight vector
-#' @param na na argument specifies the numbers or characters to be treated as missing values.
+#' @param U Either an object of class "exametrika" or raw data. When raw data is given,
+#'   it is converted to the exametrika class with the \code{\link{dataFormat}} function.
+#' @param Z Missing indicator matrix of type matrix or data.frame. Values of 1 indicate
+#'   observed responses, while 0 indicates missing data.
+#' @param w Item weight vector specifying the relative importance of each item.
+#' @param na Values to be treated as missing values.
 #' @note This function is implemented using a binary data compatibility wrapper and
 #'       will raise an error if used with polytomous data.
 #' @return A numeric vector of item-total correlations. Values typically range
@@ -1023,6 +1107,8 @@ ItemEntropy.ordinal <- function(U, na = NULL, Z = NULL, w = NULL) {
 ItemTotalCorr <- function(U, na = NULL, Z = NULL, w = NULL) {
   UseMethod("ItemTotalCorr")
 }
+
+#' @rdname ItemTotalCorr
 #' @export
 ItemTotalCorr.default <- function(U, na = NULL, Z = NULL, w = NULL) {
   if (inherits(U, "exametrika")) {
@@ -1037,6 +1123,8 @@ ItemTotalCorr.default <- function(U, na = NULL, Z = NULL, w = NULL) {
     ItemTotalCorr(U)
   }
 }
+
+#' @rdname ItemTotalCorr
 #' @export
 ItemTotalCorr.binary <- function(U, na = NULL, Z = NULL, w = NULL) {
   # Calculate item probabilities
@@ -1059,6 +1147,8 @@ ItemTotalCorr.binary <- function(U, na = NULL, Z = NULL, w = NULL) {
   rho_Zi <- t(dev) %*% Zeta / SD / colSums(U$Z)
   return(rho_Zi)
 }
+
+#' @rdname ItemTotalCorr
 #' @export
 ItemTotalCorr.ordinal <- function(U, na = NULL, Z = NULL, w = NULL) {
   total <- rowSums(U$Q)
@@ -1071,8 +1161,6 @@ ItemTotalCorr.ordinal <- function(U, na = NULL, Z = NULL, w = NULL) {
 }
 
 
-
-
 #' @title Biserial Correlation
 #' @description
 #' A biserial correlation is a correlation between dichotomous-ordinal and
@@ -1082,7 +1170,7 @@ ItemTotalCorr.ordinal <- function(U, na = NULL, Z = NULL, w = NULL) {
 #' @return The biserial correlation coefficient between the two variables.
 #' @importFrom stats na.omit qnorm pnorm optim
 #' @export
-Biserial_Correlation <- function(i, t) {
+BiserialCorrelation <- function(i, t) {
   # Original function remains unchanged
   # Count unique values
   unique_i <- length(unique(na.omit(i)))
@@ -1124,12 +1212,12 @@ Biserial_Correlation <- function(i, t) {
 #'
 #' This correlation provides a measure of item discrimination, indicating how well
 #' each item distinguishes between high and low performing examinees.
-#' @param U U is a data matrix of the type matrix or data.frame.
-#' @param Z Z is a missing indicator matrix of the type matrix or data.frame
-#' @param w w is item weight vector
-#' @param na na argument specifies the numbers or characters to be treated as missing values.
-#'  Internal parameters for maintaining compatibility with the binary data
-#'            processing system. Not intended for direct use.
+#' @param U Either an object of class "exametrika" or raw data. When raw data is given,
+#'   it is converted to the exametrika class with the \code{\link{dataFormat}} function.
+#' @param Z Missing indicator matrix of type matrix or data.frame. Values of 1 indicate
+#'   observed responses, while 0 indicates missing data.
+#' @param w Item weight vector specifying the relative importance of each item.
+#' @param na Values to be treated as missing values.
 #' @note This function is implemented using a binary data compatibility wrapper and
 #'       will raise an error if used with polytomous data.
 #' @return A numeric vector of item-total biserial correlations. Values range
@@ -1150,6 +1238,8 @@ Biserial_Correlation <- function(i, t) {
 ITBiserial <- function(U, na = NULL, Z = NULL, w = NULL) {
   UseMethod("ITBiserial")
 }
+
+#' @rdname ITBiserial
 #' @export
 ITBiserial.default <- function(U, na = NULL, Z = NULL, w = NULL) {
   if (!inherits(U, "exametrika")) {
@@ -1160,6 +1250,8 @@ ITBiserial.default <- function(U, na = NULL, Z = NULL, w = NULL) {
   }
   ITBiserial.binary(U, na, Z, w)
 }
+
+#' @rdname ITBiserial
 #' @export
 ITBiserial.binary <- function(U, na = NULL, Z = NULL, w = NULL) {
   # Calculate total scores
@@ -1171,7 +1263,7 @@ ITBiserial.binary <- function(U, na = NULL, Z = NULL, w = NULL) {
 
   # Calculate biserial correlation for each item
   ITB <- vapply(seq_len(ncol(U_data)), function(i) {
-    Biserial_Correlation(U_data[, i], Zeta)
+    BiserialCorrelation(U_data[, i], Zeta)
   }, numeric(1))
 
   return(ITB)
@@ -1192,10 +1284,12 @@ ITBiserial.binary <- function(U, na = NULL, Z = NULL, w = NULL) {
 #'   \item \eqn{u_{ij}} is the response (0/1)
 #'   \item \eqn{w_j} is the item weight
 #' }
-#' @param U U is a data matrix of the type matrix or data.frame.
-#' @param Z Z is a missing indicator matrix of the type matrix or data.frame
-#' @param w w is item weight vector
-#' @param na na argument specifies the numbers or characters to be treated as missing values.
+#' @param U Either an object of class "exametrika" or raw data. When raw data is given,
+#'   it is converted to the exametrika class with the \code{\link{dataFormat}} function.
+#' @param Z Missing indicator matrix of type matrix or data.frame. Values of 1 indicate
+#'   observed responses, while 0 indicates missing data.
+#' @param w Item weight vector specifying the relative importance of each item.
+#' @param na Values to be treated as missing values.
 #' @note This function is implemented using a binary data compatibility wrapper and
 #'       will raise an error if used with polytomous data.
 #' @return A numeric vector containing the Number-Right Score for each examinee.
@@ -1212,6 +1306,8 @@ ITBiserial.binary <- function(U, na = NULL, Z = NULL, w = NULL) {
 nrs <- function(U, na = NULL, Z = NULL, w = NULL) {
   UseMethod("nrs")
 }
+
+#' @rdname nrs
 #' @export
 nrs.default <- function(U, na = NULL, Z = NULL, w = NULL) {
   if (!inherits(U, "exametrika")) {
@@ -1222,6 +1318,8 @@ nrs.default <- function(U, na = NULL, Z = NULL, w = NULL) {
   }
   nrs.binary(U, na, Z, w)
 }
+
+#' @rdname nrs
 #' @export
 nrs.binary <- function(U, na = NULL, Z = NULL, w = NULL) {
   # Calculate weighted sum of correct responses
@@ -1245,10 +1343,12 @@ nrs.binary <- function(U, na = NULL, Z = NULL, w = NULL) {
 #'   \item \eqn{u_{ij}} is the response (0/1)
 #'   \item \eqn{w_j} is the item weight
 #' }
-#' @param U U is a data matrix of the type matrix or data.frame.
-#' @param Z Z is a missing indicator matrix of the type matrix or data.frame
-#' @param w w is item weight vector
-#' @param na na argument specifies the numbers or characters to be treated as missing values.
+#' @param U Either an object of class "exametrika" or raw data. When raw data is given,
+#'   it is converted to the exametrika class with the \code{\link{dataFormat}} function.
+#' @param Z Missing indicator matrix of type matrix or data.frame. Values of 1 indicate
+#'   observed responses, while 0 indicates missing data.
+#' @param w Item weight vector specifying the relative importance of each item.
+#' @param na Values to be treated as missing values.
 #' @note This function is implemented using a binary data compatibility wrapper and
 #'       will raise an error if used with polytomous data.
 #' @return A numeric vector containing the passage rate for each student.
@@ -1270,6 +1370,8 @@ nrs.binary <- function(U, na = NULL, Z = NULL, w = NULL) {
 passage <- function(U, na = NULL, Z = NULL, w = NULL) {
   UseMethod("passage")
 }
+
+#' @rdname passage
 #' @export
 passage.default <- function(U, na = NULL, Z = NULL, w = NULL) {
   if (!inherits(U, "exametrika")) {
@@ -1280,6 +1382,8 @@ passage.default <- function(U, na = NULL, Z = NULL, w = NULL) {
   }
   passage.binary(U, na, Z, w)
 }
+
+#' @rdname passage
 #' @export
 passage.binary <- function(U, na = NULL, Z = NULL, w = NULL) {
   # Calculate Number-Right Score
@@ -1309,10 +1413,12 @@ passage.binary <- function(U, na = NULL, Z = NULL, w = NULL) {
 #'   \item \eqn{\bar{r}} is the mean passage rate
 #'   \item \eqn{\sigma_r} is the standard deviation of passage rates
 #' }
-#' @param U U is a data matrix of the type matrix or data.frame.
-#' @param Z Z is a missing indicator matrix of the type matrix or data.frame
-#' @param w w is item weight vector
-#' @param na na argument specifies the numbers or characters to be treated as missing values.
+#' @param U Either an object of class "exametrika" or raw data. When raw data is given,
+#'   it is converted to the exametrika class with the \code{\link{dataFormat}} function.
+#' @param Z Missing indicator matrix of type matrix or data.frame. Values of 1 indicate
+#'   observed responses, while 0 indicates missing data.
+#' @param w Item weight vector specifying the relative importance of each item.
+#' @param na Values to be treated as missing values.
 #' @note This function is implemented using a binary data compatibility wrapper and
 #'       will raise an error if used with polytomous data.
 #' @return A numeric vector of standardized scores for each student. The scores follow
@@ -1335,6 +1441,8 @@ passage.binary <- function(U, na = NULL, Z = NULL, w = NULL) {
 sscore <- function(U, na = NULL, Z = NULL, w = NULL) {
   UseMethod("sscore")
 }
+
+#' @rdname sscore
 #' @export
 sscore.default <- function(U, na = NULL, Z = NULL, w = NULL) {
   if (!inherits(U, "exametrika")) {
@@ -1345,6 +1453,8 @@ sscore.default <- function(U, na = NULL, Z = NULL, w = NULL) {
   }
   sscore.binary(U, na, Z, w)
 }
+
+#' @rdname sscore
 #' @export
 sscore.binary <- function(U, na = NULL, Z = NULL, w = NULL) {
   # Get number of students
@@ -1379,10 +1489,12 @@ sscore.binary <- function(U, na = NULL, Z = NULL, w = NULL) {
 #' The percentile rank indicates the percentage of scores in the distribution
 #' that fall below a given score. For example, a percentile rank of 75 means
 #' the student performed better than 75% of the group.
-#' @param U U is a data matrix of the type matrix or data.frame.
-#' @param Z Z is a missing indicator matrix of the type matrix or data.frame
-#' @param w w is item weight vector
-#' @param na na argument specifies the numbers or characters to be treated as missing values.
+#' @param U Either an object of class "exametrika" or raw data. When raw data is given,
+#'   it is converted to the exametrika class with the \code{\link{dataFormat}} function.
+#' @param Z Missing indicator matrix of type matrix or data.frame. Values of 1 indicate
+#'   observed responses, while 0 indicates missing data.
+#' @param w Item weight vector specifying the relative importance of each item.
+#' @param na Values to be treated as missing values.
 #' @note This function is implemented using a binary data compatibility wrapper and
 #'       will raise an error if used with polytomous data.
 #' @return A numeric vector of percentile ranks (1-100) for each student, where:
@@ -1404,6 +1516,8 @@ sscore.binary <- function(U, na = NULL, Z = NULL, w = NULL) {
 percentile <- function(U, na = NULL, Z = NULL, w = NULL) {
   UseMethod("percentile")
 }
+
+#' @rdname percentile
 #' @export
 percentile.default <- function(U, na = NULL, Z = NULL, w = NULL) {
   if (!inherits(U, "exametrika")) {
@@ -1414,6 +1528,8 @@ percentile.default <- function(U, na = NULL, Z = NULL, w = NULL) {
   }
   percentile.binary(U, na, Z, w)
 }
+
+#' @rdname percentile
 #' @export
 percentile.binary <- function(U, na = NULL, Z = NULL, w = NULL) {
   # Calculate standardized scores
@@ -1447,10 +1563,12 @@ percentile.binary <- function(U, na = NULL, Z = NULL, w = NULL) {
 #'   \item Stanine 8: next 7% (percentiles 90-96)
 #'   \item Stanine 9: highest 4% (percentiles 97-100)
 #' }
-#' @param U U is a data matrix of the type matrix or data.frame.
-#' @param Z Z is a missing indicator matrix of the type matrix or data.frame
-#' @param w w is item weight vector
-#' @param na na argument specifies the numbers or characters to be treated as missing values.
+#' @param U Either an object of class "exametrika" or raw data. When raw data is given,
+#'   it is converted to the exametrika class with the \code{\link{dataFormat}} function.
+#' @param Z Missing indicator matrix of type matrix or data.frame. Values of 1 indicate
+#'   observed responses, while 0 indicates missing data.
+#' @param w Item weight vector specifying the relative importance of each item.
+#' @param na Values to be treated as missing values.
 #' @note This function is implemented using a binary data compatibility wrapper and
 #'       will raise an error if used with polytomous data.
 #' @return A list containing two elements:
@@ -1477,10 +1595,13 @@ percentile.binary <- function(U, na = NULL, Z = NULL, w = NULL) {
 #' result$stanine
 #' # View individual scores
 #' result$stanineScore
+#'
 #' @export
 stanine <- function(U, na = NULL, Z = NULL, w = NULL) {
   UseMethod("stanine")
 }
+
+#' @rdname stanine
 #' @export
 stanine.default <- function(U, na = NULL, Z = NULL, w = NULL) {
   if (!inherits(U, "exametrika")) {
@@ -1491,6 +1612,8 @@ stanine.default <- function(U, na = NULL, Z = NULL, w = NULL) {
   }
   stanine.binary(U, na, Z, w)
 }
+
+#' @rdname stanine
 #' @export
 stanine.binary <- function(U, na = NULL, Z = NULL, w = NULL) {
   # Define stanine boundaries (cumulative proportions)
@@ -1531,10 +1654,12 @@ stanine.binary <- function(U, na = NULL, Z = NULL, w = NULL) {
 #' @description
 #' The dimensionality is the number of components
 #' the test is measuring.
-#' @param U U is a data matrix of the type matrix or data.frame.
-#' @param Z Z is a missing indicator matrix of the type matrix or data.frame
-#' @param w w is item weight vector
-#' @param na na argument specifies the numbers or characters to be treated as missing values.
+#' @param U Either an object of class "exametrika" or raw data. When raw data is given,
+#'   it is converted to the exametrika class with the \code{\link{dataFormat}} function.
+#' @param Z Missing indicator matrix of type matrix or data.frame. Values of 1 indicate
+#'   observed responses, while 0 indicates missing data.
+#' @param w Item weight vector specifying the relative importance of each item.
+#' @param na Values to be treated as missing values.
 #' @return Returns a list of class c("exametrika", "Dimensionality") containing:
 #'   \describe{
 #'     \item{Component}{Sequence of component numbers}
@@ -1542,11 +1667,13 @@ stanine.binary <- function(U, na = NULL, Z = NULL, w = NULL) {
 #'     \item{PerOfVar}{Percentage of variance explained by each component}
 #'     \item{CumOfPer}{Cumulative percentage of variance explained}
 #'   }
+#'
 #' @export
-
 Dimensionality <- function(U, na = NULL, Z = NULL, w = NULL) {
   UseMethod("Dimensionality")
 }
+
+#' @rdname Dimensionality
 #' @export
 Dimensionality.default <- function(U, na = NULL, Z = NULL, w = NULL) {
   if (inherits(U, "exametrika")) {
@@ -1562,6 +1689,7 @@ Dimensionality.default <- function(U, na = NULL, Z = NULL, w = NULL) {
   }
 }
 
+#' @rdname Dimensionality
 #' @export
 Dimensionality.binary <- function(U, na = NULL, Z = NULL, w = NULL) {
   tmp <- dataFormat(data = U, na = na, Z = Z, w = w)
@@ -1584,6 +1712,7 @@ Dimensionality.binary <- function(U, na = NULL, Z = NULL, w = NULL) {
   return(ret)
 }
 
+#' @rdname Dimensionality
 #' @export
 Dimensionality.rated <- function(U, na = NULL, Z = NULL, w = NULL) {
   tmp <- dataFormat(data = U, na = na, Z = Z, w = w)
@@ -1606,6 +1735,7 @@ Dimensionality.rated <- function(U, na = NULL, Z = NULL, w = NULL) {
   return(ret)
 }
 
+#' @rdname Dimensionality
 #' @export
 Dimensionality.ordinal <- function(U, na = NULL, Z = NULL, w = NULL) {
   tmp <- dataFormat(data = U, na = na, Z = Z, w = w)

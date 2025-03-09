@@ -2,76 +2,80 @@
 % Please edit documentation in R/02B_TestStatistics.R
 \name{TestStatistics}
 \alias{TestStatistics}
+\alias{TestStatistics.default}
+\alias{TestStatistics.binary}
+\alias{TestStatistics.ordinal}
 \title{Simple Test Statistics}
 \usage{
 TestStatistics(U, na = NULL, Z = NULL, w = NULL)
+
+\method{TestStatistics}{default}(U, na = NULL, Z = NULL, w = NULL)
+
+\method{TestStatistics}{binary}(U, na = NULL, Z = NULL, w = NULL)
+
+\method{TestStatistics}{ordinal}(U, na = NULL, Z = NULL, w = NULL)
 }
 \arguments{
-\item{U}{U is a data matrix of the type matrix or data.frame.}
+\item{U}{Either an object of class "exametrika" or raw data. When raw data is given,
+it is converted to the exametrika class with the \code{\link{dataFormat}} function.}
 
-\item{na}{na argument specifies the numbers or characters to be treated as missing values.}
+\item{na}{Values to be treated as missing values.}
 
-\item{Z}{Z is a missing indicator matrix of the type matrix or data.frame}
+\item{Z}{Missing indicator matrix of type matrix or data.frame. Values of 1 indicate
+observed responses, while 0 indicates missing data.}
 
-\item{w}{w is item weight vector}
+\item{w}{Item weight vector specifying the relative importance of each item.}
 }
 \value{
-For binary data:
+The returned object depends on the data type:
+
+For binary data, a list of class c("exametrika", "TestStatistics") containing:
 \describe{
 \item{TestLength}{Length of the test. The number of items included in the test.}
 \item{SampleSize}{Sample size. The number of rows in the dataset.}
 \item{Mean}{Average number of correct answers.}
-\item{SEofMean}{Standard error of mean}
-\item{Variance}{Variance}
-\item{SD}{Standard Deviation}
-\item{Skewness}{Skewness}
-\item{Kurtosis}{Kurtosis}
-\item{Min}{Minimum score}
-\item{Max}{Max score}
-\item{Range}{Range of score}
+\item{SEofMean}{Standard error of mean.}
+\item{Variance}{Variance of test scores.}
+\item{SD}{Standard Deviation of test scores.}
+\item{Skewness}{Skewness of score distribution (measure of asymmetry).}
+\item{Kurtosis}{Kurtosis of score distribution (measure of tail extremity).}
+\item{Min}{Minimum score.}
+\item{Max}{Maximum score.}
+\item{Range}{Range of scores (Max - Min).}
 \item{Q1}{First quartile. Same as the 25th percentile.}
 \item{Median}{Median. Same as the 50th percentile.}
 \item{Q3}{Third quartile. Same as the 75th percentile.}
-\item{IQR}{Interquartile range. It is calculated by subtracting the first quartile from the third quartile.}
-\item{Stanine}{see \link{stanine}}
+\item{IQR}{Interquartile range. Calculated by subtracting Q1 from Q3.}
+\item{Stanine}{Stanine score boundaries, see \code{\link{stanine}}.}
 }
-For rated polytomous data:
-\describe{
-\item{TestLength}{Length of the test. The number of items included in the test.}
-\item{SampleSize}{Sample size. The number of rows in the dataset.}
-\item{Mean}{Average number of correct answers.}
-\item{SEofMean}{Standard error of mean}
-\item{Variance}{Variance}
-\item{SD}{Standard Deviation}
-\item{Skewness}{Skewness}
-\item{Kurtosis}{Kurtosis}
-\item{Min}{Minimum score}
-\item{Max}{Max score}
-\item{Range}{Range of score}
-#' }
-For ordinal polytomous data:
-\describe{
-\item{TestLength}{Length of the test. The number of items included in the test.}
-\item{SampleSize}{Sample size. The number of rows in the dataset.}
-\item{Mean}{Average number of correct answers.}
-\item{SEofMean}{Standard error of mean}
-\item{Variance}{Variance}
-\item{SD}{Standard Deviation}
-\item{Skewness}{Skewness}
-\item{Kurtosis}{Kurtosis}
-\item{Min}{Minimum score}
-\item{Max}{Max score}
-\item{Range}{Range of score}
-}
-For nominal polytomous data:
-\describe{
-\item{Response Data}{Same as binary data, with scores representing response levels}
-}
+
+For ordinal and rated data, the function calls \code{\link{ScoreReport}} and returns
+its result. See \code{\link{ScoreReport}} for details of the returned object.
+
+For nominal data, an error is returned as this function does not support nominal data.
 }
 \description{
-Statistics regarding the total score.
+Calculates descriptive statistics for test scores, providing a comprehensive
+summary of central tendency, variability, and distribution shape.
+Different statistics are calculated based on the data type (binary, ordinal, rated, or nominal).
 }
 \examples{
-# using sample dataset
-TestStatistics(J15S500)
+# Basic usage
+stats <- TestStatistics(J15S500)
+print(stats)
+
+# Extract specific statistics
+cat("Mean score:", stats$Mean, "\n")
+cat("Standard deviation:", stats$SD, "\n")
+
+# View score distribution summary
+summary_stats <- data.frame(
+  Min = stats$Min,
+  Q1 = stats$Q1,
+  Median = stats$Median,
+  Mean = stats$Mean,
+  Q3 = stats$Q3,
+  Max = stats$Max
+)
+print(summary_stats)
 }

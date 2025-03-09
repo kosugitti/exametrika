@@ -7,16 +7,16 @@
 polychoric_likelihood(rho, mat)
 }
 \arguments{
-\item{rho}{Numeric value between -1 and 1, the correlation coefficient.}
+\item{rho}{Numeric value between -1 and 1, the correlation coefficient}
 
-\item{mat}{A contingency table matrix for two ordinal variables.}
+\item{mat}{A contingency table matrix for two ordinal variables}
 }
 \value{
-The negative log-likelihood value for the given correlation coefficient.
+The negative log-likelihood value for the given correlation coefficient
 }
 \description{
-This function calculates the negative log-likelihood for estimating
-polychoric correlation from a contingency table.
+Calculates the negative log-likelihood for estimating polychoric correlation
+from a contingency table of two ordinal variables.
 }
 \details{
 The function estimates thresholds from the marginal distributions and

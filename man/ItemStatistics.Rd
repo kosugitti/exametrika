@@ -2,37 +2,64 @@
 % Please edit documentation in R/02C_ItemStatistics.R
 \name{ItemStatistics}
 \alias{ItemStatistics}
+\alias{ItemStatistics.default}
+\alias{ItemStatistics.binary}
+\alias{ItemStatistics.ordinal}
 \title{Simple Item Statistics}
 \usage{
 ItemStatistics(U, na = NULL, Z = NULL, w = NULL)
+
+\method{ItemStatistics}{default}(U, na = NULL, Z = NULL, w = NULL)
+
+\method{ItemStatistics}{binary}(U, na = NULL, Z = NULL, w = NULL)
+
+\method{ItemStatistics}{ordinal}(U, na = NULL, Z = NULL, w = NULL)
 }
 \arguments{
-\item{U}{U is a data matrix of the type matrix or data.frame.}
+\item{U}{Either an object of class "exametrika" or raw data. When raw data is given,
+it is converted to the exametrika class with the \code{\link{dataFormat}} function.}
 
-\item{na}{na argument specifies the numbers or characters to be treated as missing values.}
+\item{na}{Values to be treated as missing values.}
 
-\item{Z}{Z is a missing indicator matrix of the type matrix or data.frame}
+\item{Z}{Missing indicator matrix of type matrix or data.frame. Values of 1 indicate
+observed responses, while 0 indicates missing data.}
 
-\item{w}{w is item weight vector}
+\item{w}{Item weight vector specifying the relative importance of each item.}
 }
 \value{
 For binary data:
 \describe{
-\item{NR}{Number of Respondents}
+\item{ItemLabel}{Label identifying each item}
+\item{NR}{Number of Respondents for each item}
 \item{CRR}{Correct Response Rate denoted as $p_j$.}
 \item{ODDs}{Item Odds is the ratio of the correct response rate to the incorrect response rate.
 Defined as \eqn{o_j = \frac{p_j}{1-p_j}}}
 \item{Threshold}{Item Threshold is a measure of difficulty based on a standard normal distribution.}
 \item{Entropy}{Item Entropy is an indicator of the variability or randomness of the responses.
 Defined as \eqn{e_j=-p_j \log_2 p_j - (1-p_j)\log_2(1-p_j)}}
-\item{ITCrr}{Item-total Correlation is a Pearson's correlation fo an item with the number of Number-Right score.}
+\item{ITCrr}{Item-total Correlation is a Pearson's correlation of an item with the Number-Right score.}
 }
+
 For ordinal polytomous data:
 \describe{
+\item{ItemLabel}{Label identifying each item}
+\item{NR}{Number of Respondents for each item}
+\item{Threshold}{Matrix of threshold values for each item's category boundaries, based on
+a standard normal distribution. For an item with K categories, there are K-1 thresholds.}
+\item{Entropy}{Item Entropy calculated using the category probabilities. Unlike binary data,
+this is calculated using the formula \eqn{e_j = -\sum_{k=1}^{K_j} p_{jk} \log_{K_j} p_{jk}},
+where \eqn{K_j} is the number of categories for item j.}
+\item{ITCrr}{Item-total Correlation calculated using polyserial correlation, which
+accounts for the ordinal nature of the item responses and the continuous total score.}
 }
 }
 \description{
-This function calculates statistics for each item.
+This function calculates statistics for each item, with different metrics available
+depending on the data type (binary, ordinal, or rated).
+}
+\note{
+For rated data, the function processes the data as binary, with each response
+being compared to the correct answer to determine correctness.
 }
 \examples{
 # using sample dataset(binary)

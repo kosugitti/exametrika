@@ -131,27 +131,30 @@ qBiNormal <- function(a, b, rho) {
 }
 
 #' @title Calculate Polychoric Correlation Likelihood
+#'
 #' @description
-#' This function calculates the negative log-likelihood for estimating
-#' polychoric correlation from a contingency table.
-#' @param rho Numeric value between -1 and 1, the correlation coefficient.
-#' @param mat A contingency table matrix for two ordinal variables.
-#' @return The negative log-likelihood value for the given correlation coefficient.
+#' Calculates the negative log-likelihood for estimating polychoric correlation
+#' from a contingency table of two ordinal variables.
+#'
+#' @param rho Numeric value between -1 and 1, the correlation coefficient
+#' @param mat A contingency table matrix for two ordinal variables
+#'
+#' @return The negative log-likelihood value for the given correlation coefficient
 #'
 #' @details
 #' The function estimates thresholds from the marginal distributions and
 #' calculates the expected probabilities based on a bivariate normal distribution.
 #' It then computes the log-likelihood by comparing observed and expected frequencies.
-#' @importFrom mvtnorm pmvnorm
+#'
 #' @keywords internal
 #'
 polychoric_likelihood <- function(rho, mat) {
   nr <- nrow(mat)
   nc <- ncol(mat)
-  th_c <- colSums(mat) / sum(mat)
   th_r <- rowSums(mat) / sum(mat)
-  a <- qnorm(cumsum(th_r))
-  b <- qnorm(cumsum(th_c))
+  th_c <- colSums(mat) / sum(mat)
+  a <- qnorm(pmin(cumsum(th_r), 1))
+  b <- qnorm(pmin(cumsum(th_c), 1))
 
   exp_probs <- matrix(0, nrow = nr, ncol = nc)
   for (i in 1:nr) {
@@ -168,13 +171,11 @@ polychoric_likelihood <- function(rho, mat) {
         (-Inf)
       }
       b_high <- b[j]
-      sigma <- matrix(c(1, rho, rho, 1), 2, 2)
 
-
-      exp_probs[i, j] <- pmvnorm(lower = c(-Inf, -Inf), upper = c(a_high, b_high), sigma = sigma) -
-        pmvnorm(lower = c(-Inf, -Inf), upper = c(a_high, b_low), sigma = sigma) -
-        pmvnorm(lower = c(-Inf, -Inf), upper = c(a_low, b_high), sigma = sigma) +
-        pmvnorm(lower = c(-Inf, -Inf), upper = c(a_low, b_low), sigma = sigma)
+      exp_probs[i, j] <- qBiNormal(a_high, b_high, rho) -
+        qBiNormal(a_high, b_low, rho) -
+        qBiNormal(a_low, b_high, rho) +
+        qBiNormal(a_low, b_low, rho)
     }
   }
 
@@ -182,26 +183,50 @@ polychoric_likelihood <- function(rho, mat) {
   return(-log_lik)
 }
 
-
-#' @title Score Report for non-binary data
-#' @param U U is a data matrix of the type matrix or data.frame.
-#' @param Z Z is a missing indicator matrix of the type matrix or data.frame
-#' @param w w is item weight vector
-#' @param na na argument specifies the numbers or characters to be treated as missing values.
-#' @return
-#' \item{TestLength}{Length of the test. The number of items included in the test.}
-#' \item{SampleSize}{Sample size. The number of rows in the dataset.}
-#' \item{Mean}{Average number of correct answers.}
-#' \item{SEofMean}{Standard error of mean}
-#' \item{Variance}{Variance}
-#' \item{SD}{Standard Deviation}
-#' \item{Skewness}{Skewness}
-#' \item{Kurtosis}{Kurtosis}
-#' \item{Min}{Minimum score}
-#' \item{Max}{Max score}
-#' \item{Range}{Range of score}
-#' \item{Alpha}{Cronbach's alpha coefficient, a measure of internal consistency reliability. }
-#' @importFrom stats sd median
+#' @title Generate Score Report for Non-Binary Test Data
+#'
+#' @description
+#' Calculates comprehensive descriptive statistics for a test, including measures of
+#' central tendency, variability, distribution shape, and reliability.
+#'
+#' @param U Either an object of class "exametrika" or raw data. When raw data is given,
+#' it is converted to the exametrika class with the \code{\link{dataFormat}} function.
+#' @param Z Missing indicator matrix of type matrix or data.frame. Values of 1 indicate
+#' observed responses, while 0 indicates missing data.
+#' @param w Item weight vector specifying the relative importance of each item
+#' @param na Values to be treated as missing values
+#'
+#' @return An object of class "exametrika" and "TestStatistics" containing:
+#' \describe{
+#'   \item{TestLength}{Number of items included in the test}
+#'   \item{SampleSize}{Number of examinees (rows) in the dataset}
+#'   \item{Mean}{Average score across all examinees}
+#'   \item{Median}{Median score}
+#'   \item{SD}{Standard deviation of test scores}
+#'   \item{Variance}{Variance of test scores}
+#'   \item{Skewness}{Skewness of the score distribution (measure of asymmetry)}
+#'   \item{Kurtosis}{Kurtosis of the score distribution (measure of tail extremity)}
+#'   \item{Min}{Minimum score obtained}
+#'   \item{Max}{Maximum score obtained}
+#'   \item{Range}{Difference between maximum and minimum scores}
+#'   \item{Alpha}{Cronbach's alpha coefficient, a measure of internal consistency reliability}
+#' }
+#'
+#' @details
+#' This function is intended for non-binary (ordinal or rated) response data. It calculates
+#' descriptive statistics for the overall test performance. If binary data is provided,
+#' an error message will be displayed.
+#'
+#' @importFrom stats median
+#' @examples
+#' \donttest{
+#' # Generate score report for sample ordinal data
+#' ScoreReport(J15S3810)
+#'
+#' # Example with rated data
+#' ScoreReport(J35S5000)
+#' }
+#'
 #' @export
 ScoreReport <- function(U, na = NULL, Z = NULL, w = NULL) {
   if (!inherits(U, "exametrika")) {
@@ -260,20 +285,50 @@ ScoreReport <- function(U, na = NULL, Z = NULL, w = NULL) {
   return(ret)
 }
 
-#' @title Item Report for non-binary data
-#' @param U U is a data matrix of the type matrix or data.frame.
-#' @param Z Z is a missing indicator matrix of the type matrix or data.frame
-#' @param w w is item weight vector
-#' @param na na argument specifies the numbers or characters to be treated as missing values.
-#' @return
-#' \item{Obs}{Number of valid responses for each item}
-#' \item{ObsRatio}{Proportion of valid responses for each item (range: 0-1)}
-#' \item{ItemMean}{Mean score of each item}
-#' \item{ItemSD}{Standard deviation of each item score}
-#' \item{ItemCORR}{Item-total correlation coefficients.
-#' Correlation between item scores and total test scores}
-#' \item{ItemCORR_R}{Corrected item-total correlation coefficients.
-#' Correlation between item scores and total test scores excluding the target item}
+#' @title Generate Item Report for Non-Binary Test Data
+#'
+#' @description
+#' Calculates item-level statistics for non-binary test data, including response rates,
+#' basic descriptive statistics, and item-total correlations.
+#'
+#' @param U Either an object of class "exametrika" or raw data. When raw data is given,
+#' it is converted to the exametrika class with the \code{\link{dataFormat}} function.
+#' @param Z Missing indicator matrix of type matrix or data.frame. Values of 1 indicate
+#' observed responses, while 0 indicates missing data.
+#' @param w Item weight vector specifying the relative importance of each item
+#' @param na Values to be treated as missing values
+#'
+#' @return An object of class "exametrika" and "QitemStatistics" containing:
+#' \describe{
+#'   \item{ItemLabel}{Labels identifying each item}
+#'   \item{Obs}{Number of valid responses for each item}
+#'   \item{ObsRatio}{Proportion of valid responses for each item (range: 0-1)}
+#'   \item{ItemMean}{Mean score of each item}
+#'   \item{ItemSD}{Standard deviation of each item score}
+#'   \item{ItemCORR}{Item-total correlation coefficients - correlation between
+#'         item scores and total test scores}
+#'   \item{ItemCORR_R}{Corrected item-total correlation coefficients - correlation between
+#'         item scores and total test scores excluding the target item}
+#' }
+#'
+#' @details
+#' This function is intended for non-binary (ordinal or rated) response data. It provides
+#' detailed statistics for each item in the test, focusing on response patterns and
+#' the relationship between individual items and overall test performance.
+#' If binary data is provided, an error message will be displayed.
+#'
+#' @examples
+#' \donttest{
+#' # Generate item report for sample ordinal data
+#' item_stats <- ItemReport(J15S3810)
+#'
+#' # View first few rows of the item report
+#' head(item_stats)
+#'
+#' # Example with rated data including custom missing value indicator
+#' item_stats2 <- ItemReport(J35S5000, na = -99)
+#' }
+#'
 #' @export
 ItemReport <- function(U, na = NULL, Z = NULL, w = NULL) {
   if (!inherits(U, "exametrika")) {

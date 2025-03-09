@@ -2,18 +2,32 @@
 % Please edit documentation in R/02_TestItemFunctions.R
 \name{Dimensionality}
 \alias{Dimensionality}
+\alias{Dimensionality.default}
+\alias{Dimensionality.binary}
+\alias{Dimensionality.rated}
+\alias{Dimensionality.ordinal}
 \title{Dimensionality}
 \usage{
 Dimensionality(U, na = NULL, Z = NULL, w = NULL)
+
+\method{Dimensionality}{default}(U, na = NULL, Z = NULL, w = NULL)
+
+\method{Dimensionality}{binary}(U, na = NULL, Z = NULL, w = NULL)
+
+\method{Dimensionality}{rated}(U, na = NULL, Z = NULL, w = NULL)
+
+\method{Dimensionality}{ordinal}(U, na = NULL, Z = NULL, w = NULL)
 }
 \arguments{
-\item{U}{U is a data matrix of the type matrix or data.frame.}
+\item{U}{Either an object of class "exametrika" or raw data. When raw data is given,
+it is converted to the exametrika class with the \code{\link{dataFormat}} function.}
 
-\item{na}{na argument specifies the numbers or characters to be treated as missing values.}
+\item{na}{Values to be treated as missing values.}
 
-\item{Z}{Z is a missing indicator matrix of the type matrix or data.frame}
+\item{Z}{Missing indicator matrix of type matrix or data.frame. Values of 1 indicate
+observed responses, while 0 indicates missing data.}
 
-\item{w}{w is item weight vector}
+\item{w}{Item weight vector specifying the relative importance of each item.}
 }
 \value{
 Returns a list of class c("exametrika", "Dimensionality") containing:

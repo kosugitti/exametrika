@@ -2,33 +2,54 @@
 % Please edit documentation in R/02_QitemFunctions.R
 \name{ScoreReport}
 \alias{ScoreReport}
-\title{Score Report for non-binary data}
+\title{Generate Score Report for Non-Binary Test Data}
 \usage{
 ScoreReport(U, na = NULL, Z = NULL, w = NULL)
 }
 \arguments{
-\item{U}{U is a data matrix of the type matrix or data.frame.}
+\item{U}{Either an object of class "exametrika" or raw data. When raw data is given,
+it is converted to the exametrika class with the \code{\link{dataFormat}} function.}
 
-\item{na}{na argument specifies the numbers or characters to be treated as missing values.}
+\item{na}{Values to be treated as missing values}
 
-\item{Z}{Z is a missing indicator matrix of the type matrix or data.frame}
+\item{Z}{Missing indicator matrix of type matrix or data.frame. Values of 1 indicate
+observed responses, while 0 indicates missing data.}
 
-\item{w}{w is item weight vector}
+\item{w}{Item weight vector specifying the relative importance of each item}
 }
 \value{
-\item{TestLength}{Length of the test. The number of items included in the test.}
-\item{SampleSize}{Sample size. The number of rows in the dataset.}
-\item{Mean}{Average number of correct answers.}
-\item{SEofMean}{Standard error of mean}
-\item{Variance}{Variance}
-\item{SD}{Standard Deviation}
-\item{Skewness}{Skewness}
-\item{Kurtosis}{Kurtosis}
-\item{Min}{Minimum score}
-\item{Max}{Max score}
-\item{Range}{Range of score}
-\item{Alpha}{Cronbach's alpha coefficient, a measure of internal consistency reliability. }
+An object of class "exametrika" and "TestStatistics" containing:
+\describe{
+\item{TestLength}{Number of items included in the test}
+\item{SampleSize}{Number of examinees (rows) in the dataset}
+\item{Mean}{Average score across all examinees}
+\item{Median}{Median score}
+\item{SD}{Standard deviation of test scores}
+\item{Variance}{Variance of test scores}
+\item{Skewness}{Skewness of the score distribution (measure of asymmetry)}
+\item{Kurtosis}{Kurtosis of the score distribution (measure of tail extremity)}
+\item{Min}{Minimum score obtained}
+\item{Max}{Maximum score obtained}
+\item{Range}{Difference between maximum and minimum scores}
+\item{Alpha}{Cronbach's alpha coefficient, a measure of internal consistency reliability}
+}
 }
 \description{
-Score Report for non-binary data
+Calculates comprehensive descriptive statistics for a test, including measures of
+central tendency, variability, distribution shape, and reliability.
+}
+\details{
+This function is intended for non-binary (ordinal or rated) response data. It calculates
+descriptive statistics for the overall test performance. If binary data is provided,
+an error message will be displayed.
+}
+\examples{
+\donttest{
+# Generate score report for sample ordinal data
+ScoreReport(J15S3810)
+
+# Example with rated data
+ScoreReport(J35S5000)
+}
+
 }

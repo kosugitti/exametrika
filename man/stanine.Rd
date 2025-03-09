@@ -2,18 +2,26 @@
 % Please edit documentation in R/02_TestItemFunctions.R
 \name{stanine}
 \alias{stanine}
+\alias{stanine.default}
+\alias{stanine.binary}
 \title{Stanine Scores}
 \usage{
 stanine(U, na = NULL, Z = NULL, w = NULL)
+
+\method{stanine}{default}(U, na = NULL, Z = NULL, w = NULL)
+
+\method{stanine}{binary}(U, na = NULL, Z = NULL, w = NULL)
 }
 \arguments{
-\item{U}{U is a data matrix of the type matrix or data.frame.}
+\item{U}{Either an object of class "exametrika" or raw data. When raw data is given,
+it is converted to the exametrika class with the \code{\link{dataFormat}} function.}
 
-\item{na}{na argument specifies the numbers or characters to be treated as missing values.}
+\item{na}{Values to be treated as missing values.}
 
-\item{Z}{Z is a missing indicator matrix of the type matrix or data.frame}
+\item{Z}{Missing indicator matrix of type matrix or data.frame. Values of 1 indicate
+observed responses, while 0 indicates missing data.}
 
-\item{w}{w is item weight vector}
+\item{w}{Item weight vector specifying the relative importance of each item.}
 }
 \value{
 A list containing two elements:
@@ -58,6 +66,7 @@ result <- stanine(J15S500)
 result$stanine
 # View individual scores
 result$stanineScore
+
 }
 \references{
 Angoff, W. H. (1984). Scales, norms, and equivalent scores. Educational Testing Service.

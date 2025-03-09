@@ -2,20 +2,26 @@
 % Please edit documentation in R/02_TestItemFunctions.R
 \name{ITBiserial}
 \alias{ITBiserial}
+\alias{ITBiserial.default}
+\alias{ITBiserial.binary}
 \title{Item-Total Biserial Correlation}
 \usage{
 ITBiserial(U, na = NULL, Z = NULL, w = NULL)
+
+\method{ITBiserial}{default}(U, na = NULL, Z = NULL, w = NULL)
+
+\method{ITBiserial}{binary}(U, na = NULL, Z = NULL, w = NULL)
 }
 \arguments{
-\item{U}{U is a data matrix of the type matrix or data.frame.}
+\item{U}{Either an object of class "exametrika" or raw data. When raw data is given,
+it is converted to the exametrika class with the \code{\link{dataFormat}} function.}
 
-\item{na}{na argument specifies the numbers or characters to be treated as missing values.
-Internal parameters for maintaining compatibility with the binary data
-processing system. Not intended for direct use.}
+\item{na}{Values to be treated as missing values.}
 
-\item{Z}{Z is a missing indicator matrix of the type matrix or data.frame}
+\item{Z}{Missing indicator matrix of type matrix or data.frame. Values of 1 indicate
+observed responses, while 0 indicates missing data.}
 
-\item{w}{w is item weight vector}
+\item{w}{Item weight vector specifying the relative importance of each item.}
 }
 \value{
 A numeric vector of item-total biserial correlations. Values range

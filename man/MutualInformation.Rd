@@ -2,18 +2,29 @@
 % Please edit documentation in R/02_TestItemFunctions.R
 \name{MutualInformation}
 \alias{MutualInformation}
+\alias{MutualInformation.default}
+\alias{MutualInformation.binary}
+\alias{MutualInformation.ordinal}
 \title{Mutual Information}
 \usage{
 MutualInformation(U, na = NULL, Z = NULL, w = NULL, base = 2)
+
+\method{MutualInformation}{default}(U, na = NULL, Z = NULL, w = NULL, base = 2)
+
+\method{MutualInformation}{binary}(U, na = NULL, Z = NULL, w = NULL, base = 2)
+
+\method{MutualInformation}{ordinal}(U, na = NULL, Z = NULL, w = NULL, base = 2)
 }
 \arguments{
-\item{U}{U is a data matrix of the type matrix or data.frame.}
+\item{U}{Either an object of class "exametrika" or raw data. When raw data is given,
+it is converted to the exametrika class with the \code{\link{dataFormat}} function.}
 
-\item{na}{The na argument specifies the numbers or characters to be treated as missing values.}
+\item{na}{Values to be treated as missing values.}
 
-\item{Z}{Z is a missing indicator matrix of the type matrix or data.frame.}
+\item{Z}{Missing indicator matrix of type matrix or data.frame. Values of 1 indicate
+observed responses, while 0 indicates missing data.}
 
-\item{w}{w is item weight vector.}
+\item{w}{Item weight vector specifying the relative importance of each item.}
 
 \item{base}{The base for the logarithm. Default is 2. For polytomous data,
 you can use "V" to set the base to min(rows, columns), "e" for natural logarithm (base e),

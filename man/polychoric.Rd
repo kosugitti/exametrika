@@ -29,4 +29,5 @@ set.seed(123)
 x <- sample(1:5, 100, replace = TRUE)
 y <- sample(1:4, 100, replace = TRUE)
 polychoric(x, y)
+
 }

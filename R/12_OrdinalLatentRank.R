@@ -1,60 +1,48 @@
 #' @rdname LRA
-#' @param nrank number of latent rank
-#' @param mic Monotonic increasing option. The default is FALSE.
-#' @param maxiter Maximum number of iterations. default is 100.
+#' @section Ordinal Data Method:
+#' \code{LRA.ordinal} analyzes ordered categorical data with multiple thresholds,
+#' such as Likert-scale responses or graded items.
+#'
 #' @param trapezoidal Specifies the height of both tails when using a trapezoidal
 #' prior distribution. Must be less than 1/nrank. The default value is 0, which
 #' results in a uniform prior distribution.
 #' @param eps Convergence threshold for parameter updates. Default is 1e-4.
-#' @param verbose verbose output Flag. default is TRUE
+#'
 #' @return
-#' For Ordinal Data:
+#' For ordinal data (\code{LRA.ordinal}), the returned list additionally includes:
 #' \describe{
-#' \item{ScoreReport}{Basic descriptive statistics of the test performance, containing
-#' fundamental measures such as sample size, test length, central tendency (mean, median),
-#' variability (SD, range), distribution characteristics(skewness, kurtosis), and internal
-#' consistency (Cronbach's Alpha)}
-#' \item{ItemReport}{Basic statistics for each item: number of observations, proportion of responses,
-#' item mean, standard deviation, item-total correlation, and corrected item-total correlation}
-#' \item{ICBR}{Item Category Boundary Reference matrix containing cumulative probabilities
-#' for each rank to score at or above each category threshold. The matrix shows these boundary
-#' probabilities for each item-category combination across all ranks}
-#' \item{ICRP}{Item Category Reference Profile matrix containing the probability of responding to
-#' each category for each item across different ranks. The matrix shows the probability that
-#' an examinee in a specific rank would select or score each response category}
-#' \item{ScoreRankCorr}{Spearman's rank correlation coefficient between test scores and estimated ranks}
-#' \item{RankQuantCorr}{Spearman's rank correlation coefficient between estimated ranks and
-#' quantile groups (where the number of quantiles equals the number of ranks)}
-#' \item{ScoreRank}{A contingency table showing the frequency distribution of raw scores by estimated ranks}
-#' \item{ScoreMembership}{A contingency table of expected rank memberships for each raw score,
-#' showing the expected number of examinees in each rank conditional on their test scores}
-#' \item{RankQuantile}{A contingency table showing the cross-tabulation between estimated rank frequencies
-#' and quantile-based groupings of examinees}
-#' \item{MembQuantile}{A contingency table showing the cross-tabulation between expected rank membership frequencies
-#' and quantile-based groupings of examinees}
-#' \item{CatQuant}{A table summarizing the response patterns for each item category, showing
-#' both the overall selection ratio and its distribution across quantile groups (Q1, Q2, Q3, etc.).
-#' For each item and response category combination, it provides the total proportion of responses
-#' and the proportion within each quantile}
+#' \item{ScoreReport}{Descriptive statistics of test performance, including sample size,
+#'   test length, central tendency, variability, distribution characteristics, and reliability.}
+#' \item{ItemReport}{Basic statistics for each item including category proportions and item-total correlations.}
+#' \item{ICBR}{Item Category Boundary Reference matrix showing cumulative probabilities for rank-category combinations.}
+#' \item{ICRP}{Item Category Reference Profile matrix showing probability of response in each category by rank.}
+#' \item{ScoreRankCorr}{Spearman's correlation between test scores and estimated ranks.}
+#' \item{RankQuantCorr}{Spearman's correlation between estimated ranks and quantile groups.}
+#' \item{ScoreRank}{Contingency table of raw scores by estimated ranks.}
+#' \item{ScoreMembership}{Expected rank memberships for each raw score.}
+#' \item{RankQuantile}{Cross-tabulation of rank frequencies and quantile groups.}
+#' \item{MembQuantile}{Cross-tabulation of rank membership probabilities and quantile groups.}
+#' \item{CatQuant}{Response patterns across item categories and quantile groups.}
 #' }
+#'
 #' @examples
 #' \donttest{
-#' # Fit a Latent Rank Analysis model with 3 ranks to sample dataset
+#' # Ordinal data example
+#' # Fit a Latent Rank Analysis model with 3 ranks to ordinal data
 #' result.LRAord <- LRA(J15S3810, nrank = 3, mic = TRUE)
-#' # Plot Score Reports
+#'
+#' # Plot score distributions
 #' plot(result.LRAord, type = "ScoreFreq")
 #' plot(result.LRAord, type = "ScoreRank")
-#' # plot ICBR/ICRP
+#'
+#' # Plot category response patterns for items 1-6
 #' plot(result.LRAord, type = "ICBR", items = 1:6, nc = 3, nr = 2)
 #' plot(result.LRAord, type = "ICRP", items = 1:6, nc = 3, nr = 2)
-#' # plot Rank membership profile
-#' plot(result.LRAord,
-#'   type = "RMP", students = 1:15,
-#'   nc = 3, nr = 5
-#' )
 #' }
+#'
 #' @importFrom stats cor
 #' @export
+#'
 LRA.ordinal <- function(U,
                         nrank = 2,
                         mic = FALSE,

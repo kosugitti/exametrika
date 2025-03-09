@@ -2,29 +2,55 @@
 % Please edit documentation in R/02_QitemFunctions.R
 \name{ItemReport}
 \alias{ItemReport}
-\title{Item Report for non-binary data}
+\title{Generate Item Report for Non-Binary Test Data}
 \usage{
 ItemReport(U, na = NULL, Z = NULL, w = NULL)
 }
 \arguments{
-\item{U}{U is a data matrix of the type matrix or data.frame.}
+\item{U}{Either an object of class "exametrika" or raw data. When raw data is given,
+it is converted to the exametrika class with the \code{\link{dataFormat}} function.}
 
-\item{na}{na argument specifies the numbers or characters to be treated as missing values.}
+\item{na}{Values to be treated as missing values}
 
-\item{Z}{Z is a missing indicator matrix of the type matrix or data.frame}
+\item{Z}{Missing indicator matrix of type matrix or data.frame. Values of 1 indicate
+observed responses, while 0 indicates missing data.}
 
-\item{w}{w is item weight vector}
+\item{w}{Item weight vector specifying the relative importance of each item}
 }
 \value{
+An object of class "exametrika" and "QitemStatistics" containing:
+\describe{
+\item{ItemLabel}{Labels identifying each item}
 \item{Obs}{Number of valid responses for each item}
 \item{ObsRatio}{Proportion of valid responses for each item (range: 0-1)}
 \item{ItemMean}{Mean score of each item}
 \item{ItemSD}{Standard deviation of each item score}
-\item{ItemCORR}{Item-total correlation coefficients.
-Correlation between item scores and total test scores}
-\item{ItemCORR_R}{Corrected item-total correlation coefficients.
-Correlation between item scores and total test scores excluding the target item}
+\item{ItemCORR}{Item-total correlation coefficients - correlation between
+item scores and total test scores}
+\item{ItemCORR_R}{Corrected item-total correlation coefficients - correlation between
+item scores and total test scores excluding the target item}
+}
 }
 \description{
-Item Report for non-binary data
+Calculates item-level statistics for non-binary test data, including response rates,
+basic descriptive statistics, and item-total correlations.
+}
+\details{
+This function is intended for non-binary (ordinal or rated) response data. It provides
+detailed statistics for each item in the test, focusing on response patterns and
+the relationship between individual items and overall test performance.
+If binary data is provided, an error message will be displayed.
+}
+\examples{
+\donttest{
+# Generate item report for sample ordinal data
+item_stats <- ItemReport(J15S3810)
+
+# View first few rows of the item report
+head(item_stats)
+
+# Example with rated data including custom missing value indicator
+item_stats2 <- ItemReport(J35S5000, na = -99)
+}
+
 }

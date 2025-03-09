@@ -8,10 +8,21 @@ grm_cumprob <- function(theta, a, b) {
   return(1 / (1 + exp(-a * (theta - b))))
 }
 
-#' @title probability function of GRM
-#' @param theta latent score of subject
-#' @param a discriminant parameter of IRF
-#' @param b difficulty parameter of IRF
+#' @title Probability function for GRM
+#' @description
+#' Calculates the probability of selecting each category given a latent trait value and item parameters.
+#' @param theta Latent trait value of the subject
+#' @param a Discrimination parameter of IRF
+#' @param b Vector of difficulty parameters (thresholds) of IRF
+#' @return Vector of category selection probabilities
+#' @examples
+#' \dontrun{
+#' # Example for an item with 3 categories
+#' a <- 1.5
+#' b <- c(-1.0, 1.0)
+#' theta <- 0
+#' grm_prob(theta, a, b)
+#' }
 #' @export
 
 grm_prob <- function(theta, a, b) {
@@ -30,11 +41,24 @@ grm_prob <- function(theta, a, b) {
   return(p)
 }
 
-#' @title Item Infromation Function for grm
-#' @param theta latent score of subject
-#' @param a discriminant parameter of IRF
-#' @param b difficulty parameter of IRF
+#' @title Item Information Function for GRM
+#' @description
+#' Calculates the value of the Item Information Function for the Graded Response Model.
+#' @param theta Latent trait value of the subject
+#' @param a Discrimination parameter of IRF
+#' @param b Vector of difficulty parameters (thresholds) of IRF
+#' @return Value of the Item Information Function
+#' @examples
+#' \dontrun{
+#' # Example for an item with 3 categories
+#' a <- 1.5
+#' b <- c(-1.0, 1.0)
+#' thetas <- seq(-3, 3, by = 0.1)
+#' info <- sapply(thetas, function(t) grm_iif(t, a, b))
+#' plot(thetas, info, type = "l", xlab = "Theta", ylab = "Information")
+#' }
 #' @export
+
 
 grm_iif <- function(theta, a, b) {
   K <- length(b) + 1
@@ -382,29 +406,42 @@ generate_start_values <- function(tmp) {
   return(list(a = a, b = b))
 }
 
-#' @title Graded Response Model
+#' @title Graded Response Model (GRM)
 #' @description
-#' A short description...
-#' @param U U is either a data class of exametrika, or raw data. When raw data is given,
-#' it is converted to the exametrika class with the \code{\link{dataFormat}} function.
-#' @param Z Z is a missing indicator matrix of the type matrix or data.frame
-#' @param w w is item weight vector
-#' @param na na argument specifies the numbers or characters to be treated as missing values.
-#' @param verbose logical; if TRUE, shows progress of iterations (default: TRUE)
-#' @return
+#' Implements Samejima's (1969) Graded Response Model (GRM), which is an Item Response Theory
+#' model for ordered categorical response data. The model estimates discrimination parameters
+#' and category threshold parameters for each item. It is widely used in psychological measurement,
+#' educational assessment, and other fields that deal with multi-step rating scales.
+#'
+#' @param U Either an object of class "exametrika" or raw data. When raw data is given,
+#'   it is converted to the exametrika class using the \code{\link{dataFormat}} function.
+#' @param Z Missing indicator matrix of type matrix or data.frame. 1 indicates observed values, 0 indicates missing values.
+#' @param w Item weight vector
+#' @param na Specifies numbers or characters to be treated as missing values.
+#' @param verbose Logical; if TRUE, shows progress of iterations (default: TRUE)
+#'
+#' @return A list of class "exametrika" and "GRM" containing the following elements:
 #' \describe{
-#' \item{testlength}{Length of the test. The number of items included in the test.}
-#' \item{nobs}{Sample size. The number of rows in the dataset.}
-#' \item{params}{Matrix containing the estimated item parameters}
-#' \item{itemPSD}{Posterior standard deviation of the item parameters}
-#' \item{ability}{Estimated parameters of students ability}
-#' \item{ItemFitIndices}{Fit index for each item.See also \code{\link{ItemFit}}}
-#' \item{TestFitIndices}{Overall fit index for the test.See also \code{\link{TestFit}}}
+#'   \item{testlength}{Length of the test (number of items)}
+#'   \item{nobs}{Sample size (number of rows in the dataset)}
+#'   \item{params}{Matrix containing the estimated item parameters}
+#'   \item{EAP}{Ability parameters of examinees estimated by EAP method}
+#'   \item{MAP}{Ability parameters of examinees estimated by MAP method}
+#'   \item{PSD}{Posterior standard deviation of the ability parameters}
+#'   \item{ItemFitIndices}{Fit indices for each item. See also \code{\link{ItemFit}}}
+#'   \item{TestFitIndices}{Overall fit indices for the test. See also \code{\link{TestFit}}}
 #' }
-#' @importFrom stats rnorm
-#' @importFrom stats optim
+#'
+#' @references
+#' Samejima, F. (1969). Estimation of latent ability using a response pattern of graded scores.
+#' Psychometrika Monograph Supplement, 34(4, Pt. 2), 1-100.
+#'
+#' @importFrom stats rnorm optim dnorm
+#' @importFrom graphics plot lines
+#'
 #' @examples
 #' \donttest{
+#' # Apply GRM to example data
 #' result <- GRM(J5S1000)
 #' print(result)
 #' plot(result, type = "IRF")
@@ -412,6 +449,7 @@ generate_start_values <- function(tmp) {
 #' plot(result, type = "TIF")
 #' }
 #' @export
+#'
 #'
 GRM <- function(U, na = NULL, Z = NULL, w = NULL, verbose = TRUE) {
   # data format

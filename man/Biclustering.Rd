@@ -2,7 +2,7 @@
 % Please edit documentation in R/07_Biclustering.R
 \name{Biclustering}
 \alias{Biclustering}
-\title{Biclustering and Ranklustering}
+\title{Biclustering and Ranklustering Analysis}
 \usage{
 Biclustering(
   U,
@@ -19,91 +19,119 @@ Biclustering(
 )
 }
 \arguments{
-\item{U}{U is either a data class of exametrika, or raw data. When raw data is given,
-it is converted to the exametrika class with the \link{dataFormat} function.}
+\item{U}{Either an object of class "exametrika" or raw data. When raw data is given,
+it is converted to the exametrika class with the \code{\link{dataFormat}} function.}
 
-\item{ncls}{number of classes}
+\item{ncls}{Number of latent classes/ranks to identify (between 2 and 20).}
 
-\item{nfld}{number of fields}
+\item{nfld}{Number of latent fields (item clusters) to identify.}
 
-\item{Z}{Z is a missing indicator matrix of the type matrix or data.frame}
+\item{Z}{Missing indicator matrix of type matrix or data.frame. Values of 1 indicate
+observed responses, while 0 indicates missing data.}
 
-\item{w}{w is item weight vector}
+\item{w}{Item weight vector specifying the relative importance of each item.}
 
-\item{na}{na argument specifies the numbers or characters to be treated as missing values.}
+\item{na}{Values to be treated as missing values.}
 
-\item{method}{One of:
+\item{method}{Analysis method to use (character string):
 \itemize{
-\item "B": Biclustering
-\item "R": Ranklustering
+\item "B" or "Biclustering": Standard biclustering (default)
+\item "R" or "Ranklustering": Ranklustering with ordered class structure
 }}
 
-\item{conf}{For the confirmatory parameter, you can input either a vector with
-items and corresponding fields in sequence, or a field membership profile
-matrix. In the case of the former, the field membership profile matrix will be generated internally.
-When providing a membership profile matrix, it needs to be either matrix or data.frame.
-The number of fields(nfld) will be overwrite to the number of columns of this matrix.
-The default is NULL, and the field membership
-matrix will be estimated according to the specified number of classes(ncls) and fields(nfld).}
+\item{conf}{Confirmatory parameter for pre-specified field assignments. Can be either:
+\itemize{
+\item A vector with items and corresponding fields in sequence
+\item A field membership profile matrix (items × fields) with 0/1 values
+\item NULL (default) for exploratory analysis where field memberships are estimated
+}}
 
-\item{mic}{Monotonic increasing IRP option. The default is FALSE.}
+\item{mic}{Logical; if TRUE, forces Field Reference Profiles to be monotonically
+increasing. Default is FALSE.}
 
-\item{maxiter}{Maximum number of iterations. default is 100.}
+\item{maxiter}{Maximum number of EM algorithm iterations. Default is 100.}
 
-\item{verbose}{verbose output Flag. default is TRUE}
+\item{verbose}{Logical; if TRUE, displays progress during estimation. Default is TRUE.}
 }
 \value{
+An object of class "exametrika" and "Biclustering" containing:
 \describe{
-\item{nobs}{Sample size. The number of rows in the dataset.}
-\item{testlength}{Length of the test. The number of items included in the test.}
-\item{Nclass}{number of classes you set}
-\item{BRM}{Bicluster Reference Matrix}
-\item{FRP}{Field Reference Profile}
-\item{FRPIndex}{Index of FFP includes the item location parameters B and Beta,
-the slope parameters A and Alpha, and the monotonicity indices C and Gamma.}
-\item{TRP}{Test Reference Profile}
-\item{FMP}{Field Membership Profile}
-\item{Students}{Class/Rank Membership Profile matrix.The s-th row vector of \eqn{\hat{M}_R}, \eqn{\hat{m}_R}, is the
-rank membership profile of Student s, namely the posterior probability distribution representing the student's
-belonging to the respective latent classes. It also includes the rank with the maximum estimated membership probability,
-as well as the rank-up odds and rank-down odds.}
-\item{FieldAnalysis}{A matrix showing field analysis results with rows
-representing items and columns showing:
-\describe{
-\item{CRR}{Correct Response Rate}
-\item{LFE}{Latent Field Estimation}
-\item{Field1...FieldN}{Field membership values}
-}
-}
-\item{LRD}{Latent Rank Distribution. see also \link{plot.exametrika}}
-\item{LCD}{Latent Class Distribution. see also \link{plot.exametrika}}
-\item{LFD}{Latent Field Distribution. see also \link{plot.exametrika}}
-\item{RMD}{Rank Membership Distribution.}
-\item{TestFitIndices}{Overall fit index for the test.See also \link{TestFit}}
+\item{model}{Model type indicator (1 for biclustering, 2 for ranklustering)}
+\item{mic}{Logical value indicating whether monotonicity constraint was applied}
+\item{testlength}{Number of items in the test}
+\item{nobs}{Number of examinees in the dataset}
+\item{Nclass}{Number of latent classes/ranks specified}
+\item{Nfield}{Number of latent fields specified}
+\item{N_Cycle}{Number of EM iterations performed}
+\item{LFD}{Latent Field Distribution - counts of items assigned to each field}
+\item{LRD/LCD}{Latent Rank/Class Distribution - counts of examinees assigned to each class/rank}
+\item{FRP}{Field Reference Profile matrix - probability of correct response for each field-class combination}
+\item{FRPIndex}{Field Reference Profile indices including location parameters, slope parameters, and monotonicity indices}
+\item{TRP}{Test Reference Profile - expected score for examinees in each class/rank}
+\item{CMD/RMD}{Class/Rank Membership Distribution - sum of membership probabilities across examinees}
+\item{FieldMembership}{Matrix showing the probabilities of each item belonging to each field}
+\item{ClassMembership}{Matrix showing the probabilities of each examinee belonging to each class/rank}
+\item{SmoothedMembership}{Matrix of smoothed class membership probabilities after filtering}
+\item{FieldEstimated}{Vector of the most likely field assignments for each item}
+\item{ClassEstimated}{Vector of the most likely class/rank assignments for each examinee}
+\item{Students}{Data frame containing membership probabilities and classification information for each examinee}
+\item{FieldAnalysis}{Matrix showing field analysis results with item-level information}
+\item{TestFitIndices}{Model fit indices for evaluating the quality of the clustering solution}
+\item{SOACflg}{Logical flag indicating whether Strongly Ordinal Alignment Condition is satisfied}
+\item{WOACflg}{Logical flag indicating whether Weakly Ordinal Alignment Condition is satisfied}
 }
 }
 \description{
-performs biclustering, rankclustering, and their confirmatory models.
+Performs biclustering, ranklustering, or their confirmatory variants on binary response data.
+These methods simultaneously cluster both examinees and items into homogeneous groups
+(or ordered ranks for ranklustering). The analysis reveals latent structures and patterns
+in the data by creating a matrix with rows and columns arranged to highlight block structures.
+}
+\details{
+Biclustering simultaneously clusters both rows (examinees) and columns (items) of a data matrix.
+Unlike traditional clustering that groups either rows or columns, biclustering identifies
+submatrices with similar patterns. Ranklustering is a variant that imposes an ordinal
+structure on the classes, making it suitable for proficiency scaling.
+
+The algorithm uses an Expectation-Maximization approach to iteratively estimate:
+\enumerate{
+\item Field membership of items (which items belong to which fields)
+\item Class/rank membership of examinees (which examinees belong to which classes)
+\item Field Reference Profiles (probability patterns for each field-class combination)
+}
+
+The confirmatory option allows for pre-specified field assignments, which is useful
+when there is prior knowledge about item groupings or for testing hypothesized structures.
 }
 \examples{
 \donttest{
 # Perform Biclustering with Binary method (B)
 # Analyze data with 5 fields and 6 classes
-Biclustering(J35S515, nfld = 5, ncls = 6, method = "B")
+result.Bi <- Biclustering(J35S515, nfld = 5, ncls = 6, method = "B")
 
 # Perform Biclustering with Rank method (R)
 # Store results for further analysis and visualization
-result.Ranklusteing <- Biclustering(J35S515, nfld = 5, ncls = 6, method = "R")
+result.Rank <- Biclustering(J35S515, nfld = 5, ncls = 6, method = "R")
 
 # Display the Bicluster Reference Matrix (BRM) as a heatmap
-plot(result.Ranklusteing, type = "Array")
+plot(result.Rank, type = "Array")
 
 # Plot Field Reference Profiles (FRP) in a 2x3 grid
 # Shows the probability patterns for each field
-plot(result.Ranklusteing, type = "FRP", nc = 2, nr = 3)
+plot(result.Rank, type = "FRP", nc = 2, nr = 3)
 
 # Plot Rank Membership Profiles (RMP) for students 1-9 in a 3x3 grid
-# Shows the posterior probability distribution of rank membership for each student
-plot(result.Ranklusteing, type = "RMP", students = 1:9, nc = 3, nr = 3)
+# Shows posterior probability distribution of rank membership
+plot(result.Rank, type = "RMP", students = 1:9, nc = 3, nr = 3)
+
+# Example of confirmatory analysis with pre-specified fields
+# Assign items 1-10 to field 1, 11-20 to field 2, etc.
+field_assignments <- c(rep(1, 10), rep(2, 10), rep(3, 15))
+result.Conf <- Biclustering(J35S515, nfld = 3, ncls = 5, conf = field_assignments)
 }
+
+}
+\references{
+Shojima, K. (2012). Biclustering of binary data matrices using bilinear models.
+Behaviormetrika, 39(2), 161-178.
 }

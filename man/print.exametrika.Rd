@@ -2,31 +2,65 @@
 % Please edit documentation in R/00_exametrikaPrint.R
 \name{print.exametrika}
 \alias{print.exametrika}
-\title{print.exametrika}
+\title{Print Method for Exametrika Objects}
 \usage{
 \method{print}{exametrika}(x, digits = 3, ...)
 }
 \arguments{
-\item{x}{exametrika Class object}
+\item{x}{An object of class "exametrika" with various possible subclasses}
 
-\item{digits}{printed digits}
+\item{digits}{Integer indicating the number of decimal places to display. Default is 3.}
 
-\item{...}{other options}
+\item{...}{Additional arguments passed to print methods (not currently used)}
 }
 \value{
 Prints a formatted summary of the exametrika object to the console, with content
-varying by object class:
+varying by object subclass:
+
 \describe{
 \item{TestStatistics}{Basic descriptive statistics of the test}
 \item{Dimensionality}{Eigenvalue analysis results with scree plot}
-\item{ItemStatistics}{Item-level statistics}
+\item{ItemStatistics}{Item-level statistics and psychometric properties}
+\item{QitemStatistics}{Item statistics for polytomous items}
+\item{exametrikaData}{Data structure details including response patterns and weights}
+\item{IIAnalysis}{Item-item relationship measures (tetrachoric correlations, etc.)}
 \item{CTT}{Classical Test Theory reliability measures}
-\item{IRT}{Item parameters and fit indices}
-\item{LCA/LRA}{Class/Rank profiles and model fit information}
-\item{Biclustering/IRM}{Cluster profiles and model diagnostics}
-\item{Network models (LDLRA/LDB/BINET)}{Network visualizations and parameter estimates}
+\item{IRT/GRM}{Item parameters, ability estimates, and fit indices}
+\item{LCA/LRA}{Class/Rank profiles, distribution information, and model fit statistics}
+\item{Biclustering/IRM}{Cluster profiles, field distributions, and model diagnostics}
+\item{LDLRA/LDB/BINET}{Network visualizations, parameter estimates, and conditional probabilities}
 }
 }
 \description{
-Output format for exametrika Class
+S3 method for printing objects of class "exametrika". This function formats and displays
+appropriate summary information based on the specific subclass of the exametrika object.
+Different types of analysis results (IRT, LCA, network models, etc.) are presented
+with customized formatting to highlight the most relevant information.
+}
+\details{
+The function identifies the specific subclass of the exametrika object and tailors the
+output accordingly. For most analysis types, the function displays:
+\itemize{
+\item Basic model description and parameters
+\item Estimation results (e.g., item parameters, latent class profiles)
+\item Model fit statistics and diagnostics
+\item Visual representations where appropriate (e.g., graphs for network models, scree plots
+for dimensionality analysis)
+}
+
+When printing network-based models (LDLRA, LDB, BINET), this function visualizes
+the network structure using graphs, which can help in interpreting complex relationships
+between items or latent variables.
+}
+\examples{
+\donttest{
+# Print IRT analysis results with 4 decimal places
+result <- IRT(J15S500)
+print(result, digits = 4)
+
+# Print Latent Class Analysis results
+result_lca <- LCA(J15S500, ncls = 3)
+print(result_lca)
+}
+
 }

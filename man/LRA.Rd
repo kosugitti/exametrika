@@ -49,30 +49,30 @@ LRA(U, ...)
 )
 }
 \arguments{
-\item{U}{U is either a data class of exametrika, or raw data. When raw data is given,
-it is converted to the exametrika class with the \link{dataFormat} function.}
+\item{U}{Either an object of class "exametrika" or raw data. When raw data is given,
+it is converted to the exametrika class with the \code{\link{dataFormat}} function.}
 
-\item{...}{Additional arguments passed to methods.}
+\item{...}{Additional arguments passed to specific methods.}
 
-\item{na}{na argument specifies the numbers or characters to be treated as missing values.}
+\item{na}{Values to be treated as missing values.}
 
-\item{Z}{Z is a missing indicator matrix of the type matrix or data.frame}
+\item{Z}{Missing indicator matrix of type matrix or data.frame. 1 indicates observed values, 0 indicates missing values.}
 
-\item{w}{w is item weight vector}
+\item{w}{Item weight vector.}
 
-\item{nrank}{number of latent rank}
+\item{nrank}{Number of latent ranks to estimate. Must be between 2 and 20.}
 
-\item{method}{Specify either "SOM" or "GTM".}
+\item{method}{For binary data only. Either "SOM" (Self-Organizing Maps) or "GTM" (Gaussian Topographic Mapping). Default is "GTM".}
 
-\item{mic}{Monotonic increasing option. The default is FALSE.}
+\item{mic}{Logical; if TRUE, forces Item Reference Profiles to be monotonically increasing. Default is FALSE.}
 
-\item{maxiter}{Maximum number of iterations. default is 100.}
+\item{maxiter}{Maximum number of iterations for estimation. Default is 100.}
 
-\item{BIC.check}{During estimation with SOM}
+\item{BIC.check}{For binary data with SOM method only. If TRUE, convergence is checked using BIC values. Default is FALSE.}
 
-\item{seed}{random seed for SOM}
+\item{seed}{For binary data with SOM method only. Random seed for reproducibility.}
 
-\item{verbose}{verbose output Flag. default is TRUE}
+\item{verbose}{Logical; if TRUE, displays detailed progress during estimation. Default is TRUE.}
 
 \item{trapezoidal}{Specifies the height of both tails when using a trapezoidal
 prior distribution. Must be less than 1/nrank. The default value is 0, which
@@ -86,149 +86,138 @@ For example, if set to 0.1, response categories that appear in less than 10\% of
 responses for an item will be omitted.}
 }
 \value{
+A list of class "exametrika" and the specific subclass (e.g., "LRA", "LRAordinal", "LRArated")
+containing the following common elements:
 \describe{
-\item{nobs}{Sample size. The number of rows in the dataset.}
-\item{testlength}{Length of the test. The number of items included in the test.}
-\item{Nrank}{number of rnaks you set}
-\item{N_Cycle}{Number of EM algorithm iterations}
-\item{TRP}{Test Reference Profile matrix. The TRP is the column sum vector of estimated class reference matrix,
-\eqn{\hat{\Pi}_c}}
-\item{LRD}{Latent Rank Distribution table.see also \link{plot.exametrika}}
-\item{RMD}{Rank Membership Distribution table. see also \link{plot.exametrika}}
-\item{Students}{Rank Membership Profile matrix.The s-th row vector of \eqn{\hat{M}_c}, \eqn{\hat{m}_c}, is the
-rank membership profile of Student s, namely the posterior probability distribution representing the student's
-belonging to the respective latent ranks. It also includes the rank with the maximum estimated membership probability,
-as well as the rank-up odds and rank-down odds.}
-\item{ItemFitIndices}{Fit index for each item.See also \link{ItemFit}}
-\item{TestFitIndices}{Overall fit index for the test.See also \link{TestFit}}
+\item{testlength}{Length of the test (number of items).}
+\item{nobs}{Sample size (number of rows in the dataset).}
+\item{Nrank}{Number of latent ranks specified.}
+\item{N_Cycle}{Number of EM algorithm iterations performed.}
+\item{TRP}{Test Reference Profile vector showing expected scores at each rank.}
+\item{LRD}{Latent Rank Distribution vector showing the number of examinees at each rank.}
+\item{RMD}{Rank Membership Distribution vector showing the sum of probabilities for each rank.}
+\item{Students}{Rank Membership Profile matrix showing the posterior probabilities of
+examinees belonging to each rank, along with their estimated ranks and odds ratios.}
+\item{ItemFitIndices}{Fit indices for each item. See also \code{\link{ItemFit}}.}
+\item{TestFitIndices}{Overall fit indices for the test. See also \code{\link{TestFit}}.}
 }
 
-For Binary Data:
+Each subclass returns additional specific elements, detailed in their respective documentation.
+
+For binary data (\code{LRA.binary}), the returned list additionally includes:
 \describe{
-\item{IRP}{Item Reference Profile matrix.The IRP of item j is the j-th row vector in the class reference matrix,
-\eqn{\hat{\pi}_c}}
-\item{IRPIndex}{The IRP information includes the item location parameters B and Beta,
-the slope parameters A and Alpha, and the monotonicity indices C and Gamma.}
+\item{IRP}{Item Reference Profile matrix showing the probability of correct response for each item across different ranks.}
+\item{IRPIndex}{Item Response Profile indices including the location parameters B and Beta,
+slope parameters A and Alpha, and monotonicity indices C and Gamma.}
 }
 
-For Ordinal Data:
+For ordinal data (\code{LRA.ordinal}), the returned list additionally includes:
 \describe{
-\item{ScoreReport}{Basic descriptive statistics of the test performance, containing
-fundamental measures such as sample size, test length, central tendency (mean, median),
-variability (SD, range), distribution characteristics(skewness, kurtosis), and internal
-consistency (Cronbach's Alpha)}
-\item{ItemReport}{Basic statistics for each item: number of observations, proportion of responses,
-item mean, standard deviation, item-total correlation, and corrected item-total correlation}
-\item{ICBR}{Item Category Boundary Reference matrix containing cumulative probabilities
-for each rank to score at or above each category threshold. The matrix shows these boundary
-probabilities for each item-category combination across all ranks}
-\item{ICRP}{Item Category Reference Profile matrix containing the probability of responding to
-each category for each item across different ranks. The matrix shows the probability that
-an examinee in a specific rank would select or score each response category}
-\item{ScoreRankCorr}{Spearman's rank correlation coefficient between test scores and estimated ranks}
-\item{RankQuantCorr}{Spearman's rank correlation coefficient between estimated ranks and
-quantile groups (where the number of quantiles equals the number of ranks)}
-\item{ScoreRank}{A contingency table showing the frequency distribution of raw scores by estimated ranks}
-\item{ScoreMembership}{A contingency table of expected rank memberships for each raw score,
-showing the expected number of examinees in each rank conditional on their test scores}
-\item{RankQuantile}{A contingency table showing the cross-tabulation between estimated rank frequencies
-and quantile-based groupings of examinees}
-\item{MembQuantile}{A contingency table showing the cross-tabulation between expected rank membership frequencies
-and quantile-based groupings of examinees}
-\item{CatQuant}{A table summarizing the response patterns for each item category, showing
-both the overall selection ratio and its distribution across quantile groups (Q1, Q2, Q3, etc.).
-For each item and response category combination, it provides the total proportion of responses
-and the proportion within each quantile}
+\item{ScoreReport}{Descriptive statistics of test performance, including sample size,
+test length, central tendency, variability, distribution characteristics, and reliability.}
+\item{ItemReport}{Basic statistics for each item including category proportions and item-total correlations.}
+\item{ICBR}{Item Category Boundary Reference matrix showing cumulative probabilities for rank-category combinations.}
+\item{ICRP}{Item Category Reference Profile matrix showing probability of response in each category by rank.}
+\item{ScoreRankCorr}{Spearman's correlation between test scores and estimated ranks.}
+\item{RankQuantCorr}{Spearman's correlation between estimated ranks and quantile groups.}
+\item{ScoreRank}{Contingency table of raw scores by estimated ranks.}
+\item{ScoreMembership}{Expected rank memberships for each raw score.}
+\item{RankQuantile}{Cross-tabulation of rank frequencies and quantile groups.}
+\item{MembQuantile}{Cross-tabulation of rank membership probabilities and quantile groups.}
+\item{CatQuant}{Response patterns across item categories and quantile groups.}
 }
 
-For Rated Data:
+For rated data (\code{LRA.rated}), the returned list additionally includes:
 \describe{
-\item{ScoreReport}{Basic descriptive statistics of the test performance, containing
-fundamental measures such as sample size, test length, central tendency (mean, median),
-variability (SD, range), distribution characteristics(skewness, kurtosis), and internal
-consistency (Cronbach's Alpha)}
-\item{ItemReport}{Basic statistics for each item: number of observations, proportion of responses,
-item mean, standard deviation, item-total correlation, and corrected item-total correlation}
-\item{ICRP}{Item Category Reference Profile matrix containing the probability of responding to
-each category for each item across different ranks. The matrix shows the probability that
-an examinee in a specific rank would select or score each response category}
-\item{ScoreRankCorr}{Spearman's rank correlation coefficient between test scores and estimated ranks}
-\item{RankQuantCorr}{Spearman's rank correlation coefficient between estimated ranks and
-quantile groups (where the number of quantiles equals the number of ranks)}
-\item{ScoreRank}{A contingency table showing the frequency distribution of raw scores by estimated ranks}
-\item{ScoreMembership}{A contingency table of expected rank memberships for each raw score,
-showing the expected number of examinees in each rank conditional on their test scores}
-\item{RankQuantile}{A contingency table showing the cross-tabulation between estimated rank frequencies
-and quantile-based groupings of examinees}
-\item{MembQuantile}{A contingency table showing the cross-tabulation between expected rank membership frequencies
-and quantile-based groupings of examinees}
-\item{CatQuant}{A table summarizing the response patterns for each item category, showing
-both the overall selection ratio and its distribution across quantile groups (Q1, Q2, Q3, etc.).
-For each item and response category combination, it provides the total proportion of responses
-and the proportion within each quantile}
+\item{ScoreReport}{Descriptive statistics of test performance, including sample size,
+test length, central tendency, variability, distribution characteristics, and reliability.}
+\item{ItemReport}{Basic statistics for each item including category proportions and item-total correlations.}
+\item{ICRP}{Item Category Reference Profile matrix showing probability of response in each category by rank.}
+\item{ScoreRankCorr}{Spearman's correlation between test scores and estimated ranks.}
+\item{RankQuantCorr}{Spearman's correlation between estimated ranks and quantile groups.}
+\item{ScoreRank}{Contingency table of raw scores by estimated ranks.}
+\item{ScoreMembership}{Expected rank memberships for each raw score.}
+\item{RankQuantile}{Cross-tabulation of rank frequencies and quantile groups.}
+\item{MembQuantile}{Cross-tabulation of rank membership probabilities and quantile groups.}
+\item{ItemQuantileRef}{Reference values for each item across quantile groups.}
+\item{CatQuant}{Response patterns across item categories and quantile groups.}
 }
 }
 \description{
-A function for estimating Latent Rank Analysis. This is a generic function that
-dispatches to specific methods depending on the response type of the data:
+A general function for estimating Latent Rank Analysis across different response types.
+This function automatically dispatches to the appropriate method based on the response type:
+
 \itemize{
-\item For binary data (LRA.binary): Estimation using either SOM or GTM method
-\item For ordinal/rated data (LRA.ordinal): Estimation using GTM method
-\item For nominal data (LRA.nominal): Estimation using GTM method
+\item For binary data (\code{LRA.binary}): Analysis using either SOM or GTM method
+\item For ordinal data (\code{LRA.ordinal}): Analysis using the GTM method with category thresholds
+\item For rated data (\code{LRA.rated}): Analysis using the GTM method with rating categories
 }
+
+Latent Rank Analysis identifies underlying rank structures in test data and assigns
+examinees to these ranks based on their response patterns.
 }
+\section{Binary Data Method}{
+
+\code{LRA.binary} analyzes dichotomous (0/1) response data using either Self-Organizing Maps (SOM)
+or Gaussian Topographic Mapping (GTM).
+}
+
+\section{Ordinal Data Method}{
+
+\code{LRA.ordinal} analyzes ordered categorical data with multiple thresholds,
+such as Likert-scale responses or graded items.
+}
+
+\section{Rated Data Method}{
+
+\code{LRA.rated} analyzes data with ratings assigned to each response, such as
+partially-credited items or preference scales where response categories have different weights.
+}
+
 \examples{
 \donttest{
-# Fit a Latent Rank Analysis model with 6 ranks to the sample dataset
+# Binary data example
+# Fit a Latent Rank Analysis model with 6 ranks to binary data
 result.LRA <- LRA(J15S500, nrank = 6)
 
 # Display the first few rows of student rank membership profiles
-# This shows posterior probabilities of students belonging to each rank
 head(result.LRA$Students)
 
-# Plot Item Reference Profiles (IRP) for items 1-6 in a 2x3 grid
-# Shows the probability of correct response for each rank
+# Plot Item Reference Profiles (IRP) for the first 6 items
 plot(result.LRA, type = "IRP", items = 1:6, nc = 2, nr = 3)
 
-# Plot Rank Membership Profiles (RMP) for students 1-9 in a 3x3 grid
-# Shows the posterior probability distribution of rank membership for each student
-plot(result.LRA, type = "RMP", students = 1:9, nc = 3, nr = 3)
-
-# Plot Test Reference Profile (TRP)
-# Shows the column sum vector of estimated rank reference matrix
+# Plot Test Reference Profile (TRP) showing expected scores at each rank
 plot(result.LRA, type = "TRP")
-
-# Plot Latent Rank Distribution (LRD)
-# Shows the distribution of students across different ranks
-plot(result.LRA, type = "LRD")
 }
+
 \donttest{
-# Fit a Latent Rank Analysis model with 3 ranks to sample dataset
+# Ordinal data example
+# Fit a Latent Rank Analysis model with 3 ranks to ordinal data
 result.LRAord <- LRA(J15S3810, nrank = 3, mic = TRUE)
-# Plot Score Reports
+
+# Plot score distributions
 plot(result.LRAord, type = "ScoreFreq")
 plot(result.LRAord, type = "ScoreRank")
-# plot ICBR/ICRP
+
+# Plot category response patterns for items 1-6
 plot(result.LRAord, type = "ICBR", items = 1:6, nc = 3, nr = 2)
 plot(result.LRAord, type = "ICRP", items = 1:6, nc = 3, nr = 2)
-# plot Rank membership profile
-plot(result.LRAord,
-  type = "RMP", students = 1:15,
-  nc = 3, nr = 5
-)
 }
+
 \donttest{
-# Fit a Latent Rank Analysis model with 10 ranks to sample dataset
+# Rated data example
+# Fit a Latent Rank Analysis model with 10 ranks to rated data
 result.LRArated <- LRA(J35S5000, nrank = 10, mic = TRUE)
-# Plot Score Reports
+
+# Plot score distributions
 plot(result.LRArated, type = "ScoreFreq")
 plot(result.LRArated, type = "ScoreRank")
-# plot ICBR/ICRP
+
+# Plot category response patterns for items 1-6
 plot(result.LRArated, type = "ICRP", items = 1:6, nc = 3, nr = 2)
-# plot Rank membership profile
-plot(result.LRArated,
-  type = "RMP", students = 1:15,
-  nc = 3, nr = 5
-)
 }
+
+}
+\seealso{
+\code{\link{plot.exametrika}} for visualizing LRA results.
 }

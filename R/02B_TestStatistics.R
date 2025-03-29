@@ -103,6 +103,7 @@ TestStatistics.binary <- function(U, na = NULL, Z = NULL, w = NULL) {
   Median <- quantile(tW, probs = 0.5, na.rm = TRUE)
   Q3 <- quantile(tW, probs = 0.75, na.rm = TRUE)
   IQR <- Q3 - Q1
+  names(IQR) <- ""
   Stanine <- stanine(tmp)
   ret <-
     structure(list(

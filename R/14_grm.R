@@ -497,7 +497,7 @@ GRM <- function(U, na = NULL, Z = NULL, w = NULL, verbose = TRUE) {
   for (j in 1:nitems) {
     est_mat[j, 2:ncat[j]] <- est_b[[j]]
   }
-  colnames(est_mat) <- c("Descriminate", paste0("Threshold", 1:(max(ncat) - 1)))
+  colnames(est_mat) <- c("Slope", paste0("Threshold", 1:(max(ncat) - 1)))
   rownames(est_mat) <- tmp$ItemLabel
 
 

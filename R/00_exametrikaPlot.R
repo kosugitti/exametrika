@@ -698,7 +698,7 @@ plot.exametrika <- function(x,
           a <- params[j, 1]
           b <- params[j, -1]
           b <- b[!is.na(b)]
-          title <- paste("Test Response Function for item", j)
+          title <- paste("Item Category Response Function for item", plotItemID[j])
           grm_IRF(a, b, title)
         }
       }
@@ -707,7 +707,7 @@ plot.exametrika <- function(x,
           a <- params[j, 1]
           b <- params[j, -1]
           b <- b[!is.na(b)]
-          title <- paste("Item Information Function for item", j)
+          title <- paste("Item Information Function for item", plotItemID[j])
           grm_IIC(a, b, title)
         }
       }

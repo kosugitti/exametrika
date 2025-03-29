@@ -1,3 +1,7 @@
+# exameterika 1.5.2 on March 29, 2025
+
++ Bugfix: Fix output typos(TestStatisticsFunction,GRMs)
+
 # exameterika 1.5.1 on March 8, 2025
 
 + Field analysis for Biclustering is included in the Biclustering() function

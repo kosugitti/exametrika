@@ -188,10 +188,16 @@ plot.exametrika <- function(x,
     if (type == "FRP") {
       # Item Reference Profile ----------------------------------------
       params <- x$FRP
-      if (value == "LDB") {
-        msg <- "Rank"
-      } else {
+      if (value == "LCA") {
         msg <- "Class"
+      } else if (value == "LRA" | value == "LDLRA" | value == "LDB" | value == "Binet") {
+        msg <- "Rank"
+      } else if (value == "Biclustering") {
+        if (x$model == 1) {
+          msg <- "Class"
+        } else {
+          msg <- "Rank"
+        }
       }
       for (i in 1:nrow(params)) {
         y <- params[i, ]
@@ -244,9 +250,19 @@ plot.exametrika <- function(x,
       if (value == "LCA" | value == "IRM" | value == "BINET") {
         target <- x$LCD
         msg <- "Class"
-      } else if (value == "Biclustering" | value == "LRA" | value == "LDLRA" | value == "LDB") {
+      } else if (value == "LRA" | value == "LDLRA" | value == "LDB") {
         target <- x$LRD
         msg <- "Rank"
+      } else if (value == "Biclustering") {
+        target <- x$LRD
+        if (is.null(target)) {
+          target <- x$LCD
+        }
+        if (x$model == 1) {
+          msg <- "Class"
+        } else {
+          msg <- "Rank"
+        }
       }
 
       if (is.null(x$Nclass)) {

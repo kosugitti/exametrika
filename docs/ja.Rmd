@@ -79,7 +79,7 @@ title: exametrika
 
 Exametrikaは、もともとMathematicaとExcelのアドインとして開発・公開されていました。Exametrikaに関する詳細な情報は以下をご覧ください：
 
-- [テストデータエンジニアリングWebサイト](http://shojima.starfree.jp/tde/)
+- [テストデータエンジニアリングWebサイト](http://sh0j1ma.stars.ne.jp/tde/index.htm)
 - [パッケージニュース](NEWS.md)
 
 ## インストール
@@ -379,6 +379,7 @@ Biclustering(J35S515, nfld = 5, ncls = 6, method = "B")
 result.Ranklustering <- Biclustering(J35S515, nfld = 5, ncls = 6, method = "R")
 plot(result.Ranklustering, type = "Array")
 plot(result.Ranklustering, type = "FRP", nc = 2, nr = 3)
+plot(result.Ranklustering, type = "RRV")
 plot(result.Ranklustering, type = "RMP", students = 1:9, nc = 3, nr = 3)
 plot(result.Ranklustering, type = "LRD")
 ```

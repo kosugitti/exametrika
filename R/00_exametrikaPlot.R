@@ -190,7 +190,7 @@ plot.exametrika <- function(x,
       params <- x$FRP
       if (value == "LCA") {
         msg <- "Class"
-      } else if (value == "LRA" | value == "LDLRA" | value == "LDB" | value == "Binet") {
+      } else if (value == "LRA" | value == "LDLRA" | value == "LDB" | value == "BINET") {
         msg <- "Rank"
       } else if (value == "Biclustering") {
         if (x$model == 1) {

@@ -61,7 +61,7 @@ LRA.default <- function(U, na = NULL, Z = Z, w = w, ...) {
   }
 
   U <- dataFormat(U, na = na, Z = Z, w = w)
-  LRA(U)
+  LRA(U, ...)
 }
 
 #' @rdname LRA

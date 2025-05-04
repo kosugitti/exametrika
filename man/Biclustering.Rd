@@ -76,6 +76,7 @@ increasing. Default is FALSE.}
 An object of class "exametrika" and "Biclustering" containing:
 \describe{
 \item{model}{Model type indicator (1 for biclustering, 2 for ranklustering)}
+\item{msg}{A character string indicating the model type. }
 \item{mic}{Logical value indicating whether monotonicity constraint was applied}
 \item{testlength}{Number of items in the test}
 \item{nobs}{Number of examinees in the dataset}
@@ -122,14 +123,6 @@ The algorithm uses an Expectation-Maximization approach to iteratively estimate:
 The confirmatory option allows for pre-specified field assignments, which is useful
 when there is prior knowledge about item groupings or for testing hypothesized structures.
 }
-\section{Binary Data Method}{
-
-}
-
-\section{Nominal Data Method}{
-
-}
-
 \examples{
 \donttest{
 # Perform Biclustering with Binary method (B)

@@ -1,5 +1,4 @@
 #' @rdname Biclustering
-#' @section Nominal Data Method:
 #' @param ncls Number of latent classes/ranks to identify (between 2 and 20).
 #' @param nfld Number of latent fields (item clusters) to identify.
 #' @param Z Missing indicator matrix of type matrix or data.frame. Values of 1 indicate
@@ -233,10 +232,11 @@ Biclustering.nominal <- function(U,
   df_A <- bench_nparam - nparam
   FitIndices <- calcFitIndices(chi_A, chi_B, df_A, df_B, nobs)
 
-
+  msg <- ifelse(method == "B", "Class", "Rank")
   ret <- structure(list(
     Q = Q,
     testlength = nitems,
+    msg = msg,
     nobs = nobs,
     Nclass = ncls,
     Nfield = nfld,

@@ -89,6 +89,7 @@ responses for an item will be omitted.}
 A list of class "exametrika" and the specific subclass (e.g., "LRA", "LRAordinal", "LRArated")
 containing the following common elements:
 \describe{
+\item{msg}{A character string indicating the model type. }
 \item{testlength}{Length of the test (number of items).}
 \item{nobs}{Sample size (number of rows in the dataset).}
 \item{Nrank}{Number of latent ranks specified.}

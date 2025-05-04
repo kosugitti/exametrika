@@ -23,6 +23,7 @@ softmax <- function(x) {
 #' @return An object of class "exametrika" and "Biclustering" containing:
 #' \describe{
 #'  \item{model}{Model type indicator (1 for biclustering, 2 for ranklustering)}
+#'  \item{msg}{A character string indicating the model type. }
 #'  \item{mic}{Logical value indicating whether monotonicity constraint was applied}
 #'  \item{testlength}{Number of items in the test}
 #'  \item{nobs}{Number of examinees in the dataset}
@@ -98,7 +99,6 @@ Biclustering.default <- function(U, na = na, Z = Z, w = w, ...) {
 
 
 #' @rdname Biclustering
-#' @section Binary Data Method:
 #' @param ncls Number of latent classes/ranks to identify (between 2 and 20).
 #' @param nfld Number of latent fields (item clusters) to identify.
 #' @param method Analysis method to use (character string):
@@ -425,6 +425,7 @@ Biclustering.binary <- function(U,
   colnames(fieldAnalysis) <- c("CRR", "LFE", paste0("Field", 1:nfld))
   rownames(fieldAnalysis) <- rownames_tmp
 
+  msg <- ifelse(model == 1, "Class", "Rank")
   ret <- structure(list(
     model = model,
     mic = mic,

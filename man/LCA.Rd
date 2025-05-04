@@ -24,6 +24,7 @@ observed responses, while 0 indicates missing data.}
 \value{
 An object of class "exametrika" and "LCA" containing:
 \describe{
+\item{msg}{A character string indicating the model type. }
 \item{testlength}{Length of the test (number of items).}
 \item{nobs}{Sample size (number of rows in the dataset).}
 \item{Nclass}{Number of latent classes specified.}

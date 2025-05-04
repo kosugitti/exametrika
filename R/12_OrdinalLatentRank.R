@@ -11,6 +11,7 @@
 #' @return
 #' For ordinal data (\code{LRA.ordinal}), the returned list additionally includes:
 #' \describe{
+#' \item{msg}{A character string indicating the model type. }
 #' \item{ScoreReport}{Descriptive statistics of test performance, including sample size,
 #'   test length, central tendency, variability, distribution characteristics, and reliability.}
 #' \item{ItemReport}{Basic statistics for each item including category proportions and item-total correlations.}
@@ -542,6 +543,7 @@ LRA.ordinal <- function(U,
     U = U,
     mic = mic,
     testlength = NCOL(U$Q),
+    msg = "Rank",
     nobs = NROW(U$Q),
     Nrank = nrank,
     N_Cycle = iter,

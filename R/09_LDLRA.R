@@ -153,6 +153,7 @@ LD_param_est <- function(tmp, adj_list, classRefMat, ncls, smoothpost) {
 #' @return
 #' \describe{
 #'  \item{nobs}{Sample size. The number of rows in the dataset.}
+#'  \item{msg}{A character string indicating the model type. }
 #'  \item{testlength}{Length of the test. The number of items included in the test.}
 #'  \item{crr}{correct response ratio}
 #'  \item{adj_list}{adjacency matrix list}
@@ -431,6 +432,7 @@ LDLRA <- function(U, Z = NULL, w = NULL, na = NULL,
   ret <- structure(list(
     U = U,
     testlength = testlength,
+    msg = "Rank",
     nobs = nobs,
     Nclass = ncls,
     model = model,

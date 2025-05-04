@@ -11,6 +11,7 @@
 #' @return
 #' For rated data (\code{LRA.rated}), the returned list additionally includes:
 #' \describe{
+#' \item{msg}{A character string indicating the model type. }
 #' \item{ScoreReport}{Descriptive statistics of test performance, including sample size,
 #'   test length, central tendency, variability, distribution characteristics, and reliability.}
 #' \item{ItemReport}{Basic statistics for each item including category proportions and item-total correlations.}
@@ -607,6 +608,7 @@ LRA.rated <- function(U,
   ret <- structure(list(
     U = U,
     mic = mic,
+    msg = "Rank",
     testlength = NCOL(U$Q),
     nobs = NROW(U$Q),
     Nrank = nrank,

@@ -159,13 +159,7 @@ plot.exametrika <- function(x,
 
     if (type == "IRP") {
       # Item Reference Profile ----------------------------------------
-      if (value == "LCA") {
-        msg <- "Class"
-      } else if (value == "LRA") {
-        msg <- "Rank"
-      } else if (value == "LDLRA") {
-        msg <- "Rank"
-      }
+      msg <- x$msg
       params <- x$IRP[plotItemID, ]
       if (is.null(x$Nclass)) {
         steps <- x$Nrank
@@ -188,17 +182,7 @@ plot.exametrika <- function(x,
     if (type == "FRP") {
       # Item Reference Profile ----------------------------------------
       params <- x$FRP
-      if (value == "LCA") {
-        msg <- "Class"
-      } else if (value == "LRA" | value == "LDLRA" | value == "LDB" | value == "BINET") {
-        msg <- "Rank"
-      } else if (value == "Biclustering") {
-        if (x$model == 1) {
-          msg <- "Class"
-        } else {
-          msg <- "Rank"
-        }
-      }
+      msg <- x$msg
       for (i in 1:nrow(params)) {
         y <- params[i, ]
         plot(y,
@@ -212,11 +196,7 @@ plot.exametrika <- function(x,
     }
     if (type == "CRV" | type == "RRV") {
       # Rank Reference Vector -------------------------------------------
-      if (x$model == 1) {
-        msg <- "Class"
-      } else {
-        msg <- "Rank"
-      }
+      msg <- x$msg
       RRV <- t(x$FRP)
       plot(1:x$Nfield, RRV[1, ],
         type = "n",
@@ -249,21 +229,15 @@ plot.exametrika <- function(x,
       par(mar = c(5, 4, 4, 4) + 0.1)
       if (value == "LCA" | value == "IRM" | value == "BINET") {
         target <- x$LCD
-        msg <- "Class"
       } else if (value == "LRA" | value == "LDLRA" | value == "LDB") {
         target <- x$LRD
-        msg <- "Rank"
       } else if (value == "Biclustering") {
         target <- x$LRD
         if (is.null(target)) {
           target <- x$LCD
         }
-        if (x$model == 1) {
-          msg <- "Class"
-        } else {
-          msg <- "Rank"
-        }
       }
+      msg <- x$msg
 
       if (is.null(x$Nclass)) {
         steps <- x$Nrank
@@ -303,11 +277,7 @@ plot.exametrika <- function(x,
         target1 <- x$LRD
         target2 <- x$RMD
       }
-      if ((value == "Biclustering" && x$model == 2) || value == "LRA") {
-        msg <- "Rank"
-      } else {
-        msg <- "Class"
-      }
+      msg <- x$msg
       if (is.null(x$Nclass)) {
         steps <- x$Nrank
       } else {
@@ -335,11 +305,7 @@ plot.exametrika <- function(x,
     }
     if (type == "CMP" | type == "RMP") {
       # Class Membership Profile ----------------------------------------
-      if (type == "CMP") {
-        msg <- "Class"
-      } else {
-        msg <- "Rank"
-      }
+      msg <- x$msg
       if (is.null(x$Nclass)) {
         steps <- x$Nrank
       } else {

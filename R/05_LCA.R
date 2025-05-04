@@ -16,6 +16,7 @@
 #' @return
 #' An object of class "exametrika" and "LCA" containing:
 #' \describe{
+#'  \item{msg}{A character string indicating the model type. }
 #'  \item{testlength}{Length of the test (number of items).}
 #'  \item{nobs}{Sample size (number of rows in the dataset).}
 #'  \item{Nclass}{Number of latent classes specified.}
@@ -141,6 +142,7 @@ LCA <- function(U, ncls = 2, na = NULL, Z = NULL, w = NULL, maxiter = 100) {
   FitIndices <- ItemFit(tmp$U, tmp$Z, ell_A, ncls)
 
   ret <- structure(list(
+    msg <- "Class",
     testlength = testlength <- NCOL(tmp$U),
     nobs = NROW(tmp$U),
     Nclass = ncls,

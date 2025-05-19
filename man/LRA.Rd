@@ -114,6 +114,7 @@ slope parameters A and Alpha, and monotonicity indices C and Gamma.}
 
 For ordinal data (\code{LRA.ordinal}), the returned list additionally includes:
 \describe{
+\item{msg}{A character string indicating the model type. }
 \item{ScoreReport}{Descriptive statistics of test performance, including sample size,
 test length, central tendency, variability, distribution characteristics, and reliability.}
 \item{ItemReport}{Basic statistics for each item including category proportions and item-total correlations.}
@@ -130,6 +131,7 @@ test length, central tendency, variability, distribution characteristics, and re
 
 For rated data (\code{LRA.rated}), the returned list additionally includes:
 \describe{
+\item{msg}{A character string indicating the model type. }
 \item{ScoreReport}{Descriptive statistics of test performance, including sample size,
 test length, central tendency, variability, distribution characteristics, and reliability.}
 \item{ItemReport}{Basic statistics for each item including category proportions and item-total correlations.}

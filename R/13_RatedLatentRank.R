@@ -74,18 +74,7 @@ LRA.rated <- function(U,
   const <- 1e-6
 
   # Making Filter
-  Fil <- diag(rep(1, nrank))
-
-  f0 <- ifelse(nrank < 5, 1.05 - 0.05 * nrank,
-    ifelse(nrank < 10, 1.00 - 0.04 * nrank,
-      0.80 - 0.02 * nrank
-    )
-  )
-  f1 <- diag(0, nrank)
-  f1[row(f1) == col(f1) - 1] <- (1 - f0) / 2
-  Fil <- diag(rep(f0, nrank)) + t(f1) + f1
-  Fil[, 1] <- Fil[, 1] / sum(Fil[, 1])
-  Fil[, nrank] <- Fil[, nrank] / sum(Fil[, nrank])
+  Fil <- create_filter_matrix(nrank)
 
 
   # Prepare ---------------------------------------------------------

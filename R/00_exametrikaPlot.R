@@ -40,6 +40,13 @@
 #' @param nc Integer specifying the number of columns for multiple plots. Default is 1.
 #' @param nr Integer specifying the number of rows for multiple plots. Default is 1.
 #' @param overlay Logical. If TRUE, elements such as IRFs will be overlaid on a single plot. Default is FALSE.
+#' @param colors Character vector specifying custom color palette. If NULL, default colorblind-friendly palette is used.
+#' For array plots, the first color should be for missing values, followed by response category colors.
+#' @param filename Character string specifying output filename. If NULL, plot is displayed on screen.
+#' Supported formats: png, pdf, jpeg, jpg. Format determined by file extension.
+#' @param width Numeric value specifying plot width in pixels (for png/jpeg) or inches (for pdf). Default is 800.
+#' @param height Numeric value specifying plot height in pixels (for png/jpeg) or inches (for pdf). Default is 600.
+#' @param dpi Numeric value specifying resolution in dots per inch for raster formats (png/jpeg). Default is 300.
 #' @param ... Additional arguments passed to plotting functions.
 #'
 #' @details
@@ -72,14 +79,14 @@
 #' }
 #'
 #' @importFrom graphics curve title axis barplot mtext par text lines rect legend abline image
-#' @importFrom grDevices gray
+#' @importFrom grDevices gray dev.off jpeg pdf png
 #' @importFrom stats density runif
 #' @importFrom utils tail
 #'
 #' @examples
 #' \dontrun{
 #' # IRT model example
-#' irt_result <- exametrika::IRT(U)
+#' irt_result <- exametrika::IRT(J15S500)
 #' plot(irt_result, type = "IRF", items = 1:5)
 #' plot(irt_result, type = "TIF")
 #'
@@ -88,6 +95,12 @@
 #' plot(lca_result, type = "IRP")
 #' plot(lca_result, type = "LCD")
 #' }
+#'
+#' # Array plot with custom output
+#' biclustering_result <- exametrika::Biclustering(J35S515)
+#' # Custom colors and file output
+#' my_colors <- c("#404040", "#E69F00", "#56B4E9", "#009E73", "#F0E442")
+#' plot(biclustering_result, type = "Array", colors = my_colors)
 #'
 #' @export
 #'
@@ -103,10 +116,32 @@ plot.exametrika <- function(x,
                             students = NULL,
                             nc = 1,
                             nr = 1,
-                            overlay = FALSE, ...) {
+                            overlay = FALSE,
+                            colors = NULL,
+                            filename = NULL,
+                            width = 800,
+                            height = 600,
+                            dpi = 300,
+                            ...) {
   value <- if (length(class(x)) > 1) tail(class(x), 1) else "None"
+
+  if (!is.null(filename)) {
+    ext <- tolower(tools::file_ext(filename))
+    if (ext == "") ext <- "png"
+    switch(ext,
+      "png" = png(filename, width = width, height = height, res = dpi),
+      "pdf" = pdf(filename, width = width / 72, height = height / 72),
+      "jpeg" = jpeg(filename, width = width, height = height, res = dpi),
+      "jpg" = jpeg(filename, width = width, height = height, res = dpi),
+      stop("Supported formats: png, pdf, jpeg, jpg")
+    )
+  }
+
   old_par <- par(no.readonly = TRUE)
-  on.exit(par(old_par))
+  on.exit({
+    par(old_par)
+    if (!is.null(filename)) dev.off()
+  })
   par(mfrow = c(nr, nc))
   testlength <- x$testlength
   nobs <- x$nobs
@@ -119,6 +154,8 @@ plot.exametrika <- function(x,
     LRAordinal = c("ScoreFreq", "ScoreRank", "ICRP", "ICBR", "RMP"),
     LRArated = c("ScoreFreq", "ScoreRank", "ICRP", "RMP"),
     Biclustering = c("FRP", "TRP", "LCD", "LRD", "CMP", "RMP", "CRV", "RRV", "Array"),
+    nominalBiclustering = c("FRP", "LCD", "LRD", "CMP", "Array"),
+    ordinalBiclustering = c("FRP", "LCD", "LRD", "CMP", "RMP", "Array"),
     IRM = c("FRP", "TRP", "Array"),
     LDLRA = c("IRP", "TRP", "LRD", "RMP"),
     LDB = c("FRP", "TRP", "LRD", "RMP", "Array", "FieldPIRP"),
@@ -231,7 +268,7 @@ plot.exametrika <- function(x,
         target <- x$LCD
       } else if (value == "LRA" | value == "LDLRA" | value == "LDB") {
         target <- x$LRD
-      } else if (value == "Biclustering") {
+      } else if (value == "Biclustering" | value == "ordinalBiclustering") {
         target <- x$LRD
         if (is.null(target)) {
           target <- x$LCD
@@ -326,7 +363,6 @@ plot.exametrika <- function(x,
   }
 
 
-
   array_plot <- function() {
     old_par <- par(no.readonly = TRUE)
     on.exit(par(old_par))
@@ -388,6 +424,80 @@ plot.exametrika <- function(x,
       lines(x = c(0, 300), y = c(hl[j] * stepy, hl[j] * stepy), col = "red")
     }
   }
+  color_array_plot <- function() {
+    default_colors <- c(
+      "#404040",
+      "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00",
+      "#CC79A7", "#8B4513", "#999999", "#E6194B", "#3CB44B", "#FFE119"
+    )
+    colors_with_missing <- if (!is.null(colors)) colors else default_colors
+
+    old_par <- par(no.readonly = TRUE)
+    on.exit(par(old_par))
+    par(mfrow = c(1, 2))
+    stepx <- 300 / x$testlength
+    stepy <- 600 / x$nobs
+    plot(0, 0,
+      type = "n", xlim = c(0, 300), ylim = c(0, 600),
+      xlab = "", ylab = "", xaxt = "n", yaxt = "n",
+      frame.plot = TRUE,
+      main = "Original Data"
+    )
+    observed_data <- x$Z * x$Q
+    observed_data[is.na(observed_data)] <- 0
+
+    for (i in 1:x$nobs) {
+      for (j in 1:x$testlength) {
+        x1 <- (j - 1) * stepx
+        y1 <- (i - 1) * stepy
+        x2 <- j * stepx
+        y2 <- i * stepy
+
+        rect(x1, y1, x2, y2,
+          col = colors_with_missing[observed_data[i, j] + 1]
+        )
+      }
+    }
+    ## Clusterd Plot
+    plot(0, 0,
+      type = "n", xlim = c(0, 300), ylim = c(0, 600),
+      xlab = "", ylab = "", xaxt = "n", yaxt = "n",
+      frame.plot = TRUE,
+      main = "Clusterd Plot"
+    )
+
+
+    cls <- apply(x$ClassMembership, 1, which.max)
+    fld <- apply(x$FieldMembership, 1, which.max)
+
+    sorted <- x$Q[, order(x$FieldEstimated, decreasing = FALSE)]
+    sorted <- sorted[order(x$ClassEstimated, decreasing = TRUE), ]
+    for (i in 1:x$nobs) {
+      for (j in 1:x$testlength) {
+        x1 <- (j - 1) * stepx
+        y1 <- (i - 1) * stepy
+        x2 <- j * stepx
+        y2 <- i * stepy
+        if (is.na(x$Q[i, j])) {
+          rect(x1, y1, x2, y2, col = "lightgray")
+        } else {
+          rect(x1, y1, x2, y2,
+            col = colors_with_missing[sorted[i, j] + 1]
+          )
+        }
+      }
+    }
+
+    vl <- cumsum(table(sort(x$FieldEstimated)))
+    for (i in 1:(x$Nfield - 1)) {
+      lines(x = c(vl[i] * stepx, vl[i] * stepx), y = c(0, 600), col = "white", lwd = 2)
+    }
+    hl <- x$nobs - cumsum(table(sort(x$ClassEstimated)))
+    for (j in 1:(x$Nclass - 1)) {
+      lines(x = c(0, 300), y = c(hl[j] * stepy, hl[j] * stepy), col = "white", lwd = 2)
+    }
+  }
+
 
   field_PIRP <- function() {
     target <- x$IRP
@@ -640,26 +750,27 @@ plot.exametrika <- function(x,
         thetas <- seq(-4, 4, 0.01)
         n_theta <- length(thetas)
         K <- length(b) + 1
-        colors <- c(
-          "#999999", "#E69F00", "#56B4E9", "#009E73",
-          "#F0E442", "#0072B2", "#D55E00", "#CC79A7"
-        )
+        grm_colors <- if (!is.null(colors)) {
+          colors[-1]
+        } else {
+          c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7", "#8B4513")
+        }
         probs <- matrix(0, nrow = n_theta, ncol = K)
         for (i in 1:n_theta) {
           probs[i, ] <- grm_prob(thetas[i], a, b)
         }
         plot(thetas, probs[, 1],
           type = "l",
-          col = colors[1],
+          col = grm_colors[1],
           ylim = c(0, 1),
           xlab = expression(theta),
           main = title
         )
         for (k in 2:K) {
-          lines(thetas, probs[, k], col = colors[k])
+          lines(thetas, probs[, k], col = grm_colors[k])
         }
         category_labels <- paste("Category", 1:K)
-        legend("topright", legend = category_labels, col = colors, lty = 1)
+        legend("topright", legend = category_labels, col = grm_colors, lty = 1)
       }
 
       grm_IIC <- function(a, b, title) {
@@ -746,6 +857,20 @@ plot.exametrika <- function(x,
     Biclustering = {
       if (type == "Array") {
         array_plot()
+      } else {
+        graph_common()
+      }
+    },
+    nominalBiclustering = {
+      if (type == "Array") {
+        color_array_plot()
+      } else {
+        graph_common()
+      }
+    },
+    ordinalBiclustering = {
+      if (type == "Array") {
+        color_array_plot()
       } else {
         graph_common()
       }

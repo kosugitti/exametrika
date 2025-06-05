@@ -150,36 +150,35 @@ dataFormat <- function(data, na = NULL, id = 1, Z = NULL, w = NULL,
   }
 
   # ID processing section
-  if (is.null(rownames(data))) {
-    if (id > ncol(data)) {
-      ID <- paste0("Student", seq(1, NROW(data)))
-      response.matrix <- data
-    } else {
-      # Check if specified column is actually response data
-      potential_id <- data[, id]
-      if (is_response_data(potential_id)) {
-        ID <- paste0("Student", seq(1, NROW(data)))
-        response.matrix <- data
-      } else {
-        ID <- potential_id
-        response.matrix <- data[, -id]
-      }
+  if (id > ncol(data)) {
+    ID <- paste0("Student", seq(1, NROW(data)))
+    response.matrix <- data
+  } else if (id != 1) {
+    ID <- data[, id]
+    ID <- as.factor(ID)
+    if (any(duplicated(ID))) {
+      duplicated_ids <- ID[duplicated(ID)]
+      stop(paste("Duplicated IDs found:", paste(unique(duplicated_ids), collapse = ", ")))
     }
+    response.matrix <- data[, -id]
   } else {
-    # Even if rownames exist, check for ID column first
-    if (id <= ncol(data)) {
-      potential_id <- data[, id]
-      if (is_response_data(potential_id)) {
-        ID <- paste0("Student", seq(1, NROW(data)))
-        response.matrix <- data
+    potential_id <- data[, 1]
+    potential_id_factor <- as.factor(potential_id)
+
+    if (any(duplicated(potential_id_factor))) {
+      if (!is.null(rownames(data))) {
+        ID <- rownames(data)
+        if (any(duplicated(ID))) {
+          duplicated_ids <- ID[duplicated(ID)]
+          stop(paste("Duplicated IDs found:", paste(unique(duplicated_ids), collapse = ", ")))
+        }
       } else {
-        ID <- potential_id
-        response.matrix <- data[, -id]
+        ID <- paste0("Student", seq(1, NROW(data)))
       }
-    } else {
-      # Use rownames only if no valid ID column exists
-      ID <- rownames(data)
       response.matrix <- data
+    } else {
+      ID <- potential_id_factor
+      response.matrix <- data[, -1]
     }
   }
 
@@ -384,6 +383,10 @@ longdataFormat <- function(data, na = NULL,
   } else {
     Sid_num <- Sid_vec
     Sid_label <- unique(paste0("Student", Sid_num))
+  }
+  if (any(duplicated(Sid_vec))) {
+    duplicated_ids <- Sid_vec[duplicated(Sid_vec)]
+    stop(paste("Duplicated IDs found:", paste(unique(duplicated_ids), collapse = ",")))
   }
 
   # Process Question IDs

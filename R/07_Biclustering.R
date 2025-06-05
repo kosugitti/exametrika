@@ -85,7 +85,7 @@ Biclustering.default <- function(U, na = na, Z = Z, w = w, ...) {
     if (U$response.type == "binary") {
       return(Biclustering.binary(U, ...))
     } else if (U$response.type == "ordinal") {
-      stop("Biclustering.ordinal is not implemented yet")
+      return(Biclustering.ordinal(U, ...))
     } else if (U$response.type == "rated") {
       stop("Biclustering.rated is not implemented yet")
     } else if (U$response.type == "nominal") {
@@ -261,16 +261,7 @@ Biclustering.binary <- function(U,
   if (model != 2) {
     Fil <- diag(rep(1, ncls))
   } else {
-    f0 <- ifelse(ncls < 5, 1.05 - 0.05 * ncls,
-      ifelse(ncls < 10, 1.00 - 0.04 * ncls,
-        0.80 - 0.02 * ncls
-      )
-    )
-    f1 <- diag(0, ncls)
-    f1[row(f1) == col(f1) - 1] <- (1 - f0) / 2
-    Fil <- diag(rep(f0, ncls)) + t(f1) + f1
-    Fil[, 1] <- Fil[, 1] / sum(Fil[, 1])
-    Fil[, ncls] <- Fil[, ncls] / sum(Fil[, ncls])
+    Fil <- create_filter_matrix(ncls)
   }
 
   ## Algorithm
@@ -429,6 +420,7 @@ Biclustering.binary <- function(U,
   ret <- structure(list(
     model = model,
     mic = mic,
+    msg = msg,
     U = U,
     testlength = testlength,
     nobs = nobs,

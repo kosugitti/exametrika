@@ -296,19 +296,12 @@ print.exametrika <- function(x, digits = 3, ...) {
       print(round(y, digits))
     },
     Biclustering = {
-      if (x$model == 1) {
-        model <- "Biclustering"
-        msg1 <- "Bicluster"
-        msg2 <- "Class"
-      } else {
-        model <- "Ranklustering"
-        msg1 <- "Rankluster"
-        msg2 <- "Rank"
-      }
-      if (x$mic) {
-        model <- paste(model, "with MIC option.")
-      }
-      cat(paste(msg1, "Matrix Profile\n"))
+      model_name <- ifelse(x$model == 1, "Biclustering", "Ranklustering")
+      mic_suffix <- if (x$mic) " [MIC]" else ""
+
+      cat(sprintf("%s Analysis%s\n\n", model_name, mic_suffix))
+
+      cat(paste(model_name, "Reference Matrix Profile\n"))
       print(x$FRP, digits = digits)
 
       cat("\nField Reference Profile Indices\n")
@@ -318,10 +311,10 @@ print.exametrika <- function(x, digits = 3, ...) {
       y <- rbind(x$TRP, x$LRD, x$CMD)
       rownames(y) <- c(
         "Test Reference Profile",
-        paste("Latent", msg2, "Ditribution"),
-        paste(msg2, "Membership Distribution")
+        paste("Latent", x$msg, "Ditribution"),
+        paste(x$msg, "Membership Distribution")
       )
-      colnames(y) <- paste(msg2, 1:x$Nclass)
+      colnames(y) <- paste(x$msg, 1:x$Nclass)
       print(round(y, digits))
 
       cat("\nField Membership Profile\n")
@@ -337,7 +330,7 @@ print.exametrika <- function(x, digits = 3, ...) {
       colnames(y) <- paste("Field", 1:x$Nfield)
       print(round(y, digits))
       cat("\nModel Fit Indices\n")
-      cat(paste("Number of Latent", msg2, ":", x$Nclass))
+      cat(paste("Number of Latent", x$msg, ":", x$Nclass))
       cat(paste("\nNumber of Latent Field:", x$Nfield))
       cat(paste("\nNumber of EM cycle:", x$N_Cycle, "\n"))
       y <- unclass(x$TestFitIndices)
@@ -347,6 +340,93 @@ print.exametrika <- function(x, digits = 3, ...) {
       if (x$SOACflg) {
         cat("Strongly Ordinal Alignment Condition is Satisfied.\n")
       }
+      if (x$WOACflg) {
+        cat("Weakly Ordinal Alignment Condition is Satisfied.\n")
+      }
+    },
+    nominalBiclustering = {
+      cat(paste("Biclustering Reference Matrix Profile\n"))
+      for (q in 1:dim(x$FRP)[3]) {
+        cat(paste("For category", q, "\n"))
+        y <- x$FRP[, , q]
+        colnames(y) <- paste(x$msg, 1:x$Nclass)
+        rownames(y) <- paste("Field", 1:x$Nfield)
+        print(y, digits = digits)
+      }
+
+      y <- rbind(x$LRD, x$CMD)
+      rownames(y) <- c(
+        paste("Latent", x$msg, "Ditribution"),
+        paste(x$msg, "Membership Distribution")
+      )
+      colnames(y) <- paste(x$msg, 1:x$Nclass)
+      print(round(y, digits))
+
+      cat("Latent Field Distribution\n")
+      y <- matrix(x$LFD, byrow = T, nrow = 1)
+      rownames(y) <- "N of Items"
+      colnames(y) <- paste("Field", 1:x$Nfield)
+      print(round(y, digits))
+
+      cat("\nModel Fit Indices\n")
+      cat(paste("Number of Latent", x$msg, ":", x$Nclass))
+      cat(paste("\nNumber of Latent Field:", x$Nfield))
+      cat(paste("\nNumber of EM cycle:", x$N_Cycle, "\n"))
+      y <- unclass(x$TestFitIndices)
+      y$LogLik <- x$LogLik
+      y <- t(as.data.frame(y))
+      colnames(y) <- "value"
+      print(round(y, digits))
+    },
+    ordinalBiclustering = {
+      model_name <- ifelse(x$model == 1, "Biclustering", "Ranklustering")
+      mic_suffix <- if (x$mic) " [MIC]" else ""
+
+      cat(sprintf("%s Analysis%s\n\n", model_name, mic_suffix))
+
+      cat(paste(model_name, "Reference Matrix Profile\n"))
+      for (q in 1:dim(x$FRP)[3]) {
+        cat(paste("For category", q, "\n"))
+        y <- x$FRP[, , q]
+        colnames(y) <- paste(x$msg, 1:x$Nclass)
+        rownames(y) <- paste("Field", 1:x$Nfield)
+        print(y, digits = digits)
+      }
+      y <- rbind(x$TRP, x$LRD, x$CMD)
+      rownames(y) <- c(
+        "Test Reference Profile",
+        paste("Latent", x$msg, "Ditribution"),
+        paste(x$msg, "Membership Distribution")
+      )
+      colnames(y) <- paste(x$msg, 1:x$Nclass)
+      print(round(y, digits))
+      cat("Latent Field Distribution\n")
+      y <- matrix(x$LFD, byrow = T, nrow = 1)
+      rownames(y) <- "N of Items"
+      colnames(y) <- paste("Field", 1:x$Nfield)
+      print(round(y, digits))
+
+      cat("Boundary field reference profile\n")
+      cat("Weighted\n")
+      y <- x$BFRP$Weighted
+      colnames(y) <- paste(x$msg, 1:x$Nclass)
+      rownames(y) <- paste("Field", 1:x$Nfield)
+      print(round(y, digits))
+      cat("Observed\n")
+      y <- x$BFRP$Observed
+      colnames(y) <- paste(x$msg, 1:x$Nclass)
+      rownames(y) <- paste("Field", 1:x$Nfield)
+      print(round(y, digits))
+
+      cat("\nModel Fit Indices\n")
+      cat(paste("Number of Latent", x$msg, ":", x$Nclass))
+      cat(paste("\nNumber of Latent Field:", x$Nfield))
+      cat(paste("\nNumber of EM cycle:", x$N_Cycle, "\n"))
+      y <- unclass(x$TestFitIndices)
+      y$LogLik <- x$LogLik
+      y <- t(as.data.frame(y))
+      colnames(y) <- "value"
+      print(round(y, digits))
       if (x$WOACflg) {
         cat("Weakly Ordinal Alignment Condition is Satisfied.\n")
       }

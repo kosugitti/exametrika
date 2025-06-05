@@ -1,3 +1,11 @@
+# exametrika 1.6.0 on XXX X, 2025
+
++ Biculustring.norminal is available!
++ Biclustering.ordinal is available!
++ Bugfix: Fix output typos(class/rank)
++ Added duplicate ID validation to dataFormat()
++ Bugfix: Fix ID column detection in dataFormat()
+
 # exameterika 1.5.2 on March 29, 2025
 
 + Bugfix: Fix output typos(TestStatisticsFunction,GRMs)

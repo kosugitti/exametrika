@@ -225,16 +225,7 @@ LRA.binary <- function(U,
     )
   } else {
     # GTM.
-    f0 <- ifelse(ncls < 5, 1.05 - 0.05 * ncls,
-      ifelse(ncls < 10, 1.00 - 0.04 * ncls,
-        0.80 - 0.02 * ncls
-      )
-    )
-    f1 <- diag(0, ncls)
-    f1[row(f1) == col(f1) - 1] <- (1 - f0) / 2
-    Filter <- diag(rep(f0, ncls)) + t(f1) + f1
-    Filter[, 1] <- Filter[, 1] / sum(Filter[, 1])
-    Filter[, ncls] <- Filter[, ncls] / sum(Filter[, ncls])
+    Filter <- create_filter_matrix(ncls)
 
     fit <- emclus(tmp$U, tmp$Z,
       ncls = ncls,

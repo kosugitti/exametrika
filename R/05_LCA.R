@@ -12,6 +12,7 @@
 #' @param w Item weight vector specifying the relative importance of each item.
 #' @param na Values to be treated as missing values.
 #' @param maxiter Maximum number of EM algorithm iterations. Default is 100.
+#' @param verbose Logical; if TRUE, displays progress during estimation. Default is TRUE.
 #'
 #' @return
 #' An object of class "exametrika" and "LCA" containing:
@@ -99,7 +100,7 @@
 #' }
 #'
 #' @export
-LCA <- function(U, ncls = 2, na = NULL, Z = NULL, w = NULL, maxiter = 100) {
+LCA <- function(U, ncls = 2, na = NULL, Z = NULL, w = NULL, maxiter = 100,verbose = TRUE) {
   # data format
   if (!inherits(U, "exametrika")) {
     tmp <- dataFormat(data = U, na = na, Z = Z, w = w)
@@ -118,7 +119,8 @@ LCA <- function(U, ncls = 2, na = NULL, Z = NULL, w = NULL, maxiter = 100) {
   fit <- emclus(tmp$U, tmp$Z, ncls,
     Fil = diag(rep(1, ncls)),
     beta1 = 1, beta2 = 1, maxiter,
-    mic = FALSE
+    mic = FALSE,
+    verbose = verbose
   )
 
   ## Returns

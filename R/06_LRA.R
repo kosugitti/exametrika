@@ -111,7 +111,7 @@ LRA.binary <- function(U,
                        maxiter = 100,
                        BIC.check = FALSE,
                        seed = NULL,
-                       verbose = TRUE, ...) {
+                       verbose = FALSE, ...) {
   tmp <- U
   U <- tmp$U * tmp$Z
   testlength <- NCOL(tmp$U)
@@ -262,7 +262,9 @@ LRA.binary <- function(U,
   IRPIndex <- IRPindex(IRP)
 
   if (sum(IRPIndex$C) == 0) {
+    if (verbose) {
     message("Strongly ordinal alignment condition was satisfied.")
+    }
   }
 
   ### Model Fit

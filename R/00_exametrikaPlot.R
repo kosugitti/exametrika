@@ -424,6 +424,7 @@ plot.exametrika <- function(x,
       lines(x = c(0, 300), y = c(hl[j] * stepy, hl[j] * stepy), col = "red")
     }
   }
+
   color_array_plot <- function() {
     default_colors <- c(
       "#404040",

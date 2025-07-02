@@ -21,7 +21,7 @@ LRA(U, ...)
   maxiter = 100,
   BIC.check = FALSE,
   seed = NULL,
-  verbose = TRUE,
+  verbose = FALSE,
   ...
 )
 

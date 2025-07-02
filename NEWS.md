@@ -2,6 +2,7 @@
 
 + Biculustring.norminal is available!
 + Biclustering.ordinal is available!
++ New function GridSerch() for grid search optimization of model parameters
 + Bugfix: Fix output typos(class/rank)
 + Added duplicate ID validation to dataFormat()
 + Bugfix: Fix ID column detection in dataFormat()

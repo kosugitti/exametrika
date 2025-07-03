@@ -42,6 +42,8 @@
 #' @param overlay Logical. If TRUE, elements such as IRFs will be overlaid on a single plot. Default is FALSE.
 #' @param colors Character vector specifying custom color palette. If NULL, default colorblind-friendly palette is used.
 #' For array plots, the first color should be for missing values, followed by response category colors.
+#' @param cell_width Numeric value specifying the width of each cell in array plots. Default is 3.
+#' @param cell_height Numeric value specifying the height of each cell in array plots. Default is 1.
 #' @param filename Character string specifying output filename. If NULL, plot is displayed on screen.
 #' Supported formats: png, pdf, jpeg, jpg. Format determined by file extension.
 #' @param width Numeric value specifying plot width in pixels (for png/jpeg) or inches (for pdf). Default is 800.
@@ -118,6 +120,8 @@ plot.exametrika <- function(x,
                             nr = 1,
                             overlay = FALSE,
                             colors = NULL,
+                            cell_width = 3,
+                            cell_height = 1,
                             filename = NULL,
                             width = 800,
                             height = 600,
@@ -139,9 +143,13 @@ plot.exametrika <- function(x,
 
   old_par <- par(no.readonly = TRUE)
   on.exit({
-    par(old_par)
+    # Safely restore parameters, excluding problematic read-only ones
+    restore_par <- old_par
+    restore_par[c("pin", "fin", "plt", "usr")] <- NULL
+    suppressWarnings(par(restore_par))
     if (!is.null(filename)) dev.off()
   })
+
   par(mfrow = c(nr, nc))
   testlength <- x$testlength
   nobs <- x$nobs
@@ -262,7 +270,14 @@ plot.exametrika <- function(x,
     if (type == "TRP") {
       # Test Reference Profile ----------------------------------------
       old_par <- par(no.readonly = TRUE)
-      on.exit(par(old_par), add = TRUE)
+      on.exit(
+        {
+          restore_par <- old_par
+          restore_par[c("pin", "fin", "plt", "usr")] <- NULL
+          suppressWarnings(par(restore_par))
+        },
+        add = TRUE
+      )
       par(mar = c(5, 4, 4, 4) + 0.1)
       if (value == "LCA" | value == "IRM" | value == "BINET") {
         target <- x$LCD
@@ -305,7 +320,14 @@ plot.exametrika <- function(x,
     if (type == "LCD" | type == "LRD") {
       # Latent Class Distribution ----------------------------------------
       old_par <- par(no.readonly = TRUE)
-      on.exit(par(old_par), add = TRUE)
+      on.exit(
+        {
+          restore_par <- old_par
+          restore_par[c("pin", "fin", "plt", "usr")] <- NULL
+          suppressWarnings(par(restore_par))
+        },
+        add = TRUE
+      )
       par(mar = c(5, 4, 4, 4) + 0.1)
       if (value == "LCA" | value == "BINET") {
         target1 <- x$LCD
@@ -364,141 +386,119 @@ plot.exametrika <- function(x,
 
 
   array_plot <- function() {
+    # Access cell dimensions from parent scope
+    cell_w <- cell_width
+    cell_h <- cell_height
     old_par <- par(no.readonly = TRUE)
-    on.exit(par(old_par))
-    par(mfrow = c(1, 2))
-    stepx <- 300 / x$testlength
-    stepy <- 600 / x$nobs
-    ## Original Data
-    plot(0, 0,
-      type = "n", xlim = c(0, 300), ylim = c(0, 600),
-      xlab = "", ylab = "", xaxt = "n", yaxt = "n",
-      frame.plot = TRUE,
-      main = "Original Data"
-    )
+    on.exit({
+      restore_par <- old_par
+      restore_par[c("pin", "fin", "plt", "usr")] <- NULL
+      suppressWarnings(par(restore_par))
+    })
+    # Reduce margins to maximize plot area
+    par(mfrow = c(1, 2), mar = c(1, 1, 2, 1), oma = c(0, 0, 0, 0))
 
-    for (i in 1:x$nobs) {
-      for (j in 1:x$testlength) {
-        x1 <- (j - 1) * stepx
-        y1 <- (i - 1) * stepy
-        x2 <- j * stepx
-        y2 <- i * stepy
-        if (x$U[i, j] == 1) {
-          rect(x1, y1, x2, y2, col = "black")
-        }
+    nrows <- x$nobs
+    ncols <- x$testlength
+
+    class_lines <- NULL
+    field_lines <- NULL
+
+    case_order <- order(x$ClassEstimated, decreasing = TRUE)
+    field_order <- order(x$FieldEstimated, decreasing = FALSE)
+    raw_data <- x$U
+    if (is.null(raw_data)) {
+      raw_data <- x$Q
+    }
+
+    clusterd_data <- raw_data[case_order, field_order]
+
+    sorted_class <- x$ClassEstimated[case_order]
+    sorted_field <- x$FieldEstimated[field_order]
+
+    class_breaks <- cumsum(table(sorted_class))
+    field_breaks <- cumsum(table(sorted_field))
+
+    class_lines <- (nrows - class_breaks[-length(class_breaks)]) * cell_h
+    field_lines <- field_breaks[-length(field_breaks)] * cell_w
+
+    ## colors
+    all_values <- unique(as.vector(as.matrix(raw_data)))
+    n_categories <- length(all_values)
+
+    if (is.null(colors)) {
+      colors <- c(
+        "#404040", "#E69F00", "#56B4E9", "#009E73", "#F0E442",
+        "#0072B2", "#D55E00", "#CC79A7", "#999999", "#000000"
+      )
+    }
+    if (length(colors) < n_categories) {
+      additional_colors <- c(
+        "#1B9E77", "#D95F02", "#7570B3", "#E7298A", "#66A61E",
+        "#E6AB02", "#A6761D", "#666666", "#FF7F00", "#1F78B4"
+      )
+      colors <- c(colors, additional_colors)
+      colors <- colors[1:n_categories]
+    }
+
+    # Plot area
+    plot_width <- ncols * cell_w
+    plot_height <- nrows * cell_h
+
+    # original data
+    plot(0, 0,
+      type = "n",
+      xlim = c(0, plot_width), ylim = c(0, plot_height),
+      xlab = "", ylab = "", xaxt = "n", yaxt = "n",
+      main = "Original Data", frame.plot = TRUE
+    )
+    for (i in 1:nrows) {
+      for (j in 1:ncols) {
+        val <- raw_data[i, j]
+        x1 <- (j - 1) * cell_w
+        y1 <- (nrows - i) * cell_h
+        x2 <- j * cell_w
+        y2 <- (nrows - i + 1) * cell_h
+
+        color_index <- match(val, all_values)
+        fill_color <- colors[color_index]
+
+        rect(x1, y1, x2, y2, col = fill_color, border = "white", lwd = 0.1)
       }
     }
 
     ## Clusterd Plot
     plot(0, 0,
-      type = "n", xlim = c(0, 300), ylim = c(0, 600),
+      type = "n",
+      xlim = c(0, plot_width), ylim = c(0, plot_height),
       xlab = "", ylab = "", xaxt = "n", yaxt = "n",
-      frame.plot = TRUE,
-      main = "Clusterd Plot"
+      main = "Clusterd Data", frame.plot = TRUE
     )
-    sorted <- x$U[, order(x$FieldEstimated, decreasing = FALSE)]
-    sorted <- sorted[order(x$ClassEstimated, decreasing = TRUE), ]
-    for (i in 1:nobs) {
-      for (j in 1:testlength) {
-        x1 <- (j - 1) * stepx
-        y1 <- (i - 1) * stepy
-        x2 <- j * stepx
-        y2 <- i * stepy
-        if (sorted[i, j] == 1) {
-          rect(x1, y1, x2, y2, col = "black")
-        }
+    for (i in 1:nrows) {
+      for (j in 1:ncols) {
+        val <- clusterd_data[i, j]
+        x1 <- (j - 1) * cell_w
+        y1 <- (nrows - i) * cell_h
+        x2 <- j * cell_w
+        y2 <- (nrows - i + 1) * cell_h
+
+        color_index <- match(val, all_values)
+        fill_color <- colors[color_index]
+
+        rect(x1, y1, x2, y2, col = fill_color, border = "white", lwd = 0.1)
       }
     }
-
-    vl <- cumsum(table(sort(x$FieldEstimated)))
-    for (i in 1:(x$Nfield - 1)) {
-      lines(x = c(vl[i] * stepx, vl[i] * stepx), y = c(0, 600), col = "red")
+    for (line_y in class_lines) {
+      lines(c(0, plot_width), c(line_y, line_y),
+        col = "white", lwd = 1
+      )
     }
-    hl <- nobs - cumsum(table(sort(x$ClassEstimated)))
-    if (is.null(x$Nclass)) {
-      steps <- x$Nrank
-    } else {
-      steps <- x$Nclass
-    }
-    for (j in 1:(steps - 1)) {
-      lines(x = c(0, 300), y = c(hl[j] * stepy, hl[j] * stepy), col = "red")
+    for (line_x in field_lines) {
+      lines(c(line_x, line_x), c(0, plot_height),
+        col = "white", lwd = 1
+      )
     }
   }
-
-  color_array_plot <- function() {
-    default_colors <- c(
-      "#404040",
-      "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00",
-      "#CC79A7", "#8B4513", "#999999", "#E6194B", "#3CB44B", "#FFE119"
-    )
-    colors_with_missing <- if (!is.null(colors)) colors else default_colors
-
-    old_par <- par(no.readonly = TRUE)
-    on.exit(par(old_par))
-    par(mfrow = c(1, 2))
-    stepx <- 300 / x$testlength
-    stepy <- 600 / x$nobs
-    plot(0, 0,
-      type = "n", xlim = c(0, 300), ylim = c(0, 600),
-      xlab = "", ylab = "", xaxt = "n", yaxt = "n",
-      frame.plot = TRUE,
-      main = "Original Data"
-    )
-    observed_data <- x$Z * x$Q
-    observed_data[is.na(observed_data)] <- 0
-
-    for (i in 1:x$nobs) {
-      for (j in 1:x$testlength) {
-        x1 <- (j - 1) * stepx
-        y1 <- (i - 1) * stepy
-        x2 <- j * stepx
-        y2 <- i * stepy
-
-        rect(x1, y1, x2, y2,
-          col = colors_with_missing[observed_data[i, j] + 1]
-        )
-      }
-    }
-    ## Clusterd Plot
-    plot(0, 0,
-      type = "n", xlim = c(0, 300), ylim = c(0, 600),
-      xlab = "", ylab = "", xaxt = "n", yaxt = "n",
-      frame.plot = TRUE,
-      main = "Clusterd Plot"
-    )
-
-
-    cls <- apply(x$ClassMembership, 1, which.max)
-    fld <- apply(x$FieldMembership, 1, which.max)
-
-    sorted <- x$Q[, order(x$FieldEstimated, decreasing = FALSE)]
-    sorted <- sorted[order(x$ClassEstimated, decreasing = TRUE), ]
-    for (i in 1:x$nobs) {
-      for (j in 1:x$testlength) {
-        x1 <- (j - 1) * stepx
-        y1 <- (i - 1) * stepy
-        x2 <- j * stepx
-        y2 <- i * stepy
-        if (is.na(x$Q[i, j])) {
-          rect(x1, y1, x2, y2, col = "lightgray")
-        } else {
-          rect(x1, y1, x2, y2,
-            col = colors_with_missing[sorted[i, j] + 1]
-          )
-        }
-      }
-    }
-
-    vl <- cumsum(table(sort(x$FieldEstimated)))
-    for (i in 1:(x$Nfield - 1)) {
-      lines(x = c(vl[i] * stepx, vl[i] * stepx), y = c(0, 600), col = "white", lwd = 2)
-    }
-    hl <- x$nobs - cumsum(table(sort(x$ClassEstimated)))
-    for (j in 1:(x$Nclass - 1)) {
-      lines(x = c(0, 300), y = c(hl[j] * stepy, hl[j] * stepy), col = "white", lwd = 2)
-    }
-  }
-
 
   field_PIRP <- function() {
     target <- x$IRP
@@ -864,14 +864,14 @@ plot.exametrika <- function(x,
     },
     nominalBiclustering = {
       if (type == "Array") {
-        color_array_plot()
+        array_plot()
       } else {
         graph_common()
       }
     },
     ordinalBiclustering = {
       if (type == "Array") {
-        color_array_plot()
+        array_plot()
       } else {
         graph_common()
       }

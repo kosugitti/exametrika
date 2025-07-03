@@ -36,10 +36,12 @@ For Biclustering:
 ncls/nfld combination}
 \item{optimal_ncls}{Optimal number of classes/clusters}
 \item{optimal_nfld}{Optimal number of fields}
+\item{optimal_result}{Analysis result using optimal parameters}
 
 For LCA/LRA:
 \item{index_vec}{Vector of fit indices for each ncls}
 \item{optimal_ncls}{Optimal number of classes/clusters}
+\item{optimal_result}{Analysis result using optimal parameters}
 }
 \description{
 Performs a grid search to find optimal parameters for different

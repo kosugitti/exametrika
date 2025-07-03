@@ -21,10 +21,12 @@
 #'    ncls/nfld combination}
 #'   \item{optimal_ncls}{Optimal number of classes/clusters}
 #'   \item{optimal_nfld}{Optimal number of fields}
+#'   \item{optimal_result}{Analysis result using optimal parameters}
 #'
 #'   For LCA/LRA:
 #'   \item{index_vec}{Vector of fit indices for each ncls}
 #'   \item{optimal_ncls}{Optimal number of classes/clusters}
+#'   \item{optimal_result}{Analysis result using optimal parameters}
 #'
 #' @examples
 #' \dontrun{
@@ -72,19 +74,33 @@ GridSearch <- function(
     optimal_ncls <- optimal_idx[1] + 1
     optimal_nfld <- optimal_idx[2] + 1
     message(paste(
-      "Optimal ncls/nrank is ",
+      "\nOptimal ncls/nrank is ",
       optimal_ncls, "and",
       "Optimal nfld is",
       optimal_nfld
     ))
+    
+    # Run analysis with optimal parameters
+    message("Running analysis with optimal parameters...")
+    optimal_args <- c(
+      list(
+        U = obj,
+        ncls = optimal_ncls,
+        nfld = optimal_nfld
+      ),
+      extra_args
+    )
+    optimal_result <- do.call(fun, optimal_args)
+    
     ret_list <- list(
       index_matrix = ret,
       optimal_ncls = optimal_ncls,
-      optimal_nfld = optimal_nfld
+      optimal_nfld = optimal_nfld,
+      optimal_result = optimal_result
     )
   } else if (fun == "LCA" || fun == "LRA") {
     ret <- vector(length = length(2:max_ncls))
-    names(ret) <- paste0("ncls",2:max_ncls)
+    names(ret) <- paste0("ncls", 2:max_ncls)
     extra_args <- list(...)
     for (i in seq_along(2:max_ncls)) {
       ncls <- (2:max_ncls)[i]
@@ -100,12 +116,24 @@ GridSearch <- function(
     } else {
       optimal_ncls <- which.max(ret) + 1
     }
-    message("Optimal ncls/nrank is ", optimal_ncls)
+    message("\nOptimal ncls/nrank is ", optimal_ncls)
+    
+    # Run analysis with optimal parameters
+    message("Running analysis with optimal parameters...")
+    optimal_args <- c(
+      list(
+        U = obj,
+        ncls = optimal_ncls
+      ),
+      extra_args
+    )
+    optimal_result <- do.call(fun, optimal_args)
+    
     ret_list <- list(
       index_vec = ret,
-      optimal_ncls = optimal_ncls
+      optimal_ncls = optimal_ncls,
+      optimal_result = optimal_result
     )
   }
   return(ret_list)
 }
-

@@ -15,6 +15,8 @@
   nr = 1,
   overlay = FALSE,
   colors = NULL,
+  cell_width = 3,
+  cell_height = 1,
   filename = NULL,
   width = 800,
   height = 600,
@@ -67,6 +69,10 @@ When type is "IIF"/"IIC", specifying 0 will produce a TIF/TIC for the entire tes
 
 \item{colors}{Character vector specifying custom color palette. If NULL, default colorblind-friendly palette is used.
 For array plots, the first color should be for missing values, followed by response category colors.}
+
+\item{cell_width}{Numeric value specifying the width of each cell in array plots. Default is 3.}
+
+\item{cell_height}{Numeric value specifying the height of each cell in array plots. Default is 1.}
 
 \item{filename}{Character string specifying output filename. If NULL, plot is displayed on screen.
 Supported formats: png, pdf, jpeg, jpg. Format determined by file extension.}

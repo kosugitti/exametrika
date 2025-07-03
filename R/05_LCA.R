@@ -100,7 +100,7 @@
 #' }
 #'
 #' @export
-LCA <- function(U, ncls = 2, na = NULL, Z = NULL, w = NULL, maxiter = 100,verbose = TRUE) {
+LCA <- function(U, ncls = 2, na = NULL, Z = NULL, w = NULL, maxiter = 100, verbose = TRUE) {
   # data format
   if (!inherits(U, "exametrika")) {
     tmp <- dataFormat(data = U, na = na, Z = Z, w = w)

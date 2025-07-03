@@ -263,7 +263,7 @@ LRA.binary <- function(U,
 
   if (sum(IRPIndex$C) == 0) {
     if (verbose) {
-    message("Strongly ordinal alignment condition was satisfied.")
+      message("Strongly ordinal alignment condition was satisfied.")
     }
   }
 

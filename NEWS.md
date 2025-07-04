@@ -1,4 +1,4 @@
-# exametrika 1.6.0 on XXX X, 2025
+# exametrika 1.6.0 on Jul 4th, 2025
 
 + Biculustring.norminal is available!
 + Biclustering.ordinal is available!

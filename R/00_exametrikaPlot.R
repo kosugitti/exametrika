@@ -40,6 +40,15 @@
 #' @param nc Integer specifying the number of columns for multiple plots. Default is 1.
 #' @param nr Integer specifying the number of rows for multiple plots. Default is 1.
 #' @param overlay Logical. If TRUE, elements such as IRFs will be overlaid on a single plot. Default is FALSE.
+#' @param colors Character vector specifying custom color palette. If NULL, default colorblind-friendly palette is used.
+#' For array plots, the first color should be for missing values, followed by response category colors.
+#' @param cell_width Numeric value specifying the width of each cell in array plots. Default is 3.
+#' @param cell_height Numeric value specifying the height of each cell in array plots. Default is 1.
+#' @param filename Character string specifying output filename. If NULL, plot is displayed on screen.
+#' Supported formats: png, pdf, jpeg, jpg. Format determined by file extension.
+#' @param width Numeric value specifying plot width in pixels (for png/jpeg) or inches (for pdf). Default is 800.
+#' @param height Numeric value specifying plot height in pixels (for png/jpeg) or inches (for pdf). Default is 600.
+#' @param dpi Numeric value specifying resolution in dots per inch for raster formats (png/jpeg). Default is 300.
 #' @param ... Additional arguments passed to plotting functions.
 #'
 #' @details
@@ -72,14 +81,14 @@
 #' }
 #'
 #' @importFrom graphics curve title axis barplot mtext par text lines rect legend abline image
-#' @importFrom grDevices gray
+#' @importFrom grDevices gray dev.off jpeg pdf png
 #' @importFrom stats density runif
 #' @importFrom utils tail
 #'
 #' @examples
 #' \dontrun{
 #' # IRT model example
-#' irt_result <- exametrika::IRT(U)
+#' irt_result <- exametrika::IRT(J15S500)
 #' plot(irt_result, type = "IRF", items = 1:5)
 #' plot(irt_result, type = "TIF")
 #'
@@ -88,6 +97,12 @@
 #' plot(lca_result, type = "IRP")
 #' plot(lca_result, type = "LCD")
 #' }
+#'
+#' # Array plot with custom output
+#' biclustering_result <- exametrika::Biclustering(J35S515)
+#' # Custom colors and file output
+#' my_colors <- c("#404040", "#E69F00", "#56B4E9", "#009E73", "#F0E442")
+#' plot(biclustering_result, type = "Array", colors = my_colors)
 #'
 #' @export
 #'
@@ -103,10 +118,38 @@ plot.exametrika <- function(x,
                             students = NULL,
                             nc = 1,
                             nr = 1,
-                            overlay = FALSE, ...) {
+                            overlay = FALSE,
+                            colors = NULL,
+                            cell_width = 3,
+                            cell_height = 1,
+                            filename = NULL,
+                            width = 800,
+                            height = 600,
+                            dpi = 300,
+                            ...) {
   value <- if (length(class(x)) > 1) tail(class(x), 1) else "None"
+
+  if (!is.null(filename)) {
+    ext <- tolower(tools::file_ext(filename))
+    if (ext == "") ext <- "png"
+    switch(ext,
+      "png" = png(filename, width = width, height = height, res = dpi),
+      "pdf" = pdf(filename, width = width / 72, height = height / 72),
+      "jpeg" = jpeg(filename, width = width, height = height, res = dpi),
+      "jpg" = jpeg(filename, width = width, height = height, res = dpi),
+      stop("Supported formats: png, pdf, jpeg, jpg")
+    )
+  }
+
   old_par <- par(no.readonly = TRUE)
-  on.exit(par(old_par))
+  on.exit({
+    # Safely restore parameters, excluding problematic read-only ones
+    restore_par <- old_par
+    restore_par[c("pin", "fin", "plt", "usr")] <- NULL
+    suppressWarnings(par(restore_par))
+    if (!is.null(filename)) dev.off()
+  })
+
   par(mfrow = c(nr, nc))
   testlength <- x$testlength
   nobs <- x$nobs
@@ -119,6 +162,8 @@ plot.exametrika <- function(x,
     LRAordinal = c("ScoreFreq", "ScoreRank", "ICRP", "ICBR", "RMP"),
     LRArated = c("ScoreFreq", "ScoreRank", "ICRP", "RMP"),
     Biclustering = c("FRP", "TRP", "LCD", "LRD", "CMP", "RMP", "CRV", "RRV", "Array"),
+    nominalBiclustering = c("FRP", "LCD", "LRD", "CMP", "Array"),
+    ordinalBiclustering = c("FRP", "LCD", "LRD", "CMP", "RMP", "Array"),
     IRM = c("FRP", "TRP", "Array"),
     LDLRA = c("IRP", "TRP", "LRD", "RMP"),
     LDB = c("FRP", "TRP", "LRD", "RMP", "Array", "FieldPIRP"),
@@ -159,13 +204,7 @@ plot.exametrika <- function(x,
 
     if (type == "IRP") {
       # Item Reference Profile ----------------------------------------
-      if (value == "LCA") {
-        msg <- "Class"
-      } else if (value == "LRA") {
-        msg <- "Rank"
-      } else if (value == "LDLRA") {
-        msg <- "Rank"
-      }
+      msg <- x$msg
       params <- x$IRP[plotItemID, ]
       if (is.null(x$Nclass)) {
         steps <- x$Nrank
@@ -188,17 +227,7 @@ plot.exametrika <- function(x,
     if (type == "FRP") {
       # Item Reference Profile ----------------------------------------
       params <- x$FRP
-      if (value == "LCA") {
-        msg <- "Class"
-      } else if (value == "LRA" | value == "LDLRA" | value == "LDB" | value == "Binet") {
-        msg <- "Rank"
-      } else if (value == "Biclustering") {
-        if (x$model == 1) {
-          msg <- "Class"
-        } else {
-          msg <- "Rank"
-        }
-      }
+      msg <- x$msg
       for (i in 1:nrow(params)) {
         y <- params[i, ]
         plot(y,
@@ -212,11 +241,7 @@ plot.exametrika <- function(x,
     }
     if (type == "CRV" | type == "RRV") {
       # Rank Reference Vector -------------------------------------------
-      if (x$model == 1) {
-        msg <- "Class"
-      } else {
-        msg <- "Rank"
-      }
+      msg <- x$msg
       RRV <- t(x$FRP)
       plot(1:x$Nfield, RRV[1, ],
         type = "n",
@@ -245,25 +270,26 @@ plot.exametrika <- function(x,
     if (type == "TRP") {
       # Test Reference Profile ----------------------------------------
       old_par <- par(no.readonly = TRUE)
-      on.exit(par(old_par), add = TRUE)
+      on.exit(
+        {
+          restore_par <- old_par
+          restore_par[c("pin", "fin", "plt", "usr")] <- NULL
+          suppressWarnings(par(restore_par))
+        },
+        add = TRUE
+      )
       par(mar = c(5, 4, 4, 4) + 0.1)
       if (value == "LCA" | value == "IRM" | value == "BINET") {
         target <- x$LCD
-        msg <- "Class"
       } else if (value == "LRA" | value == "LDLRA" | value == "LDB") {
         target <- x$LRD
-        msg <- "Rank"
-      } else if (value == "Biclustering") {
+      } else if (value == "Biclustering" | value == "ordinalBiclustering") {
         target <- x$LRD
         if (is.null(target)) {
           target <- x$LCD
         }
-        if (x$model == 1) {
-          msg <- "Class"
-        } else {
-          msg <- "Rank"
-        }
       }
+      msg <- x$msg
 
       if (is.null(x$Nclass)) {
         steps <- x$Nrank
@@ -294,7 +320,14 @@ plot.exametrika <- function(x,
     if (type == "LCD" | type == "LRD") {
       # Latent Class Distribution ----------------------------------------
       old_par <- par(no.readonly = TRUE)
-      on.exit(par(old_par), add = TRUE)
+      on.exit(
+        {
+          restore_par <- old_par
+          restore_par[c("pin", "fin", "plt", "usr")] <- NULL
+          suppressWarnings(par(restore_par))
+        },
+        add = TRUE
+      )
       par(mar = c(5, 4, 4, 4) + 0.1)
       if (value == "LCA" | value == "BINET") {
         target1 <- x$LCD
@@ -303,11 +336,7 @@ plot.exametrika <- function(x,
         target1 <- x$LRD
         target2 <- x$RMD
       }
-      if ((value == "Biclustering" && x$model == 2) || value == "LRA") {
-        msg <- "Rank"
-      } else {
-        msg <- "Class"
-      }
+      msg <- x$msg
       if (is.null(x$Nclass)) {
         steps <- x$Nrank
       } else {
@@ -335,11 +364,7 @@ plot.exametrika <- function(x,
     }
     if (type == "CMP" | type == "RMP") {
       # Class Membership Profile ----------------------------------------
-      if (type == "CMP") {
-        msg <- "Class"
-      } else {
-        msg <- "Rank"
-      }
+      msg <- x$msg
       if (is.null(x$Nclass)) {
         steps <- x$Nrank
       } else {
@@ -360,66 +385,118 @@ plot.exametrika <- function(x,
   }
 
 
-
   array_plot <- function() {
+    # Access cell dimensions from parent scope
+    cell_w <- cell_width
+    cell_h <- cell_height
     old_par <- par(no.readonly = TRUE)
-    on.exit(par(old_par))
-    par(mfrow = c(1, 2))
-    stepx <- 300 / x$testlength
-    stepy <- 600 / x$nobs
-    ## Original Data
-    plot(0, 0,
-      type = "n", xlim = c(0, 300), ylim = c(0, 600),
-      xlab = "", ylab = "", xaxt = "n", yaxt = "n",
-      frame.plot = TRUE,
-      main = "Original Data"
-    )
+    on.exit({
+      restore_par <- old_par
+      restore_par[c("pin", "fin", "plt", "usr")] <- NULL
+      suppressWarnings(par(restore_par))
+    })
+    # Reduce margins to maximize plot area
+    par(mfrow = c(1, 2), mar = c(1, 1, 2, 1), oma = c(0, 0, 0, 0))
 
-    for (i in 1:x$nobs) {
-      for (j in 1:x$testlength) {
-        x1 <- (j - 1) * stepx
-        y1 <- (i - 1) * stepy
-        x2 <- j * stepx
-        y2 <- i * stepy
-        if (x$U[i, j] == 1) {
-          rect(x1, y1, x2, y2, col = "black")
-        }
+    nrows <- x$nobs
+    ncols <- x$testlength
+
+    class_lines <- NULL
+    field_lines <- NULL
+
+    case_order <- order(x$ClassEstimated, decreasing = TRUE)
+    field_order <- order(x$FieldEstimated, decreasing = FALSE)
+    raw_data <- x$U
+    if (is.null(raw_data)) {
+      raw_data <- x$Q
+    }
+
+    clusterd_data <- raw_data[case_order, field_order]
+
+    sorted_class <- x$ClassEstimated[case_order]
+    sorted_field <- x$FieldEstimated[field_order]
+
+    class_breaks <- cumsum(table(sorted_class))
+    field_breaks <- cumsum(table(sorted_field))
+
+    class_lines <- (nrows - class_breaks[-length(class_breaks)]) * cell_h
+    field_lines <- field_breaks[-length(field_breaks)] * cell_w
+
+    ## colors
+    all_values <- unique(as.vector(as.matrix(raw_data)))
+    n_categories <- length(all_values)
+
+    if (is.null(colors)) {
+      colors <- c(
+        "#404040", "#E69F00", "#56B4E9", "#009E73", "#F0E442",
+        "#0072B2", "#D55E00", "#CC79A7", "#999999", "#000000"
+      )
+    }
+    if (length(colors) < n_categories) {
+      additional_colors <- c(
+        "#1B9E77", "#D95F02", "#7570B3", "#E7298A", "#66A61E",
+        "#E6AB02", "#A6761D", "#666666", "#FF7F00", "#1F78B4"
+      )
+      colors <- c(colors, additional_colors)
+      colors <- colors[1:n_categories]
+    }
+
+    # Plot area
+    plot_width <- ncols * cell_w
+    plot_height <- nrows * cell_h
+
+    # original data
+    plot(0, 0,
+      type = "n",
+      xlim = c(0, plot_width), ylim = c(0, plot_height),
+      xlab = "", ylab = "", xaxt = "n", yaxt = "n",
+      main = "Original Data", frame.plot = TRUE
+    )
+    for (i in 1:nrows) {
+      for (j in 1:ncols) {
+        val <- raw_data[i, j]
+        x1 <- (j - 1) * cell_w
+        y1 <- (nrows - i) * cell_h
+        x2 <- j * cell_w
+        y2 <- (nrows - i + 1) * cell_h
+
+        color_index <- match(val, all_values)
+        fill_color <- colors[color_index]
+
+        rect(x1, y1, x2, y2, col = fill_color, border = "white", lwd = 0.1)
       }
     }
 
     ## Clusterd Plot
     plot(0, 0,
-      type = "n", xlim = c(0, 300), ylim = c(0, 600),
+      type = "n",
+      xlim = c(0, plot_width), ylim = c(0, plot_height),
       xlab = "", ylab = "", xaxt = "n", yaxt = "n",
-      frame.plot = TRUE,
-      main = "Clusterd Plot"
+      main = "Clusterd Data", frame.plot = TRUE
     )
-    sorted <- x$U[, order(x$FieldEstimated, decreasing = FALSE)]
-    sorted <- sorted[order(x$ClassEstimated, decreasing = TRUE), ]
-    for (i in 1:nobs) {
-      for (j in 1:testlength) {
-        x1 <- (j - 1) * stepx
-        y1 <- (i - 1) * stepy
-        x2 <- j * stepx
-        y2 <- i * stepy
-        if (sorted[i, j] == 1) {
-          rect(x1, y1, x2, y2, col = "black")
-        }
+    for (i in 1:nrows) {
+      for (j in 1:ncols) {
+        val <- clusterd_data[i, j]
+        x1 <- (j - 1) * cell_w
+        y1 <- (nrows - i) * cell_h
+        x2 <- j * cell_w
+        y2 <- (nrows - i + 1) * cell_h
+
+        color_index <- match(val, all_values)
+        fill_color <- colors[color_index]
+
+        rect(x1, y1, x2, y2, col = fill_color, border = "white", lwd = 0.1)
       }
     }
-
-    vl <- cumsum(table(sort(x$FieldEstimated)))
-    for (i in 1:(x$Nfield - 1)) {
-      lines(x = c(vl[i] * stepx, vl[i] * stepx), y = c(0, 600), col = "red")
+    for (line_y in class_lines) {
+      lines(c(0, plot_width), c(line_y, line_y),
+        col = "white", lwd = 1
+      )
     }
-    hl <- nobs - cumsum(table(sort(x$ClassEstimated)))
-    if (is.null(x$Nclass)) {
-      steps <- x$Nrank
-    } else {
-      steps <- x$Nclass
-    }
-    for (j in 1:(steps - 1)) {
-      lines(x = c(0, 300), y = c(hl[j] * stepy, hl[j] * stepy), col = "red")
+    for (line_x in field_lines) {
+      lines(c(line_x, line_x), c(0, plot_height),
+        col = "white", lwd = 1
+      )
     }
   }
 
@@ -674,26 +751,27 @@ plot.exametrika <- function(x,
         thetas <- seq(-4, 4, 0.01)
         n_theta <- length(thetas)
         K <- length(b) + 1
-        colors <- c(
-          "#999999", "#E69F00", "#56B4E9", "#009E73",
-          "#F0E442", "#0072B2", "#D55E00", "#CC79A7"
-        )
+        grm_colors <- if (!is.null(colors)) {
+          colors[-1]
+        } else {
+          c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7", "#8B4513")
+        }
         probs <- matrix(0, nrow = n_theta, ncol = K)
         for (i in 1:n_theta) {
           probs[i, ] <- grm_prob(thetas[i], a, b)
         }
         plot(thetas, probs[, 1],
           type = "l",
-          col = colors[1],
+          col = grm_colors[1],
           ylim = c(0, 1),
           xlab = expression(theta),
           main = title
         )
         for (k in 2:K) {
-          lines(thetas, probs[, k], col = colors[k])
+          lines(thetas, probs[, k], col = grm_colors[k])
         }
         category_labels <- paste("Category", 1:K)
-        legend("topright", legend = category_labels, col = colors, lty = 1)
+        legend("topright", legend = category_labels, col = grm_colors, lty = 1)
       }
 
       grm_IIC <- function(a, b, title) {
@@ -778,6 +856,20 @@ plot.exametrika <- function(x,
       }
     },
     Biclustering = {
+      if (type == "Array") {
+        array_plot()
+      } else {
+        graph_common()
+      }
+    },
+    nominalBiclustering = {
+      if (type == "Array") {
+        array_plot()
+      } else {
+        graph_common()
+      }
+    },
+    ordinalBiclustering = {
       if (type == "Array") {
         array_plot()
       } else {

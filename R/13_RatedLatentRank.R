@@ -11,6 +11,7 @@
 #' @return
 #' For rated data (\code{LRA.rated}), the returned list additionally includes:
 #' \describe{
+#' \item{msg}{A character string indicating the model type. }
 #' \item{ScoreReport}{Descriptive statistics of test performance, including sample size,
 #'   test length, central tendency, variability, distribution characteristics, and reliability.}
 #' \item{ItemReport}{Basic statistics for each item including category proportions and item-total correlations.}
@@ -73,18 +74,7 @@ LRA.rated <- function(U,
   const <- 1e-6
 
   # Making Filter
-  Fil <- diag(rep(1, nrank))
-
-  f0 <- ifelse(nrank < 5, 1.05 - 0.05 * nrank,
-    ifelse(nrank < 10, 1.00 - 0.04 * nrank,
-      0.80 - 0.02 * nrank
-    )
-  )
-  f1 <- diag(0, nrank)
-  f1[row(f1) == col(f1) - 1] <- (1 - f0) / 2
-  Fil <- diag(rep(f0, nrank)) + t(f1) + f1
-  Fil[, 1] <- Fil[, 1] / sum(Fil[, 1])
-  Fil[, nrank] <- Fil[, nrank] / sum(Fil[, nrank])
+  Fil <- create_filter_matrix(nrank)
 
 
   # Prepare ---------------------------------------------------------
@@ -259,7 +249,7 @@ LRA.rated <- function(U,
 
 
   # Design Vector/Matrix
-  keikakufunc <- function(x, y) 1
+  designfunc <- function(x, y) 1
 
   create_upper_diagonal_matrix <- function(func, n) {
     matrix <- matrix(0, n, n)
@@ -271,31 +261,31 @@ LRA.rated <- function(U,
     return(matrix)
   }
 
-  keikaku0 <- sapply(1:nitems, function(j) sum(useNcat[1:j]))
-  keikaku1 <- cbind(head(c(0, keikaku0) + 1, -1), keikaku0)
+  design0 <- sapply(1:nitems, function(j) sum(useNcat[1:j]))
+  design1 <- cbind(head(c(0, design0) + 1, -1), design0)
 
-  keikaku2 <- lapply(1:nitems, function(j) {
-    seq(keikaku1[j, 1], keikaku1[j, 2])
+  design2 <- lapply(1:nitems, function(j) {
+    seq(design1[j, 1], design1[j, 2])
   })
 
-  keikaku3 <- do.call(rbind, lapply(1:nitems, function(j) {
-    cbind(rep(j, useNcat[j]), keikaku2[[j]])
+  design3 <- do.call(rbind, lapply(1:nitems, function(j) {
+    cbind(rep(j, useNcat[j]), design2[[j]])
   }))
 
-  keikaku4 <- matrix(0, nrow = nitems, ncol = sum(useNcat))
-  for (i in 1:nrow(keikaku3)) {
-    keikaku4[keikaku3[i, 1], keikaku3[i, 2]] <- 1
+  design4 <- matrix(0, nrow = nitems, ncol = sum(useNcat))
+  for (i in 1:nrow(design3)) {
+    design4[design3[i, 1], design3[i, 2]] <- 1
   }
 
-  keikaku5 <- do.call(rbind, lapply(1:nitems, function(j) {
-    # keikaku4の各行jを取得し、ncat[j]回繰り返す
-    matrix(rep(keikaku4[j, ], useNcat[j]), nrow = useNcat[j], byrow = TRUE)
+  design5 <- do.call(rbind, lapply(1:nitems, function(j) {
+    # design4の各行jを取得し、ncat[j]回繰り返す
+    matrix(rep(design4[j, ], useNcat[j]), nrow = useNcat[j], byrow = TRUE)
   }))
 
-  keikaku6 <- rep(NA, nitems)
+  design6 <- rep(NA, nitems)
   for (j in 1:nitems) {
     pos <- which(usecategory[[j]] == correct_answer[j])
-    keikaku6[j] <- keikaku2[[j]][pos]
+    design6[j] <- design2[[j]][pos]
   }
   # Saturation Model -------------------------------------------------
   correctCRPsatu <- rep(NA, nitems)
@@ -333,7 +323,7 @@ LRA.rated <- function(U,
 
     refMatcore_satu <- t(CijkMat) %*% rankProf_satu
 
-    catRefmat_satu <- refMatcore_satu / keikaku5 %*% refMatcore_satu
+    catRefmat_satu <- refMatcore_satu / design5 %*% refMatcore_satu
     log_lik_satu <- sum(rankProf_satu * (log(rankProf_num_satu + const)))
     ij_log_lik_satu <- log_lik_satu / nitems / nobs
 
@@ -359,8 +349,8 @@ LRA.rated <- function(U,
     }
   }
 
-  first_sum <- sum(catRefmat_satu[keikaku6, 1])
-  last_sum <- sum(catRefmat_satu[keikaku6, ncol(catRefmat_satu)])
+  first_sum <- sum(catRefmat_satu[design6, 1])
+  last_sum <- sum(catRefmat_satu[design6, ncol(catRefmat_satu)])
 
 
   if (first_sum > last_sum) {
@@ -369,13 +359,13 @@ LRA.rated <- function(U,
 
   catRefbox_satu <- vector("list", nitems)
   for (j in 1:nitems) {
-    catRefbox_satu[[j]] <- catRefmat_satu[keikaku1[j, 1]:keikaku1[j, 2], ]
+    catRefbox_satu[[j]] <- catRefmat_satu[design1[j, 1]:design1[j, 2], ]
   }
 
   if (mic) {
     catRefbox_satu2 <- vector("list", nitems)
     for (j in 1:nitems) {
-      target_row <- catRefmat_satu[keikaku6[j], ]
+      target_row <- catRefmat_satu[design6[j], ]
       current_matrix <- catRefbox_satu[[j]]
       augmented_matrix <- t(rbind(target_row, current_matrix))
       sorted <- augmented_matrix[do.call(order, as.data.frame(augmented_matrix)), ]
@@ -404,20 +394,20 @@ LRA.rated <- function(U,
     rankProf <- rankProf_num / rankProf_den
 
     refMatcore <- t(CijkMat) %*% rankProf %*% Fil
-    catRefmat <- refMatcore / keikaku5 %*% refMatcore
+    catRefmat <- refMatcore / design5 %*% refMatcore
 
-    first_col_sum <- sum(catRefmat[keikaku6, 1])
-    last_col_sum <- sum(catRefmat[keikaku6, ncol(catRefmat)])
+    first_col_sum <- sum(catRefmat[design6, 1])
+    last_col_sum <- sum(catRefmat[design6, ncol(catRefmat)])
     if (first_col_sum > last_col_sum) {
       catRefmat <- catRefmat[, ncol(catRefmat):1]
     }
     for (j in 1:nitems) {
-      catRefbox[[j]] <- catRefmat[keikaku1[j, 1]:keikaku1[j, 2], ]
+      catRefbox[[j]] <- catRefmat[design1[j, 1]:design1[j, 2], ]
     }
 
     if (mic == 1) {
       for (j in 1:nitems) {
-        sort_order <- order(catRefmat[keikaku6[[j]], ])
+        sort_order <- order(catRefmat[design6[[j]], ])
         catRefbox[[j]] <- catRefbox[[j]][, sort_order]
       }
     }
@@ -475,7 +465,7 @@ LRA.rated <- function(U,
   ICRP <- category_report[, c("ItemLabel", "CategoryLabel", paste0("rank", 1:nrank))]
 
   #
-  testRefVec <- apply(catRefmat[keikaku6, ], 2, sum)
+  testRefVec <- apply(catRefmat[design6, ], 2, sum)
 
   ## rank Profile
   rankProf_num <- exp(CijkMat %*% log(catRefmat + const) + logprior_NQmat)
@@ -545,12 +535,12 @@ LRA.rated <- function(U,
   satuggg_jq2 <- t(CijkMat) %*% rankProf_satu
 
   # Model item log-likelihood
-  # model_itemll1 <- keikaku4 %*% colSums(t(modelggg_jq1 * log(catRefmat + const)))
-  model_itemll2 <- keikaku4 %*% colSums(t(modelggg_jq2 * log(catRefmat + const)))
+  # model_itemll1 <- design4 %*% colSums(t(modelggg_jq1 * log(catRefmat + const)))
+  model_itemll2 <- design4 %*% colSums(t(modelggg_jq2 * log(catRefmat + const)))
 
   # Saturated item log-likelihood
-  # satu_itemll1 <- keikaku4 %*% colSums(t(satuggg_jq1 * log(catRefmat_satu + const)))
-  satu_itemll2 <- keikaku4 %*% colSums(t(satuggg_jq2 * log(catRefmat_satu + const)))
+  # satu_itemll1 <- design4 %*% colSums(t(satuggg_jq1 * log(catRefmat_satu + const)))
+  satu_itemll2 <- design4 %*% colSums(t(satuggg_jq2 * log(catRefmat_satu + const)))
 
   null_itemll <- rep(0, nitems)
   zzzTotal <- apply(U$Z, 2, sum)
@@ -607,6 +597,7 @@ LRA.rated <- function(U,
   ret <- structure(list(
     U = U,
     mic = mic,
+    msg = "Rank",
     testlength = NCOL(U$Q),
     nobs = NROW(U$Q),
     Nrank = nrank,

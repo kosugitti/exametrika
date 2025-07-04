@@ -1,3 +1,13 @@
+# exametrika 1.6.0 on XXX X, 2025
+
++ Biculustring.norminal is available!
++ Biclustering.ordinal is available!
++ New function GridSerch() for grid search optimization of model parameters
++ Bugfix: Fix output typos(class/rank)
++ Added duplicate ID validation to dataFormat()
++ Bugfix: Fix ID column detection in dataFormat()
++ Bugfix: Fix stanine division error when unable to split data
+
 # exameterika 1.5.2 on March 29, 2025
 
 + Bugfix: Fix output typos(TestStatisticsFunction,GRMs)

@@ -11,6 +11,7 @@
 #' @return
 #' For ordinal data (\code{LRA.ordinal}), the returned list additionally includes:
 #' \describe{
+#' \item{msg}{A character string indicating the model type. }
 #' \item{ScoreReport}{Descriptive statistics of test performance, including sample size,
 #'   test length, central tendency, variability, distribution characteristics, and reliability.}
 #' \item{ItemReport}{Basic statistics for each item including category proportions and item-total correlations.}
@@ -147,18 +148,7 @@ LRA.ordinal <- function(U,
   # Algorithm -------------------------------------------------------
 
   ## Filter
-  Fil <- diag(rep(1, nrank))
-
-  f0 <- ifelse(nrank < 5, 1.05 - 0.05 * nrank,
-    ifelse(nrank < 10, 1.00 - 0.04 * nrank,
-      0.80 - 0.02 * nrank
-    )
-  )
-  f1 <- diag(0, nrank)
-  f1[row(f1) == col(f1) - 1] <- (1 - f0) / 2
-  Fil <- diag(rep(f0, nrank)) + t(f1) + f1
-  Fil[, 1] <- Fil[, 1] / sum(Fil[, 1])
-  Fil[, nrank] <- Fil[, nrank] / sum(Fil[, nrank])
+  Fil <- create_filter_matrix(nrank)
 
   ## Prior
   if (trapezoidal > 0) {
@@ -173,7 +163,7 @@ LRA.ordinal <- function(U,
   logprior_NQmat <- matrix(rep(log(log_prior), nobs), byrow = TRUE, nrow = nobs)
 
   ## Design vector/Matrix
-  keikakufunc <- function(x, y) 1
+  designfunc <- function(x, y) 1
 
   create_upper_diagonal_matrix <- function(func, n) {
     matrix <- matrix(0, n, n)
@@ -185,28 +175,28 @@ LRA.ordinal <- function(U,
     return(matrix)
   }
 
-  keikaku0 <- sapply(1:nitems, function(j) sum(ncat[1:j]))
-  keikaku1 <- cbind(keikaku0 - ncat[1] + 1, keikaku0)
+  design0 <- sapply(1:nitems, function(j) sum(ncat[1:j]))
+  design1 <- cbind(design0 - ncat[1] + 1, design0)
 
-  keikaku2 <- lapply(1:nitems, function(j) {
-    seq(keikaku1[j, 1], keikaku1[j, 2])
+  design2 <- lapply(1:nitems, function(j) {
+    seq(design1[j, 1], design1[j, 2])
   })
 
-  keikaku3 <- do.call(rbind, lapply(1:nitems, function(j) {
-    cbind(rep(j, ncat[j]), keikaku2[[j]])
+  design3 <- do.call(rbind, lapply(1:nitems, function(j) {
+    cbind(rep(j, ncat[j]), design2[[j]])
   }))
 
-  keikaku4 <- matrix(0, nrow = nitems, ncol = sum(ncat))
-  for (i in 1:nrow(keikaku3)) {
-    keikaku4[keikaku3[i, 1], keikaku3[i, 2]] <- 1
+  design4 <- matrix(0, nrow = nitems, ncol = sum(ncat))
+  for (i in 1:nrow(design3)) {
+    design4[design3[i, 1], design3[i, 2]] <- 1
   }
 
-  keikaku5 <- do.call(rbind, lapply(1:nitems, function(j) {
-    matrix(rep(keikaku4[j, ], ncat[j]), nrow = ncat[j], byrow = TRUE)
+  design5 <- do.call(rbind, lapply(1:nitems, function(j) {
+    matrix(rep(design4[j, ], ncat[j]), nrow = ncat[j], byrow = TRUE)
   }))
 
-  keikaku6_matrix <- create_upper_diagonal_matrix(keikakufunc, sum(ncat))
-  keikaku6 <- keikaku5 * keikaku6_matrix
+  design6_matrix <- create_upper_diagonal_matrix(designfunc, sum(ncat))
+  design6 <- design5 * design6_matrix
 
 
   # Saturation Model -------------------------------------------------
@@ -245,11 +235,11 @@ LRA.ordinal <- function(U,
 
     ## Mstep
     refMatcore_satu <- t(uuMat) %*% rankProf_satu
-    refMat111_satu <- keikaku6 %*% refMatcore_satu / keikaku5 %*% refMatcore_satu
-    delete_rows <- keikaku0 - ncat[1] + 1
+    refMat111_satu <- design6 %*% refMatcore_satu / design5 %*% refMatcore_satu
+    delete_rows <- design0 - ncat[1] + 1
     refMat_satu <- refMat111_satu[-delete_rows, ]
     refMat000_satu <- rbind(refMat111_satu[-1, ], refMat111_satu[1, ])
-    refMat000_satu[keikaku0, ] <- 0
+    refMat000_satu[design0, ] <- 0
     catRefMat_satu <- refMat111_satu - refMat000_satu
     ### Log Lik for Saturation Model
     log_lik_satu <- sum(rankProf_satu * log(nume_satu + const))
@@ -287,11 +277,11 @@ LRA.ordinal <- function(U,
     refMat111_satu <- t(apply(refMat111_satu, 1, sort))
   }
 
-  delete_rows <- keikaku0 - ncat[1] + 1
+  delete_rows <- design0 - ncat[1] + 1
   refMat_satu <- refMat111_satu[-delete_rows, ]
 
   refMat000_satu <- rbind(refMat111_satu[-1, ], refMat111_satu[1, ])
-  refMat000_satu[keikaku0, ] <- 0
+  refMat000_satu[design0, ] <- 0
 
   catRefMat_satu <- refMat111_satu - refMat000_satu
 
@@ -341,7 +331,7 @@ LRA.ordinal <- function(U,
 
     # Filtering
     refMatcore <- t(uuMat) %*% rankProf %*% Fil
-    refMat111 <- keikaku6 %*% refMatcore / keikaku5 %*% refMatcore
+    refMat111 <- design6 %*% refMatcore / design5 %*% refMatcore
 
     if (sum(refMat111[1, ]) > sum(refMat111[nrank, ])) {
       refMat111 <- refMat111[, ncol(refMat111):1]
@@ -351,11 +341,11 @@ LRA.ordinal <- function(U,
       refMat111 <- t(apply(refMat111, 1, sort))
     }
 
-    delete_rows <- sapply(1:nitems, function(j) keikaku0[j] - ncat[1] + 1)
+    delete_rows <- sapply(1:nitems, function(j) design0[j] - ncat[1] + 1)
     refMat <- refMat111[-delete_rows, ]
 
     refMat000 <- rbind(refMat111[2:nrow(refMat111), ], rep(0, nrank))
-    refMat000[keikaku0, ] <- 0
+    refMat000[design0, ] <- 0
     catRefMat <- refMat111 - refMat000
 
     log_lik <- sum(rankProf * log(nume))
@@ -471,12 +461,12 @@ LRA.ordinal <- function(U,
   satuggg_jq2 <- t(uuMat) %*% rankProf_satu
 
   # Model item log-likelihood
-  # model_itemll1 <- keikaku4 %*% colSums(t(modelggg_jq1 * log(catRefMat + const)))
-  model_itemll2 <- keikaku4 %*% colSums(t(modelggg_jq2 * log(catRefMat + const)))
+  # model_itemll1 <- design4 %*% colSums(t(modelggg_jq1 * log(catRefMat + const)))
+  model_itemll2 <- design4 %*% colSums(t(modelggg_jq2 * log(catRefMat + const)))
 
   # Saturated item log-likelihood
-  # satu_itemll1 <- keikaku4 %*% colSums(t(satuggg_jq1 * log(catRefMat_satu + const)))
-  satu_itemll2 <- keikaku4 %*% colSums(t(satuggg_jq2 * log(catRefMat_satu + const)))
+  # satu_itemll1 <- design4 %*% colSums(t(satuggg_jq1 * log(catRefMat_satu + const)))
+  satu_itemll2 <- design4 %*% colSums(t(satuggg_jq2 * log(catRefMat_satu + const)))
 
   # Null item log-likelihood
   catfreqMat <- matrix(unlist(catfreq), ncol = ncat, byrow = T)
@@ -542,6 +532,7 @@ LRA.ordinal <- function(U,
     U = U,
     mic = mic,
     testlength = NCOL(U$Q),
+    msg = "Rank",
     nobs = NROW(U$Q),
     Nrank = nrank,
     N_Cycle = iter,

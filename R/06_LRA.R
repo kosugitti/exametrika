@@ -20,6 +20,7 @@
 #' A list of class "exametrika" and the specific subclass (e.g., "LRA", "LRAordinal", "LRArated")
 #' containing the following common elements:
 #' \describe{
+#'  \item{msg}{A character string indicating the model type. }
 #'  \item{testlength}{Length of the test (number of items).}
 #'  \item{nobs}{Sample size (number of rows in the dataset).}
 #'  \item{Nrank}{Number of latent ranks specified.}
@@ -61,7 +62,7 @@ LRA.default <- function(U, na = NULL, Z = Z, w = w, ...) {
   }
 
   U <- dataFormat(U, na = na, Z = Z, w = w)
-  LRA(U)
+  LRA(U, ...)
 }
 
 #' @rdname LRA
@@ -110,7 +111,7 @@ LRA.binary <- function(U,
                        maxiter = 100,
                        BIC.check = FALSE,
                        seed = NULL,
-                       verbose = TRUE, ...) {
+                       verbose = FALSE, ...) {
   tmp <- U
   U <- tmp$U * tmp$Z
   testlength <- NCOL(tmp$U)
@@ -224,16 +225,7 @@ LRA.binary <- function(U,
     )
   } else {
     # GTM.
-    f0 <- ifelse(ncls < 5, 1.05 - 0.05 * ncls,
-      ifelse(ncls < 10, 1.00 - 0.04 * ncls,
-        0.80 - 0.02 * ncls
-      )
-    )
-    f1 <- diag(0, ncls)
-    f1[row(f1) == col(f1) - 1] <- (1 - f0) / 2
-    Filter <- diag(rep(f0, ncls)) + t(f1) + f1
-    Filter[, 1] <- Filter[, 1] / sum(Filter[, 1])
-    Filter[, ncls] <- Filter[, ncls] / sum(Filter[, ncls])
+    Filter <- create_filter_matrix(ncls)
 
     fit <- emclus(tmp$U, tmp$Z,
       ncls = ncls,
@@ -270,7 +262,9 @@ LRA.binary <- function(U,
   IRPIndex <- IRPindex(IRP)
 
   if (sum(IRPIndex$C) == 0) {
-    message("Strongly ordinal alignment condition was satisfied.")
+    if (verbose) {
+      message("Strongly ordinal alignment condition was satisfied.")
+    }
   }
 
   ### Model Fit
@@ -286,6 +280,7 @@ LRA.binary <- function(U,
   ret <- structure(list(
     method = method,
     mic = mic,
+    msg = "Rank",
     testlength = testlength,
     nobs = nobs,
     Nrank = ncls,

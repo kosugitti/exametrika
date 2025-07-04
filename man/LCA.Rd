@@ -4,7 +4,7 @@
 \alias{LCA}
 \title{Latent Class Analysis}
 \usage{
-LCA(U, ncls = 2, na = NULL, Z = NULL, w = NULL, maxiter = 100)
+LCA(U, ncls = 2, na = NULL, Z = NULL, w = NULL, maxiter = 100, verbose = TRUE)
 }
 \arguments{
 \item{U}{Either an object of class "exametrika" or raw data. When raw data is given,
@@ -20,10 +20,13 @@ observed responses, while 0 indicates missing data.}
 \item{w}{Item weight vector specifying the relative importance of each item.}
 
 \item{maxiter}{Maximum number of EM algorithm iterations. Default is 100.}
+
+\item{verbose}{Logical; if TRUE, displays progress during estimation. Default is TRUE.}
 }
 \value{
 An object of class "exametrika" and "LCA" containing:
 \describe{
+\item{msg}{A character string indicating the model type. }
 \item{testlength}{Length of the test (number of items).}
 \item{nobs}{Sample size (number of rows in the dataset).}
 \item{Nclass}{Number of latent classes specified.}

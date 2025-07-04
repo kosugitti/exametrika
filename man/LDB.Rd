@@ -52,6 +52,7 @@ listed in the order of starting point, ending point, and rank(class).}
 \describe{
 \item{nobs}{Sample size. The number of rows in the dataset.}
 \item{testlength}{Length of the test. The number of items included in the test.}
+\item{msg}{A character string indicating the model type. }
 \item{Nclass}{Optimal number of classes.}
 \item{Nfield}{Optimal number of fields.}
 \item{crr}{Correct Response Rate}

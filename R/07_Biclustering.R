@@ -16,30 +16,14 @@ softmax <- function(x) {
 #' These methods simultaneously cluster both examinees and items into homogeneous groups
 #' (or ordered ranks for ranklustering). The analysis reveals latent structures and patterns
 #' in the data by creating a matrix with rows and columns arranged to highlight block structures.
-#'
 #' @param U Either an object of class "exametrika" or raw data. When raw data is given,
 #' it is converted to the exametrika class with the \code{\link{dataFormat}} function.
-#' @param ncls Number of latent classes/ranks to identify (between 2 and 20).
-#' @param nfld Number of latent fields (item clusters) to identify.
-#' @param Z Missing indicator matrix of type matrix or data.frame. Values of 1 indicate
-#' observed responses, while 0 indicates missing data.
-#' @param w Item weight vector specifying the relative importance of each item.
-#' @param na Values to be treated as missing values.
-#' @param method Analysis method to use (character string):
-#'   * "B" or "Biclustering": Standard biclustering (default)
-#'   * "R" or "Ranklustering": Ranklustering with ordered class structure
-#' @param conf Confirmatory parameter for pre-specified field assignments. Can be either:
-#'   * A vector with items and corresponding fields in sequence
-#'   * A field membership profile matrix (items × fields) with 0/1 values
-#'   * NULL (default) for exploratory analysis where field memberships are estimated
-#' @param mic Logical; if TRUE, forces Field Reference Profiles to be monotonically
-#' increasing. Default is FALSE.
-#' @param maxiter Maximum number of EM algorithm iterations. Default is 100.
-#' @param verbose Logical; if TRUE, displays progress during estimation. Default is TRUE.
+#' @param ... Additional arguments passed to specific methods.
 #'
 #' @return An object of class "exametrika" and "Biclustering" containing:
 #' \describe{
 #'  \item{model}{Model type indicator (1 for biclustering, 2 for ranklustering)}
+#'  \item{msg}{A character string indicating the model type. }
 #'  \item{mic}{Logical value indicating whether monotonicity constraint was applied}
 #'  \item{testlength}{Number of items in the test}
 #'  \item{nobs}{Number of examinees in the dataset}
@@ -82,6 +66,54 @@ softmax <- function(x) {
 #' Shojima, K. (2012). Biclustering of binary data matrices using bilinear models.
 #' Behaviormetrika, 39(2), 161-178.
 #'
+#' @export
+
+Biclustering <- function(U, ...) {
+  UseMethod("Biclustering")
+}
+
+#' @rdname Biclustering
+#' @param na Values to be treated as missing values.
+#' @param Z Missing indicator matrix of type matrix or data.frame. 1 indicates observed values, 0 indicates missing values.
+#' @param w Item weight vector.
+#' @param ... Additional arguments passed to specific methods.
+#'
+#' @export
+#'
+Biclustering.default <- function(U, na = na, Z = Z, w = w, ...) {
+  if (inherits(U, "exametrika")) {
+    if (U$response.type == "binary") {
+      return(Biclustering.binary(U, ...))
+    } else if (U$response.type == "ordinal") {
+      return(Biclustering.ordinal(U, ...))
+    } else if (U$response.type == "rated") {
+      stop("Biclustering.rated is not implemented yet")
+    } else if (U$response.type == "nominal") {
+      return(Biclustering.nominal(U, ...))
+    }
+  }
+
+  U <- dataFormat(U, na = na, Z = Z, w = w)
+  Biclustering(U, ...)
+}
+
+
+#' @rdname Biclustering
+#' @param ncls Number of latent classes/ranks to identify (between 2 and 20).
+#' @param nfld Number of latent fields (item clusters) to identify.
+#' @param method Analysis method to use (character string):
+#'   * "B" or "Biclustering": Standard biclustering (default)
+#'   * "R" or "Ranklustering": Ranklustering with ordered class structure
+#' @param conf Confirmatory parameter for pre-specified field assignments. Can be either:
+#'   * A vector with items and corresponding fields in sequence
+#'   * A field membership profile matrix (items × fields) with 0/1 values
+#'   * NULL (default) for exploratory analysis where field memberships are estimated
+#' @param mic Logical; if TRUE, forces Field Reference Profiles to be monotonically
+#' increasing. Default is FALSE.
+#' @param maxiter Maximum number of EM algorithm iterations. Default is 100.
+#' @param verbose Logical; if TRUE, displays progress during estimation. Default is TRUE.
+#' @param ... Additional arguments passed to specific methods.
+#'
 #' @examples
 #' \donttest{
 #' # Perform Biclustering with Binary method (B)
@@ -108,28 +140,15 @@ softmax <- function(x) {
 #' field_assignments <- c(rep(1, 10), rep(2, 10), rep(3, 15))
 #' result.Conf <- Biclustering(J35S515, nfld = 3, ncls = 5, conf = field_assignments)
 #' }
-#'
 #' @export
-
-Biclustering <- function(U, ncls = 2, nfld = 2,
-                         Z = NULL, w = NULL, na = NULL,
-                         method = "B",
-                         conf = NULL,
-                         mic = FALSE,
-                         maxiter = 100,
-                         verbose = TRUE) {
-  # data format
-  if (!inherits(U, "exametrika")) {
-    tmp <- dataFormat(data = U, na = na, Z = Z, w = w)
-  } else {
-    tmp <- U
-  }
-
-  if (U$response.type != "binary") {
-    response_type_error(U$response.type, "Biclustering")
-  }
-
-
+Biclustering.binary <- function(U,
+                                ncls = 2, nfld = 2,
+                                method = "B",
+                                conf = NULL,
+                                mic = FALSE,
+                                maxiter = 100,
+                                verbose = TRUE, ...) {
+  tmp <- U
   U <- tmp$U * tmp$Z
   testlength <- NCOL(tmp$U)
   nobs <- NROW(tmp$U)
@@ -242,16 +261,7 @@ Biclustering <- function(U, ncls = 2, nfld = 2,
   if (model != 2) {
     Fil <- diag(rep(1, ncls))
   } else {
-    f0 <- ifelse(ncls < 5, 1.05 - 0.05 * ncls,
-      ifelse(ncls < 10, 1.00 - 0.04 * ncls,
-        0.80 - 0.02 * ncls
-      )
-    )
-    f1 <- diag(0, ncls)
-    f1[row(f1) == col(f1) - 1] <- (1 - f0) / 2
-    Fil <- diag(rep(f0, ncls)) + t(f1) + f1
-    Fil[, 1] <- Fil[, 1] / sum(Fil[, 1])
-    Fil[, ncls] <- Fil[, ncls] / sum(Fil[, ncls])
+    Fil <- create_filter_matrix(ncls)
   }
 
   ## Algorithm
@@ -406,9 +416,11 @@ Biclustering <- function(U, ncls = 2, nfld = 2,
   colnames(fieldAnalysis) <- c("CRR", "LFE", paste0("Field", 1:nfld))
   rownames(fieldAnalysis) <- rownames_tmp
 
+  msg <- ifelse(model == 1, "Class", "Rank")
   ret <- structure(list(
     model = model,
     mic = mic,
+    msg = msg,
     U = U,
     testlength = testlength,
     nobs = nobs,

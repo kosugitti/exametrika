@@ -14,6 +14,13 @@
   nc = 1,
   nr = 1,
   overlay = FALSE,
+  colors = NULL,
+  cell_width = 3,
+  cell_height = 1,
+  filename = NULL,
+  width = 800,
+  height = 600,
+  dpi = 300,
   ...
 )
 }
@@ -60,6 +67,22 @@ When type is "IIF"/"IIC", specifying 0 will produce a TIF/TIC for the entire tes
 
 \item{overlay}{Logical. If TRUE, elements such as IRFs will be overlaid on a single plot. Default is FALSE.}
 
+\item{colors}{Character vector specifying custom color palette. If NULL, default colorblind-friendly palette is used.
+For array plots, the first color should be for missing values, followed by response category colors.}
+
+\item{cell_width}{Numeric value specifying the width of each cell in array plots. Default is 3.}
+
+\item{cell_height}{Numeric value specifying the height of each cell in array plots. Default is 1.}
+
+\item{filename}{Character string specifying output filename. If NULL, plot is displayed on screen.
+Supported formats: png, pdf, jpeg, jpg. Format determined by file extension.}
+
+\item{width}{Numeric value specifying plot width in pixels (for png/jpeg) or inches (for pdf). Default is 800.}
+
+\item{height}{Numeric value specifying plot height in pixels (for png/jpeg) or inches (for pdf). Default is 600.}
+
+\item{dpi}{Numeric value specifying resolution in dots per inch for raster formats (png/jpeg). Default is 300.}
+
 \item{...}{Additional arguments passed to plotting functions.}
 }
 \value{
@@ -100,7 +123,7 @@ Each model class supports specific plot types:
 \examples{
 \dontrun{
 # IRT model example
-irt_result <- exametrika::IRT(U)
+irt_result <- exametrika::IRT(J15S500)
 plot(irt_result, type = "IRF", items = 1:5)
 plot(irt_result, type = "TIF")
 
@@ -109,5 +132,11 @@ lca_result <- exametrika::LCA(U)
 plot(lca_result, type = "IRP")
 plot(lca_result, type = "LCD")
 }
+
+# Array plot with custom output
+biclustering_result <- exametrika::Biclustering(J35S515)
+# Custom colors and file output
+my_colors <- c("#404040", "#E69F00", "#56B4E9", "#009E73", "#F0E442")
+plot(biclustering_result, type = "Array", colors = my_colors)
 
 }

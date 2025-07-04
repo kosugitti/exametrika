@@ -44,6 +44,7 @@ listed in the order of starting point, ending point, and rank(class).}
 \value{
 \describe{
 \item{nobs}{Sample size. The number of rows in the dataset.}
+\item{msg}{A character string indicating the model type. }
 \item{testlength}{Length of the test. The number of items included in the test.}
 \item{crr}{correct response ratio}
 \item{adj_list}{adjacency matrix list}

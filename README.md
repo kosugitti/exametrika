@@ -1,5 +1,5 @@
 
-# exametrika <img src="man/figures/sticker.png" align="right" height="139" />
+# exametrika <img src="man/figures/exametrika.png" align="right" height="139" />
 
 
 ## Overview

@@ -1635,12 +1635,18 @@ stanine.binary <- function(U, na = NULL, Z = NULL, w = NULL) {
   stanine_percentile_bounds <- quantile(percentile_scores,
     probs = stanine_bounds
   )
-
+  stanine_percentile_bounds <- unique(stanine_percentile_bounds)
+  if (length(stanine_percentile_bounds) != 8) {
+    warning(
+      "Standard stanine (9-level) division not possible due to data distribution.\n",
+      "Merging duplicate boundaries for adjustment."
+    )
+  }
   # Assign stanine scores
   stanine_scores <- cut(percentile_scores,
     breaks = c(-Inf, stanine_percentile_bounds, Inf),
     right = FALSE,
-    labels = 1:9
+    labels = 1:(length(stanine_percentile_bounds) + 1)
   )
 
   # Return results

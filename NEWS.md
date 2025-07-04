@@ -6,6 +6,7 @@
 + Bugfix: Fix output typos(class/rank)
 + Added duplicate ID validation to dataFormat()
 + Bugfix: Fix ID column detection in dataFormat()
++ Bugfix: Fix stanine division error when unable to split data
 
 # exameterika 1.5.2 on March 29, 2025
 

@@ -39,9 +39,6 @@ Biclustering.nominal <- function(U,
   maxemt <- 100
 
   ncat <- as.vector(tmp$categories)
-  if (length(unique(ncat)) > 1) {
-    stop("Error: Variables have different numbers of categories. Nominal data processing requires the same number of categories for all variables.")
-  }
 
   ## confirmatory
   # set conf_mat for confirmatory clustering

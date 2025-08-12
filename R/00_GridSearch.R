@@ -79,7 +79,7 @@ GridSearch <- function(
       "Optimal nfld is",
       optimal_nfld
     ))
-    
+
     # Run analysis with optimal parameters
     message("Running analysis with optimal parameters...")
     optimal_args <- c(
@@ -91,7 +91,7 @@ GridSearch <- function(
       extra_args
     )
     optimal_result <- do.call(fun, optimal_args)
-    
+
     ret_list <- list(
       index_matrix = ret,
       optimal_ncls = optimal_ncls,
@@ -117,7 +117,7 @@ GridSearch <- function(
       optimal_ncls <- which.max(ret) + 1
     }
     message("\nOptimal ncls/nrank is ", optimal_ncls)
-    
+
     # Run analysis with optimal parameters
     message("Running analysis with optimal parameters...")
     optimal_args <- c(
@@ -128,7 +128,7 @@ GridSearch <- function(
       extra_args
     )
     optimal_result <- do.call(fun, optimal_args)
-    
+
     ret_list <- list(
       index_vec = ret,
       optimal_ncls = optimal_ncls,

@@ -80,7 +80,7 @@ Biclustering <- function(U, ...) {
 #'
 #' @export
 #'
-Biclustering.default <- function(U, na = na, Z = Z, w = w, ...) {
+Biclustering.default <- function(U, na = NULL, Z = NULL, w = NULL, ...) {
   if (inherits(U, "exametrika")) {
     if (U$response.type == "binary") {
       return(Biclustering.binary(U, ...))

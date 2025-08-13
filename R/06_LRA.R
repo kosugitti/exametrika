@@ -48,7 +48,7 @@ LRA <- function(U, ...) {
 #' @param Z Missing indicator matrix of type matrix or data.frame. 1 indicates observed values, 0 indicates missing values.
 #' @param w Item weight vector.
 #' @export
-LRA.default <- function(U, na = NULL, Z = Z, w = w, ...) {
+LRA.default <- function(U, na = NULL, Z = NULL, w = NULL, ...) {
   if (inherits(U, "exametrika")) {
     if (U$response.type == "binary") {
       return(LRA.binary(U, ...))

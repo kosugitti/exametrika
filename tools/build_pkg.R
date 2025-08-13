@@ -1,4 +1,5 @@
 styler::style_pkg()
+devtools::document()
 devtools::check()
 devtools::spell_check()
 # rhub::rhub_doctor()

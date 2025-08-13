@@ -11,7 +11,7 @@
 \usage{
 Biclustering(U, ...)
 
-\method{Biclustering}{default}(U, na = na, Z = Z, w = w, ...)
+\method{Biclustering}{default}(U, na = NULL, Z = NULL, w = NULL, ...)
 
 \method{Biclustering}{binary}(
   U,

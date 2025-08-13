@@ -11,7 +11,7 @@
 \usage{
 LRA(U, ...)
 
-\method{LRA}{default}(U, na = NULL, Z = Z, w = w, ...)
+\method{LRA}{default}(U, na = NULL, Z = NULL, w = NULL, ...)
 
 \method{LRA}{binary}(
   U,

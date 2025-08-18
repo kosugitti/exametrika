@@ -1,3 +1,4 @@
+pacman::p_load(styler, devtools, rhub)
 styler::style_pkg()
 devtools::document()
 devtools::check()

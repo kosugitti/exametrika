@@ -277,7 +277,7 @@ Biclustering.binary <- function(U,
     }
     emt <- emt + 1
     oldtestell <- testell
-    csr <- tmp$U %*% fldmemb
+    csr <- (tmp$Z * tmp$U) %*% fldmemb
     fsr <- (tmp$Z * (1 - tmp$U)) %*% fldmemb
     llsr <- csr %*% log(PiFR + const) + fsr %*% log(1 - PiFR + const)
     # minllsr <- apply(llsr, 1, min)
@@ -287,7 +287,7 @@ Biclustering.binary <- function(U,
 
     smoothed_memb <- clsmemb %*% Fil
 
-    cjr <- t(tmp$U) %*% smoothed_memb
+    cjr <- t(tmp$Z * tmp$U) %*% smoothed_memb
     fjr <- t(tmp$Z * (1 - tmp$U)) %*% smoothed_memb
     lljf <- cjr %*% log(t(PiFR) + const) + fjr %*% log(t(1 - PiFR) + const)
 
@@ -300,7 +300,7 @@ Biclustering.binary <- function(U,
       fldmemb <- conf_mat
     }
 
-    cfr <- t(fldmemb) %*% t(tmp$U) %*% smoothed_memb
+    cfr <- t(fldmemb) %*% t(tmp$Z * tmp$U) %*% smoothed_memb
     ffr <- t(fldmemb) %*% t(tmp$Z * (1 - tmp$U)) %*% smoothed_memb
     oldPiFR <- PiFR
     PiFR <- (cfr + beta1 - 1) / (cfr + ffr + beta1 + beta2 - 2)
@@ -398,14 +398,14 @@ Biclustering.binary <- function(U,
   }
 
   ### Model Fit
-  cfr <- t(fldmemb) %*% t(tmp$U) %*% clsmemb
+  cfr <- t(fldmemb) %*% t(tmp$Z * tmp$U) %*% clsmemb
   ffr <- t(fldmemb) %*% t(tmp$Z * (1 - tmp$U)) %*% clsmemb
   testell <- sum(cfr * log(PiFR + const) + ffr * log(1 - PiFR + const))
   nparam <- ifelse(model == 1, ncls * nfld, sum(diag(Fil)) * nfld)
   FitIndices <- TestFit(tmp$U, tmp$Z, testell, nparam)
 
   ### Field Analysis
-  crr <- crr(tmp$U)
+  crr <- crr(tmp$Z * tmp$U)
   fieldAnalysis <- as.data.frame(fldmemb)
   fieldAnalysis <- cbind(crr, fld, fieldAnalysis)
   colnames(fieldAnalysis) <- c("CRR", "LFE", paste0("Field", 1:nfld))

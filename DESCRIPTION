@@ -1,10 +1,10 @@
 Package: exametrika
 Type: Package
 Title: Test Theory Analysis and Biclustering
-Version: 1.6.1
-Authors@R: person("Koji Kosugi",role=c("aut","cre"),
-                  email="kosugitti@gmail.com",
-                  comment = c(ORCID = "0000-0001-5816-0099"))
+Version: 1.6.2
+Authors@R: 
+    person("Koji Kosugi", , , "kosugitti@gmail.com", role = c("aut", "cre"),
+           comment = c(ORCID = "0000-0001-5816-0099"))
 Description: Implements comprehensive test data engineering methods as described in 
     Shojima (2022, ISBN:978-9811699856). Provides statistical techniques for 
     engineering and processing test data: Classical Test Theory (CTT) with 

@@ -1,6 +1,10 @@
+# exametrika 1.6.2 
+
++ Biclustering: Fixed floating-point arithmetic errors causing NaN results
+
 # exametrika 1.6.1 on Aug 26, 2025
 
-+ Bug fix for biclustering
++ Biclustering: Fixed improper handling of missing values
 
 # exametrika 1.6.0 on Aug 12, 2025
 

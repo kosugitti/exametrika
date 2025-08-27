@@ -279,6 +279,8 @@ Biclustering.binary <- function(U,
     oldtestell <- testell
     csr <- (tmp$Z * tmp$U) %*% fldmemb
     fsr <- (tmp$Z * (1 - tmp$U)) %*% fldmemb
+    csr <- pmax(csr, const)
+    fsr <- pmax(fsr, const)
     llsr <- csr %*% log(PiFR + const) + fsr %*% log(1 - PiFR + const)
     # minllsr <- apply(llsr, 1, min)
     # expllsr <- exp(llsr - minllsr)
@@ -289,6 +291,8 @@ Biclustering.binary <- function(U,
 
     cjr <- t(tmp$Z * tmp$U) %*% smoothed_memb
     fjr <- t(tmp$Z * (1 - tmp$U)) %*% smoothed_memb
+    cjr <- pmax(cjr, const)
+    fjr <- pmax(fjr, const)
     lljf <- cjr %*% log(t(PiFR) + const) + fjr %*% log(t(1 - PiFR) + const)
 
     # max_log_lljf <- apply(lljf, 1, max)
@@ -302,6 +306,8 @@ Biclustering.binary <- function(U,
 
     cfr <- t(fldmemb) %*% t(tmp$Z * tmp$U) %*% smoothed_memb
     ffr <- t(fldmemb) %*% t(tmp$Z * (1 - tmp$U)) %*% smoothed_memb
+    cfr <- pmax(cfr, const)
+    ffr <- pmax(cfr, const)
     oldPiFR <- PiFR
     PiFR <- (cfr + beta1 - 1) / (cfr + ffr + beta1 + beta2 - 2)
     if (model == 3) {

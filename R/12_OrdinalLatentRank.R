@@ -12,6 +12,7 @@
 #' For ordinal data (\code{LRA.ordinal}), the returned list additionally includes:
 #' \describe{
 #' \item{msg}{A character string indicating the model type. }
+#' \item{converge}{Logical value indicating whether the algorithm converged within maxiter iterations}
 #' \item{ScoreReport}{Descriptive statistics of test performance, including sample size,
 #'   test length, central tendency, variability, distribution characteristics, and reliability.}
 #' \item{ItemReport}{Basic statistics for each item including category proportions and item-total correlations.}
@@ -225,6 +226,7 @@ LRA.ordinal <- function(U,
   if (verbose) {
     message("Starting EM estimation for Saturation Model...")
   }
+  converge_satu <- TRUE
   FLG <- TRUE
   while (FLG) {
     old_log_like_satu <- ij_log_lik_satu
@@ -263,8 +265,10 @@ LRA.ordinal <- function(U,
       FLG <- FALSE
     }
     if (iter_satu > maxiter) {
+      converge_satu <- FALSE
       FLG <- FALSE
-      message("Reached the maximum number of iterations.")
+      message("\nReached the maximum number of iterations.")
+      message("Warning: Algorithm may not have converged. Interpret results with caution.")
     }
   }
 
@@ -321,6 +325,7 @@ LRA.ordinal <- function(U,
   if (verbose) {
     message("\nStarting EM estimation for Restricted Model...")
   }
+  converge <- TRUE
   FLG <- TRUE
   while (FLG) {
     old_log_like <- ij_log_lik
@@ -367,8 +372,10 @@ LRA.ordinal <- function(U,
       FLG <- FALSE
     }
     if (iter > maxiter) {
+      converge <- FALSE
       FLG <- FALSE
-      message("Reached the maximum number of iterations.")
+      message("\nReached the maximum number of iterations.")
+      message("Warning: Algorithm may not have converged. Interpret results with caution.")
     }
   }
 
@@ -533,6 +540,7 @@ LRA.ordinal <- function(U,
     mic = mic,
     testlength = NCOL(U$Q),
     msg = "Rank",
+    converge = converge,
     nobs = NROW(U$Q),
     Nrank = nrank,
     N_Cycle = iter,

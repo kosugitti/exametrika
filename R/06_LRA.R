@@ -25,6 +25,7 @@
 #'  \item{nobs}{Sample size (number of rows in the dataset).}
 #'  \item{Nrank}{Number of latent ranks specified.}
 #'  \item{N_Cycle}{Number of EM algorithm iterations performed.}
+#'  \item{converge}{Logical value indicating whether the algorithm converged within maxiter iterations}
 #'  \item{TRP}{Test Reference Profile vector showing expected scores at each rank.}
 #'  \item{LRD}{Latent Rank Distribution vector showing the number of examinees at each rank.}
 #'  \item{RMD}{Rank Membership Distribution vector showing the sum of probabilities for each rank.}
@@ -155,6 +156,7 @@ LRA.binary <- function(U,
     RefMat <- t(clsRefMat)
     oldBIC <- 1e5
     ### SOM iteration
+    converge <- TRUE
     FLG <- TRUE
     while (FLG) {
       somt <- somt + 1
@@ -200,6 +202,8 @@ LRA.binary <- function(U,
       if (BIC.check) {
         if (somt > maxiter * 10) {
           message("\nReached ten times the maximum number of iterations.")
+          message("Warning: Algorithm may not have converged. Interpret results with caution.")
+          converge <- FALSE
           FLG <- FALSE
           break
         }
@@ -213,6 +217,9 @@ LRA.binary <- function(U,
         }
       } else {
         if (somt == maxiter) {
+          message("\nReached the maximum number of iterations.")
+          message("Warning: Algorithm may not have converged. Interpret results with caution.")
+          converge <- FALSE
           FLG <- FALSE
         }
       }
@@ -220,6 +227,7 @@ LRA.binary <- function(U,
 
     fit <- list(
       iter = somt,
+      converge = converge,
       postDist = postdist,
       classRefMat = t(RefMat)
     )
@@ -281,6 +289,7 @@ LRA.binary <- function(U,
     method = method,
     mic = mic,
     msg = "Rank",
+    converge = fit$converge,
     testlength = testlength,
     nobs = nobs,
     Nrank = ncls,

@@ -30,6 +30,7 @@ softmax <- function(x) {
 #'  \item{Nclass}{Number of latent classes/ranks specified}
 #'  \item{Nfield}{Number of latent fields specified}
 #'  \item{N_Cycle}{Number of EM iterations performed}
+#'  \item{converge}{Logical value indicating wheter the algorithm converged within maxiter iterasions}
 #'  \item{LFD}{Latent Field Distribution - counts of items assigned to each field}
 #'  \item{LRD/LCD}{Latent Rank/Class Distribution - counts of examinees assigned to each class/rank}
 #'  \item{FRP}{Field Reference Profile matrix - probability of correct response for each field-class combination}
@@ -152,7 +153,7 @@ Biclustering.binary <- function(U,
   U <- tmp$U * tmp$Z
   testlength <- NCOL(tmp$U)
   nobs <- NROW(tmp$U)
-  const <- exp(-testlength)
+  const <- .Machine$double.eps
   ret.TS <- TestStatistics(tmp)
 
   if (method == "B" | method == "Biclustering") {
@@ -266,6 +267,7 @@ Biclustering.binary <- function(U,
 
   ## Algorithm
   FLG <- TRUE
+  converge <- TRUE
   while (FLG) {
     if (testell - oldtestell < 1e-4 * abs(oldtestell)) {
       FLG <- FALSE
@@ -273,14 +275,21 @@ Biclustering.binary <- function(U,
     }
     if (emt == maxemt) {
       message("\nReached ten times the maximum number of iterations.")
+      message("Warning: Algorithm may not have converged. Interpret results with caution.")
       FLG <- FALSE
+      converge <- FALSE
     }
     emt <- emt + 1
     oldtestell <- testell
     csr <- (tmp$Z * tmp$U) %*% fldmemb
     fsr <- (tmp$Z * (1 - tmp$U)) %*% fldmemb
-    csr <- pmax(csr, const)
-    fsr <- pmax(fsr, const)
+    # Apply pmax only when necessary to avoid NaN/Inf
+    if (any(is.nan(csr)) || any(is.infinite(csr)) || any(csr <= 0)) {
+      csr <- pmax(csr, const)
+    }
+    if (any(is.nan(fsr)) || any(is.infinite(fsr)) || any(fsr <= 0)) {
+      fsr <- pmax(fsr, const)
+    }
     llsr <- csr %*% log(PiFR + const) + fsr %*% log(1 - PiFR + const)
     # minllsr <- apply(llsr, 1, min)
     # expllsr <- exp(llsr - minllsr)
@@ -291,8 +300,13 @@ Biclustering.binary <- function(U,
 
     cjr <- t(tmp$Z * tmp$U) %*% smoothed_memb
     fjr <- t(tmp$Z * (1 - tmp$U)) %*% smoothed_memb
-    cjr <- pmax(cjr, const)
-    fjr <- pmax(fjr, const)
+    # Apply pmax only when necessary to avoid NaN/Inf
+    if (any(is.nan(cjr)) || any(is.infinite(cjr)) || any(cjr <= 0)) {
+      cjr <- pmax(cjr, const)
+    }
+    if (any(is.nan(fjr)) || any(is.infinite(fjr)) || any(fjr <= 0)) {
+      fjr <- pmax(fjr, const)
+    }
     lljf <- cjr %*% log(t(PiFR) + const) + fjr %*% log(t(1 - PiFR) + const)
 
     # max_log_lljf <- apply(lljf, 1, max)
@@ -306,8 +320,13 @@ Biclustering.binary <- function(U,
 
     cfr <- t(fldmemb) %*% t(tmp$Z * tmp$U) %*% smoothed_memb
     ffr <- t(fldmemb) %*% t(tmp$Z * (1 - tmp$U)) %*% smoothed_memb
-    cfr <- pmax(cfr, const)
-    ffr <- pmax(cfr, const)
+    # Apply pmax only when necessary to avoid NaN/Inf
+    if (any(is.nan(cfr)) || any(is.infinite(cfr)) || any(cfr <= 0)) {
+      cfr <- pmax(cfr, const)
+    }
+    if (any(is.nan(ffr)) || any(is.infinite(ffr)) || any(ffr <= 0)) {
+      ffr <- pmax(ffr, const)
+    }
     oldPiFR <- PiFR
     PiFR <- (cfr + beta1 - 1) / (cfr + ffr + beta1 + beta2 - 2)
     if (model == 3) {
@@ -342,6 +361,12 @@ Biclustering.binary <- function(U,
       break
     }
   }
+
+  # Ensure proper line termination after verbose output
+  if (verbose) {
+    message("")
+  }
+
   #### OUTPUT
 
   cls <- apply(clsmemb, 1, which.max)
@@ -396,10 +421,10 @@ Biclustering.binary <- function(U,
   }
   if (verbose) {
     if (SOACflg & WOACflg) {
-      message("Strongly ordinal alignment condition was satisfied.")
+      message("\nStrongly ordinal alignment condition was satisfied.")
     }
     if (!SOACflg & WOACflg) {
-      message("Weakly ordinal alignment condition was satisfied.")
+      message("\nWeakly ordinal alignment condition was satisfied.")
     }
   }
 
@@ -427,6 +452,7 @@ Biclustering.binary <- function(U,
     model = model,
     mic = mic,
     msg = msg,
+    converge = converge,
     U = U,
     testlength = testlength,
     nobs = nobs,

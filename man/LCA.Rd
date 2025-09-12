@@ -31,6 +31,7 @@ An object of class "exametrika" and "LCA" containing:
 \item{nobs}{Sample size (number of rows in the dataset).}
 \item{Nclass}{Number of latent classes specified.}
 \item{N_Cycle}{Number of EM algorithm iterations performed.}
+\item{converge}{Logical value indicating whether the algorithm converged within maxiter iterations}
 \item{TRP}{Test Reference Profile vector showing expected scores for each latent class.
 Calculated as the column sum of the estimated class reference matrix.}
 \item{LCD}{Latent Class Distribution vector showing the number of examinees assigned to each latent class.}

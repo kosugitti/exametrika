@@ -110,6 +110,7 @@ Biclustering.nominal <- function(U,
   }
 
   # iteration -------------------------------------------------------
+  converge <- TRUE
   FLG <- TRUE
   while (FLG) {
     if (testell - oldtestell < 1e-8 * abs(oldtestell)) {
@@ -118,6 +119,8 @@ Biclustering.nominal <- function(U,
     }
     if (emt == maxemt) {
       message("\nReached ten times the maximum number of iterations.")
+      message("Warning: Algorithm may not have converged. Interpret results with caution.")
+      converge <- FALSE
       FLG <- FALSE
     }
 
@@ -246,6 +249,7 @@ Biclustering.nominal <- function(U,
     Z = tmp$Z,
     testlength = nitems,
     msg = msg,
+    converge = converge,
     nobs = nobs,
     Nclass = ncls,
     Nfield = nfld,

@@ -96,6 +96,7 @@ An object of class "exametrika" and "Biclustering" containing:
 \item{Nclass}{Number of latent classes/ranks specified}
 \item{Nfield}{Number of latent fields specified}
 \item{N_Cycle}{Number of EM iterations performed}
+\item{converge}{Logical value indicating wheter the algorithm converged within maxiter iterasions}
 \item{LFD}{Latent Field Distribution - counts of items assigned to each field}
 \item{LRD/LCD}{Latent Rank/Class Distribution - counts of examinees assigned to each class/rank}
 \item{FRP}{Field Reference Profile matrix - probability of correct response for each field-class combination}

@@ -94,6 +94,7 @@ containing the following common elements:
 \item{nobs}{Sample size (number of rows in the dataset).}
 \item{Nrank}{Number of latent ranks specified.}
 \item{N_Cycle}{Number of EM algorithm iterations performed.}
+\item{converge}{Logical value indicating whether the algorithm converged within maxiter iterations}
 \item{TRP}{Test Reference Profile vector showing expected scores at each rank.}
 \item{LRD}{Latent Rank Distribution vector showing the number of examinees at each rank.}
 \item{RMD}{Rank Membership Distribution vector showing the sum of probabilities for each rank.}
@@ -115,6 +116,7 @@ slope parameters A and Alpha, and monotonicity indices C and Gamma.}
 For ordinal data (\code{LRA.ordinal}), the returned list additionally includes:
 \describe{
 \item{msg}{A character string indicating the model type. }
+\item{converge}{Logical value indicating whether the algorithm converged within maxiter iterations}
 \item{ScoreReport}{Descriptive statistics of test performance, including sample size,
 test length, central tendency, variability, distribution characteristics, and reliability.}
 \item{ItemReport}{Basic statistics for each item including category proportions and item-total correlations.}
@@ -132,6 +134,7 @@ test length, central tendency, variability, distribution characteristics, and re
 For rated data (\code{LRA.rated}), the returned list additionally includes:
 \describe{
 \item{msg}{A character string indicating the model type. }
+\item{converge}{Logical value indicating whether the algorithm converged within maxiter iterations}
 \item{ScoreReport}{Descriptive statistics of test performance, including sample size,
 test length, central tendency, variability, distribution characteristics, and reliability.}
 \item{ItemReport}{Basic statistics for each item including category proportions and item-total correlations.}

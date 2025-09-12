@@ -27,6 +27,7 @@ emclus <- function(U, Z, ncls, Fil, beta1, beta2, maxiter = 100, mic = FALSE, ve
 
   ## EM algorithm
   emt <- 0
+  converge <- TRUE
   FLG <- TRUE
 
   while (FLG) {
@@ -69,13 +70,16 @@ emclus <- function(U, Z, ncls, Fil, beta1, beta2, maxiter = 100, mic = FALSE, ve
       FLG <- FALSE
     }
     if (emt == maxiter) {
-      message("Reached the maximum number of iterations")
+      message("\nReached the maximum number of iterations.")
+      message("Warning: Algorithm may not have converged. Interpret results with caution.")
+      converge <- FALSE
       FLG <- FALSE
     }
   }
 
   ret <- list(
     iter = emt,
+    converge = converge,
     postDist = postDist,
     classRefMat = classRefMat
   )

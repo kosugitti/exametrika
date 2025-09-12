@@ -12,6 +12,7 @@
 #' For rated data (\code{LRA.rated}), the returned list additionally includes:
 #' \describe{
 #' \item{msg}{A character string indicating the model type. }
+#' \item{converge}{Logical value indicating whether the algorithm converged within maxiter iterations}
 #' \item{ScoreReport}{Descriptive statistics of test performance, including sample size,
 #'   test length, central tendency, variability, distribution characteristics, and reliability.}
 #' \item{ItemReport}{Basic statistics for each item including category proportions and item-total correlations.}
@@ -313,6 +314,7 @@ LRA.rated <- function(U,
 
   ij_log_lik_satu <- -10
   iter_satu <- 0
+  converge_satu <- TRUE
   FLG <- TRUE
   while (FLG) {
     old_log_lik_satu <- ij_log_lik_satu
@@ -344,8 +346,10 @@ LRA.rated <- function(U,
       FLG <- FALSE
     }
     if (iter_satu > maxiter) {
+      converge_satu <- FALSE
       FLG <- FALSE
-      message("Reached the maximum number of iterations.")
+      message("\nReached the maximum number of iterations.")
+      message("Warning: Algorithm may not have converged. Interpret results with caution.")
     }
   }
 
@@ -386,6 +390,7 @@ LRA.rated <- function(U,
   if (verbose) {
     message("\nStarting EM estimation for Restricted Model...")
   }
+  converge <- TRUE
   FLG <- TRUE
   while (FLG) {
     old_log_lik <- ij_log_lik
@@ -434,8 +439,10 @@ LRA.rated <- function(U,
       FLG <- FALSE
     }
     if (iter > maxiter) {
+      converge <- FALSE
       FLG <- FALSE
-      message("Reached the maximum number of iterations.")
+      message("\nReached the maximum number of iterations.")
+      message("Warning: Algorithm may not have converged. Interpret results with caution.")
     }
   }
 
@@ -598,6 +605,7 @@ LRA.rated <- function(U,
     U = U,
     mic = mic,
     msg = "Rank",
+    converge = converge,
     testlength = NCOL(U$Q),
     nobs = NROW(U$Q),
     Nrank = nrank,

@@ -1,3 +1,20 @@
+# exametrika 1.6.3
+
++ Added `converge` variable to all EM-based functions to indicate algorithm convergence status
+  + Functions affected: Biclustering(), LCA(), LRA(), and related methods
+  + Returns TRUE if converged within maxiter iterations, FALSE otherwise
+  + Displays convergence warning messages when maxiter is reached
++ Enhanced GridSearch() function with convergence handling
+  + Automatically excludes non-converged results from optimization
+  + Displays warning messages for parameter combinations that failed to converge
+  + Returns list of failed settings in output
+  + Terminates with error message if all parameter combinations fail to converge
++ Improved numerical stability in Biclustering()
+  + Implemented conditional pmax() application to avoid unnecessary log-likelihood inflation
+  + Applied numerical correction only when NaN/Inf values are detected
+  + Enhanced precision by using machine epsilon (.Machine$double.eps) for numerical constant
+
+
 # exametrika 1.6.2 
 
 + Biclustering: Fixed floating-point arithmetic errors causing NaN results

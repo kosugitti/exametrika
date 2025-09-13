@@ -329,6 +329,9 @@ Biclustering.binary <- function(U,
     }
     oldPiFR <- PiFR
     PiFR <- (cfr + beta1 - 1) / (cfr + ffr + beta1 + beta2 - 2)
+    PiFR[is.nan(PiFR)] <- 1e-16
+    PiFR[is.infinite(PiFR)] <- 1e-16
+    PiFR <- pmax(pmin(PiFR, 1 - 1e-16), 1e-16)
     if (model == 3) {
       if (zero_scorer == 1) {
         PiFR[, 1] <- 0

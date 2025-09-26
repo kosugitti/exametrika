@@ -42,7 +42,7 @@ build_site <- function() {
   img_line <- grep("^\\!\\[\\]\\(", content)
   if (length(img_line) > 0) {
     # GitHubスタイルの画像タグに変換
-    content[img_line] <- "# exametrika <img src=\"man/figures/sticker.png\" align=\"right\" height=\"139\" />"
+    content[img_line] <- "# exametrika <img src=\"man/figures/exametrika.png\" align=\"right\" height=\"139\" />"
     # スタイル行を削除
     style_line <- grep("\\{style=", content)
     if (length(style_line) > 0) {

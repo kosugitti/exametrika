@@ -3,7 +3,7 @@ layout: default
 title: exametrika
 ---
 
-![](sticker.png){style="float: right; width: 150px; margin-left: 20px;"}
+![](../man/figures/exametrika.png){style="float: right; width: 150px; margin-left: 20px;"}
 
 [English](index.html) | [日本語](ja.html)
 

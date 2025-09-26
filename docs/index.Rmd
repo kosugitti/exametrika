@@ -389,7 +389,27 @@ plot(result.Ranklustering, type = "LRD")
 ```
 
 
-To find the optimal number of classes and the optimal number of fields, the Infinite Relational Model is available.
+#### Finding optimal number of classes and fields
+
+##### Grid Search function
+
+The Grid Search function performs systematic exploration of optimal numbers of classes and fields based on statistical fit indices. This approach evaluates multiple parameter combinations and selects the best-fitting model according to specified criteria such as AIC, BIC, or other goodness-of-fit measures.
+
+```{r gr}
+result <- GridSearch(J35S515, method = "R", max_ncls = 10, max_nfld = 10, index = "BIC")
+result$optimal_ncls
+result$optimal_nfld
+result$optimal_result
+```
+
+##### Infinite Relational Model
+
+The Infinite Relational Model uses the Chinese Restaurant Process to explore the optimal number of fields and classes automatically. This model is particularly useful when you don't know the appropriate number of latent structures beforehand.
+
+**Important notes:**
+- Execution can be time-consuming, especially with large datasets
+- The model tends to detect larger numbers of classes and fields
+- Use with caution and consider computational resources
 
 ```{r}
 result.IRM <- IRM(J35S515, gamma_c = 1, gamma_f = 1, verbose = TRUE)
@@ -399,6 +419,18 @@ plot(result.IRM, type = "TRP")
 ```
 
 Additionally, supplementary notes on the derivation of the Infinite Relational Model with Chinese restaurant process is [here](https://kosugitti.github.io/kosugitti10/notes/IRM_memo.pdf).
+
+#### Biclustering for Polytomous data
+
+Biclustering and Rankclustering can also be performed on data with ordinal or nominal polytomous responses. The plot output is limited to the "Array" type only. Color palettes can be customized using the `colors` option to specify different color schemes.
+
+```{r bic_poly}
+result.B.poly <- Biclustering(J15S3810, ncls = 3, nfld = 4)
+result.B.poly
+# Custom color palette example
+plot(result.B.poly, type = "Array", 
+colors = c("#FF1493", "#00FF00", "#FF4500", "#9932CC", "#FFD700"))
+```
 
 ### Bayesian Network Model
 

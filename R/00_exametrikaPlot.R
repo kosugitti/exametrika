@@ -427,15 +427,19 @@ plot.exametrika <- function(x,
     n_categories <- length(all_values)
 
     if (is.null(colors)) {
-      colors <- c(
-        "#404040", "#E69F00", "#56B4E9", "#009E73", "#F0E442",
-        "#0072B2", "#D55E00", "#CC79A7", "#999999", "#000000"
-      )
+      if (n_categories == 2) {
+        colors <- c("#FFFFFF", "#000000")
+      } else {
+        colors <- c(
+          "#E69F00", "#0173B2", "#DE8F05", "#029E73", "#CC78BC",
+          "#CA9161", "#FBAFE4", "#949494", "#ECE133", "#56B4E9"
+        )
+      }
     }
     if (length(colors) < n_categories) {
       additional_colors <- c(
-        "#1B9E77", "#D95F02", "#7570B3", "#E7298A", "#66A61E",
-        "#E6AB02", "#A6761D", "#666666", "#FF7F00", "#1F78B4"
+        "#D55E00", "#F0E442", "#009E73", "#CC79A7", "#0072B2",
+        "#E8601C", "#7CAE00", "#C77CFF", "#00BFC4", "#F8766D"
       )
       colors <- c(colors, additional_colors)
       colors <- colors[1:n_categories]
@@ -490,12 +494,12 @@ plot.exametrika <- function(x,
     }
     for (line_y in class_lines) {
       lines(c(0, plot_width), c(line_y, line_y),
-        col = "white", lwd = 1
+        col = "red", lwd = 1
       )
     }
     for (line_x in field_lines) {
       lines(c(line_x, line_x), c(0, plot_height),
-        col = "white", lwd = 1
+        col = "red", lwd = 1
       )
     }
   }

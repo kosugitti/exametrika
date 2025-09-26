@@ -47,3 +47,6 @@ vignettes/*.pdf
 # Generated files
 docs/libs/
 docs/cache/
+
+# claude
+./claude

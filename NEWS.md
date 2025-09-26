@@ -13,6 +13,11 @@
   + Implemented conditional pmax() application to avoid unnecessary log-likelihood inflation
   + Applied numerical correction only when NaN/Inf values are detected
   + Enhanced precision by using machine epsilon (.Machine$double.eps) for numerical constant
++ Improved Array-type plot visualization with enhanced color palette
+  + Replaced dull default colors with vibrant, high-contrast color palette
+  + Added colorblind-friendly color scheme for better accessibility
+  + Binary data (2 categories) now uses black and white for optimal contrast
+  + Multi-category data uses enhanced colorblind-accessible palette
 
 
 # exametrika 1.6.2 

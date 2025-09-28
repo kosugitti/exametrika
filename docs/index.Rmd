@@ -853,22 +853,6 @@ Please check our existing Issues and Discussions before posting to avoid duplica
 + Shojima, Kojiro (2022) Test Data Engineering: Latent Rank Analysis, Biclustering, and Bayesian Network (Behaviormetrics: Quantitative Approaches to Human Behavior, 13),Springer.
 + Samejima, F. (1969). Estimation of latent ability using a response pattern of graded scores. Psychometrika, 34(S1), 1-97.
 
-## Future Updates
-
-### Upcoming Features
-
-#### Polytomous Data Support
-
-- Item Response Theory
-  - Partial Credit Model (PCM)
-- Latent Structure Analysis
-  - Extended Biclustering for polytomous data
-
-### Current Development Status
-
-- Binary response models: ✅ Implemented
-- Polytomous response models: 🚧 Under development
-- CRAN submission: ✅  Now on CRAN!
 
 Follow our [GitHub repository](https://github.com/kosugitti/exametrika) and join the [Discussions](https://github.com/kosugitti/exametrika/discussions) to stay updated on development progress and provide feedback on desired features.
 

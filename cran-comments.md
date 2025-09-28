@@ -11,16 +11,22 @@
 0 errors ✔ | 0 warnings ✔ | 0 notes ✔
 
 ### win-builder
-0 errors ✔ | 0 warnings ✔ | 0 notes ✔
+Installation time in seconds: 22
+Check time in seconds: 110
 Status: OK
-Installation time: 9 seconds
-Check time: 84 seconds
 
 ### Downstream dependencies
 
 There are currently no downstream dependencies for this package.
-Version 1.6.1
-This is a patch level update since version 1.6.0. Some bugs fixed.
+
+## Version 1.6.3
+
+This is a patch level update with significant performance improvements:
+
+* Major performance enhancement for GRM (Graded Response Model) with C++ implementation
+* High-performance polychoric correlation computation using C++
+* Enhanced GridSearch() function with improved convergence handling
+* Improved numerical stability and visualization enhancements
 
 All tests pass with 0 errors, 0 warnings, and 0 notes across all test environments.
 

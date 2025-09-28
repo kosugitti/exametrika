@@ -51,47 +51,11 @@ dataFormat <- function(data, na = NULL, id = 1, Z = NULL, w = NULL,
     na <- NULL
   }
 
-  # Detect response type if not specified
-  # Function to check if data is binary
-  is_binary <- function(x, na_value = NULL) {
-    # Remove both NA and specified na values
-    x_clean <- x[!is.na(x)]
-    if (!is.null(na_value)) {
-      x_clean <- x_clean[x_clean != na_value]
-    }
+  # Store original response type for later auto-detection
+  original_response_type <- response.type
 
-    if (length(x_clean) == 0) {
-      return(TRUE)
-    } # Empty data considered as binary
-
-    if (is.factor(x)) {
-      x_clean <- as.numeric(x_clean)
-    } else {
-      x_clean <- suppressWarnings(as.numeric(x_clean))
-    }
-    all(x_clean %in% c(0, 1))
-  }
-
-  # Check each column (correctly excluding ID column)
-  check_cols <- setdiff(1:ncol(data), id)
-
-  # Apply binary check to response columns only, passing na value
-  is_all_binary <- all(sapply(data[, check_cols], is_binary, na_value = na))
-
-  if (is.null(response.type)) {
-    if (is_all_binary) {
-      response.type <- "binary"
-    } else {
-      if (!is.null(CA)) {
-        response.type <- "rated"
-      } else {
-        response.type <- "nominal"
-      }
-    }
-  }
-
-  # Validate manually specified response type
-  if (!response.type %in% c("binary", "ordinal", "rated", "nominal")) {
+  # Validate manually specified response type (only if provided)
+  if (!is.null(response.type) && !response.type %in% c("binary", "ordinal", "rated", "nominal")) {
     stop("response.type must be one of: binary, ordinal, rated, nominal")
   }
 
@@ -112,6 +76,11 @@ dataFormat <- function(data, na = NULL, id = 1, Z = NULL, w = NULL,
   # Check if U is either a matrix or a dataframe, otherwise stop the execution
   if (!is.matrix(data) && !is.data.frame(data)) {
     stop("Data must be matrix or data.frame")
+  }
+
+  # Check minimum number of rows (cases)
+  if (nrow(data) < 10) {
+    stop("Data must have at least 10 rows (cases) for reliable analysis")
   }
 
   # Function to check if a vector could be response data
@@ -149,37 +118,86 @@ dataFormat <- function(data, na = NULL, id = 1, Z = NULL, w = NULL,
     }
   }
 
+  # Helper function to check if a vector represents consecutive numbers
+  is_consecutive_numbers <- function(x) {
+    if (all(is.na(x))) {
+      return(FALSE)
+    }
+    x_clean <- x[!is.na(x)]
+    if (length(x_clean) <= 1) {
+      return(TRUE)
+    }
+
+    x_num <- suppressWarnings(as.numeric(x_clean))
+    if (any(is.na(x_num))) {
+      return(FALSE)
+    }
+
+    x_sorted <- sort(unique(x_num))
+    all(diff(x_sorted) == 1) && length(x_sorted) == length(x_num)
+  }
+
+  # Helper function to check if data looks like response data (has < 20 unique values)
+  looks_like_response_data <- function(x) {
+    if (all(is.na(x))) {
+      return(FALSE)
+    }
+    x_clean <- x[!is.na(x)]
+    if (length(x_clean) == 0) {
+      return(FALSE)
+    }
+
+    x_num <- suppressWarnings(as.numeric(x_clean))
+    if (any(is.na(x_num))) {
+      return(FALSE)
+    }
+
+    unique_vals <- unique(x_num)
+    length(unique_vals) < 20 && all(unique_vals >= 0) && all(unique_vals == round(unique_vals))
+  }
+
   # ID processing section
   if (id > ncol(data)) {
-    ID <- paste0("Student", seq(1, NROW(data)))
-    response.matrix <- data
-  } else if (id != 1) {
+    stop("ID column number exceeds the number of columns in data")
+  }
+
+  if (id != 1) {
+    # Explicit ID column specified
     ID <- data[, id]
-    ID <- as.factor(ID)
-    if (any(duplicated(ID))) {
-      duplicated_ids <- ID[duplicated(ID)]
-      stop(paste("Duplicated IDs found:", paste(unique(duplicated_ids), collapse = ", ")))
+    if (is.factor(ID)) {
+      ID <- as.character(ID)
+    } else {
+      ID <- as.character(ID)
     }
     response.matrix <- data[, -id]
   } else {
-    potential_id <- data[, 1]
-    potential_id_factor <- as.factor(potential_id)
+    # Analyze first column to determine if it's an ID column
+    first_col <- data[, 1]
 
-    if (any(duplicated(potential_id_factor))) {
-      if (!is.null(rownames(data))) {
-        ID <- rownames(data)
-        if (any(duplicated(ID))) {
-          duplicated_ids <- ID[duplicated(ID)]
-          stop(paste("Duplicated IDs found:", paste(unique(duplicated_ids), collapse = ", ")))
-        }
-      } else {
-        ID <- paste0("Student", seq(1, NROW(data)))
-      }
+    # Check if first column looks like IDs
+    is_string_or_factor <- is.character(first_col) || is.factor(first_col)
+    is_consecutive <- is_consecutive_numbers(first_col)
+    looks_like_response <- looks_like_response_data(first_col)
+
+    if (is_string_or_factor || (is_consecutive && !looks_like_response)) {
+      # First column is ID
+      ID <- as.character(first_col)
+      response.matrix <- data[, -1]
+    } else if (!is.null(rownames(data)) && !all(rownames(data) == as.character(seq_len(nrow(data))))) {
+      # Use rownames as ID
+      ID <- rownames(data)
       response.matrix <- data
     } else {
-      ID <- potential_id_factor
-      response.matrix <- data[, -1]
+      # Generate automatic IDs
+      ID <- paste0("Student", seq_len(nrow(data)))
+      response.matrix <- data
     }
+  }
+
+  # Check for duplicate IDs
+  if (any(duplicated(ID))) {
+    duplicated_ids <- ID[duplicated(ID)]
+    stop(paste("Duplicated IDs found:", paste(unique(duplicated_ids), collapse = ", ")))
   }
 
   # Get Item-labels
@@ -197,6 +215,83 @@ dataFormat <- function(data, na = NULL, id = 1, Z = NULL, w = NULL,
       stop("The missing indicator matrix must contain only 0 or 1")
     }
     response.matrix <- ifelse(Z == 0, -1, response.matrix)
+  }
+
+  # Automatic response type detection (now moved to before validation)
+  if (is.null(original_response_type)) {
+    # Function to check if data is binary
+    is_binary <- function(x, na_value = NULL) {
+      # Remove both NA and specified na values
+      x_clean <- x[!is.na(x) & x != -1] # Exclude missing indicator
+      if (!is.null(na_value)) {
+        x_clean <- x_clean[x_clean != na_value]
+      }
+
+      if (length(x_clean) == 0) {
+        return(TRUE)
+      } # Empty data considered as binary
+
+      x_clean <- suppressWarnings(as.numeric(x_clean))
+      all(x_clean %in% c(0, 1))
+    }
+
+    # Check if data appears to be ordinal (ordered categories)
+    is_ordinal <- function(x, na_value = NULL) {
+      x_clean <- x[!is.na(x) & x != -1] # Exclude missing indicator
+      if (!is.null(na_value)) {
+        x_clean <- x_clean[x_clean != na_value]
+      }
+      if (length(x_clean) == 0) {
+        return(FALSE)
+      }
+
+      x_clean <- suppressWarnings(as.numeric(x_clean))
+      if (any(is.na(x_clean))) {
+        return(FALSE)
+      }
+
+      # Check if values are integers
+      if (!all(x_clean == round(x_clean))) {
+        return(FALSE)
+      }
+
+      unique_vals <- sort(unique(x_clean))
+
+      # 2カテゴリの場合：0/1以外ならordinalとして扱うが警告してエラー
+      if (length(unique_vals) == 2) {
+        if (!all(unique_vals %in% c(0, 1))) {
+          stop("2-category data with non-binary values detected. Please specify response.type explicitly.")
+        }
+        return(FALSE) # 0/1ならbinaryとして扱う
+      }
+
+      # 20カテゴリ以上は多すぎる
+      if (length(unique_vals) >= 20) {
+        stop("Too many categories (>=20) for ordinal data. Please specify response.type explicitly.")
+      }
+
+      # 3カテゴリ以上なら問答無用でordinal
+      return(length(unique_vals) >= 3)
+    }
+
+    # Apply binary check to all response columns
+    is_all_binary <- all(apply(response.matrix, 2, is_binary, na_value = na))
+
+    if (is_all_binary) {
+      response.type <- "binary"
+    } else {
+      is_all_ordinal <- all(apply(response.matrix, 2, is_ordinal, na_value = na))
+
+      if (is_all_ordinal) {
+        response.type <- "ordinal"
+      } else if (!is.null(CA)) {
+        response.type <- "rated"
+      } else {
+        response.type <- "nominal"
+      }
+    }
+  } else {
+    response.type <- original_response_type
   }
 
   if (response.type == "binary") {
@@ -237,7 +332,13 @@ dataFormat <- function(data, na = NULL, id = 1, Z = NULL, w = NULL,
     Z <- Z[, !is.na(sd.check)]
     ItemLabel <- ItemLabel[!is.na(sd.check)]
     w <- w[!is.na(sd.check)]
+
+    # Check if all items were excluded
+    if (ncol(response.matrix) == 0) {
+      stop("All items have no variance and were excluded. No valid response data remains.")
+    }
   }
+
 
   # Add category information
   categories <- apply(response.matrix, 2, function(x) length(unique(x[x != -1])))

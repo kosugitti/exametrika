@@ -55,12 +55,12 @@ GridSearch <- function(
     args_list <- list()
     extra_args <- list(...)
     failed_settings <- list()
-    
+
     for (ncls in 2:max_ncls) {
       for (nfld in 2:max_nfld) {
         # Display progress
         message(sprintf("\rExecuting ncls = %d, nfld = %d...", ncls, nfld), appendLF = FALSE)
-        
+
         args_list <- c(
           list(
             U = obj,
@@ -71,21 +71,23 @@ GridSearch <- function(
           extra_args
         )
         result <- do.call(fun, args_list)
-        
+
         # Check convergence
         if (!is.null(result$converge) && result$converge == FALSE) {
           # Mark as failed and set to NA
           ret[ncls - 1, nfld - 1] <- NA
-          failed_settings <- append(failed_settings, 
-                                  list(list(ncls = ncls, nfld = nfld)))
+          failed_settings <- append(
+            failed_settings,
+            list(list(ncls = ncls, nfld = nfld))
+          )
         } else {
           ret[ncls - 1, nfld - 1] <- result$TestFitIndices[[index]]
         }
       }
     }
-    
+
     # Clear progress line and check if all parameters failed to converge
-    message("")  # Clear the progress line
+    message("") # Clear the progress line
     if (all(is.na(ret))) {
       message("Error: All parameter combinations failed to converge.")
       message("Grid search cannot find optimal parameters.")
@@ -95,7 +97,7 @@ GridSearch <- function(
       message("  - Checking data quality")
       stop("Grid search terminated due to convergence failure in all combinations.")
     }
-    
+
     if (index %in% c("AIC", "BIC")) {
       optimal_idx <- which(ret == min(ret, na.rm = TRUE), arr.ind = TRUE)
     } else {
@@ -103,7 +105,7 @@ GridSearch <- function(
     }
     optimal_ncls <- optimal_idx[1] + 1
     optimal_nfld <- optimal_idx[2] + 1
-    
+
     # Display warning for failed convergence
     if (length(failed_settings) > 0) {
       message("\nWarning: The following settings may have failed to converge:")
@@ -112,7 +114,7 @@ GridSearch <- function(
         message(sprintf("  ncls=%d, nfld=%d", setting$ncls, setting$nfld))
       }
     }
-    
+
     message(paste(
       "\nOptimal ncls/nrank is ",
       optimal_ncls, "and",
@@ -144,32 +146,34 @@ GridSearch <- function(
     names(ret) <- paste0("ncls", 2:max_ncls)
     extra_args <- list(...)
     failed_settings <- list()
-    
+
     for (i in seq_along(2:max_ncls)) {
       ncls <- (2:max_ncls)[i]
       # Display progress
       message(sprintf("\rExecuting ncls = %d...", ncls), appendLF = FALSE)
-      
+
       args_list <- c(list(
         U = obj,
         ncls = ncls,
         verbose = FALSE
       ), extra_args)
       result <- do.call(fun, args_list)
-      
+
       # Check convergence
       if (!is.null(result$converge) && result$converge == FALSE) {
         # Mark as failed and set to NA
         ret[i] <- NA
-        failed_settings <- append(failed_settings, 
-                                list(list(ncls = ncls)))
+        failed_settings <- append(
+          failed_settings,
+          list(list(ncls = ncls))
+        )
       } else {
         ret[i] <- result$TestFitIndices[[index]]
       }
     }
-    
+
     # Clear progress line and check if all parameters failed to converge
-    message("")  # Clear the progress line
+    message("") # Clear the progress line
     if (all(is.na(ret))) {
       message("Error: All parameter combinations failed to converge.")
       message("Grid search cannot find optimal parameters.")
@@ -179,13 +183,13 @@ GridSearch <- function(
       message("  - Checking data quality")
       stop("Grid search terminated due to convergence failure in all combinations.")
     }
-    
+
     if (index %in% c("AIC", "BIC")) {
       optimal_ncls <- which.min(ret) + 1
     } else {
       optimal_ncls <- which.max(ret) + 1
     }
-    
+
     # Display warning for failed convergence
     if (length(failed_settings) > 0) {
       message("\nWarning: The following settings may have failed to converge:")
@@ -194,7 +198,7 @@ GridSearch <- function(
         message(sprintf("  ncls=%d", setting$ncls))
       }
     }
-    
+
     message("\nOptimal ncls/nrank is ", optimal_ncls)
 
     # Run analysis with optimal parameters

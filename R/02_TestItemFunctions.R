@@ -606,25 +606,15 @@ tetrachoric <- function(x, y) {
 #'
 #' @export
 polychoric <- function(x, y) {
-  x[x == -1] <- NA
-  y[y == -1] <- NA
-  pairwise <- !is.na(x + y)
-  x <- x[pairwise]
-  y <- y[pairwise]
-  mat <- table(x, y)
-  fit <- optim(
-    par = 0,
-    fn = polychoric_likelihood,
-    mat = mat,
-    method = "Brent",
-    lower = -1,
-    upper = 1
-  )
-  if (fit$convergence != 0) {
+  # Use fast C++ implementation
+  result <- polychoric_cpp(as.integer(x), as.integer(y))
+
+  # Check for convergence issues
+  if (is.na(result)) {
     stop("Failed to converge when calculating polychoric correlation. Try with different initial values or check your data.")
   }
-  cor <- fit$par
-  return(cor)
+
+  return(result)
 }
 
 
@@ -697,28 +687,26 @@ PolychoricCorrelationMatrix <- function(U, na = NULL, Z = NULL, w = NULL) {
 PolychoricCorrelationMatrix.default <- function(U, na = NULL, Z = NULL, w = NULL) {
   if (!inherits(U, "exametrika")) {
     tmp <- dataFormat(U, na = na, Z = Z, w = w)
+  } else {
+    tmp <- U
   }
-  if (U$response.type != "ordinal") {
+  if (tmp$response.type != "ordinal") {
     response_type_error(tmp$response.type, "PolychoricCorrelationMatrix")
   }
-  PolychoricCorrelationMatrix.ordinal(U, na, Z, w)
+  PolychoricCorrelationMatrix.ordinal(tmp, na, Z, w)
 }
 
 #' @rdname PolychoricCorrelationMatrix
 #' @export
 PolychoricCorrelationMatrix.ordinal <- function(U, na = NULL, Z = NULL, w = NULL) {
   tmp <- dataFormat(data = U, na = na, Z = Z, w = w)
-  nitems <- NCOL(tmp$Z)
   tmp$Q[tmp$Z == 0] <- NA
-  ret.mat <- matrix(NA, ncol = nitems, nrow = nitems)
-  for (i in 1:(nitems - 1)) {
-    for (j in (i + 1):nitems) {
-      x <- tmp$Q[, i]
-      y <- tmp$Q[, j]
-      ret.mat[i, j] <- ret.mat[j, i] <- polychoric(x, y)
-    }
-  }
-  diag(ret.mat) <- 1
+
+  # Use fast C++ matrix implementation
+  ret.mat <- polychoric_matrix_cpp(tmp$Q)
+  rownames(ret.mat) <- tmp$ItemLabel
+  colnames(ret.mat) <- tmp$ItemLabel
+
   return(ret.mat)
 }
 
@@ -804,10 +792,6 @@ TetrachoricCorrelationMatrix.binary <- function(U, na = NULL, Z = NULL, w = NULL
 #' Values range from 0 to 1, where higher values indicate easier items
 #' (more students answered correctly).
 #' @examples
-#' # Simple binary data
-#' U <- matrix(c(1, 0, 1, 1, 0, 1), ncol = 2)
-#' crr(U)
-#'
 #' # using sample datasaet
 #' crr(J15S500)
 #' @export

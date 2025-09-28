@@ -872,25 +872,6 @@ Note: ✓ indicates available output type for the model.
 
 Shojima,K. (2022) Test Data Engineering: Latent Rank Analysis, Biclustering, and Bayesian Network (Behaviormetrics: Quantitative Approaches to Human Behavior, 13), Springer.
 
-## 今後の更新予定
-
-### 今後実装予定の機能
-
-#### 多値データ対応
-- 項目反応理論
-  - 段階反応モデル（GRM）
-  - 部分採点モデル（PCM）
-  - 一般化部分採点モデル（GPCM）
-- 潜在構造分析
-  - 多値潜在ランクモデル
-  - 多値潜在クラス分析
-  - 多値データ用拡張バイクラスタリング
-
-### 現在の開発状況
-
-- 2値反応モデル：✅ 実装済み
-- 多値反応モデル：🚧 開発中
-- CRAN投稿：🚧 審査中
 
 開発の進捗状況の確認や希望する機能についてのフィードバックを提供するには、[GitHubリポジトリ](https://github.com/kosugitti/exametrika)をフォローし、[Discussions](https://github.com/kosugitti/exametrika/discussions)に参加してください。
 

@@ -1,5 +1,11 @@
 # exametrika 1.6.3
 
++ Major performance enhancement for GRM (Graded Response Model)
+  + Replaced R implementation with high-performance C++ code using Rcpp
+  + Implemented analytical gradient computation for significant speed improvements
+  + Achieved 5-6x faster convergence compared to numerical differentiation
+  + Maintains identical mathematical accuracy to previous implementation
+  + Full compatibility with existing GRM() function interface
 + Added `converge` variable to all EM-based functions to indicate algorithm convergence status
   + Functions affected: Biclustering(), LCA(), LRA(), and related methods
   + Returns TRUE if converged within maxiter iterations, FALSE otherwise
@@ -12,7 +18,9 @@
 + Improved numerical stability in Biclustering()
   + Implemented conditional pmax() application to avoid unnecessary log-likelihood inflation
   + Applied numerical correction only when NaN/Inf values are detected
-  + Enhanced precision by using machine epsilon (.Machine$double.eps) for numerical constant
++ High-performance polychoric correlation computation
+  + Implemented C++ acceleration for polychoric correlation calculations
+  + Achieved significant speed improvements over R-based implementation
 + Improved Array-type plot visualization with enhanced color palette
   + Replaced dull default colors with vibrant, high-contrast color palette
   + Added colorblind-friendly color scheme for better accessibility

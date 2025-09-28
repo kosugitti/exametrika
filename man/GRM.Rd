@@ -23,6 +23,8 @@ A list of class "exametrika" and "GRM" containing the following elements:
 \describe{
 \item{testlength}{Length of the test (number of items)}
 \item{nobs}{Sample size (number of rows in the dataset)}
+\item{log_lik}{Log-likelihood value at convergence}
+\item{iterations}{Number of iterations and function evaluations from optimization}
 \item{params}{Matrix containing the estimated item parameters}
 \item{EAP}{Ability parameters of examinees estimated by EAP method}
 \item{MAP}{Ability parameters of examinees estimated by MAP method}

@@ -98,10 +98,18 @@ GridSearch <- function(
       stop("Grid search terminated due to convergence failure in all combinations.")
     }
 
-    if (index %in% c("AIC", "BIC")) {
+    # Indices where smaller is better
+    minimize_indices <- c("model_log_like", "model_Chi_sq", "RMSEA", "AIC", "CAIC", "BIC")
+    # Indices where larger is better
+    maximize_indices <- c("NFI", "RFI", "IFI", "TLI", "CFI")
+
+    if (index %in% minimize_indices) {
       optimal_idx <- which(ret == min(ret, na.rm = TRUE), arr.ind = TRUE)
-    } else {
+    } else if (index %in% maximize_indices) {
       optimal_idx <- which(ret == max(ret, na.rm = TRUE), arr.ind = TRUE)
+    } else {
+      stop("Unknown index: ", index, ". Please specify one of: ",
+           paste(c(minimize_indices, maximize_indices), collapse = ", "))
     }
     optimal_ncls <- optimal_idx[1] + 1
     optimal_nfld <- optimal_idx[2] + 1
@@ -184,10 +192,18 @@ GridSearch <- function(
       stop("Grid search terminated due to convergence failure in all combinations.")
     }
 
-    if (index %in% c("AIC", "BIC")) {
+    # Indices where smaller is better
+    minimize_indices <- c("model_log_like", "model_Chi_sq", "RMSEA", "AIC", "CAIC", "BIC")
+    # Indices where larger is better
+    maximize_indices <- c("NFI", "RFI", "IFI", "TLI", "CFI")
+
+    if (index %in% minimize_indices) {
       optimal_ncls <- which.min(ret) + 1
-    } else {
+    } else if (index %in% maximize_indices) {
       optimal_ncls <- which.max(ret) + 1
+    } else {
+      stop("Unknown index: ", index, ". Please specify one of: ",
+           paste(c(minimize_indices, maximize_indices), collapse = ", "))
     }
 
     # Display warning for failed convergence

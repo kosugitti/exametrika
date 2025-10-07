@@ -1,3 +1,11 @@
+# exametrika 1.6.4
+
++ Enhanced GridSearch() fit index optimization logic
+  + Added support for all fit indices returned by TestFitIndices()
+  + Correctly handles minimization indices: model_log_like, model_Chi_sq, RMSEA, AIC, CAIC, BIC
+  + Correctly handles maximization indices: NFI, RFI, IFI, TLI, CFI
+  + Added validation to prevent unknown index specification
+
 # exametrika 1.6.3
 
 + Major performance enhancement for GRM (Graded Response Model)

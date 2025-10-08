@@ -1,5 +1,9 @@
 # exametrika 1.6.4
 
++ Critical bugfix for Biclustering() field initialization
+  + Fixed subscript out of bounds error when nfld values cause ceiling() to exceed nfld
+  + Added pmin() constraint to ensure fld0 values never exceed nfld parameter
+  + Resolves crashes with specific nfld/testlength combinations (e.g., nfld=15, testlength=21)
 + Enhanced GridSearch() fit index optimization logic
   + Added support for all fit indices returned by TestFitIndices()
   + Correctly handles minimization indices: model_log_like, model_Chi_sq, RMSEA, AIC, CAIC, BIC

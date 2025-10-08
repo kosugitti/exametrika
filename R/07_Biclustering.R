@@ -231,7 +231,7 @@ Biclustering.binary <- function(U,
   emt <- 0
   maxemt <- 100
 
-  fld0 <- ceiling(1:testlength / (testlength / nfld))
+  fld0 <- pmin(ceiling(1:testlength / (testlength / nfld)), nfld)
   crr_order <- order(crr(tmp), decreasing = TRUE)
   fld <- fld0[match(1:testlength, crr_order)]
   fldmemb <- matrix(0, nrow = testlength, ncol = nfld)

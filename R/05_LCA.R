@@ -13,6 +13,8 @@
 #' @param na Values to be treated as missing values.
 #' @param maxiter Maximum number of EM algorithm iterations. Default is 100.
 #' @param verbose Logical; if TRUE, displays progress during estimation. Default is TRUE.
+#' @param beta1 Beta distribution parameter 1 for prior density of class reference matrix. Default is 1.
+#' @param beta2 Beta distribution parameter 2 for prior density of class reference matrix. Default is 1.
 #'
 #' @return
 #' An object of class "exametrika" and "LCA" containing:
@@ -101,7 +103,7 @@
 #' }
 #'
 #' @export
-LCA <- function(U, ncls = 2, na = NULL, Z = NULL, w = NULL, maxiter = 100, verbose = TRUE) {
+LCA <- function(U, ncls = 2, na = NULL, Z = NULL, w = NULL, maxiter = 100, verbose = TRUE, beta1 = 1, beta2 = 1) {
   # data format
   if (!inherits(U, "exametrika")) {
     tmp <- dataFormat(data = U, na = na, Z = Z, w = w)
@@ -109,8 +111,8 @@ LCA <- function(U, ncls = 2, na = NULL, Z = NULL, w = NULL, maxiter = 100, verbo
     tmp <- U
   }
 
-  if (U$response.type != "binary") {
-    response_type_error(U$response.type, "LCA")
+  if (tmp$response.type != "binary") {
+    response_type_error(tmp$response.type, "LCA")
   }
 
   if (ncls < 2 | ncls > 20) {
@@ -119,7 +121,7 @@ LCA <- function(U, ncls = 2, na = NULL, Z = NULL, w = NULL, maxiter = 100, verbo
 
   fit <- emclus(tmp$U, tmp$Z, ncls,
     Fil = diag(rep(1, ncls)),
-    beta1 = 1, beta2 = 1, maxiter,
+    beta1 = beta1, beta2 = beta2, maxiter = maxiter,
     mic = FALSE,
     verbose = verbose
   )

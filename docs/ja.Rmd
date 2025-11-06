@@ -310,13 +310,13 @@ plot(result.LRA, type = "LRD")
 
 LRAは順序尺度データにも適用することができます。サンプルデータJ15S3810は4件法15項目のデータで、これを3段階に分類します。micオプションは単調増加制約を課すものです。
 
-```{r}
+```{r model-lra-ordinal}
 result.LRAord <- LRA(J15S3810, nrank = 3, mic = TRUE)
 ```
 
 順序尺度の合計得点と推定されたランクの関係を可視化することができます。ScoreFreqはスコアの度数多角形とランクの閾値を表示し、ScoreRankはスコアとランク所属確率の関係をヒートマップで表現します。
 
-```{r}
+```{r plot-lra-ordinal-score}
 plot(result.LRAord, type = "ScoreFreq")
 plot(result.LRAord, type = "ScoreRank")
 ```
@@ -326,14 +326,14 @@ plot(result.LRAord, type = "ScoreRank")
 + ICBR（項目カテゴリ境界参照行列）は、各カテゴリ閾値における累積確率を示します。各項目について、これらの線はランクごとの各カテゴリ境界以上のスコアを得る確率を表しています。
 + ICRP（項目カテゴリ反応プロファイル行列）は、各反応カテゴリが選択される確率をランクごとに表示します。これらの線は、ランクの上昇に伴う反応パターンの変化を示しています。
 
-```{r}
+```{r plot-lra-ordinal-icbr-icrp}
 plot(result.LRAord, type = "ICBR", items = 1:4, nc = 2, nr = 2)
 plot(result.LRAord, type = "ICRP", items = 1:4, nc = 2, nr = 2)
 ```
 
 二値データの出力と同様に、ランク所属確率プロットを通じて個々の受験者の特性を検討することができます。この可視化は、各受験者のランク所属確率の分布を示し、ランク分類の確実性を理解することができます。以下はデータセットの最初の15人の受験者についての結果です：
 
-```{r}
+```{r plot-lra-ordinal-rmp}
 plot(result.LRAord, type = "RMP", students = 1:9, nc = 3, nr = 3)
 ```
 
@@ -344,24 +344,24 @@ plot(result.LRAord, type = "RMP", students = 1:9, nc = 3, nr = 3)
 もしあなたが多肢選択式テストのような、正答を選択させる名義尺度水準のデータを持っているなら、LRAを使って分析することができます。
 
 
-```{r}
+```{r model-lra-rated}
 result.LRArated <- LRA(J35S5000, nrank = 10, mic = TRUE)
 ```
 
 順序尺度データと同様に、スコアとランクの関係を可視化することができます。
 
-```{r}
+```{r plot-lra-rated-score}
 plot(result.LRArated, type = "ScoreFreq")
 plot(result.LRArated, type = "ScoreRank")
 ```
 
 また、潜在ランクと項目の関係や、被験者の所属確率を可視化することも可能です。
 
-```{r ICBR/ICRP plot}
+```{r plot-lra-rated-icrp}
 plot(result.LRArated, type = "ICRP", items = 1:4, nc = 2, nr = 2)
 ```
 
-```{r}
+```{r plot-lra-rated-rmp}
 plot(result.LRAord, type = "RMP", students = 1:9, nc = 3, nr = 3)
 ```
 
@@ -489,7 +489,7 @@ GAは項目数と集団サイズによっては相当な時間がかかる可能
 
 
 ```{r model-ga-bnm, message=FALSE, warning=FALSE}
-StrLearningGA_BNM(J5S10,
+BNM_GA(J5S10,
   population = 20, Rs = 0.5, Rm = 0.002, maxParents = 2,
   maxGeneration = 100, crossover = 2, elitism = 2
 )
@@ -499,7 +499,7 @@ Fukuda(2014)によって提案された集団ベース増分学習法も学習�
 
 
 ```{r model-pbil-bnm, message=FALSE, warning=FALSE}
-StrLearningPBIL_BNM(J5S10,
+BNM_PBIL(J5S10,
   population = 20, Rs = 0.5, Rm = 0.005, maxParents = 2,
   alpha = 0.05, estimate = 4
 )
@@ -609,7 +609,7 @@ unlink(edgeFile)
 PBILアルゴリズムを使用して、各ランクの項目間相互作用グラフを学習することができます。様々なオプションに加えて、学習プロセスには非常に長い計算時間が必要です。また、結果は実行可能な解の1つに過ぎず、必ずしも最適解ではないことに注意することが重要です。
 
 ```{r model-pbil-ldlra, message=FALSE, warning=FALSE,eval=FALSE}
-result.LDLRA.PBIL <- StrLearningPBIL_LDLRA(J35S515,
+result.LDLRA.PBIL <- LDLRA_PBIL(J35S515,
   seed = 123,
   ncls = 5,
   method = "R",

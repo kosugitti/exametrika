@@ -1,5 +1,5 @@
 ## Test environments
-* local macOS install: R 4.5.1
+* local macOS install: R 4.5.2
 * GitHub Actions (ubuntu-latest): R-devel
 * GitHub Actions (windows-latest): R-devel
 * GitHub Actions (macOS-13): R-devel
@@ -19,14 +19,15 @@ Status: OK
 
 There are currently no downstream dependencies for this package.
 
-## Version 1.6.3
+## Version 1.6.5
 
-This is a patch level update with significant performance improvements:
+This is a patch level update with critical bugfixes and parameter customization enhancements:
 
-* Major performance enhancement for GRM (Graded Response Model) with C++ implementation
-* High-performance polychoric correlation computation using C++
-* Enhanced GridSearch() function with improved convergence handling
-* Improved numerical stability and visualization enhancements
+* Critical bugfix for LCA() response type validation - fixed incorrect variable reference in response type checking
+* Added beta1 and beta2 parameters to all Beta distribution-based functions to allow customization of prior density parameters in Bayesian parameter estimation (LRA.binary, LCA, Biclustering.binary, BNM, LDB, LDLRA, and internal LD_param_est function)
+* Added alpha parameter to polytomous models (Biclustering.ordinal, Biclustering.nominal) for customization of Dirichlet prior concentration parameters
+* Simplified function names for structure learning functions: StrLearningGA_BNM → BNM_GA, StrLearningPBIL_BNM → BNM_PBIL, StrLearningPBIL_LDLRA → LDLRA_PBIL
+* All default parameter values preserve backward compatibility with previous versions
 
 All tests pass with 0 errors, 0 warnings, and 0 notes across all test environments.
 

@@ -41,6 +41,8 @@ fill_adj <- function(g, ItemLabel) {
 #' @param g Specify a graph object suitable for the igraph class.
 #' @param adj_file specify CSV file where the graph structure is specified.
 #' @param adj_matrix specify adjacency matrix.
+#' @param beta1 Beta distribution parameter 1 (for correct responses). Default is 1.
+#' @param beta2 Beta distribution parameter 2 (for incorrect responses). Default is 1. Note: referred to as beta0 internally.
 #' @importFrom igraph graph_from_data_frame
 #' @importFrom igraph as_adjacency_matrix
 #' @importFrom utils read.csv
@@ -89,7 +91,8 @@ fill_adj <- function(g, ItemLabel) {
 #' @export
 
 BNM <- function(U, Z = NULL, w = NULL, na = NULL,
-                g = NULL, adj_file = NULL, adj_matrix = NULL) {
+                g = NULL, adj_file = NULL, adj_matrix = NULL,
+                beta1 = 1, beta2 = 1) {
   # data format
   if (!inherits(U, "exametrika")) {
     tmp <- dataFormat(data = U, na = na, Z = Z, w = w)
@@ -148,7 +151,7 @@ BNM <- function(U, Z = NULL, w = NULL, na = NULL,
   cdag <- dag * connectedFLG
 
   # Initialize
-  beta0 <- beta1 <- 1
+  beta0 <- beta2
   npa <- colSums(adj)
 
   pir <- lapply(1:length(npa), function(i) {

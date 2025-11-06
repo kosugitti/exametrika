@@ -20,6 +20,8 @@
 #' @param adj_file A file detailing the relationships of the graph for each rank/class,
 #' listed in the order of starting point, ending point, and rank(class).
 #' @param verbose verbose output Flag. default is TRUE
+#' @param beta1 Beta distribution parameter 1 for prior density. Default is 1.
+#' @param beta2 Beta distribution parameter 2 for prior density. Default is 1.
 #' @return
 #' \describe{
 #'  \item{nobs}{Sample size. The number of rows in the dataset.}
@@ -125,7 +127,7 @@ LDB <- function(U, Z = NULL, w = NULL, na = NULL,
                 ncls = 2, method = "R",
                 conf = NULL,
                 g_list = NULL, adj_list = NULL, adj_file = NULL,
-                verbose = FALSE) {
+                verbose = FALSE, beta1 = 1, beta2 = 1) {
   # data format
   if (!inherits(U, "exametrika")) {
     tmp <- dataFormat(data = U, na = na, Z = Z, w = w)
@@ -225,8 +227,6 @@ LDB <- function(U, Z = NULL, w = NULL, na = NULL,
     conf = conf,
     verbose = FALSE
   )
-  beta1 <- 1
-  beta2 <- 1
   const <- exp(-testlength)
 
 

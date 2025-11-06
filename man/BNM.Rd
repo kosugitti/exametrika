@@ -11,7 +11,9 @@ BNM(
   na = NULL,
   g = NULL,
   adj_file = NULL,
-  adj_matrix = NULL
+  adj_matrix = NULL,
+  beta1 = 1,
+  beta2 = 1
 )
 }
 \arguments{
@@ -29,6 +31,10 @@ it is converted to the exametrika class with the \link{dataFormat} function.}
 \item{adj_file}{specify CSV file where the graph structure is specified.}
 
 \item{adj_matrix}{specify adjacency matrix.}
+
+\item{beta1}{Beta distribution parameter 1 (for correct responses). Default is 1.}
+
+\item{beta2}{Beta distribution parameter 2 (for incorrect responses). Default is 1. Note: referred to as beta0 internally.}
 }
 \value{
 \describe{

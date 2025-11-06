@@ -298,13 +298,13 @@ plot(result.LRA, type = "LRD")
 
 LRA can also be applied to ordinal scale data. The sample dataset J15S3810 contains responses to 15 items on a 4-point scale, which we'll classify into 3 ranks. The mic option enforces monotonic increasing constraints.
 
-```{r}
+```{r model-lra-ordinal}
 result.LRAord <- LRA(J15S3810, nrank = 3, mic = TRUE)
 ```
 
 We can visualize the relationship between total scores from the ordinal scale and estimated ranks. ScoreFreq plots a frequency polygon of scores with rank thresholds, while ScoreRank shows the relationship between scores and rank membership probabilities as a heatmap.
 
-```{r}
+```{r plot-lra-ordinal-score}
 plot(result.LRAord, type = "ScoreFreq")
 plot(result.LRAord, type = "ScoreRank")
 ```
@@ -321,7 +321,7 @@ plot(result.LRAord, type = "ICRP", items = 1:4, nc = 2, nr = 2)
 
 Similar to binary data output, we can examine individual examinee characteristics through rank membership probability plots. This visualization shows the probability distribution of rank membership for each examinee, allowing us to understand the certainty of rank classifications. For the first 15 examinees in the dataset:
 
-```{r}
+```{r plot-lra-ordinal-rmp}
 plot(result.LRAord, type = "RMP", students = 1:9, nc = 3, nr = 3)
 ```
 
@@ -356,12 +356,12 @@ plot(result.LRAord, type = "RMP", students = 1:9, nc = 3, nr = 3)
 
 Biclustering and Ranklustering algorithms are almost the same, differing only in whether they include a filtering matrix or not. The difference is specified using the `method` option in the `Biclustering()` function. For more details, please refer to the help documentation.
 
-```{r}
+```{r model-biclustering}
 ## Biclustering
 Biclustering(J35S515, nfld = 5, ncls = 6, method = "B")
 ```
 
-```{r}
+```{r model-ranklustering}
 ## Ranklustering
 result.Ranklustering <- Biclustering(J35S515, nfld = 5, ncls = 6, method = "R")
 plot(result.Ranklustering, type = "Array")
@@ -394,7 +394,7 @@ The Infinite Relational Model uses the Chinese Restaurant Process to explore the
 - The model tends to detect larger numbers of classes and fields
 - Use with caution and consider computational resources
 
-```{r}
+```{r model-irm}
 result.IRM <- IRM(J35S515, gamma_c = 1, gamma_f = 1, verbose = TRUE)
 plot(result.IRM, type = "Array")
 plot(result.IRM, type = "FRP", nc = 3)
@@ -469,7 +469,7 @@ The function searches for a DAG suitable for the data using a genetic algorithm.
 Please note that the GA may take a considerable amount of time, depending on the number of items and the size of the population.
 
 ```{r model-ga-bnm, message=FALSE, warning=FALSE}
-StrLearningGA_BNM(J5S10,
+BNM_GA(J5S10,
   population = 20, Rs = 0.5, Rm = 0.002, maxParents = 2,
   maxGeneration = 100, crossover = 2, elitism = 2
 )
@@ -478,7 +478,7 @@ StrLearningGA_BNM(J5S10,
 The method of Population-Based incremental learning proposed by Fukuda (2014) can also be used for learning. This method has several variations for estimating the optimal adjacency matrix at the end, which can be specified as options. See help or text Section 8.5.2.
 
 ```{r model-pbil-bnm, message=FALSE, warning=FALSE}
-StrLearningPBIL_BNM(J5S10,
+BNM_PBIL(J5S10,
   population = 20, Rs = 0.5, Rm = 0.005, maxParents = 2,
   alpha = 0.05, estimate = 4
 )
@@ -572,7 +572,7 @@ plot(result.LDLRA, type = "TRP")
 plot(result.LDLRA, type = "LRD")
 ```
 
-```{r,include=FALSE}
+```{r cleanup-ldlra, include=FALSE}
 # Clean up temporary file
 unlink(edgeFile)
 ```
@@ -582,7 +582,7 @@ unlink(edgeFile)
 You can learn item-interaction graphs for each rank using the PBIL algorithm. In addition to various options, the learning process requires a very long computation time. It's also important to note that the result is merely one of the feasible solutions, and it's not necessarily the optimal solution.
 
 ```{r model-pbil-ldlra, message=FALSE, warning=FALSE, eval=T}
-result.LDLRA.PBIL <- StrLearningPBIL_LDLRA(J35S515,
+result.LDLRA.PBIL <- LDLRA_PBIL(J35S515,
   seed = 123,
   ncls = 5,
   method = "R",
@@ -648,12 +648,12 @@ print(result.LDB)
 
 
 Additionally, as mentioned in the text (Shojima, 2022), it is often the case that seeking the network structure exploratively does not yield appropriate results, so it has not been implemented.
-```{r}
+```{r model-ldb}
 result.LDB <- LDB(U = J35S515, ncls = 5, conf = conf, adj_file = edgeFile)
 result.LDB
 ```
 
-```{r,include=FALSE}
+```{r cleanup-ldb, include=FALSE}
 # Clean up temporary file
 unlink(edgeFile)
 ```
@@ -736,7 +736,7 @@ result.BINET <- BINET(
 print(result.BINET)
 ```
 
-```{r,include=FALSE}
+```{r cleanup-binet, include=FALSE}
 # Clean up temporary file
 unlink(edgeFile)
 ```
@@ -836,22 +836,6 @@ Please check our existing Issues and Discussions before posting to avoid duplica
 + Shojima, Kojiro (2022) Test Data Engineering: Latent Rank Analysis, Biclustering, and Bayesian Network (Behaviormetrics: Quantitative Approaches to Human Behavior, 13),Springer.
 + Samejima, F. (1969). Estimation of latent ability using a response pattern of graded scores. Psychometrika, 34(S1), 1-97.
 
-## Future Updates
-
-### Upcoming Features
-
-#### Polytomous Data Support
-
-- Item Response Theory
-  - Partial Credit Model (PCM)
-- Latent Structure Analysis
-  - Extended Biclustering for polytomous data
-
-### Current Development Status
-
-- Binary response models: ✅ Implemented
-- Polytomous response models: 🚧 Under development
-- CRAN submission: ✅  Now on CRAN!
 
 Follow our [GitHub repository](https://github.com/kosugitti/exametrika) and join the [Discussions](https://github.com/kosugitti/exametrika/discussions) to stay updated on development progress and provide feedback on desired features.
 

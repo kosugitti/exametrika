@@ -51,7 +51,7 @@
 #' \donttest{
 #' # Perform Structure Learning for Bayesian Network Model using Genetic Algorithm
 #' # Parameters are set for balanced exploration and computational efficiency
-#' StrLearningGA_BNM(J5S10,
+#' BNM_GA(J5S10,
 #'   population = 20, # Size of population in each generation
 #'   Rs = 0.5, # 50% survival rate for next generation
 #'   Rm = 0.002, # 0.2% mutation rate for genetic diversity
@@ -63,13 +63,13 @@
 #' }
 #' @export
 
-StrLearningGA_BNM <- function(U, Z = NULL, w = NULL, na = NULL,
-                              seed = 123,
-                              population = 20, Rs = 0.5, Rm = 0.005,
-                              maxParents = 2, maxGeneration = 100,
-                              successiveLimit = 5, crossover = 0,
-                              elitism = 0, filename = NULL,
-                              verbose = TRUE) {
+BNM_GA <- function(U, Z = NULL, w = NULL, na = NULL,
+                   seed = 123,
+                   population = 20, Rs = 0.5, Rm = 0.005,
+                   maxParents = 2, maxGeneration = 100,
+                   successiveLimit = 5, crossover = 0,
+                   elitism = 0, filename = NULL,
+                   verbose = TRUE) {
   # data format
   if (!inherits(U, "exametrika")) {
     tmp <- dataFormat(data = U, na = na, Z = Z, w = w)
@@ -299,7 +299,7 @@ StrLearningGA_BNM <- function(U, Z = NULL, w = NULL, na = NULL,
 #' \donttest{
 #' # Perform Structure Learning for Bayesian Network Model using PBIL
 #' # (Population-Based Incremental Learning)
-#' StrLearningPBIL_BNM(J5S10,
+#' BNM_PBIL(J5S10,
 #'   population = 20, # Size of population in each generation
 #'   Rs = 0.5, # 50% survival rate for next generation
 #'   Rm = 0.005, # 0.5% mutation rate for genetic diversity
@@ -310,14 +310,14 @@ StrLearningGA_BNM <- function(U, Z = NULL, w = NULL, na = NULL,
 #' }
 #' @export
 
-StrLearningPBIL_BNM <- function(U, Z = NULL, w = NULL, na = NULL,
-                                seed = 123,
-                                population = 20, Rs = 0.5, Rm = 0.002,
-                                maxParents = 2, maxGeneration = 100,
-                                successiveLimit = 5, elitism = 0,
-                                alpha = 0.05, estimate = 1,
-                                filename = NULL,
-                                verbose = TRUE) {
+BNM_PBIL <- function(U, Z = NULL, w = NULL, na = NULL,
+                     seed = 123,
+                     population = 20, Rs = 0.5, Rm = 0.002,
+                     maxParents = 2, maxGeneration = 100,
+                     successiveLimit = 5, elitism = 0,
+                     alpha = 0.05, estimate = 1,
+                     filename = NULL,
+                     verbose = TRUE) {
   # data format
   if (!inherits(U, "exametrika")) {
     tmp <- dataFormat(data = U, na = na, Z = Z, w = w)

@@ -35,6 +35,8 @@
 #' @param filename Specify the filename when saving the generated adjacency matrix in CSV format.
 #' The default is null, and no output is written to the file.
 #' @param verbose verbose output Flag. default is TRUE
+#' @param beta1 Beta distribution parameter 1 for prior density. Default is 2.
+#' @param beta2 Beta distribution parameter 2 for prior density. Default is 2.
 #' @return
 #' \describe{
 #'  \item{nobs}{Sample size. The number of rows in the dataset.}
@@ -63,7 +65,7 @@
 #' \donttest{
 #' # Perform Structure Learning for LDLRA using PBIL algorithm
 #' # This process may take considerable time due to evolutionary optimization
-#' result.LDLRA.PBIL <- StrLearningPBIL_LDLRA(J35S515,
+#' result.LDLRA.PBIL <- LDLRA_PBIL(J35S515,
 #'   seed = 123, # Set random seed for reproducibility
 #'   ncls = 5, # Number of latent ranks
 #'   maxGeneration = 10,
@@ -85,14 +87,14 @@
 #' @export
 #'
 
-StrLearningPBIL_LDLRA <- function(U, Z = NULL, w = NULL, na = NULL,
-                                  seed = 123, ncls = 2, method = "R",
-                                  population = 20, Rs = 0.5, Rm = 0.002,
-                                  maxParents = 2, maxGeneration = 100,
-                                  successiveLimit = 5, elitism = 0,
-                                  alpha = 0.05, estimate = 1,
-                                  filename = NULL,
-                                  verbose = TRUE) {
+LDLRA_PBIL <- function(U, Z = NULL, w = NULL, na = NULL,
+                       seed = 123, ncls = 2, method = "R",
+                       population = 20, Rs = 0.5, Rm = 0.002,
+                       maxParents = 2, maxGeneration = 100,
+                       successiveLimit = 5, elitism = 0,
+                       alpha = 0.05, estimate = 1,
+                       filename = NULL,
+                       verbose = TRUE, beta1 = 2, beta2 = 2) {
   # data format
   if (!inherits(U, "exametrika")) {
     tmp <- dataFormat(data = U, na = na, Z = Z, w = w)
@@ -164,7 +166,7 @@ StrLearningPBIL_LDLRA <- function(U, Z = NULL, w = NULL, na = NULL,
     filmat <- filmat / (rep(1, ncls) %*% t(rep(1, ncls)) %*% filmat)
   }
 
-  ret.emclus <- emclus(tmp$U, tmp$Z, ncls, Fil = filmat, beta1 = 2, beta2 = 2)
+  ret.emclus <- emclus(tmp$U, tmp$Z, ncls, Fil = filmat, beta1 = beta1, beta2 = beta2)
   smoothpost <- ret.emclus$postDist %*% filmat
 
   fitness <- numeric(population)
@@ -190,7 +192,7 @@ StrLearningPBIL_LDLRA <- function(U, Z = NULL, w = NULL, na = NULL,
       adj_list[[j]] <- adj
     }
     # fitness
-    ret.LDparam <- LD_param_est(tmp, adj_list, ret.emclus$classRefMat, ncls, smoothpost)
+    ret.LDparam <- LD_param_est(tmp, adj_list, ret.emclus$classRefMat, ncls, smoothpost, beta1, beta2)
     fitness[i] <- ret.LDparam$FitIndices$BIC
   }
 
@@ -216,7 +218,7 @@ StrLearningPBIL_LDLRA <- function(U, Z = NULL, w = NULL, na = NULL,
           adj_list[[j]] <- adj
         }
         # fitness
-        ret.LDparam <- LD_param_est(tmp, adj_list, ret.emclus$classRefMat, ncls, smoothpost)
+        ret.LDparam <- LD_param_est(tmp, adj_list, ret.emclus$classRefMat, ncls, smoothpost, beta1, beta2)
         if (verbose) {
           message(
             sprintf(

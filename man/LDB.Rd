@@ -15,7 +15,9 @@ LDB(
   g_list = NULL,
   adj_list = NULL,
   adj_file = NULL,
-  verbose = FALSE
+  verbose = FALSE,
+  beta1 = 1,
+  beta2 = 1
 )
 }
 \arguments{
@@ -47,6 +49,10 @@ The number of fields(nfld) will be overwrite to the number of columns of this ma
 listed in the order of starting point, ending point, and rank(class).}
 
 \item{verbose}{verbose output Flag. default is TRUE}
+
+\item{beta1}{Beta distribution parameter 1 for prior density. Default is 1.}
+
+\item{beta2}{Beta distribution parameter 2 for prior density. Default is 1.}
 }
 \value{
 \describe{

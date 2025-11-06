@@ -113,6 +113,8 @@ Biclustering.default <- function(U, na = NULL, Z = NULL, w = NULL, ...) {
 #' increasing. Default is FALSE.
 #' @param maxiter Maximum number of EM algorithm iterations. Default is 100.
 #' @param verbose Logical; if TRUE, displays progress during estimation. Default is TRUE.
+#' @param beta1 Beta distribution parameter 1 for prior density of field reference matrix. Default is 1.
+#' @param beta2 Beta distribution parameter 2 for prior density of field reference matrix. Default is 1.
 #' @param ... Additional arguments passed to specific methods.
 #'
 #' @examples
@@ -148,7 +150,9 @@ Biclustering.binary <- function(U,
                                 conf = NULL,
                                 mic = FALSE,
                                 maxiter = 100,
-                                verbose = TRUE, ...) {
+                                verbose = TRUE,
+                                beta1 = 1,
+                                beta2 = 1, ...) {
   tmp <- U
   U <- tmp$U * tmp$Z
   testlength <- NCOL(tmp$U)
@@ -224,8 +228,6 @@ Biclustering.binary <- function(U,
   }
 
   ### Algorithm
-  beta1 <- 1
-  beta2 <- 1
   testell <- -1 / const
   oldtestell <- -2 / const
   emt <- 0

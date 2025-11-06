@@ -7,8 +7,10 @@
 #' @param classRefMat values returned from emclus
 #' @param ncls ncls
 #' @param smoothpost smoothpost
+#' @param beta1 Beta distribution parameter 1 for prior density. Default is 2.
+#' @param beta2 Beta distribution parameter 2 for prior density. Default is 2.
 #'
-LD_param_est <- function(tmp, adj_list, classRefMat, ncls, smoothpost) {
+LD_param_est <- function(tmp, adj_list, classRefMat, ncls, smoothpost, beta1 = 2, beta2 = 2) {
   U <- tmp$U * tmp$Z
   testlength <- NCOL(tmp$U)
   nobs <- NROW(tmp$U)
@@ -61,8 +63,6 @@ LD_param_est <- function(tmp, adj_list, classRefMat, ncls, smoothpost) {
   }
 
   # Estimation --------------------------------------------------------------
-  beta1 <- 2
-  beta2 <- 2
   const <- exp(-testlength)
 
   n_correct <- array(0, dim = c(nobs, testlength, ncls, npapat))
@@ -145,6 +145,8 @@ LD_param_est <- function(tmp, adj_list, classRefMat, ncls, smoothpost) {
 #' @param adj_file A file detailing the relationships of the graph for each rank/class,
 #' listed in the order of starting point, ending point, and rank(class).
 #' @param verbose verbose output Flag. default is TRUE
+#' @param beta1 Beta distribution parameter 1 for prior density of rank reference matrix. Default is 2.
+#' @param beta2 Beta distribution parameter 2 for prior density of rank reference matrix. Default is 2.
 #' @importFrom igraph as_adjacency_matrix
 #' @importFrom igraph graph_from_data_frame
 #' @importFrom igraph graph_from_adjacency_matrix
@@ -229,7 +231,7 @@ LD_param_est <- function(tmp, adj_list, classRefMat, ncls, smoothpost) {
 LDLRA <- function(U, Z = NULL, w = NULL, na = NULL,
                   ncls = 2, method = "R",
                   g_list = NULL, adj_list = NULL, adj_file = NULL,
-                  verbose = FALSE) {
+                  verbose = FALSE, beta1 = 2, beta2 = 2) {
   # data format
   if (!inherits(U, "exametrika")) {
     tmp <- dataFormat(data = U, na = na, Z = Z, w = w)
@@ -320,9 +322,9 @@ LDLRA <- function(U, Z = NULL, w = NULL, na = NULL,
     filmat <- filmat / (rep(1, ncls) %*% t(rep(1, ncls)) %*% filmat)
   }
 
-  ret.emclus <- emclus(tmp$U, tmp$Z, ncls, Fil = filmat, beta1 = 2, beta2 = 2)
+  ret.emclus <- emclus(tmp$U, tmp$Z, ncls, Fil = filmat, beta1 = beta1, beta2 = beta2)
   smoothpost <- ret.emclus$postDist %*% filmat
-  ret.LDparam <- LD_param_est(tmp, adj_list, ret.emclus$classRefMat, ncls, smoothpost)
+  ret.LDparam <- LD_param_est(tmp, adj_list, ret.emclus$classRefMat, ncls, smoothpost, beta1, beta2)
   irp <- ret.LDparam$irp
   npapat <- ret.LDparam$npapat
   FitIndices <- ret.LDparam$FitIndices

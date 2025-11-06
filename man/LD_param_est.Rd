@@ -4,7 +4,15 @@
 \alias{LD_param_est}
 \title{LDparam set}
 \usage{
-LD_param_est(tmp, adj_list, classRefMat, ncls, smoothpost)
+LD_param_est(
+  tmp,
+  adj_list,
+  classRefMat,
+  ncls,
+  smoothpost,
+  beta1 = 2,
+  beta2 = 2
+)
 }
 \arguments{
 \item{tmp}{tmp}
@@ -16,6 +24,10 @@ LD_param_est(tmp, adj_list, classRefMat, ncls, smoothpost)
 \item{ncls}{ncls}
 
 \item{smoothpost}{smoothpost}
+
+\item{beta1}{Beta distribution parameter 1 for prior density. Default is 2.}
+
+\item{beta2}{Beta distribution parameter 2 for prior density. Default is 2.}
 }
 \description{
 A function that extracts only the estimation of graph parameters

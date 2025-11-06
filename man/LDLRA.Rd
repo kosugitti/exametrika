@@ -14,7 +14,9 @@ LDLRA(
   g_list = NULL,
   adj_list = NULL,
   adj_file = NULL,
-  verbose = FALSE
+  verbose = FALSE,
+  beta1 = 2,
+  beta2 = 2
 )
 }
 \arguments{
@@ -40,6 +42,10 @@ class model is set to "C", latent rank model is set "R". The default is "R".}
 listed in the order of starting point, ending point, and rank(class).}
 
 \item{verbose}{verbose output Flag. default is TRUE}
+
+\item{beta1}{Beta distribution parameter 1 for prior density of rank reference matrix. Default is 2.}
+
+\item{beta2}{Beta distribution parameter 2 for prior density of rank reference matrix. Default is 2.}
 }
 \value{
 \describe{

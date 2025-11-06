@@ -4,7 +4,17 @@
 \alias{LCA}
 \title{Latent Class Analysis}
 \usage{
-LCA(U, ncls = 2, na = NULL, Z = NULL, w = NULL, maxiter = 100, verbose = TRUE)
+LCA(
+  U,
+  ncls = 2,
+  na = NULL,
+  Z = NULL,
+  w = NULL,
+  maxiter = 100,
+  verbose = TRUE,
+  beta1 = 1,
+  beta2 = 1
+)
 }
 \arguments{
 \item{U}{Either an object of class "exametrika" or raw data. When raw data is given,
@@ -22,6 +32,10 @@ observed responses, while 0 indicates missing data.}
 \item{maxiter}{Maximum number of EM algorithm iterations. Default is 100.}
 
 \item{verbose}{Logical; if TRUE, displays progress during estimation. Default is TRUE.}
+
+\item{beta1}{Beta distribution parameter 1 for prior density of class reference matrix. Default is 1.}
+
+\item{beta2}{Beta distribution parameter 2 for prior density of class reference matrix. Default is 1.}
 }
 \value{
 An object of class "exametrika" and "LCA" containing:

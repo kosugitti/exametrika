@@ -78,6 +78,8 @@ LRA.default <- function(U, na = NULL, Z = NULL, w = NULL, ...) {
 #' @param BIC.check For binary data with SOM method only. If TRUE, convergence is checked using BIC values. Default is FALSE.
 #' @param seed For binary data with SOM method only. Random seed for reproducibility.
 #' @param verbose Logical; if TRUE, displays detailed progress during estimation. Default is TRUE.
+#' @param beta1 Beta distribution parameter 1 for prior density of rank reference matrix (GTM method only). Default is 1.
+#' @param beta2 Beta distribution parameter 2 for prior density of rank reference matrix (GTM method only). Default is 1.
 #'
 #' @return
 #' For binary data (\code{LRA.binary}), the returned list additionally includes:
@@ -112,7 +114,9 @@ LRA.binary <- function(U,
                        maxiter = 100,
                        BIC.check = FALSE,
                        seed = NULL,
-                       verbose = FALSE, ...) {
+                       verbose = FALSE,
+                       beta1 = 1,
+                       beta2 = 1, ...) {
   tmp <- U
   U <- tmp$U * tmp$Z
   testlength <- NCOL(tmp$U)
@@ -237,7 +241,7 @@ LRA.binary <- function(U,
 
     fit <- emclus(tmp$U, tmp$Z,
       ncls = ncls,
-      Fil = Filter, 1, 1, mic = mic
+      Fil = Filter, beta1, beta2, mic = mic
     )
   }
 

@@ -370,12 +370,12 @@ plot(result.LRAord, type = "RMP", students = 1:9, nc = 3, nr = 3)
 
 バイクラスタリングとランククラスタリングのアルゴリズムはほぼ同じで、フィルタリング行列を含むかどうかのみが異なります。この違いは`Biclustering()`関数の`method`オプションで指定します。詳細についてはヘルプドキュメントを参照してください。
 
-```{r}
+```{r model-biclustering}
 Biclustering(J35S515, nfld = 5, ncls = 6, method = "B")
 ```
 
 
-```{r}
+```{r model-ranklustering}
 result.Ranklustering <- Biclustering(J35S515, nfld = 5, ncls = 6, method = "R")
 plot(result.Ranklustering, type = "Array")
 plot(result.Ranklustering, type = "FRP", nc = 2, nr = 3)
@@ -407,7 +407,7 @@ plot(result$optimal_result, type = "Array")
 - モデルは大きめの数のクラスとフィールドを検出する傾向があります
 - 計算資源を考慮して注意深く使用してください
 
-```{r}
+```{r model-irm}
 result.IRM <- IRM(J35S515, gamma_c = 1, gamma_f = 1, verbose = TRUE)
 plot(result.IRM, type = "Array")
 plot(result.IRM, type = "FRP", nc = 3)
@@ -599,7 +599,7 @@ plot(result.LDLRA, type = "TRP")
 plot(result.LDLRA, type = "LRD")
 ```
 
-```{r,include=FALSE}
+```{r cleanup-ldlra, include=FALSE}
 # Clean up temporary file
 unlink(edgeFile)
 ```
@@ -675,12 +675,12 @@ print(result.LDB)
 
 
 また、テキスト(Shojima,2022)で言及されているように、ネットワーク構造を探索的に求めることは適切な結果を得られないことが多いため、実装されていません。
-```{r}
+```{r model-ldb}
 result.LDB <- LDB(U = J35S515, ncls = 5, conf = conf, adj_file = edgeFile)
 result.LDB
 ```
 
-```{r,include=FALSE}
+```{r cleanup-ldb, include=FALSE}
 # Clean up temporary file
 unlink(edgeFile)
 ```
@@ -769,7 +769,7 @@ result.BINET <- BINET(
 print(result.BINET)
 ```
 
-```{r,include=FALSE}
+```{r cleanup-binet, include=FALSE}
 # Clean up temporary file
 unlink(edgeFile)
 ```

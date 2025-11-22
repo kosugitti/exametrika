@@ -1,4 +1,4 @@
-# exametrika 1.6.6
+# exametrika 1.7.0
 
 + Renamed IRM() to Biclustering_IRM() for consistency with structure learning naming conventions
   + Follows the same pattern as BNM_GA(), LDLRA_PBIL(), etc. (model_method naming)

@@ -19,16 +19,20 @@ Status: OK
 
 There are currently no downstream dependencies for this package.
 
-## Version 1.6.5
+## Version 1.7.0
 
-This is a patch level update with critical bugfixes and parameter customization enhancements:
+This is a minor version update with API improvements following semantic versioning:
 
-* Critical bugfix for LCA() response type validation - fixed incorrect variable reference in response type checking
-* Added beta1 and beta2 parameters to all Beta distribution-based functions to allow customization of prior density parameters in Bayesian parameter estimation (LRA.binary, LCA, Biclustering.binary, BNM, LDB, LDLRA, and internal LD_param_est function)
-* Added alpha parameter to polytomous models (Biclustering.ordinal, Biclustering.nominal) for customization of Dirichlet prior concentration parameters
-* Simplified function names for structure learning functions: StrLearningGA_BNM → BNM_GA, StrLearningPBIL_BNM → BNM_PBIL, StrLearningPBIL_LDLRA → LDLRA_PBIL
-* All default parameter values preserve backward compatibility with previous versions
+* Renamed IRM() to Biclustering_IRM() for consistency with structure learning naming conventions (follows the model_method pattern like BNM_GA(), LDLRA_PBIL())
+* Added .Deprecated() warnings to all renamed functions from version 1.6.5:
+  - StrLearningGA_BNM() → BNM_GA()
+  - StrLearningPBIL_BNM() → BNM_PBIL()
+  - StrLearningPBIL_LDLRA() → LDLRA_PBIL()
+  - IRM() → Biclustering_IRM()
+* All old function names still work for backward compatibility but display deprecation warnings
+* Updated all documentation and examples to use new function names
+* Internal class names remain unchanged for stability
+
+This is a minor version bump (1.6.5 → 1.7.0) because it introduces new exported functions while maintaining full backward compatibility. All changes are non-breaking - existing code will continue to work with deprecation warnings guiding users to the new API.
 
 All tests pass with 0 errors, 0 warnings, and 0 notes across all test environments.
-
-

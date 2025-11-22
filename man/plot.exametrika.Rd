@@ -93,14 +93,14 @@ Produces visualizations based on the model class and specified type:
 IIF (Item Information Function), TIF (Test Information Function)}
 \item{LCA/LRA models}{IRP (Item Reference Profile), TRP (Test Reference Profile),
 LCD/LRD (Latent Class/Rank Distribution), CMP/RMP (Class/Rank Membership Profile)}
-\item{Biclustering/IRM models}{Array plots showing clustering patterns, FRP, TRP, etc.}
+\item{Biclustering/Biclustering_IRM models}{Array plots showing clustering patterns, FRP, TRP, etc.}
 \item{LDLRA/LDB/BINET models}{Network and profile plots specific to each model}
 }
 }
 \description{
 Creates visualizations for objects with class "exametrika".
 The calculation results of the exametrika package have an exametrika class attribute,
-along with the specific analysis model class (IRT, GRM, LCA, LRA, Biclustering, IRM, LDLRA, LDB,
+along with the specific analysis model class (IRT, GRM, LCA, LRA, Biclustering, Biclustering_IRM, LDLRA, LDB,
 BINET). Each model has its own compatible plot types, accessible by specifying the 'type' parameter.
 }
 \details{
@@ -114,7 +114,7 @@ Each model class supports specific plot types:
 \item{LRAordinal}{Supports "ScoreFreq", "ScoreRank", "ICRP", "ICBR", "RMP"}
 \item{LRArated}{Supports "ScoreFreq", "ScoreRank", "ICRP", "RMP"}
 \item{Biclustering}{Supports "FRP", "TRP", "LCD", "LRD", "CMP", "RMP", "CRV", "RRV", "Array"}
-\item{IRM}{Supports "FRP", "TRP", "Array"}
+\item{Biclustering_IRM}{Supports "FRP", "TRP", "Array"}
 \item{LDLRA}{Supports "IRP", "TRP", "LRD", "RMP"}
 \item{LDB}{Supports "FRP", "TRP", "LRD", "RMP", "Array", "FieldPIRP"}
 \item{BINET}{Supports "FRP", "TRP", "LRD", "RMP", "Array", "LDPSR"}

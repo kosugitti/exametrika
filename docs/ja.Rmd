@@ -408,7 +408,7 @@ plot(result$optimal_result, type = "Array")
 - 計算資源を考慮して注意深く使用してください
 
 ```{r model-irm}
-result.IRM <- IRM(J35S515, gamma_c = 1, gamma_f = 1, verbose = TRUE)
+result.IRM <- Biclustering_IRM(J35S515, gamma_c = 1, gamma_f = 1, verbose = TRUE)
 plot(result.IRM, type = "Array")
 plot(result.IRM, type = "FRP", nc = 3)
 plot(result.IRM, type = "TRP")

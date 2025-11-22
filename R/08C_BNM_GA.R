@@ -469,3 +469,25 @@ BNM_PBIL <- function(U, Z = NULL, w = NULL, na = NULL,
 
   return(ret)
 }
+
+#' @title StrLearningGA_BNM (Deprecated)
+#' @description
+#' This function has been renamed to \code{\link{BNM_GA}}.
+#' Please use \code{BNM_GA} instead.
+#' @param ... All arguments passed to \code{\link{BNM_GA}}
+#' @export
+StrLearningGA_BNM <- function(...) {
+  .Deprecated("BNM_GA")
+  BNM_GA(...)
+}
+
+#' @title StrLearningPBIL_BNM (Deprecated)
+#' @description
+#' This function has been renamed to \code{\link{BNM_PBIL}}.
+#' Please use \code{BNM_PBIL} instead.
+#' @param ... All arguments passed to \code{\link{BNM_PBIL}}
+#' @export
+StrLearningPBIL_BNM <- function(...) {
+  .Deprecated("BNM_PBIL")
+  BNM_PBIL(...)
+}

@@ -27,7 +27,7 @@ varying by object subclass:
 \item{CTT}{Classical Test Theory reliability measures}
 \item{IRT/GRM}{Item parameters, ability estimates, and fit indices}
 \item{LCA/LRA}{Class/Rank profiles, distribution information, and model fit statistics}
-\item{Biclustering/IRM}{Cluster profiles, field distributions, and model diagnostics}
+\item{Biclustering/Biclustering_IRM}{Cluster profiles, field distributions, and model diagnostics}
 \item{LDLRA/LDB/BINET}{Network visualizations, parameter estimates, and conditional probabilities}
 }
 }

@@ -1,11 +1,11 @@
-#' @title Infinite Relational Model
+#' @title Biclustering with Infinite Relational Model
 #' @description
-#'  The purpose of this method is to find
-#' the optimal number of classes C, and optimal number of
-#' fields F. It can be found in a single run of the analysis, but
-#' it takes a long computation time when the sample size S is large.
-#' In addition, this method incorporates the Chinese restaurant process
-#' and Gibbs sampling. In detail, See Section 7.8 in Shojima(2022).
+#'  This function performs Biclustering structure learning using the Infinite Relational Model (IRM)
+#'  to automatically determine the optimal number of classes C and optimal number of
+#'  fields F. It can be found in a single run of the analysis, but
+#'  it takes a long computation time when the sample size S is large.
+#'  This method incorporates the Chinese restaurant process
+#'  and Gibbs sampling. In detail, See Section 7.8 in Shojima(2022).
 #' @param U U is either a data class of exametrika, or raw data. When raw data is given,
 #' it is converted to the exametrika class with the [dataFormat] function.
 #' @param Z Z is a missing indicator matrix of the type matrix or data.frame
@@ -54,29 +54,29 @@
 #' @importFrom stats rmultinom
 #' @examples
 #' \donttest{
-#' # Fit an Infinite Relational Model (IRM) to determine optimal number of classes and fields
+#' # Fit a Biclustering model with automatic structure learning using IRM
 #' # gamma_c and gamma_f are concentration parameters for the Chinese Restaurant Process
-#' result.IRM <- IRM(J35S515, gamma_c = 1, gamma_f = 1, verbose = TRUE)
+#' result <- Biclustering_IRM(J35S515, gamma_c = 1, gamma_f = 1, verbose = TRUE)
 #'
 #' # Display the Bicluster Reference Matrix (BRM) as a heatmap
 #' # Shows the discovered clustering structure of items and students
-#' plot(result.IRM, type = "Array")
+#' plot(result, type = "Array")
 #'
 #' # Plot Field Reference Profiles (FRP) in a 3-column grid
 #' # Shows the probability patterns for each automatically determined field
-#' plot(result.IRM, type = "FRP", nc = 3)
+#' plot(result, type = "FRP", nc = 3)
 #'
 #' # Plot Test Reference Profile (TRP)
 #' # Shows the overall response pattern across all fields
-#' plot(result.IRM, type = "TRP")
+#' plot(result, type = "TRP")
 #' }
 #'
 #' @export
 
-IRM <- function(U, Z = NULL, w = NULL, na = NULL,
-                gamma_c = 1, gamma_f = 1,
-                max_iter = 100, stable_limit = 5, minSize = 20, EM_limit = 20,
-                seed = 123, verbose = TRUE) {
+Biclustering_IRM <- function(U, Z = NULL, w = NULL, na = NULL,
+                              gamma_c = 1, gamma_f = 1,
+                              max_iter = 100, stable_limit = 5, minSize = 20, EM_limit = 20,
+                              seed = 123, verbose = TRUE) {
   # data format
   if (!inherits(U, "exametrika")) {
     tmp <- dataFormat(data = U, na = na, Z = Z, w = w)
@@ -587,4 +587,15 @@ IRM <- function(U, Z = NULL, w = NULL, na = NULL,
     TestFitIndices = FitIndices
   ), class = c("exametrika", "IRM"))
   return(ret)
+}
+
+#' @title IRM (Deprecated)
+#' @description
+#' This function has been renamed to \code{\link{Biclustering_IRM}}.
+#' Please use \code{Biclustering_IRM} instead.
+#' @param ... All arguments passed to \code{\link{Biclustering_IRM}}
+#' @export
+IRM <- function(...) {
+  .Deprecated("Biclustering_IRM")
+  Biclustering_IRM(...)
 }

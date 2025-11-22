@@ -1,3 +1,16 @@
+# exametrika 1.6.6
+
++ Renamed IRM() to Biclustering_IRM() for consistency with structure learning naming conventions
+  + Follows the same pattern as BNM_GA(), LDLRA_PBIL(), etc. (model_method naming)
+  + IRM() function still works but is now deprecated with a warning using .Deprecated()
+  + The new name clarifies that this function performs Biclustering structure learning using the Infinite Relational Model
+  + All documentation and examples updated to use Biclustering_IRM()
++ Added .Deprecated() warnings to renamed functions from version 1.6.5
+  + StrLearningGA_BNM() now shows deprecation warning, recommending BNM_GA()
+  + StrLearningPBIL_BNM() now shows deprecation warning, recommending BNM_PBIL()
+  + StrLearningPBIL_LDLRA() now shows deprecation warning, recommending LDLRA_PBIL()
+  + Old function names still work for backward compatibility but display warnings
+
 # exametrika 1.6.5
 
 + Critical bugfix for LCA() response type validation

@@ -233,7 +233,6 @@ LRA.rated <- function(U,
   names(SelectRatio) <- c("Item", "Category", "SLCT Ratio", paste0("Q", 1:nquan))
 
 
-
   # Algorithm -------------------------------------------------------
 
   ## Prior

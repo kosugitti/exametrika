@@ -218,7 +218,6 @@ test_that("3PL model Students", {
 })
 
 
-
 # model4 ------------------------------------------------------------------
 pl4Test <- read_excel("../../develop/Chapter04IRT4pl.xlsx", sheet = "Test")
 pl4Item <- read_excel("../../develop/Chapter04IRT4pl.xlsx", sheet = "Item")

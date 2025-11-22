@@ -57,7 +57,6 @@ test_that("LCA Class Info", {
 })
 
 
-
 test_that("LCA Item Info", {
   ## IRP
   expect <- items[, 6:10] |>

@@ -123,7 +123,6 @@ PSD_item_params <- function(model, Lambda, quadrature, marginal_posttheta) {
 }
 
 
-
 #' @title Estimating Item parameters using EM algorithm
 #' @description
 #' A function for estimating item parameters using the EM algorithm.

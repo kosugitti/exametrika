@@ -395,7 +395,7 @@ The Infinite Relational Model uses the Chinese Restaurant Process to explore the
 - Use with caution and consider computational resources
 
 ```{r model-irm}
-result.IRM <- IRM(J35S515, gamma_c = 1, gamma_f = 1, verbose = TRUE)
+result.IRM <- Biclustering_IRM(J35S515, gamma_c = 1, gamma_f = 1, verbose = TRUE)
 plot(result.IRM, type = "Array")
 plot(result.IRM, type = "FRP", nc = 3)
 plot(result.IRM, type = "TRP")

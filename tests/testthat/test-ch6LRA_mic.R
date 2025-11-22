@@ -82,7 +82,6 @@ test_that("LRA Item Info3 FitIndex", {
 })
 
 
-
 test_that("LRA Student Info", {
   ##
   expect <- items[, 6:11] |>

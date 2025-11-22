@@ -74,9 +74,9 @@
 #' @export
 
 Biclustering_IRM <- function(U, Z = NULL, w = NULL, na = NULL,
-                              gamma_c = 1, gamma_f = 1,
-                              max_iter = 100, stable_limit = 5, minSize = 20, EM_limit = 20,
-                              seed = 123, verbose = TRUE) {
+                             gamma_c = 1, gamma_f = 1,
+                             max_iter = 100, stable_limit = 5, minSize = 20, EM_limit = 20,
+                             seed = 123, verbose = TRUE) {
   # data format
   if (!inherits(U, "exametrika")) {
     tmp <- dataFormat(data = U, na = na, Z = Z, w = w)

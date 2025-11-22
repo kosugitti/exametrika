@@ -42,12 +42,13 @@
 #' @export
 #'
 GridSearch <- function(
-    obj,
-    max_ncls = 10,
-    max_nfld = 10,
-    fun = "Biclustering",
-    index = "BIC",
-    ...) {
+  obj,
+  max_ncls = 10,
+  max_nfld = 10,
+  fun = "Biclustering",
+  index = "BIC",
+  ...
+) {
   obj <- dataFormat(obj)
   testlength <- NCOL(obj$U)
   nobs <- NROW(obj$U)

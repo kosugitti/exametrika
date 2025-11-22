@@ -107,7 +107,6 @@ LRA.ordinal <- function(U,
   }
 
 
-
   quantileScore <- quantile(score, probs = (1:(nquan - 1)) / nquan)
   quantileRank <- rowSums(outer(score, quantileScore, ">")) + 1
 

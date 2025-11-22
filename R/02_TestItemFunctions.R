@@ -1047,7 +1047,6 @@ ItemEntropy.ordinal <- function(U, na = NULL, Z = NULL, w = NULL) {
 }
 
 
-
 #' @title Item-Total Correlation
 #' @description
 #' Item-Total correlation (ITC) is a Pearson's correlation of an item with

@@ -239,8 +239,6 @@ BNM_GA <- function(U, Z = NULL, w = NULL, na = NULL,
 }
 
 
-
-
 #' @title Structure Learning for BNM by PBIL
 #' @description
 #' Generating a DAG from data using a Population-Based Incremental Learning

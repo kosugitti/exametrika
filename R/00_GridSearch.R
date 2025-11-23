@@ -13,6 +13,7 @@
 #' Options: "Biclustering", "LCA", "LRA" (default: "Biclustering")
 #' @param index Fit index to optimize from TestFitIndices returned by
 #'  each function. Options: "AIC", "BIC", etc. (default: "BIC")
+#' @param verbose Logical; if TRUE, displays detailed progress messages during grid search. Default is TRUE.
 #' @param ... Additional arguments passed to the analysis function
 #'
 #' @return A list containing:
@@ -47,6 +48,7 @@ GridSearch <- function(
   max_nfld = 10,
   fun = "Biclustering",
   index = "BIC",
+  verbose = TRUE,
   ...
 ) {
   obj <- dataFormat(obj)
@@ -68,9 +70,14 @@ GridSearch <- function(
     failed_settings <- list()
 
     for (ncls in 2:max_ncls) {
+      if (verbose) {
+        message(sprintf("ncls = %d: ", ncls), appendLF = FALSE)
+      }
       for (nfld in 2:max_nfld) {
         # Display progress
-        message(sprintf("\rExecuting ncls = %d, nfld = %d...", ncls, nfld), appendLF = FALSE)
+        if (verbose) {
+          message(sprintf("nfld=%d ", nfld), appendLF = FALSE)
+        }
 
         args_list <- c(
           list(
@@ -95,10 +102,12 @@ GridSearch <- function(
           ret[ncls - 1, nfld - 1] <- result$TestFitIndices[[index]]
         }
       }
+      if (verbose) {
+        message("") # New line after each ncls
+      }
     }
 
-    # Clear progress line and check if all parameters failed to converge
-    message("") # Clear the progress line
+    # Check if all parameters failed to converge
     if (all(is.na(ret))) {
       message("Error: All parameter combinations failed to converge.")
       message("Grid search cannot find optimal parameters.")
@@ -175,7 +184,9 @@ GridSearch <- function(
     for (i in seq_along(2:max_ncls)) {
       ncls <- (2:max_ncls)[i]
       # Display progress
-      message(sprintf("\rExecuting ncls = %d...", ncls), appendLF = FALSE)
+      if (verbose) {
+        message(sprintf("Executing ncls = %d...", ncls))
+      }
 
       args_list <- c(list(
         U = obj,
@@ -197,8 +208,7 @@ GridSearch <- function(
       }
     }
 
-    # Clear progress line and check if all parameters failed to converge
-    message("") # Clear the progress line
+    # Check if all parameters failed to converge
     if (all(is.na(ret))) {
       message("Error: All parameter combinations failed to converge.")
       message("Grid search cannot find optimal parameters.")

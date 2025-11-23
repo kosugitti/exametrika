@@ -143,15 +143,15 @@ LCA <- function(U, ncls = 2, na = NULL, Z = NULL, w = NULL, maxiter = 100, verbo
 
   ### Model Fit
   # each Items
-  ell_A <- itemEll(tmp$U, tmp$Z, fit$postDist, fit$classRefMat)
+  ell_A <- item_log_lik(tmp$U, tmp$Z, fit$postDist, fit$classRefMat)
   FitIndices <- ItemFit(tmp$U, tmp$Z, ell_A, ncls)
 
   ret <- structure(list(
     msg <- "Class",
     testlength = testlength <- NCOL(tmp$U),
     nobs = NROW(tmp$U),
-    Nclass = ncls,
-    N_Cycle = fit$iter,
+    n_class = ncls,        # New naming convention
+    n_cycle = fit$iter,    # New naming convention
     converge = fit$converge,
     TRP = as.vector(TRP),
     LCD = as.vector(LCD),
@@ -159,7 +159,10 @@ LCA <- function(U, ncls = 2, na = NULL, Z = NULL, w = NULL, maxiter = 100, verbo
     Students = StudentClass,
     IRP = IRP,
     ItemFitIndices = FitIndices$item,
-    TestFitIndices = FitIndices$test
+    TestFitIndices = FitIndices$test,
+    # Deprecated fields (for backward compatibility)
+    Nclass = ncls,
+    N_Cycle = fit$iter
   ), class = c("exametrika", "LCA"))
   return(ret)
 }

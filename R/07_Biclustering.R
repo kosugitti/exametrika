@@ -228,8 +228,8 @@ Biclustering.binary <- function(U,
   }
 
   ### Algorithm
-  testell <- -1 / const
-  oldtestell <- -2 / const
+  test_log_lik <- -1 / const
+  old_test_log_lik <- -2 / const
   emt <- 0
   maxemt <- 100
 
@@ -271,7 +271,7 @@ Biclustering.binary <- function(U,
   FLG <- TRUE
   converge <- TRUE
   while (FLG) {
-    if (testell - oldtestell < 1e-4 * abs(oldtestell)) {
+    if (test_log_lik - old_test_log_lik < 1e-4 * abs(old_test_log_lik)) {
       FLG <- FALSE
       break
     }
@@ -282,7 +282,7 @@ Biclustering.binary <- function(U,
       converge <- FALSE
     }
     emt <- emt + 1
-    oldtestell <- testell
+    old_test_log_lik <- test_log_lik
     csr <- (tmp$Z * tmp$U) %*% fldmemb
     fsr <- (tmp$Z * (1 - tmp$U)) %*% fldmemb
     # Apply pmax only when necessary to avoid NaN/Inf
@@ -349,19 +349,19 @@ Biclustering.binary <- function(U,
       stop("The calculation diverged during the process. Please adjust your settings appropriately")
     }
 
-    testell <- sum(cfr * log(PiFR + const) + ffr * log(1 - PiFR + const))
+    test_log_lik <- sum(cfr * log(PiFR + const) + ffr * log(1 - PiFR + const))
     if (verbose) {
       message(
         sprintf(
           "\r%-80s",
           paste0(
-            "iter ", emt, " logLik ", format(testell, digits = 6)
+            "iter ", emt, " log_lik ", format(test_log_lik, digits = 6)
           )
         ),
         appendLF = FALSE
       )
     }
-    if (testell - oldtestell <= 0) {
+    if (test_log_lik - old_test_log_lik <= 0) {
       PiFR <- oldPiFR
       break
     }
@@ -436,9 +436,9 @@ Biclustering.binary <- function(U,
   ### Model Fit
   cfr <- t(fldmemb) %*% t(tmp$Z * tmp$U) %*% clsmemb
   ffr <- t(fldmemb) %*% t(tmp$Z * (1 - tmp$U)) %*% clsmemb
-  testell <- sum(cfr * log(PiFR + const) + ffr * log(1 - PiFR + const))
+  test_log_lik <- sum(cfr * log(PiFR + const) + ffr * log(1 - PiFR + const))
   nparam <- ifelse(model == 1, ncls * nfld, sum(diag(Fil)) * nfld)
-  FitIndices <- TestFit(tmp$U, tmp$Z, testell, nparam)
+  FitIndices <- TestFit(tmp$U, tmp$Z, test_log_lik, nparam)
 
   ### Field Analysis
   crr <- crr(tmp$Z * tmp$U)
@@ -461,9 +461,9 @@ Biclustering.binary <- function(U,
     U = U,
     testlength = testlength,
     nobs = nobs,
-    Nclass = ncls,
-    Nfield = nfld,
-    N_Cycle = emt,
+    n_class = ncls,        # New naming convention
+    n_field = nfld,        # New naming convention
+    n_cycle = emt,         # New naming convention
     LFD = flddist,
     LRD = clsdist,
     LCD = clsdist,
@@ -481,7 +481,11 @@ Biclustering.binary <- function(U,
     FieldAnalysis = fieldAnalysis,
     TestFitIndices = FitIndices,
     SOACflg = SOACflg,
-    WOACflg = WOACflg
+    WOACflg = WOACflg,
+    # Deprecated fields (for backward compatibility)
+    Nclass = ncls,
+    Nfield = nfld,
+    N_Cycle = emt
   ), class = c("exametrika", "Biclustering"))
   return(ret)
 }

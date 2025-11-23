@@ -33,8 +33,8 @@ Biclustering.ordinal <- function(U,
   nitems <- NCOL(tmp$Q)
   ncat <- tmp$categories
   const <- exp(-nitems)
-  testell <- -1 / const
-  oldtestell <- -2 / const
+  test_log_lik <- -1 / const
+  old_test_log_lik <- -2 / const
   emt <- 0
   maxemt <- 100
   ncat <- as.vector(tmp$categories)
@@ -146,7 +146,7 @@ Biclustering.ordinal <- function(U,
   converge <- TRUE
   FLG <- TRUE
   while (FLG) {
-    if (testell - oldtestell < 1e-8 * abs(oldtestell)) {
+    if (test_log_lik - old_test_log_lik < 1e-8 * abs(old_test_log_lik)) {
       FLG <- FALSE
       break
     }
@@ -158,7 +158,7 @@ Biclustering.ordinal <- function(U,
     }
 
     emt <- emt + 1
-    oldtestell <- testell
+    old_test_log_lik <- test_log_lik
 
     ## Msc <- Pi, Mjf
     tmpL <- matrix(0, nrow = nobs, ncol = ncls)
@@ -215,13 +215,13 @@ Biclustering.ordinal <- function(U,
       BCRM[, , q] <- BBRM[, , q] - BBRM[, , q + 1]
     }
 
-    testell <- 0
+    test_log_lik <- 0
     for (q in 1:maxQ) {
       observed_mask <- (tmp$Z * Uq[, , q]) == 1
       prob_leq_q1 <- t(fldmemb %*% BBRM[, , q] %*% t(clsmemb))
       prob_leq_q2 <- t(fldmemb %*% BBRM[, , q + 1] %*% t(clsmemb))
       prob_exact <- prob_leq_q1 - prob_leq_q2
-      testell <- testell + sum(log(pmax(prob_exact[observed_mask], const)))
+      test_log_lik <- test_log_lik + sum(log(pmax(prob_exact[observed_mask], const)))
     }
 
     if (verbose) {
@@ -229,14 +229,14 @@ Biclustering.ordinal <- function(U,
         sprintf(
           "\r%-80s",
           paste0(
-            "iter ", emt, " logLik ", format(testell, digits = 6)
+            "iter ", emt, " log_lik ", format(test_log_lik, digits = 6)
           )
         ),
         appendLF = FALSE
       )
     }
 
-    if (testell - oldtestell <= 0) {
+    if (test_log_lik - old_test_log_lik <= 0) {
       BCRM <- oldBCRM
       break
     }
@@ -294,7 +294,7 @@ Biclustering.ordinal <- function(U,
   df_B <- bench_nparam - null_nparam
   chi_B <- 2 * (ell_B - ell_N)
   # Analysis model
-  chi_A <- 2 * (ell_B - testell)
+  chi_A <- 2 * (ell_B - test_log_lik)
   df_A <- bench_nparam - nparam
   FitIndices <- calcFitIndices(chi_A, chi_B, df_A, df_B, nobs)
 
@@ -363,8 +363,10 @@ Biclustering.ordinal <- function(U,
     Students = StudentRank,
     BFRP = list(Weighted = BFRP1, Observed = BFRP2),
     TestFitIndices = FitIndices,
-    LogLik = testell,
-    WOACflg = WOACflg
+    log_lik = test_log_lik,    # New naming convention
+    WOACflg = WOACflg,
+    # Deprecated fields (for backward compatibility)
+    LogLik = test_log_lik
   ), class = c("exametrika", "ordinalBiclustering"))
 
   return(ret)

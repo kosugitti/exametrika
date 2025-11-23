@@ -51,7 +51,7 @@ LRA.ordinal <- function(U,
                         maxiter = 100,
                         trapezoidal = 0,
                         eps = 1e-4,
-                        verbose = TRUE, ...) {
+                        verbose = FALSE, ...) {
   ## check trapezoidal prior
   if (trapezoidal > 0) {
     if (trapezoidal > 1 / nrank) {
@@ -251,12 +251,9 @@ LRA.ordinal <- function(U,
     if (verbose) {
       message(
         sprintf(
-          "\r%-80s",
-          paste0(
-            "iter ", iter_satu, " logLik ", format(ij_log_lik_satu, digits = 6)
-          )
-        ),
-        appendLF = FALSE
+          "Saturation Model - iter %d: log_lik=%.6f",
+          iter_satu, ij_log_lik_satu
+        )
       )
     }
 
@@ -359,12 +356,9 @@ LRA.ordinal <- function(U,
     if (verbose) {
       message(
         sprintf(
-          "\r%-80s",
-          paste0(
-            "iter ", iter, " logLik ", format(ij_log_lik, digits = 6)
-          )
-        ),
-        appendLF = FALSE
+          "Restricted Model - iter %d: log_lik=%.6f",
+          iter, ij_log_lik
+        )
       )
     }
     if (abs(old_log_like - ij_log_lik) < (eps * abs(old_log_like))) {
@@ -541,8 +535,8 @@ LRA.ordinal <- function(U,
     msg = "Rank",
     converge = converge,
     nobs = NROW(U$Q),
-    Nrank = nrank,
-    N_Cycle = iter,
+    n_rank = nrank,         # New naming convention
+    n_cycle = iter,         # New naming convention
     TRP = as.vector(testRefVec),
     LRD = rankdist,
     RMD = RMD,
@@ -559,7 +553,10 @@ LRA.ordinal <- function(U,
     TestFitIndices = TestFitIndices,
     ScoreReport = ScoreReport,
     ItemReport = ItemReport,
-    CatQuant = SelectRatioTable
+    CatQuant = SelectRatioTable,
+    # Deprecated fields (for backward compatibility)
+    Nrank = nrank,
+    N_Cycle = iter
   ), class = c("exametrika", "LRAordinal"))
   return(ret)
 }

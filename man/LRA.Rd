@@ -33,7 +33,7 @@ LRA(U, ...)
   maxiter = 100,
   trapezoidal = 0,
   eps = 1e-04,
-  verbose = TRUE,
+  verbose = FALSE,
   ...
 )
 
@@ -45,7 +45,7 @@ LRA(U, ...)
   trapezoidal = 0,
   eps = 1e-04,
   minFreqRatio = 0,
-  verbose = TRUE,
+  verbose = FALSE,
   ...
 )
 }

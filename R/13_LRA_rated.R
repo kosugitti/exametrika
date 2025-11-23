@@ -52,7 +52,7 @@ LRA.rated <- function(U,
                       trapezoidal = 0,
                       eps = 1e-4,
                       minFreqRatio = 0,
-                      verbose = TRUE, ...) {
+                      verbose = FALSE, ...) {
   ## check trapezoidal prior
   if (trapezoidal > 0) {
     if (trapezoidal > 1 / nrank) {
@@ -332,12 +332,9 @@ LRA.rated <- function(U,
     if (verbose) {
       message(
         sprintf(
-          "\r%-80s",
-          paste0(
-            "iter ", iter_satu, " logLik ", format(ij_log_lik_satu, digits = 6)
-          )
-        ),
-        appendLF = FALSE
+          "Saturation Model - iter %d: log_lik=%.6f",
+          iter_satu, ij_log_lik_satu
+        )
       )
     }
 
@@ -425,12 +422,9 @@ LRA.rated <- function(U,
     if (verbose) {
       message(
         sprintf(
-          "\r%-80s",
-          paste0(
-            "iter ", iter, " logLik ", format(ij_log_lik, digits = 6)
-          )
-        ),
-        appendLF = FALSE
+          "Restricted Model - iter %d: log_lik=%.6f",
+          iter, ij_log_lik
+        )
       )
     }
 
@@ -607,8 +601,8 @@ LRA.rated <- function(U,
     converge = converge,
     testlength = NCOL(U$Q),
     nobs = NROW(U$Q),
-    Nrank = nrank,
-    N_Cycle = iter,
+    n_rank = nrank,         # New naming convention
+    n_cycle = iter,         # New naming convention
     TRP = as.vector(testRefVec),
     LRD = rankdist,
     RMD = RMD,
@@ -625,7 +619,10 @@ LRA.rated <- function(U,
     ScoreReport = ScoreReport,
     ItemReport = ItemReport,
     ItemQuantileRef = QRVdf,
-    CatQuant = SelectRatio
+    CatQuant = SelectRatio,
+    # Deprecated fields (for backward compatibility)
+    Nrank = nrank,
+    N_Cycle = iter
   ), class = c("exametrika", "LRArated"))
   return(ret)
 }

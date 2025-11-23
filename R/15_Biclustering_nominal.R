@@ -35,8 +35,8 @@ Biclustering.nominal <- function(U,
   nobs <- NROW(tmp$Q)
   nitems <- NCOL(tmp$Q)
   const <- exp(-nitems)
-  testell <- -1 / const
-  oldtestell <- -2 / const
+  test_log_lik <- -1 / const
+  old_test_log_lik <- -2 / const
   emt <- 0
   maxemt <- 100
 
@@ -119,7 +119,7 @@ Biclustering.nominal <- function(U,
   converge <- TRUE
   FLG <- TRUE
   while (FLG) {
-    if (testell - oldtestell < 1e-8 * abs(oldtestell)) {
+    if (test_log_lik - old_test_log_lik < 1e-8 * abs(old_test_log_lik)) {
       FLG <- FALSE
       break
     }
@@ -131,7 +131,7 @@ Biclustering.nominal <- function(U,
     }
 
     emt <- emt + 1
-    oldtestell <- testell
+    old_test_log_lik <- test_log_lik
 
     tmpL <- matrix(0, nrow = nobs, ncol = ncls)
     for (q in 1:maxQ) {
@@ -165,11 +165,11 @@ Biclustering.nominal <- function(U,
     # Apply Dirichlet prior (alpha parameter)
     BCRM <- (Ufcq + alpha - 1) / array(apply(Ufcq, c(1, 2), sum) + maxQ * alpha - maxQ, dim = dim(BCRM))
 
-    testell <- 0
+    test_log_lik <- 0
     for (q in 1:maxQ) {
       pred_prob <- t(fldmemb %*% BCRM[, , q] %*% t(clsmemb))
       observed_mask <- (tmp$Z * Uq[, , q]) == 1
-      testell <- testell + sum(log(pmax(pred_prob[observed_mask], const)))
+      test_log_lik <- test_log_lik + sum(log(pmax(pred_prob[observed_mask], const)))
     }
 
     if (verbose) {
@@ -177,14 +177,14 @@ Biclustering.nominal <- function(U,
         sprintf(
           "\r%-80s",
           paste0(
-            "iter ", emt, " logLik ", format(testell, digits = 6)
+            "iter ", emt, " log_lik ", format(test_log_lik, digits = 6)
           )
         ),
         appendLF = FALSE
       )
     }
 
-    if (testell - oldtestell <= 0) {
+    if (test_log_lik - old_test_log_lik <= 0) {
       BCRM <- oldBCRM
       break
     }
@@ -245,7 +245,7 @@ Biclustering.nominal <- function(U,
   df_B <- bench_nparam - null_nparam
   chi_B <- 2 * (ell_B - ell_N)
   # Analysis model
-  chi_A <- 2 * (ell_B - testell)
+  chi_A <- 2 * (ell_B - test_log_lik)
   df_A <- bench_nparam - nparam
   FitIndices <- calcFitIndices(chi_A, chi_B, df_A, df_B, nobs)
 
@@ -272,7 +272,9 @@ Biclustering.nominal <- function(U,
     ClassEstimated = cls,
     Students = StudentRank,
     TestFitIndices = FitIndices,
-    LogLik = testell
+    log_lik = test_log_lik,    # New naming convention
+    # Deprecated fields (for backward compatibility)
+    LogLik = test_log_lik
   ), class = c("exametrika", "nominalBiclustering"))
 
   return(ret)

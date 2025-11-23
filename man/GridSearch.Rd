@@ -10,6 +10,7 @@ GridSearch(
   max_nfld = 10,
   fun = "Biclustering",
   index = "BIC",
+  verbose = TRUE,
   ...
 )
 }
@@ -26,6 +27,8 @@ Options: "Biclustering", "LCA", "LRA" (default: "Biclustering")}
 
 \item{index}{Fit index to optimize from TestFitIndices returned by
 each function. Options: "AIC", "BIC", etc. (default: "BIC")}
+
+\item{verbose}{Logical; if TRUE, displays detailed progress messages during grid search. Default is TRUE.}
 
 \item{...}{Additional arguments passed to the analysis function}
 }

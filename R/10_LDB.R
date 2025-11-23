@@ -347,9 +347,9 @@ LDB <- function(U, Z = NULL, w = NULL, na = NULL,
 
   # Model Fit ----------------------------------------------------------------
 
-  testell <- sum(clsmemb * llsr)
+  test_log_lik <- sum(clsmemb * llsr)
   nparam <- sum(denom0)
-  FitIndices <- TestFit(tmp$U, tmp$Z, testell, nparam)
+  FitIndices <- TestFit(tmp$U, tmp$Z, test_log_lik, nparam)
 
   # Output ------------------------------------------------------------------
 

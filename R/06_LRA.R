@@ -202,7 +202,7 @@ LRA.binary <- function(U,
         t(log(1 - t(RefMat) + const))
       expllmat <- exp(llmat)
       postdist <- expllmat / rowSums(expllmat)
-      item_ell <- itemEll(tmp$U, tmp$Z, postdist, t(RefMat))
+      item_ell <- item_log_lik(tmp$U, tmp$Z, postdist, t(RefMat))
       if (BIC.check) {
         if (somt > maxiter * 10) {
           message("\nReached ten times the maximum number of iterations.")
@@ -281,7 +281,7 @@ LRA.binary <- function(U,
 
   ### Model Fit
   # each Items
-  ell_A <- itemEll(tmp$U, tmp$Z, fit$postDist, fit$classRefMat)
+  ell_A <- item_log_lik(tmp$U, tmp$Z, fit$postDist, fit$classRefMat)
   if (method == "GTM") {
     nparam <- sum(diag(Filter))
   } else {
@@ -296,8 +296,8 @@ LRA.binary <- function(U,
     converge = fit$converge,
     testlength = testlength,
     nobs = nobs,
-    Nrank = ncls,
-    N_Cycle = fit$iter,
+    n_rank = ncls,         # New naming convention
+    n_cycle = fit$iter,    # New naming convention
     TRP = as.vector(TRP),
     LRD = as.vector(LRD),
     RMD = as.vector(RMD),
@@ -305,7 +305,10 @@ LRA.binary <- function(U,
     IRP = IRP,
     IRPIndex = IRPIndex,
     ItemFitIndices = FitIndices$item,
-    TestFitIndices = FitIndices$test
+    TestFitIndices = FitIndices$test,
+    # Deprecated fields (for backward compatibility)
+    Nrank = ncls,
+    N_Cycle = fit$iter
   ), class = c("exametrika", "LRA"))
   return(ret)
 }

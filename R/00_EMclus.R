@@ -20,9 +20,9 @@ emclus <- function(U, Z, ncls, Fil, beta1, beta2, maxiter = 100, mic = FALSE, ve
   # Initialize
   testlength <- NCOL(U)
   const <- exp(-testlength)
-  testEll <- -1 / const
-  oldtestEll <- -2 / const
-  itemEll <- rep(testEll / testlength, testlength)
+  test_log_lik <- -1 / const
+  old_test_log_lik <- -2 / const
+  item_log_lik <- rep(test_log_lik / testlength, testlength)
   classRefMat <- matrix(rep(1:ncls / (ncls + 1), testlength), ncol = testlength)
 
   ## EM algorithm
@@ -32,7 +32,7 @@ emclus <- function(U, Z, ncls, Fil, beta1, beta2, maxiter = 100, mic = FALSE, ve
 
   while (FLG) {
     emt <- emt + 1
-    oldtestEll <- testEll
+    old_test_log_lik <- test_log_lik
 
     llmat <- U %*% t(log(classRefMat + const)) + (Z * (1 - U)) %*% t(log(1 - classRefMat + const))
     exp_llmat <- exp(llmat)
@@ -49,24 +49,24 @@ emclus <- function(U, Z, ncls, Fil, beta1, beta2, maxiter = 100, mic = FALSE, ve
       classRefMat <- apply(classRefMat, 2, sort)
     }
 
-    itemEll <- colSums(correct_cls * log(classRefMat + const) + incorrect_cls * log(1 - classRefMat + const))
-    testEll <- sum(itemEll)
+    item_log_lik <- colSums(correct_cls * log(classRefMat + const) + incorrect_cls * log(1 - classRefMat + const))
+    test_log_lik <- sum(item_log_lik)
     if (verbose) {
       message(
         sprintf(
           "\r%-80s",
           paste0(
-            "iter ", emt, " LogLik ", format(testEll, digits = 6)
+            "iter ", emt, " log_lik ", format(test_log_lik, digits = 6)
           )
         ),
         appendLF = FALSE
       )
     }
-    if (testEll - oldtestEll <= 0) {
+    if (test_log_lik - old_test_log_lik <= 0) {
       classRefMat <- old_classRefMat
       FLG <- FALSE
     }
-    if ((testEll - oldtestEll) <= 0.0001 * abs(oldtestEll)) {
+    if ((test_log_lik - old_test_log_lik) <= 0.0001 * abs(old_test_log_lik)) {
       FLG <- FALSE
     }
     if (emt == maxiter) {
@@ -87,20 +87,20 @@ emclus <- function(U, Z, ncls, Fil, beta1, beta2, maxiter = 100, mic = FALSE, ve
 }
 
 
-#' @title calc final item-ell
+#' @title calc final item log-likelihood
 #' @description
 #' Using the original data, class membership matrix, and class reference matrix,
-#'  the log-likelihood for each item is calculated.s
+#'  the log-likelihood for each item is calculated.
 #' @param U response matrix U of the examData class.
 #' @param Z missing indicator matrix Z of the examData class.
 #' @param postDist class membership matrix
 #' @param classRefMat class reference matrix
 #' @noRd
 
-itemEll <- function(U, Z, postDist, classRefMat) {
+item_log_lik <- function(U, Z, postDist, classRefMat) {
   const <- exp(-NCOL(U))
   correct_cls <- t(postDist) %*% U
   incorrect_cls <- t(postDist) %*% (Z * (1 - U))
-  item_ell <- colSums(correct_cls * log(classRefMat + const) + incorrect_cls * log(1 - classRefMat + const))
-  return(item_ell)
+  item_ll <- colSums(correct_cls * log(classRefMat + const) + incorrect_cls * log(1 - classRefMat + const))
+  return(item_ll)
 }

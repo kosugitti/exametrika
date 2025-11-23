@@ -1,3 +1,65 @@
+# exametrika 1.8.0
+
+## Naming Convention Improvements
+
+This release improves naming consistency across the package while maintaining full backward compatibility through a deprecation path.
+
+### New Field Names (Recommended)
+
+All analysis functions now return results with snake_case field names for better consistency:
+
++ `n_class` - Number of latent classes (replaces `Nclass`)
++ `n_field` - Number of latent fields (replaces `Nfield`)
++ `n_rank` - Number of latent ranks (replaces `Nrank`)
++ `n_cycle` - Number of EM iterations (replaces `N_Cycle`)
++ `log_lik` - Log-likelihood value (replaces `LogLik`)
+
+### Deprecated Field Names (Still Supported)
+
+The old field names continue to work for backward compatibility:
+
++ `Nclass`, `Nfield`, `Nrank`, `N_Cycle`, `LogLik` - **Deprecated but functional**
++ These fields will be removed in version 2.0.0
++ Please update your code to use the new snake_case names
+
+### Example Migration
+
+```r
+# Old code (deprecated but still works)
+result <- LCA(data, ncls = 3)
+n_classes <- result$Nclass
+
+# New code (recommended)
+result <- LCA(data, ncls = 3)
+n_classes <- result$n_class
+```
+
+### Output Formatting Improvements
+
+Progress messages now display properly in R Markdown documents:
+
++ **GridSearch()** - Added `verbose` parameter (default: `TRUE`)
+  + Output organized by row: `ncls = 2: nfld=2 nfld=3 nfld=4 ...`
+  + Set `verbose = FALSE` to suppress all progress messages
++ **Biclustering_IRM()** - Improved iteration display
+  + Format: `iter 1: match=0 nfld=15 ncls=30`
+  + Class adjustment messages: `Adjusting classes: BIC=-99592.5 ncls=21 (min size < 20)`
++ **LRA.ordinal()** - Fixed verbose behavior
+  + Changed default from `verbose = TRUE` to `verbose = FALSE` (consistent with binary/rated versions)
+  + Saturation Model: `Saturation Model - iter 1: log_lik=-1.234567`
+  + Restricted Model: `Restricted Model - iter 1: log_lik=-0.987654`
++ **LRA.rated()** - Fixed verbose behavior
+  + Changed default from `verbose = TRUE` to `verbose = FALSE` (consistent with binary/ordinal versions)
+  + Same improved format as LRA.ordinal
+
+All progress messages now use proper line breaks instead of carriage returns, ensuring clean output in R Markdown/knitr documents and web documentation.
+
+### Internal Improvements
+
++ Standardized internal variable naming (e.g., `testEll` → `test_log_lik`)
++ Improved code readability and maintainability
++ All output messages now use consistent `log_lik` terminology
+
 # exametrika 1.7.0
 
 + Renamed IRM() to Biclustering_IRM() for consistency with structure learning naming conventions

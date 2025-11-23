@@ -34,8 +34,12 @@
 #'  \item{nobs}{Sample size. The number of rows in the dataset.}
 #'  \item{msg}{A character string indicating the model type. }
 #'  \item{testlength}{Length of the test. The number of items included in the test.}
-#'  \item{Nclass}{Optimal number of classes.}
-#'  \item{Nfield}{Optimal number of fields.}
+#'  \item{n_class}{Optimal number of classes (new naming convention).}
+#'  \item{n_field}{Optimal number of fields (new naming convention).}
+#'  \item{em_cycle}{Number of EM algorithm iterations (new naming convention).}
+#'  \item{Nclass}{Optimal number of classes (deprecated, use n_class).}
+#'  \item{Nfield}{Optimal number of fields (deprecated, use n_field).}
+#'  \item{EM_Cycle}{Number of EM algorithm iterations (deprecated, use em_cycle).}
 #'  \item{BRM}{Bicluster Reference Matrix}
 #'  \item{FRP}{Field Reference Profile}
 #'  \item{FRPIndex}{Index of FFP includes the item location parameters B and Beta,
@@ -388,13 +392,9 @@ Biclustering_IRM <- function(U, Z = NULL, w = NULL, na = NULL,
     if (verbose) {
       message(
         sprintf(
-          "\r%-80s",
-          paste0(
-            "iter ", iter, " Exact match count of field elements. ",
-            limit_count, " nfld ", nfld, " ncls ", ncls
-          )
-        ),
-        appendLF = FALSE
+          "iter %d: match=%d nfld=%d ncls=%d",
+          iter, limit_count, nfld, ncls
+        )
       )
     }
     if (limit_count == stable_limit || iter == max_iter) {
@@ -458,8 +458,10 @@ Biclustering_IRM <- function(U, Z = NULL, w = NULL, na = NULL,
       delt <- delt + 1
       if (verbose) {
         message(
-          "The minimum class member count is under the setting value.\n",
-          "bic ", format(bic, digits = 6), " nclass ", ncls
+          sprintf(
+            "Adjusting classes: BIC=%.1f ncls=%d (min size < %d)",
+            bic, ncls, minSize
+          )
         )
       }
     } else {
@@ -575,16 +577,20 @@ Biclustering_IRM <- function(U, Z = NULL, w = NULL, na = NULL,
     testlength = testlength,
     msg = "Class",
     nobs = nobs,
-    Nclass = ncls,
-    Nfield = nfld,
-    EM_Cycle = EMt,
+    n_class = ncls,         # New naming convention
+    n_field = nfld,         # New naming convention
+    em_cycle = EMt,         # New naming convention
     LFD = flddist,
     LCD = clsdist,
     FRP = pifr,
     TRP = TRP,
     FieldEstimated = field,
     ClassEstimated = cls,
-    TestFitIndices = FitIndices
+    TestFitIndices = FitIndices,
+    # Deprecated fields (for backward compatibility)
+    Nclass = ncls,
+    Nfield = nfld,
+    EM_Cycle = EMt
   ), class = c("exametrika", "IRM"))
   return(ret)
 }

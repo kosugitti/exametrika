@@ -49,4 +49,4 @@ docs/libs/
 docs/cache/
 
 # claude
-./claude
+.claude/

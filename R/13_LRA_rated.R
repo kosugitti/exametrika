@@ -601,8 +601,8 @@ LRA.rated <- function(U,
     converge = converge,
     testlength = NCOL(U$Q),
     nobs = NROW(U$Q),
-    n_rank = nrank,         # New naming convention
-    n_cycle = iter,         # New naming convention
+    n_rank = nrank, # New naming convention
+    n_cycle = iter, # New naming convention
     TRP = as.vector(testRefVec),
     LRD = rankdist,
     RMD = RMD,

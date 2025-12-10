@@ -150,8 +150,8 @@ LCA <- function(U, ncls = 2, na = NULL, Z = NULL, w = NULL, maxiter = 100, verbo
     msg <- "Class",
     testlength = testlength <- NCOL(tmp$U),
     nobs = NROW(tmp$U),
-    n_class = ncls,        # New naming convention
-    n_cycle = fit$iter,    # New naming convention
+    n_class = ncls, # New naming convention
+    n_cycle = fit$iter, # New naming convention
     converge = fit$converge,
     TRP = as.vector(TRP),
     LCD = as.vector(LCD),

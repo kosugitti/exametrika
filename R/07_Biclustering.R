@@ -461,9 +461,9 @@ Biclustering.binary <- function(U,
     U = U,
     testlength = testlength,
     nobs = nobs,
-    n_class = ncls,        # New naming convention
-    n_field = nfld,        # New naming convention
-    n_cycle = emt,         # New naming convention
+    n_class = ncls, # New naming convention
+    n_field = nfld, # New naming convention
+    n_cycle = emt, # New naming convention
     LFD = flddist,
     LRD = clsdist,
     LCD = clsdist,

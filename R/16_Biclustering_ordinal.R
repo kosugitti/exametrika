@@ -363,7 +363,7 @@ Biclustering.ordinal <- function(U,
     Students = StudentRank,
     BFRP = list(Weighted = BFRP1, Observed = BFRP2),
     TestFitIndices = FitIndices,
-    log_lik = test_log_lik,    # New naming convention
+    log_lik = test_log_lik, # New naming convention
     WOACflg = WOACflg,
     # Deprecated fields (for backward compatibility)
     LogLik = test_log_lik

@@ -296,8 +296,8 @@ LRA.binary <- function(U,
     converge = fit$converge,
     testlength = testlength,
     nobs = nobs,
-    n_rank = ncls,         # New naming convention
-    n_cycle = fit$iter,    # New naming convention
+    n_rank = ncls, # New naming convention
+    n_cycle = fit$iter, # New naming convention
     TRP = as.vector(TRP),
     LRD = as.vector(LRD),
     RMD = as.vector(RMD),

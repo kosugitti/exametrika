@@ -272,7 +272,7 @@ Biclustering.nominal <- function(U,
     ClassEstimated = cls,
     Students = StudentRank,
     TestFitIndices = FitIndices,
-    log_lik = test_log_lik,    # New naming convention
+    log_lik = test_log_lik, # New naming convention
     # Deprecated fields (for backward compatibility)
     LogLik = test_log_lik
   ), class = c("exametrika", "nominalBiclustering"))

@@ -535,8 +535,8 @@ LRA.ordinal <- function(U,
     msg = "Rank",
     converge = converge,
     nobs = NROW(U$Q),
-    n_rank = nrank,         # New naming convention
-    n_cycle = iter,         # New naming convention
+    n_rank = nrank, # New naming convention
+    n_cycle = iter, # New naming convention
     TRP = as.vector(testRefVec),
     LRD = rankdist,
     RMD = RMD,

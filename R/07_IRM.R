@@ -577,9 +577,9 @@ Biclustering_IRM <- function(U, Z = NULL, w = NULL, na = NULL,
     testlength = testlength,
     msg = "Class",
     nobs = nobs,
-    n_class = ncls,         # New naming convention
-    n_field = nfld,         # New naming convention
-    em_cycle = EMt,         # New naming convention
+    n_class = ncls, # New naming convention
+    n_field = nfld, # New naming convention
+    em_cycle = EMt, # New naming convention
     LFD = flddist,
     LCD = clsdist,
     FRP = pifr,

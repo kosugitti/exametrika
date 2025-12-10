@@ -54,6 +54,15 @@ Progress messages now display properly in R Markdown documents:
 
 All progress messages now use proper line breaks instead of carriage returns, ensuring clean output in R Markdown/knitr documents and web documentation.
 
+### Bug Fixes
+
++ Fixed Array plot color mapping for binary data
+  + Used `sort(unique(...))` to ensure consistent ordering: 0 (white/incorrect) → 1 (black/correct)
+  + Previously, color mapping could be reversed depending on data order
++ Fixed Ranklustering Array plot sorting order
+  + Students with higher correct response rates now appear at the bottom of the plot
+  + Previously, high performers were incorrectly placed at the top
+
 ### Internal Improvements
 
 + Standardized internal variable naming (e.g., `testEll` → `test_log_lik`)

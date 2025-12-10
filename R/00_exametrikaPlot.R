@@ -404,7 +404,8 @@ plot.exametrika <- function(x,
     class_lines <- NULL
     field_lines <- NULL
 
-    case_order <- order(x$ClassEstimated, decreasing = TRUE)
+    # Sort so that higher class numbers (higher correct response rates) appear at bottom
+    case_order <- order(x$ClassEstimated, decreasing = FALSE)
     field_order <- order(x$FieldEstimated, decreasing = FALSE)
     raw_data <- x$U
     if (is.null(raw_data)) {
@@ -423,7 +424,8 @@ plot.exametrika <- function(x,
     field_lines <- field_breaks[-length(field_breaks)] * cell_w
 
     ## colors
-    all_values <- unique(as.vector(as.matrix(raw_data)))
+    # Use sort(unique(...)) to ensure consistent ordering: 0 (white), 1 (black)
+    all_values <- sort(unique(as.vector(as.matrix(raw_data))))
     n_categories <- length(all_values)
 
     if (is.null(colors)) {

@@ -19,20 +19,26 @@ Status: OK
 
 There are currently no downstream dependencies for this package.
 
-## Version 1.7.0
+## Version 1.8.0
 
-This is a minor version update with API improvements following semantic versioning:
+This is a minor version update focusing on naming convention improvements and output formatting:
 
-* Renamed IRM() to Biclustering_IRM() for consistency with structure learning naming conventions (follows the model_method pattern like BNM_GA(), LDLRA_PBIL())
-* Added .Deprecated() warnings to all renamed functions from version 1.6.5:
-  - StrLearningGA_BNM() → BNM_GA()
-  - StrLearningPBIL_BNM() → BNM_PBIL()
-  - StrLearningPBIL_LDLRA() → LDLRA_PBIL()
-  - IRM() → Biclustering_IRM()
-* All old function names still work for backward compatibility but display deprecation warnings
-* Updated all documentation and examples to use new function names
-* Internal class names remain unchanged for stability
+### Naming Convention Improvements
+* Standardized return value field names to snake_case for consistency:
+  - `n_class`, `n_field`, `n_rank`, `n_cycle`, `log_lik` (new recommended names)
+  - Old names (`Nclass`, `Nfield`, `Nrank`, `N_Cycle`, `LogLik`) still work via deprecation path
+* All old field names remain functional for backward compatibility
+* Will be removed in future major version (2.0.0)
 
-This is a minor version bump (1.6.5 → 1.7.0) because it introduces new exported functions while maintaining full backward compatibility. All changes are non-breaking - existing code will continue to work with deprecation warnings guiding users to the new API.
+### Output Formatting Improvements
+* Progress messages now display properly in R Markdown documents
+* GridSearch() added `verbose` parameter (default: TRUE)
+* Improved iteration display format in Biclustering_IRM()
+* Fixed verbose behavior in LRA.ordinal() and LRA.rated() (default changed to FALSE)
+* All progress messages use proper line breaks for knitr compatibility
 
-All tests pass with 0 errors, 0 warnings, and 0 notes across all test environments.
+### Bug Fixes
+* Fixed Array plot color mapping for binary data
+* Fixed Ranklustering Array plot sorting order
+
+This release maintains full backward compatibility following semantic versioning (MINOR version bump).

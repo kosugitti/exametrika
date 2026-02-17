@@ -372,9 +372,9 @@ plot(result.Ranklustering, type = "LRD")
 ```
 
 
-#### Finding optimal number of classes and fields
+### Finding Optimal Number of Classes and Fields
 
-##### Grid Search function
+#### Grid Search function
 
 The Grid Search function performs systematic exploration of optimal numbers of classes and fields based on statistical fit indices. This approach evaluates multiple parameter combinations and selects the best-fitting model according to specified criteria such as AIC, BIC, or other goodness-of-fit measures.
 
@@ -385,7 +385,7 @@ result$optimal_nfld
 result$optimal_result
 ```
 
-##### Infinite Relational Model
+#### Infinite Relational Model
 
 The Infinite Relational Model uses the Chinese Restaurant Process to explore the optimal number of fields and classes automatically. This model is particularly useful when you don't know the appropriate number of latent structures beforehand.
 
@@ -403,11 +403,11 @@ plot(result.IRM, type = "TRP")
 
 Additionally, supplementary notes on the derivation of the Infinite Relational Model with Chinese restaurant process is [here](https://kosugitti.github.io/kosugitti10/notes/IRM_memo.pdf).
 
-#### Biclustering for Polytomous data
+### Biclustering for Polytomous Data
 
 Biclustering and Rankclustering can also be performed on data with ordinal or nominal polytomous responses. Missing values are displayed in black in the Array plot. Color palettes can be customized using the `colors` option to specify different color schemes.
 
-##### Ordinal data
+#### Ordinal data
 
 ```{r bic_poly_ord}
 result.B.ord <- Biclustering(J35S500, ncls = 5, nfld = 5, method = "R")
@@ -415,7 +415,7 @@ result.B.ord
 plot(result.B.ord, type = "Array")
 ```
 
-##### Nominal data
+#### Nominal data
 
 ```{r bic_poly_nom}
 result.B.nom <- Biclustering(J20S600, ncls = 5, nfld = 4)

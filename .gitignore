@@ -48,5 +48,10 @@ vignettes/*.pdf
 docs/libs/
 docs/cache/
 
+# Compiled objects
+src/*.o
+src/*.so
+src/*.dll
+
 # claude
 .claude/

@@ -34,7 +34,19 @@ softmax <- function(x) {
 #'  \item{LFD}{Latent Field Distribution - counts of items assigned to each field}
 #'  \item{LRD/LCD}{Latent Rank/Class Distribution - counts of examinees assigned to each class/rank}
 #'  \item{FRP}{Field Reference Profile matrix - probability of correct response for each field-class combination}
-#'  \item{FRPIndex}{Field Reference Profile indices including location parameters, slope parameters, and monotonicity indices}
+#'  \item{FRPIndex}{Field Reference Profile indices (Kumagai, 2007) — data.frame with 6 columns:
+#'    \describe{
+#'      \item{Alpha}{Maximum-slope location: class transition where the largest increase occurs}
+#'      \item{A}{Maximum slope: largest consecutive-class difference in the profile}
+#'      \item{Beta}{Location parameter: class whose FRP value is closest to 0.5}
+#'      \item{B}{FRP value at the Beta position}
+#'      \item{Gamma}{Non-monotonicity ratio: proportion of class transitions that decrease}
+#'      \item{C}{Monotonicity violation: sum of negative consecutive-class differences (C=0 means perfectly monotone)}
+#'    }
+#'    For binary data, computed directly from the FRP matrix (correct response rates).
+#'    For ordinal data, computed from normalized expected scores: (E\[score\]-1)/(maxQ-1),
+#'    which maps expected scores from \[1, maxQ\] to \[0, 1\] for comparability with the binary case.
+#'    Not computed for nominal data (no natural category ordering).}
 #'  \item{TRP}{Test Reference Profile - expected score for examinees in each class/rank}
 #'  \item{CMD/RMD}{Class/Rank Membership Distribution - sum of membership probabilities across examinees}
 #'  \item{FieldMembership}{Matrix showing the probabilities of each item belonging to each field}

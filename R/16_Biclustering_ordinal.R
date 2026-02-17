@@ -333,7 +333,25 @@ Biclustering.ordinal <- function(U,
   TRPlag <- TRP[2:ncls]
   TRPmic <- sum(TRPlag[1:(ncls - 1)] - TRP[1:(ncls - 1)] < 0, na.rm = TRUE)
 
-  # FRPIndex: model-based expected scores normalized to [0,1]
+  # ── FRPIndex: 多値 Biclustering 用のプロファイル形状指標 ──
+  #
+  # 二値 Biclustering では FRP(f,c) ∈ [0,1]（正答確率）をそのまま
+  # IRPindex() に渡す。多値データでは FRP が3次元配列（カテゴリ確率）
+  # なので、以下の手順で2次元の [0,1] 行列に変換する:
+  #
+  # Step 1: カテゴリ確率から期待得点を計算
+  #   E[score](f,c) = Σ_{q=1}^{maxQ} q * P(Q=q | field=f, class=c)
+  #   → 値域は [1, maxQ]（最低カテゴリ1、最高カテゴリmaxQ）
+  #
+  # Step 2: [0,1] への線形正規化
+  #   norm_frp(f,c) = (E[score](f,c) - 1) / (maxQ - 1)
+  #   → 最低得点(1)が0、最高得点(maxQ)が1に対応
+  #   → 二値データ(maxQ=2)では (E-1)/(2-1) = E-1 = P(正答) と一致
+  #
+  # Step 3: IRPindex() で6指標（Alpha, A, Beta, B, Gamma, C）を計算
+  #   正規化により二値版と同じスケールで解釈可能になる。
+  #   C = 0 ⇔ 全クラスにわたって期待得点が単調増加（SOAC の条件）
+  #
   model_esp <- matrix(0, nrow = nfld, ncol = ncls)
   for (f in 1:nfld) {
     for (cc in 1:ncls) {

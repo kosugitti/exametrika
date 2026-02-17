@@ -418,6 +418,10 @@ print.exametrika <- function(x, digits = 3, ...) {
       rownames(y) <- paste("Field", 1:x$Nfield)
       print(round(y, digits))
 
+      cat("\nField Reference Profile Indices\n")
+      cat("(Based on normalized expected scores: (E[score]-1)/(maxQ-1))\n")
+      print(x$FRPIndex, digits = digits)
+
       cat("\nModel Fit Indices\n")
       cat(paste("Number of Latent", x$msg, ":", x$Nclass))
       cat(paste("\nNumber of Latent Field:", x$Nfield))

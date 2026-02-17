@@ -7,8 +7,8 @@
 \method{plot}{exametrika}(
   x,
   type = c("IRF", "TRF", "IIF", "TIF", "IIC", "ICC", "TIC", "IRP", "TRP", "LCD", "CMP",
-    "FRP", "RMP", "LRD", "Array", "CRV", "RRV", "FieldPIRP", "LDPSR", "ScoreFreq",
-    "ScoreRank", "ICRP", "ICBR"),
+    "FRP", "RMP", "LRD", "Array", "CRV", "RRV", "FCRP", "FCBR", "ScoreField",
+    "FieldPIRP", "LDPSR", "ScoreFreq", "ScoreRank", "ICRP", "ICBR"),
   items = NULL,
   students = NULL,
   nc = 1,
@@ -21,6 +21,8 @@
   width = 800,
   height = 600,
   dpi = 300,
+  stat = "mean",
+  style = "line",
   ...
 )
 }
@@ -54,6 +56,12 @@ indicate larger values.}
 \item{FieldPIRP}{Shows correct response rates by number of correct answers in parent fields.
 Only available for LDB model.}
 \item{LDPSR}{Latent Dependence Passing Student Rate. Compares passing rates of parent and child classes.}
+\item{FCRP}{Field Category Response Profile. Category probability plot per field for polytomous Biclustering.
+Use \code{style} parameter to choose between "line" and "bar" display.}
+\item{FCBR}{Field Cumulative Boundary Reference. Boundary probability plot per field
+(ordinal Biclustering only).}
+\item{ScoreField}{Heatmap of expected scores across fields and latent classes/ranks
+for polytomous Biclustering.}
 }}
 
 \item{items}{Numeric vector specifying which items to plot. If NULL, all items are included.
@@ -82,6 +90,12 @@ Supported formats: png, pdf, jpeg, jpg. Format determined by file extension.}
 \item{height}{Numeric value specifying plot height in pixels (for png/jpeg) or inches (for pdf). Default is 600.}
 
 \item{dpi}{Numeric value specifying resolution in dots per inch for raster formats (png/jpeg). Default is 300.}
+
+\item{stat}{Character string specifying the summary statistic for polytomous FRP and RRV plots.
+One of "mean" (default), "median", or "mode".}
+
+\item{style}{Character string specifying the display style for FCRP plots.
+One of "line" (default) or "bar" (stacked bar chart).}
 
 \item{...}{Additional arguments passed to plotting functions.}
 }
@@ -114,6 +128,8 @@ Each model class supports specific plot types:
 \item{LRAordinal}{Supports "ScoreFreq", "ScoreRank", "ICRP", "ICBR", "RMP"}
 \item{LRArated}{Supports "ScoreFreq", "ScoreRank", "ICRP", "RMP"}
 \item{Biclustering}{Supports "FRP", "TRP", "LCD", "LRD", "CMP", "RMP", "CRV", "RRV", "Array"}
+\item{ordinalBiclustering}{Supports "FRP", "FCRP", "FCBR", "LCD", "LRD", "CMP", "RMP", "Array", "ScoreField", "RRV"}
+\item{nominalBiclustering}{Supports "FRP", "FCRP", "LCD", "LRD", "CMP", "Array", "ScoreField", "RRV"}
 \item{Biclustering_IRM}{Supports "FRP", "TRP", "Array"}
 \item{LDLRA}{Supports "IRP", "TRP", "LRD", "RMP"}
 \item{LDB}{Supports "FRP", "TRP", "LRD", "RMP", "Array", "FieldPIRP"}

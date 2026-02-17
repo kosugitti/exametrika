@@ -332,10 +332,30 @@ Biclustering.ordinal <- function(U,
   TRP <- colSums(BFRP1)
   TRPlag <- TRP[2:ncls]
   TRPmic <- sum(TRPlag[1:(ncls - 1)] - TRP[1:(ncls - 1)] < 0, na.rm = TRUE)
-  WOACflg <- FALSE
+
+  # FRPIndex: model-based expected scores normalized to [0,1]
+  model_esp <- matrix(0, nrow = nfld, ncol = ncls)
+  for (f in 1:nfld) {
+    for (cc in 1:ncls) {
+      model_esp[f, cc] <- sum((1:maxQ) * BCRM[f, cc, ])
+    }
+  }
+  norm_frp <- (model_esp - 1) / (maxQ - 1)
+  FRPIndex <- IRPindex(norm_frp)
+  FRPmic <- sum(abs(FRPIndex$C))
+
+  SOACflg <- WOACflg <- FALSE
   if (TRPmic == 0) {
     WOACflg <- TRUE
-    if (verbose) {
+    if (FRPmic == 0) {
+      SOACflg <- TRUE
+    }
+  }
+  if (verbose) {
+    if (SOACflg & WOACflg) {
+      message("Strongly ordinal alignment condition was satisfied.")
+    }
+    if (!SOACflg & WOACflg) {
       message("Weakly ordinal alignment condition was satisfied.")
     }
   }
@@ -358,6 +378,7 @@ Biclustering.ordinal <- function(U,
     LRD = clsdist,
     LCD = clsdist,
     FRP = BCRM,
+    FRPIndex = FRPIndex,
     TRP = TRP,
     CMD = colSums(clsmemb),
     RMD = colSums(clsmemb),
@@ -369,6 +390,7 @@ Biclustering.ordinal <- function(U,
     BFRP = list(Weighted = BFRP1, Observed = BFRP2),
     TestFitIndices = FitIndices,
     log_lik = test_log_lik, # New naming convention
+    SOACflg = SOACflg,
     WOACflg = WOACflg,
     # Deprecated fields (for backward compatibility)
     LogLik = test_log_lik

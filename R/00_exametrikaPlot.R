@@ -33,6 +33,12 @@
 #'     \item{FieldPIRP}{Shows correct response rates by number of correct answers in parent fields.
 #'       Only available for LDB model.}
 #'     \item{LDPSR}{Latent Dependence Passing Student Rate. Compares passing rates of parent and child classes.}
+#'     \item{FCRP}{Field Category Response Profile. Category probability plot per field for polytomous Biclustering.
+#'       Use \code{style} parameter to choose between "line" and "bar" display.}
+#'     \item{FCBR}{Field Cumulative Boundary Reference. Boundary probability plot per field
+#'       (ordinal Biclustering only).}
+#'     \item{ScoreField}{Heatmap of expected scores across fields and latent classes/ranks
+#'       for polytomous Biclustering.}
 #'   }
 #' @param items Numeric vector specifying which items to plot. If NULL, all items are included.
 #'   When type is "IIF"/"IIC", specifying 0 will produce a TIF/TIC for the entire test.
@@ -49,6 +55,10 @@
 #' @param width Numeric value specifying plot width in pixels (for png/jpeg) or inches (for pdf). Default is 800.
 #' @param height Numeric value specifying plot height in pixels (for png/jpeg) or inches (for pdf). Default is 600.
 #' @param dpi Numeric value specifying resolution in dots per inch for raster formats (png/jpeg). Default is 300.
+#' @param stat Character string specifying the summary statistic for polytomous FRP and RRV plots.
+#' One of "mean" (default), "median", or "mode".
+#' @param style Character string specifying the display style for FCRP plots.
+#' One of "line" (default) or "bar" (stacked bar chart).
 #' @param ... Additional arguments passed to plotting functions.
 #'
 #' @details
@@ -62,6 +72,8 @@
 #'   \item{LRAordinal}{Supports "ScoreFreq", "ScoreRank", "ICRP", "ICBR", "RMP"}
 #'   \item{LRArated}{Supports "ScoreFreq", "ScoreRank", "ICRP", "RMP"}
 #'   \item{Biclustering}{Supports "FRP", "TRP", "LCD", "LRD", "CMP", "RMP", "CRV", "RRV", "Array"}
+#'   \item{ordinalBiclustering}{Supports "FRP", "FCRP", "FCBR", "LCD", "LRD", "CMP", "RMP", "Array", "ScoreField", "RRV"}
+#'   \item{nominalBiclustering}{Supports "FRP", "FCRP", "LCD", "LRD", "CMP", "Array", "ScoreField", "RRV"}
 #'   \item{Biclustering_IRM}{Supports "FRP", "TRP", "Array"}
 #'   \item{LDLRA}{Supports "IRP", "TRP", "LRD", "RMP"}
 #'   \item{LDB}{Supports "FRP", "TRP", "LRD", "RMP", "Array", "FieldPIRP"}
@@ -81,7 +93,7 @@
 #' }
 #'
 #' @importFrom graphics curve title axis barplot mtext par text lines rect legend abline image
-#' @importFrom grDevices gray dev.off jpeg pdf png
+#' @importFrom grDevices gray dev.off jpeg pdf png hcl.colors
 #' @importFrom stats density runif
 #' @importFrom utils tail
 #'
@@ -111,6 +123,7 @@ plot.exametrika <- function(x,
                               "IRF", "TRF", "IIF", "TIF", "IIC", "ICC", "TIC",
                               "IRP", "TRP", "LCD", "CMP",
                               "FRP", "RMP", "LRD", "Array", "CRV", "RRV",
+                              "FCRP", "FCBR", "ScoreField",
                               "FieldPIRP", "LDPSR",
                               "ScoreFreq", "ScoreRank", "ICRP", "ICBR"
                             ),
@@ -126,6 +139,8 @@ plot.exametrika <- function(x,
                             width = 800,
                             height = 600,
                             dpi = 300,
+                            stat = "mean",
+                            style = "line",
                             ...) {
   value <- if (length(class(x)) > 1) tail(class(x), 1) else "None"
 
@@ -162,8 +177,8 @@ plot.exametrika <- function(x,
     LRAordinal = c("ScoreFreq", "ScoreRank", "ICRP", "ICBR", "RMP"),
     LRArated = c("ScoreFreq", "ScoreRank", "ICRP", "RMP"),
     Biclustering = c("FRP", "TRP", "LCD", "LRD", "CMP", "RMP", "CRV", "RRV", "Array"),
-    nominalBiclustering = c("FRP", "LCD", "LRD", "CMP", "Array"),
-    ordinalBiclustering = c("FRP", "LCD", "LRD", "CMP", "RMP", "Array"),
+    nominalBiclustering = c("FRP", "FCRP", "LCD", "LRD", "CMP", "Array", "ScoreField", "RRV"),
+    ordinalBiclustering = c("FRP", "FCRP", "FCBR", "LCD", "LRD", "CMP", "RMP", "Array", "ScoreField", "RRV"),
     IRM = c("FRP", "TRP", "Array"),
     LDLRA = c("IRP", "TRP", "LRD", "RMP"),
     LDB = c("FRP", "TRP", "LRD", "RMP", "Array", "FieldPIRP"),
@@ -283,7 +298,7 @@ plot.exametrika <- function(x,
         target <- x$LCD
       } else if (value == "LRA" | value == "LDLRA" | value == "LDB") {
         target <- x$LRD
-      } else if (value == "Biclustering" | value == "ordinalBiclustering") {
+      } else if (value == "Biclustering" | value == "ordinalBiclustering" | value == "nominalBiclustering") {
         target <- x$LRD
         if (is.null(target)) {
           target <- x$LCD
@@ -332,7 +347,8 @@ plot.exametrika <- function(x,
       if (value == "LCA" | value == "BINET") {
         target1 <- x$LCD
         target2 <- x$CMD
-      } else if (value == "Biclustering" | value == "LRA" | value == "LDLRA" | value == "LDB") {
+      } else if (value == "Biclustering" | value == "ordinalBiclustering" | value == "nominalBiclustering" |
+        value == "LRA" | value == "LDLRA" | value == "LDB") {
         target1 <- x$LRD
         target2 <- x$RMD
       }
@@ -384,6 +400,241 @@ plot.exametrika <- function(x,
     }
   }
 
+
+  # Colorblind-friendly palette (Paul Tol Vibrant + Bright extension)
+  get_cb_palette <- function(n) {
+    base <- c(
+      "#0077BB", # blue
+      "#EE7733", # orange
+      "#009988", # teal
+      "#EE3377", # magenta
+      "#CC3311", # red
+      "#33BBEE", # cyan
+      "#AA3377", # purple
+      "#DDCC77", # sand
+      "#332288", # indigo
+      "#117733"  # forest green
+    )
+    if (n <= length(base)) {
+      return(base[1:n])
+    }
+    return(c(base, rainbow(n - length(base))))
+  }
+
+  # FRP: Expected score line plot for polytomous Biclustering
+  poly_frp_plot <- function() {
+    BCRM <- x$FRP
+    nfld <- dim(BCRM)[1]
+    ncls <- dim(BCRM)[2]
+    maxQ <- dim(BCRM)[3]
+    msg <- x$msg
+
+    FRP_mat <- matrix(0, nrow = nfld, ncol = ncls)
+    for (f in 1:nfld) {
+      for (cc in 1:ncls) {
+        probs <- BCRM[f, cc, ]
+        if (stat == "mean") {
+          FRP_mat[f, cc] <- sum((1:maxQ) * probs)
+        } else if (stat == "median") {
+          cum_probs <- cumsum(probs)
+          FRP_mat[f, cc] <- min(which(cum_probs >= 0.5))
+        } else if (stat == "mode") {
+          FRP_mat[f, cc] <- which.max(probs)
+        }
+      }
+    }
+
+    for (f in 1:nfld) {
+      y <- FRP_mat[f, ]
+      plot(1:ncls, y,
+        type = "b", pch = 19, lwd = 2,
+        xlab = paste("Latent", msg),
+        ylab = paste0("Expected Score (", stat, ")"),
+        ylim = c(1, maxQ),
+        xaxt = "n",
+        main = paste("Field", f)
+      )
+      axis(1, at = 1:ncls)
+      abline(h = 1:maxQ, col = "gray90", lty = 3)
+    }
+  }
+
+  # FCRP: Category response probability plot for polytomous Biclustering
+  poly_fcrp_plot <- function() {
+    BCRM <- x$FRP
+    nfld <- dim(BCRM)[1]
+    ncls <- dim(BCRM)[2]
+    maxQ <- dim(BCRM)[3]
+    msg <- x$msg
+    cols <- get_cb_palette(maxQ)
+
+    for (f in 1:nfld) {
+      if (style == "line") {
+        plot(1:ncls, BCRM[f, , 1],
+          type = "n",
+          xlab = paste("Latent", msg),
+          ylab = "Category Probability",
+          ylim = c(0, 1),
+          xaxt = "n",
+          main = paste("Field", f, "- Category Response")
+        )
+        axis(1, at = 1:ncls)
+        for (q in 1:maxQ) {
+          lines(1:ncls, BCRM[f, , q],
+            type = "b", pch = q, lty = q, col = cols[q], lwd = 1.5
+          )
+        }
+        legend("topright",
+          legend = paste("Cat", 1:maxQ),
+          col = cols[1:maxQ], lty = 1:maxQ, pch = 1:maxQ,
+          cex = 0.7, bty = "n", ncol = min(maxQ, 3)
+        )
+      } else if (style == "bar") {
+        bar_data <- t(BCRM[f, , ])
+        barplot(bar_data,
+          col = cols[1:maxQ],
+          names.arg = paste0(substr(msg, 1, 1), 1:ncls),
+          xlab = paste("Latent", msg),
+          ylab = "Category Probability",
+          ylim = c(0, 1),
+          main = paste("Field", f, "- Category Response")
+        )
+        legend("topright",
+          legend = paste("Cat", 1:maxQ),
+          fill = cols[1:maxQ],
+          cex = 0.7, bty = "n", ncol = min(maxQ, 3)
+        )
+      }
+    }
+  }
+
+  # FCBR: Boundary probability plot (ordinal Biclustering only)
+  poly_fcbr_plot <- function() {
+    BCRM <- x$FRP
+    nfld <- dim(BCRM)[1]
+    ncls <- dim(BCRM)[2]
+    maxQ <- dim(BCRM)[3]
+    msg <- x$msg
+    n_boundaries <- maxQ - 1
+    cols <- get_cb_palette(n_boundaries)
+
+    for (f in 1:nfld) {
+      boundary_probs <- matrix(0, nrow = n_boundaries, ncol = ncls)
+      for (b in 1:n_boundaries) {
+        q_threshold <- b + 1
+        for (cc in 1:ncls) {
+          boundary_probs[b, cc] <- sum(BCRM[f, cc, q_threshold:maxQ])
+        }
+      }
+
+      plot(1:ncls, boundary_probs[1, ],
+        type = "n",
+        xlab = paste("Latent", msg),
+        ylab = "Boundary Probability",
+        ylim = c(0, 1),
+        xaxt = "n",
+        main = paste("Field", f, "- Boundary Prob")
+      )
+      axis(1, at = 1:ncls)
+      for (b in 1:n_boundaries) {
+        lines(1:ncls, boundary_probs[b, ],
+          type = "b", pch = b, lty = b, col = cols[b], lwd = 1.5
+        )
+      }
+      legend("topright",
+        legend = paste0("P(Q>=", 2:maxQ, ")"),
+        col = cols[1:n_boundaries], lty = 1:n_boundaries,
+        pch = 1:n_boundaries,
+        cex = 0.7, bty = "n"
+      )
+    }
+  }
+
+  # ScoreField: Heatmap of expected scores for polytomous Biclustering
+  scorefield_plot <- function() {
+    BCRM <- x$FRP
+    nfld <- dim(BCRM)[1]
+    ncls <- dim(BCRM)[2]
+    maxQ <- dim(BCRM)[3]
+    msg <- x$msg
+
+    score_mat <- matrix(0, nrow = nfld, ncol = ncls)
+    for (f in 1:nfld) {
+      for (cc in 1:ncls) {
+        score_mat[f, cc] <- sum((1:maxQ) * BCRM[f, cc, ])
+      }
+    }
+
+    par(mfrow = c(1, 1))
+    image(
+      x = 1:ncls, y = 1:nfld,
+      z = t(score_mat),
+      col = hcl.colors(50, "YlOrRd", rev = TRUE),
+      xlab = paste("Latent", msg),
+      ylab = "Field",
+      main = "Score Field Heatmap",
+      xaxt = "n", yaxt = "n"
+    )
+    axis(1, at = 1:ncls, labels = paste0(substr(msg, 1, 1), 1:ncls))
+    axis(2, at = 1:nfld, labels = paste0("F", 1:nfld))
+
+    for (f in 1:nfld) {
+      for (cc in 1:ncls) {
+        text(cc, f, sprintf("%.2f", score_mat[f, cc]), cex = 0.8)
+      }
+    }
+  }
+
+  # RRV: Reference vector (field on x-axis) for polytomous Biclustering
+  poly_rrv_plot <- function() {
+    BCRM <- x$FRP
+    nfld <- dim(BCRM)[1]
+    ncls <- dim(BCRM)[2]
+    maxQ <- dim(BCRM)[3]
+    msg <- x$msg
+
+    FRP_mat <- matrix(0, nrow = nfld, ncol = ncls)
+    for (f in 1:nfld) {
+      for (cc in 1:ncls) {
+        probs <- BCRM[f, cc, ]
+        if (stat == "mean") {
+          FRP_mat[f, cc] <- sum((1:maxQ) * probs)
+        } else if (stat == "median") {
+          cum_probs <- cumsum(probs)
+          FRP_mat[f, cc] <- min(which(cum_probs >= 0.5))
+        } else if (stat == "mode") {
+          FRP_mat[f, cc] <- which.max(probs)
+        }
+      }
+    }
+
+    RRV <- t(FRP_mat)
+
+    par(mfrow = c(1, 1))
+    plot(1:nfld, RRV[1, ],
+      type = "n",
+      ylim = c(1, maxQ),
+      xlab = "Field",
+      ylab = paste0("Expected Score (", stat, ")"),
+      main = paste(msg, "Reference Vector (", stat, ")"),
+      xaxt = "n", bty = "n"
+    )
+    axis(1, at = 1:nfld, labels = paste0("F", 1:nfld))
+    abline(h = 1:maxQ, col = "gray90", lty = 3)
+
+    cols <- get_cb_palette(ncls)
+    for (i in 1:ncls) {
+      lines(1:nfld, RRV[i, ], type = "o", lty = i, col = cols[i], lwd = 1.5)
+      for (j in 1:nfld) {
+        text(j, RRV[i, j], labels = i, pos = 3, offset = 0.5, cex = 0.8)
+      }
+    }
+    legend("top",
+      legend = paste0(substr(msg, 1, 1), 1:ncls),
+      lty = 1:ncls, col = cols[1:ncls], lwd = 2,
+      ncol = min(ncls, 5), bty = "n"
+    )
+  }
 
   array_plot <- function() {
     # Access cell dimensions from parent scope
@@ -884,6 +1135,14 @@ plot.exametrika <- function(x,
     nominalBiclustering = {
       if (type == "Array") {
         array_plot()
+      } else if (type == "FRP") {
+        poly_frp_plot()
+      } else if (type == "FCRP") {
+        poly_fcrp_plot()
+      } else if (type == "ScoreField") {
+        scorefield_plot()
+      } else if (type == "RRV") {
+        poly_rrv_plot()
       } else {
         graph_common()
       }
@@ -891,6 +1150,16 @@ plot.exametrika <- function(x,
     ordinalBiclustering = {
       if (type == "Array") {
         array_plot()
+      } else if (type == "FRP") {
+        poly_frp_plot()
+      } else if (type == "FCRP") {
+        poly_fcrp_plot()
+      } else if (type == "FCBR") {
+        poly_fcbr_plot()
+      } else if (type == "ScoreField") {
+        scorefield_plot()
+      } else if (type == "RRV") {
+        poly_rrv_plot()
       } else {
         graph_common()
       }

@@ -1,44 +1,36 @@
 ## Test environments
-* local macOS install: R 4.5.2
-* GitHub Actions (ubuntu-latest): R-devel
-* GitHub Actions (windows-latest): R-devel
-* GitHub Actions (macOS-13): R-devel
+* local macOS (aarch64-apple-darwin25.0.0): R 4.5.2
+* R-hub (linux, macos-arm64, windows)
 * win-builder (devel)
 
 ## R CMD check results
 
-### Local, GitHub Actions
-0 errors ✔ | 0 warnings ✔ | 0 notes ✔
+### Local
+0 errors | 0 warnings | 1 note
 
-### win-builder
-Installation time in seconds: 22
-Check time in seconds: 110
-Status: OK
+The single NOTE is:
+> checking for future file timestamps ... NOTE
+> unable to verify current time
+
+This is a network connectivity issue during the check, not a package problem.
 
 ### Downstream dependencies
 
 There are currently no downstream dependencies for this package.
 
-## Version 1.8.0
+## Version 1.8.1
 
-This is a minor version update focusing on naming convention improvements and output formatting:
+This is a patch release with bug fixes only. No breaking changes.
 
-### Naming Convention Improvements
-* Standardized return value field names to snake_case for consistency:
-  - `n_class`, `n_field`, `n_rank`, `n_cycle`, `log_lik` (new recommended names)
-  - Old names (`Nclass`, `Nfield`, `Nrank`, `N_Cycle`, `LogLik`) still work via deprecation path
-* All old field names remain functional for backward compatibility
-* Will be removed in future major version (2.0.0)
+### dataFormat Function
+* Fixed factor ID column detection: `dataFormat()` now correctly identifies factor-type ID columns before converting factors to numeric. Previously, factor ID columns with many levels (>=20) triggered a "Too many categories" error instead of being recognized as IDs.
+* Removed unused internal helper function (`is_response_data()`).
 
-### Output Formatting Improvements
-* Progress messages now display properly in R Markdown documents
-* GridSearch() added `verbose` parameter (default: TRUE)
-* Improved iteration display format in Biclustering_IRM()
-* Fixed verbose behavior in LRA.ordinal() and LRA.rated() (default changed to FALSE)
-* All progress messages use proper line breaks for knitr compatibility
+### GridSearch Function
+* Fixed ordinal data support: GridSearch now correctly handles ordinal data by using `obj$Q` instead of `obj$U` for test length calculation.
+* Resolved nfld=1 parameter issue that caused crashes with ordinal datasets.
 
-### Bug Fixes
-* Fixed Array plot color mapping for binary data
-* Fixed Ranklustering Array plot sorting order
-
-This release maintains full backward compatibility following semantic versioning (MINOR version bump).
+### Biclustering.ordinal Function
+* Enhanced numerical stability to prevent division by zero and NaN errors.
+* Fixed convergence failures in specific parameter combinations (e.g., ncls=4 with nfld=5).
+* Improved robustness for edge cases where field membership probabilities approach zero.

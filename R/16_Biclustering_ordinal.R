@@ -163,7 +163,11 @@ Biclustering.ordinal <- function(U,
     ## Msc <- Pi, Mjf
     tmpL <- matrix(0, nrow = nobs, ncol = ncls)
     for (q in 1:maxQ) {
-      tmpL <- tmpL + (tmp$Z * Uq[, , q]) %*% fldmemb %*% log((BBRM[, , q] - BBRM[, , q + 1]) + const)
+      log_probs <- log((BBRM[, , q] - BBRM[, , q + 1]) + const)
+      if (nfld == 1) {
+        log_probs <- matrix(log_probs, nrow = 1)
+      }
+      tmpL <- tmpL + (tmp$Z * Uq[, , q]) %*% fldmemb %*% log_probs
     }
     minllsr <- apply(tmpL, 1, min)
     expllsr <- exp(pmin(tmpL - minllsr, 700))
@@ -179,7 +183,7 @@ Biclustering.ordinal <- function(U,
     }
 
     minllsr <- apply(tmpH, 1, min)
-    expllsr <- exp(pmin(tmpH - minllsr, 700)) # 700はおよそexp関数の実数範囲の上限
+    expllsr <- exp(pmin(tmpH - minllsr, 700)) # 700 is approx upper limit for exp()
     fldmemb <- round(expllsr / rowSums(expllsr), 1e8)
 
     ## Maximization
@@ -191,6 +195,7 @@ Biclustering.ordinal <- function(U,
     }
     # Apply Dirichlet prior (alpha parameter)
     Ufcq_prior <- Ufcq + alpha - 1
+    Ufcq_prior <- pmax(Ufcq_prior, 1e-10)
     cUfcq <- aperm(apply(Ufcq_prior, c(1, 2), function(x) rev(cumsum(rev(x)))), c(2, 3, 1))
 
     for (q in 1:maxQ) {

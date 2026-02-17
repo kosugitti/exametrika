@@ -62,17 +62,6 @@ dataFormat <- function(data, na = NULL, id = 1, Z = NULL, w = NULL,
   data <- as.data.frame(unclass(data))
   data[data == na] <- NA
 
-  # Store factor labels and convert factors to numeric
-  CategoryLabel <- list()
-  for (col in names(data)) {
-    if (is.factor(data[[col]])) {
-      # Store labels before conversion
-      CategoryLabel[[col]] <- levels(data[[col]])
-      # Convert to numeric (starting from 1)
-      data[[col]] <- as.numeric(data[[col]])
-    }
-  }
-
   # Check if U is either a matrix or a dataframe, otherwise stop the execution
   if (!is.matrix(data) && !is.data.frame(data)) {
     stop("Data must be matrix or data.frame")
@@ -81,41 +70,6 @@ dataFormat <- function(data, na = NULL, id = 1, Z = NULL, w = NULL,
   # Check minimum number of rows (cases)
   if (nrow(data) < 10) {
     stop("Data must have at least 10 rows (cases) for reliable analysis")
-  }
-
-  # Function to check if a vector could be response data
-  is_response_data <- function(x) {
-    if (all(is.na(x))) {
-      return(FALSE)
-    }
-    x_clean <- x[!is.na(x)]
-    if (length(x_clean) == 0) {
-      return(FALSE)
-    }
-
-    # if contains character
-    if (is.character(x)) {
-      return(FALSE)
-    }
-    if (!all(suppressWarnings(!is.na(as.numeric(x_clean))))) {
-      return(FALSE)
-    }
-
-    x_num <- suppressWarnings(as.numeric(x_clean))
-
-    if (length(x_num) > 1) {
-      sorted_x <- sort(x_num)
-      if (all(diff(sorted_x) == 1) &&
-        length(unique(x_num)) == length(x_num)) {
-        return(FALSE)
-      }
-    }
-
-    if (response.type == "binary") {
-      return(all(x_num %in% c(0, 1)))
-    } else {
-      return(all(x_num == floor(x_num)) && all(x_num >= 0))
-    }
   }
 
   # Helper function to check if a vector represents consecutive numbers
@@ -175,7 +129,12 @@ dataFormat <- function(data, na = NULL, id = 1, Z = NULL, w = NULL,
     first_col <- data[, 1]
 
     # Check if first column looks like IDs
-    is_string_or_factor <- is.character(first_col) || is.factor(first_col)
+    # A factor with few unique values (< 20) is likely response data, not ID
+    if (is.factor(first_col)) {
+      is_string_or_factor <- length(unique(first_col)) >= 20
+    } else {
+      is_string_or_factor <- is.character(first_col)
+    }
     is_consecutive <- is_consecutive_numbers(first_col)
     looks_like_response <- looks_like_response_data(first_col)
 
@@ -198,6 +157,17 @@ dataFormat <- function(data, na = NULL, id = 1, Z = NULL, w = NULL,
   if (any(duplicated(ID))) {
     duplicated_ids <- ID[duplicated(ID)]
     stop(paste("Duplicated IDs found:", paste(unique(duplicated_ids), collapse = ", ")))
+  }
+
+  # Store factor labels and convert factors to numeric (response columns only)
+  CategoryLabel <- list()
+  if (is.data.frame(response.matrix)) {
+    for (col in names(response.matrix)) {
+      if (is.factor(response.matrix[[col]])) {
+        CategoryLabel[[col]] <- levels(response.matrix[[col]])
+        response.matrix[[col]] <- as.numeric(response.matrix[[col]])
+      }
+    }
   }
 
   # Get Item-labels
@@ -257,20 +227,20 @@ dataFormat <- function(data, na = NULL, id = 1, Z = NULL, w = NULL,
 
       unique_vals <- sort(unique(x_clean))
 
-      # 2カテゴリの場合：0/1以外ならordinalとして扱うが警告してエラー
+      # 2-category case: if not 0/1, stop with an error
       if (length(unique_vals) == 2) {
         if (!all(unique_vals %in% c(0, 1))) {
           stop("2-category data with non-binary values detected. Please specify response.type explicitly.")
         }
-        return(FALSE) # 0/1ならbinaryとして扱う
+        return(FALSE) # 0/1 values are treated as binary
       }
 
-      # 20カテゴリ以上は多すぎる
+      # Too many categories (>= 20)
       if (length(unique_vals) >= 20) {
         stop("Too many categories (>=20) for ordinal data. Please specify response.type explicitly.")
       }
 
-      # 3カテゴリ以上なら問答無用でordinal
+      # 3 or more categories -> ordinal
       return(length(unique_vals) >= 3)
     }
 

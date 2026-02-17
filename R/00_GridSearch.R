@@ -52,8 +52,14 @@ GridSearch <- function(
   ...
 ) {
   obj <- dataFormat(obj)
-  testlength <- NCOL(obj$U)
-  nobs <- NROW(obj$U)
+  # Handle different data types for testlength calculation
+  if (!is.null(obj$U)) {
+    testlength <- NCOL(obj$U) # binary data
+    nobs <- NROW(obj$U)
+  } else {
+    testlength <- NCOL(obj$Q) # ordinal data
+    nobs <- NROW(obj$Q)
+  }
   # ------------------------------------------ Biclustering
   if (fun == "Biclustering") {
     if (max_ncls >= nobs) {

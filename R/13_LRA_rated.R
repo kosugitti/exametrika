@@ -278,7 +278,7 @@ LRA.rated <- function(U,
   }
 
   design5 <- do.call(rbind, lapply(1:nitems, function(j) {
-    # design4の各行jを取得し、ncat[j]回繰り返す
+    # For each row j of design4, repeat ncat[j] times
     matrix(rep(design4[j, ], useNcat[j]), nrow = useNcat[j], byrow = TRUE)
   }))
 

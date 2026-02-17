@@ -1,3 +1,31 @@
+# exametrika 1.8.1
+
+## Bug Fixes
+
+### dataFormat Function
+
+- **Fixed factor ID column detection**: `dataFormat()` now correctly identifies factor-type ID columns before converting factors to numeric. Previously, the factor-to-numeric conversion occurred before ID detection, causing factor ID columns with many levels (>=20) to trigger a "Too many categories" error instead of being recognized as IDs.
+- **Removed unused helper function**: Removed dead code (`is_response_data()`) that was defined but never called.
+
+### GridSearch Function
+
+- **Fixed ordinal data support**: GridSearch now correctly handles ordinal data by using `obj$Q` instead of `obj$U` for test length calculation
+- **Resolved nfld=1 parameter issue**: Eliminated invalid parameter ranges that caused crashes with ordinal datasets
+
+### Biclustering.ordinal Function
+
+- **Enhanced numerical stability**: Added `pmax(Ufcq_prior, 1e-10)` to prevent division by zero and NaN errors
+- **Fixed convergence failures**: Resolved "missing value where TRUE/FALSE needed" errors in specific parameter combinations (e.g., ncls=4 with nfld=5)
+- **Improved robustness**: Algorithm now handles edge cases where field membership probabilities approach zero
+
+### Impact
+
+- GridSearch now works reliably with ordinal data across all parameter combinations
+- Biclustering analysis completes successfully for previously problematic parameter settings
+- Enhanced overall stability for large-scale grid searches
+
+---
+
 # exametrika 1.8.0
 
 ## Naming Convention Improvements

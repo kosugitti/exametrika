@@ -1,3 +1,18 @@
+# exametrika 1.9.0
+
+## New Features
+
+### New Sample Datasets for Polytomous Biclustering
+
+- **J35S500**: Simulated ordinal dataset (500 students, 35 items, 5 categories) with a cumulative staircase pattern (5 latent classes, 5 fields). Contains approximately 0.5% missing values.
+- **J20S600**: Simulated nominal dataset (600 students, 20 items, 4 categories) with a cyclic category preference pattern (5 latent classes, 4 fields). Contains approximately 0.5% missing values.
+
+### Array Plot Improvements
+
+- **Missing value display**: Array plots now display missing values in a distinct color. Binary data uses gray (`#808080`) to distinguish from white (incorrect) and black (correct). Polytomous data uses black (`#000000`) to distinguish from the category color palette.
+
+---
+
 # exametrika 1.8.1
 
 ## Bug Fixes

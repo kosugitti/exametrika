@@ -425,7 +425,9 @@ plot.exametrika <- function(x,
 
     ## colors
     # Use sort(unique(...)) to ensure consistent ordering: 0 (white), 1 (black)
+    # Exclude missing values (NA and -1) from category colors
     all_values <- sort(unique(as.vector(as.matrix(raw_data))))
+    all_values <- all_values[!is.na(all_values) & all_values != -1]
     n_categories <- length(all_values)
 
     if (is.null(colors)) {
@@ -447,6 +449,9 @@ plot.exametrika <- function(x,
       colors <- colors[1:n_categories]
     }
 
+    # Missing value color: gray for binary (to distinguish from white/black), black for polytomous
+    missing_color <- if (n_categories == 2) "#808080" else "#000000"
+
     # Plot area
     plot_width <- ncols * cell_w
     plot_height <- nrows * cell_h
@@ -466,8 +471,12 @@ plot.exametrika <- function(x,
         x2 <- j * cell_w
         y2 <- (nrows - i + 1) * cell_h
 
-        color_index <- match(val, all_values)
-        fill_color <- colors[color_index]
+        if (is.na(val) || val == -1) {
+          fill_color <- missing_color
+        } else {
+          color_index <- match(val, all_values)
+          fill_color <- colors[color_index]
+        }
 
         rect(x1, y1, x2, y2, col = fill_color, border = "white", lwd = 0.1)
       }
@@ -488,8 +497,12 @@ plot.exametrika <- function(x,
         x2 <- j * cell_w
         y2 <- (nrows - i + 1) * cell_h
 
-        color_index <- match(val, all_values)
-        fill_color <- colors[color_index]
+        if (is.na(val) || val == -1) {
+          fill_color <- missing_color
+        } else {
+          color_index <- match(val, all_values)
+          fill_color <- colors[color_index]
+        }
 
         rect(x1, y1, x2, y2, col = fill_color, border = "white", lwd = 0.1)
       }

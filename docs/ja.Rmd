@@ -419,14 +419,22 @@ plot(result.IRM, type = "TRP")
 
 #### 多段階反応データ用のバイクラスタリング
 
-バイクラスタリングとランククラスタリングは、順序尺度や名義尺度の多段階反応データに対しても実行することができます。プロット出力は「Array」タイプのみに限定されます。カラーパレットは`colors`オプションを使用して異なる色彩スキームを指定することでカスタマイズできます。
+バイクラスタリングとランククラスタリングは、順序尺度や名義尺度の多段階反応データに対しても実行することができます。Arrayプロットでは欠測値が黒で表示されます。カラーパレットは`colors`オプションを使用して異なる色彩スキームを指定することでカスタマイズできます。
 
-```{r bic_poly}
-result.B.poly <- Biclustering(J15S3810, ncls = 3, nfld = 4)
-result.B.poly
-# カスタムカラーパレットの例
-plot(result.B.poly, type = "Array",
-colors = c("#FF1493", "#00FF00", "#FF4500", "#9932CC", "#FFD700"))
+##### 順序尺度データ
+
+```{r bic_poly_ord}
+result.B.ord <- Biclustering(J35S500, ncls = 5, nfld = 5, method = "R")
+result.B.ord
+plot(result.B.ord, type = "Array")
+```
+
+##### 名義尺度データ
+
+```{r bic_poly_nom}
+result.B.nom <- Biclustering(J20S600, ncls = 5, nfld = 4)
+result.B.nom
+plot(result.B.nom, type = "Array")
 ```
 
 ### ベイジアンネットワークモデル

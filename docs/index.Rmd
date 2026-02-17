@@ -422,14 +422,22 @@ Additionally, supplementary notes on the derivation of the Infinite Relational M
 
 #### Biclustering for Polytomous data
 
-Biclustering and Rankclustering can also be performed on data with ordinal or nominal polytomous responses. The plot output is limited to the "Array" type only. Color palettes can be customized using the `colors` option to specify different color schemes.
+Biclustering and Rankclustering can also be performed on data with ordinal or nominal polytomous responses. Missing values are displayed in black in the Array plot. Color palettes can be customized using the `colors` option to specify different color schemes.
 
-```{r bic_poly}
-result.B.poly <- Biclustering(J15S3810, ncls = 3, nfld = 4)
-result.B.poly
-# Custom color palette example
-plot(result.B.poly, type = "Array", 
-colors = c("#FF1493", "#00FF00", "#FF4500", "#9932CC", "#FFD700"))
+##### Ordinal data
+
+```{r bic_poly_ord}
+result.B.ord <- Biclustering(J35S500, ncls = 5, nfld = 5, method = "R")
+result.B.ord
+plot(result.B.ord, type = "Array")
+```
+
+##### Nominal data
+
+```{r bic_poly_nom}
+result.B.nom <- Biclustering(J20S600, ncls = 5, nfld = 4)
+result.B.nom
+plot(result.B.nom, type = "Array")
 ```
 
 ### Bayesian Network Model

@@ -1,7 +1,7 @@
 Package: exametrika
 Type: Package
 Title: Test Theory Analysis and Biclustering
-Version: 1.8.1
+Version: 1.9.0
 Authors@R:
     person("Koji Kosugi", , , "kosugitti@gmail.com", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0001-5816-0099"))

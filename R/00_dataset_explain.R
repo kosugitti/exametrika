@@ -49,3 +49,21 @@
 #'   generated using random number generation for demonstration and testing purposes.
 #' @format An exametrika class object with 100 students and 50 items containing binary responses
 "J50S100"
+
+#' @title J35S500
+#' @description A simulated ordinal dataset for polytomous Biclustering analysis.
+#'   This is a synthetic dataset generated using random number generation
+#'   with a cumulative staircase pattern (5 latent classes, 5 fields,
+#'   5 response categories) for demonstration and testing purposes.
+#'   Contains approximately 0.5\% missing values.
+#' @format An exametrika class object with 500 students and 35 items containing ordinal responses with 5 categories
+"J35S500"
+
+#' @title J20S600
+#' @description A simulated nominal dataset for polytomous Biclustering analysis.
+#'   This is a synthetic dataset generated using random number generation
+#'   with a cyclic category preference pattern (5 latent classes, 4 fields,
+#'   4 response categories) for demonstration and testing purposes.
+#'   Contains approximately 0.5\% missing values.
+#' @format An exametrika class object with 600 students and 20 items containing nominal responses with 4 categories
+"J20S600"

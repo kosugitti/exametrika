@@ -185,6 +185,10 @@ str(data) # View structure of formatted data
   - バイクラスタリングとネットワークモデルの例で使用
 - J15S3810: 順序尺度データセット(15 項目 4件法, 3810人の受験者)
   - 順序尺度版潜在ランクモデルに用います
+- J35S500: 順序尺度多値データセット（35項目 5件法、500人の受験者）
+  - 順序尺度バイクラスタリングの例で使用
+- J20S600: 名義尺度多値データセット（20項目 4カテゴリ、600人の受験者）
+  - 名義尺度バイクラスタリングの例で使用
 - J35S5000: 多肢選択(名義的)データセット (35項目, 5000人の受験者)
   - 反応カテゴリと正答ラベルがデータセットに含まれています
   - 名義尺度版潜在ランクモデルに用います。
@@ -429,12 +433,53 @@ result.B.ord
 plot(result.B.ord, type = "Array")
 ```
 
+順序尺度の多値バイクラスタリングでは、いくつかの新しいプロットタイプが利用可能です。FRP（フィールド参照プロファイル）は、各フィールドの潜在ランクごとの期待得点を折れ線グラフで表示します。`stat`パラメータで要約統計量を指定できます："mean"（デフォルト）、"median"、"mode"。
+
+```{r bic_poly_ord_frp, fig.width=7, fig.height=5}
+plot(result.B.ord, type = "FRP", nc = 3, nr = 2)
+```
+
+FCRP（フィールドカテゴリ反応プロファイル）は、各反応カテゴリの確率を潜在ランクごとに表示します。`style`パラメータで"line"（デフォルト、折れ線）または"bar"（積み上げ棒グラフ）を選択できます。
+
+```{r bic_poly_ord_fcrp, fig.width=7, fig.height=5}
+plot(result.B.ord, type = "FCRP", nc = 3, nr = 2)
+plot(result.B.ord, type = "FCRP", style = "bar", nc = 3, nr = 2)
+```
+
+FCBR（フィールド累積境界参照）は、各フィールドの累積境界確率 P(Q >= q) を表示します。このプロットタイプは順序尺度データでのみ利用可能です。
+
+```{r bic_poly_ord_fcbr, fig.width=7, fig.height=5}
+plot(result.B.ord, type = "FCBR", nc = 3, nr = 2)
+```
+
+ScoreFieldプロットは、フィールドと潜在ランクにわたる期待得点をヒートマップで表示します。
+
+```{r bic_poly_ord_scorefield, fig.width=7, fig.height=5}
+plot(result.B.ord, type = "ScoreField")
+```
+
+RRV（ランク参照ベクトル）は、FRPの転置版で、フィールドをx軸に、各潜在ランクの折れ線を重ねて比較できます。
+
+```{r bic_poly_ord_rrv, fig.width=7, fig.height=5}
+plot(result.B.ord, type = "RRV")
+```
+
 #### 名義尺度データ
 
 ```{r bic_poly_nom}
 result.B.nom <- Biclustering(J20S600, ncls = 5, nfld = 4)
 result.B.nom
 plot(result.B.nom, type = "Array")
+```
+
+名義尺度の多値バイクラスタリングでも、FRP、FCRP、ScoreField、RRVプロットが利用可能です。ただし、境界確率は順序カテゴリでのみ意味を持つため、FCBRは名義尺度データでは利用できません。
+
+```{r bic_poly_nom_plots, fig.width=7, fig.height=5}
+plot(result.B.nom, type = "FRP", nc = 2, nr = 2)
+plot(result.B.nom, type = "FCRP", nc = 2, nr = 2)
+plot(result.B.nom, type = "FCRP", style = "bar", nc = 2, nr = 2)
+plot(result.B.nom, type = "ScoreField")
+plot(result.B.nom, type = "RRV")
 ```
 
 ### ベイジアンネットワークモデル
@@ -814,17 +859,19 @@ Pattern Analysisテーブルとそれに続くDiagnostics & Visualizationテー�
 
 #### パターン分析
 
-| Model | IRP | FRP | TRP | ICRP |
-|-------|:---:|:---:|:---:|:----:|
-| IRT | | | | |
-| LCA | ✓ | ✓ | ✓ | |
-| LRA | ✓ | ✓ | ✓ | |
-| LRAordinal | | | | ✓ |
-| Biclustering | ✓ | ✓ | ✓ | |
-| IRM | | ✓ | ✓ | |
-| LDLRA | ✓ | | | |
-| LDB | | ✓ | ✓ | |
-| BINET | | ✓ | ✓ | |
+| Model | IRP | FRP | TRP | ICRP | C/R RV |
+|-------|:---:|:---:|:---:|:----:|:----:|
+| IRT | | | | | |
+| LCA | ✓ | ✓ | ✓ | | |
+| LRA | ✓ | ✓ | ✓ | | |
+| LRAordinal | | | | ✓ | |
+| Biclustering |  | ✓ | ✓ | | ✓ |
+| Biclustering (ordinal) | | ✓ | | | ✓ |
+| Biclustering (nominal) | | ✓ | | | ✓ |
+| IRM | | ✓ | ✓ | | |
+| LDLRA | ✓ | | | | |
+| LDB | | ✓ | ✓ | | |
+| BINET | | ✓ | ✓ | | |
 
 #### 診断・可視化
 
@@ -833,8 +880,10 @@ Pattern Analysisテーブルとそれに続くDiagnostics & Visualizationテー�
 | IRT | | | | IIC, ICC, TIC |
 | LCA | ✓ | ✓ | | |
 | LRA | ✓ | ✓ | | |
-| LRAordinal | ICBR | RMP | | ScoreFreq, ScoreRank |
+| LRAordinal |  | ✓ | | ICBR, ScoreFreq, ScoreRank |
 | Biclustering | ✓ | ✓ | ✓ | |
+| Biclustering (ordinal) | ✓ | ✓ | ✓ | FCRP, FCBR, ScoreField |
+| Biclustering (nominal) | ✓ | ✓ | ✓ | FCRP, ScoreField |
 | IRM | | | ✓ | |
 | LDLRA | ✓ | ✓ | | |
 | LDB | ✓ | ✓ | ✓ | FieldPIRP |

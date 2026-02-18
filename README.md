@@ -182,6 +182,10 @@ Available datasets:
   - Used in Biclustering and network model examples
 - J15S3810: Ordinal scale dataset (15 items with 4-point scale, 3810 examinees)
   - Used in ordinal latent rank model examples
+- J35S500: Ordinal polytomous dataset (35 items with 5 categories, 500 examinees)
+  - Used in ordinal Biclustering examples
+- J20S600: Nominal polytomous dataset (20 items with 4 categories, 600 examinees)
+  - Used in nominal Biclustering examples
 - J35S5000: Multiple-choice dataset (35 items, 5000 examinees)
   - Includes both response categories and correct answer data
   - Used in nominal scale latent rank model examples
@@ -415,12 +419,53 @@ result.B.ord
 plot(result.B.ord, type = "Array")
 ```
 
+For ordinal polytomous Biclustering, several new plot types are available. The FRP (Field Reference Profile) shows the expected score per field across latent ranks. The `stat` parameter controls the summary statistic: "mean" (default), "median", or "mode".
+
+```{r bic_poly_ord_frp, fig.width=7, fig.height=5}
+plot(result.B.ord, type = "FRP", nc = 3, nr = 2)
+```
+
+The FCRP (Field Category Response Profile) shows the probability of each response category across latent ranks. The `style` parameter can be "line" (default) or "bar".
+
+```{r bic_poly_ord_fcrp, fig.width=7, fig.height=5}
+plot(result.B.ord, type = "FCRP", nc = 3, nr = 2)
+plot(result.B.ord, type = "FCRP", style = "bar", nc = 3, nr = 2)
+```
+
+The FCBR (Field Cumulative Boundary Reference) shows the cumulative boundary probabilities P(Q >= q) for each field. This plot type is only available for ordinal data.
+
+```{r bic_poly_ord_fcbr, fig.width=7, fig.height=5}
+plot(result.B.ord, type = "FCBR", nc = 3, nr = 2)
+```
+
+The ScoreField plot displays a heatmap of expected scores across fields and latent ranks.
+
+```{r bic_poly_ord_scorefield, fig.width=7, fig.height=5}
+plot(result.B.ord, type = "ScoreField")
+```
+
+The RRV (Rank Reference Vector) is a transposed view of the FRP, with fields on the x-axis and latent rank lines overlaid for comparison.
+
+```{r bic_poly_ord_rrv, fig.width=7, fig.height=5}
+plot(result.B.ord, type = "RRV")
+```
+
 #### Nominal data
 
 ```{r bic_poly_nom}
 result.B.nom <- Biclustering(J20S600, ncls = 5, nfld = 4)
 result.B.nom
 plot(result.B.nom, type = "Array")
+```
+
+Nominal polytomous Biclustering also supports FRP, FCRP, ScoreField, and RRV plots. Note that FCBR is not available for nominal data because boundary probabilities only make sense for ordinal categories.
+
+```{r bic_poly_nom_plots, fig.width=7, fig.height=5}
+plot(result.B.nom, type = "FRP", nc = 2, nr = 2)
+plot(result.B.nom, type = "FCRP", nc = 2, nr = 2)
+plot(result.B.nom, type = "FCRP", style = "bar", nc = 2, nr = 2)
+plot(result.B.nom, type = "ScoreField")
+plot(result.B.nom, type = "RRV")
 ```
 
 ### Bayesian Network Model
@@ -784,7 +829,9 @@ plot(result.BINET, type = "LDPSR", nc = 3, nr = 2)
 | LRA | ✓ | ✓ | ✓ | | |
 | LRAordinal | | | | ✓ | |
 | LRArated | | | | ✓ | |
-| Biclustering |  | ✓ | ✓ | |✓ | |
+| Biclustering |  | ✓ | ✓ | | ✓ |
+| Biclustering (ordinal) | | ✓ | | | ✓ |
+| Biclustering (nominal) | | ✓ | | | ✓ |
 | IRM | | ✓ | ✓ | | |
 | LDLRA | ✓ | | | | |
 | LDB | | ✓ | ✓ | | |
@@ -797,9 +844,11 @@ plot(result.BINET, type = "LDPSR", nc = 3, nr = 2)
 | IRT | | | | IIC, ICC, TIC |
 | LCA | ✓ | ✓ | | |
 | LRA | ✓ | ✓ | | |
-| LRAordinal |  | ✓ | | | ICBR,ScoreFreq, ScoreRank |
-| LRArated |  | ✓ | | | ScoreFreq, ScoreRank |
+| LRAordinal |  | ✓ | | ICBR, ScoreFreq, ScoreRank |
+| LRArated |  | ✓ | | ScoreFreq, ScoreRank |
 | Biclustering | ✓ | ✓ | ✓ | |
+| Biclustering (ordinal) | ✓ | ✓ | ✓ | FCRP, FCBR, ScoreField |
+| Biclustering (nominal) | ✓ | ✓ | ✓ | FCRP, ScoreField |
 | IRM | | | ✓ | |
 | LDLRA | ✓ | ✓ | | |
 | LDB | ✓ | ✓ | ✓ | FieldPIRP |

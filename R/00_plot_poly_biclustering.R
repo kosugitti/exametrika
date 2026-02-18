@@ -130,15 +130,20 @@ plot_poly_fcbr <- function(x, nc, nr) {
       main = paste("Field", f, "- Boundary Prob")
     )
     axis(1, at = 1:ncls)
+    # P(Q >= 1) = 1.0 reference line
+    lines(1:ncls, rep(1, ncls),
+      type = "b", pch = 0, lty = 1, col = "gray60", lwd = 1
+    )
     for (b in 1:n_boundaries) {
       lines(1:ncls, boundary_probs[b, ],
         type = "b", pch = b, lty = b, col = cols[b], lwd = 1.5
       )
     }
     legend("topright",
-      legend = paste0("P(Q>=", 2:maxQ, ")"),
-      col = cols[1:n_boundaries], lty = 1:n_boundaries,
-      pch = 1:n_boundaries,
+      legend = c("P(Q>=1)", paste0("P(Q>=", 2:maxQ, ")")),
+      col = c("gray60", cols[1:n_boundaries]),
+      lty = c(1, 1:n_boundaries),
+      pch = c(0, 1:n_boundaries),
       cex = 0.7, bty = "n"
     )
   }

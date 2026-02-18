@@ -28,6 +28,18 @@
 
 - **Missing value display**: Array plots now display missing values in a distinct color. Binary data uses gray (`#808080`) to distinguish from white (incorrect) and black (correct). Polytomous data uses black (`#000000`) to distinguish from the category color palette.
 
+### Print Method Improvements
+
+- **Ordinal Biclustering**: `print()` now displays FRPIndex (Field Reference Profile Indices) with a note that the values are based on normalized expected scores `(E[score]-1)/(maxQ-1)`.
+
+### Documentation Improvements
+
+- **FRPIndex**: Expanded documentation for the 6 profile shape indices (Alpha, A, Beta, B, Gamma, C) in `?Biclustering`, including detailed definitions and polytomous adaptation logic.
+
+### Internal Improvements
+
+- **plot.exametrika() refactoring**: Split the monolithic 1200-line function into 6 model-family files for improved maintainability. No changes to the external API.
+
 ---
 
 # exametrika 1.8.1

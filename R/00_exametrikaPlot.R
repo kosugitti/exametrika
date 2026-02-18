@@ -93,7 +93,7 @@
 #' }
 #'
 #' @importFrom graphics curve title axis barplot mtext par text lines rect legend abline image
-#' @importFrom grDevices gray dev.off jpeg pdf png hcl.colors
+#' @importFrom grDevices gray dev.off jpeg pdf png hcl.colors rainbow
 #' @importFrom stats density runif
 #' @importFrom utils tail
 #'
@@ -215,10 +215,10 @@ plot.exametrika <- function(x,
   switch(value,
     IRT = plot_irt_model(x, type, plotItemID, nc, nr, overlay, colors),
     GRM = plot_grm_model(x, type, plotItemID, nc, nr, colors),
-    LCA =,
-    LRA =,
+    LCA = ,
+    LRA = ,
     LDLRA = plot_common_profiles(x, type, value, plotItemID, plotStudentID, testlength),
-    LRAordinal =,
+    LRAordinal = ,
     LRArated = {
       if (type == "RMP") {
         plot_common_profiles(x, type, value, plotItemID, plotStudentID, testlength)
@@ -233,7 +233,7 @@ plot.exametrika <- function(x,
         plot_common_profiles(x, type, value, plotItemID, plotStudentID, testlength)
       }
     },
-    ordinalBiclustering =,
+    ordinalBiclustering = ,
     nominalBiclustering = {
       if (type == "Array") {
         plot_array(x, cell_width, cell_height, colors)

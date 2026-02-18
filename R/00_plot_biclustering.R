@@ -14,7 +14,7 @@ get_cb_palette <- function(n) {
     "#AA3377", # purple
     "#DDCC77", # sand
     "#332288", # indigo
-    "#117733"  # forest green
+    "#117733" # forest green
   )
   if (n <= length(base)) {
     return(base[1:n])

@@ -1,36 +1,34 @@
 ## Test environments
 * local macOS (aarch64-apple-darwin25.0.0): R 4.5.2
-* R-hub (linux, macos-arm64, windows)
-* win-builder (devel)
 
 ## R CMD check results
 
 ### Local
-0 errors | 0 warnings | 1 note
-
-The single NOTE is:
-> checking for future file timestamps ... NOTE
-> unable to verify current time
-
-This is a network connectivity issue during the check, not a package problem.
+0 errors | 0 warnings | 0 notes
 
 ### Downstream dependencies
 
 There are currently no downstream dependencies for this package.
 
-## Version 1.8.1
+## Version 1.9.0
 
-This is a patch release with bug fixes only. No breaking changes.
+This is a minor release adding new features for polytomous (ordinal/nominal) Biclustering analysis. No breaking changes.
 
-### dataFormat Function
-* Fixed factor ID column detection: `dataFormat()` now correctly identifies factor-type ID columns before converting factors to numeric. Previously, factor ID columns with many levels (>=20) triggered a "Too many categories" error instead of being recognized as IDs.
-* Removed unused internal helper function (`is_response_data()`).
+### New Sample Datasets
+* **J35S500**: Simulated ordinal dataset (500 students, 35 items, 5 categories, 5 classes × 5 fields).
+* **J20S600**: Simulated nominal dataset (600 students, 20 items, 4 categories, 5 classes × 4 fields).
 
-### GridSearch Function
-* Fixed ordinal data support: GridSearch now correctly handles ordinal data by using `obj$Q` instead of `obj$U` for test length calculation.
-* Resolved nfld=1 parameter issue that caused crashes with ordinal datasets.
+### New Plot Types for Polytomous Biclustering
+* **FRP**: Expected score line plot per field with `stat` parameter ("mean", "median", "mode").
+* **FCRP**: Category probability plot per field with `style` parameter ("line", "bar").
+* **FCBR**: Boundary probability plot per field (ordinal only).
+* **ScoreField**: Heatmap of expected scores across fields and classes/ranks.
+* **RRV**: Transposed reference vector with fields on x-axis.
 
-### Biclustering.ordinal Function
-* Enhanced numerical stability to prevent division by zero and NaN errors.
-* Fixed convergence failures in specific parameter combinations (e.g., ncls=4 with nfld=5).
-* Improved robustness for edge cases where field membership probabilities approach zero.
+### FRPIndex for Ordinal Biclustering
+* Computes profile shape indices (Alpha, A, Beta, B, Gamma, C) from normalized expected scores.
+
+### Other Improvements
+* Array plots now display missing values in a distinct color.
+* Ordinal Biclustering `print()` now displays FRPIndex.
+* Internal refactoring of `plot.exametrika()` into model-family files for maintainability.

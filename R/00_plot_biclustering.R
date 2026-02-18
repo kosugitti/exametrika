@@ -22,6 +22,34 @@ get_cb_palette <- function(n) {
   return(c(base, rainbow(n - length(base))))
 }
 
+#' パネルグリッド＋凡例ストリップのレイアウトを設定
+#' mfrow を上書きし、最下行に薄い凡例領域を確保する
+#' @noRd
+setup_legend_layout <- function(n_panels, nc) {
+  if (n_panels <= 1) {
+    layout(matrix(c(1, 2), nrow = 2), heights = c(1, 0.2))
+  } else {
+    n_rows <- ceiling(n_panels / nc)
+    layout_mat <- matrix(0, nrow = n_rows + 1, ncol = nc)
+    for (i in seq_len(n_panels)) {
+      r <- ceiling(i / nc)
+      cc <- ((i - 1) %% nc) + 1
+      layout_mat[r, cc] <- i
+    }
+    layout_mat[n_rows + 1, ] <- n_panels + 1
+    layout(layout_mat, heights = c(rep(1, n_rows), 0.2))
+  }
+}
+
+#' レイアウト最下行の凡例領域に凡例を描画する
+#' setup_legend_layout() の後、全パネル描画後に呼ぶ
+#' @noRd
+draw_legend_strip <- function(...) {
+  par(mar = c(0, 0, 0, 0))
+  plot.new()
+  legend("center", ...)
+}
+
 #' Array プロット（Biclustering / IRM / LDB / BINET 共通）
 #' @noRd
 plot_array <- function(x, cell_width, cell_height, colors) {

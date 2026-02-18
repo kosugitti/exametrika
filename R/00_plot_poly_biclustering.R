@@ -61,6 +61,8 @@ plot_poly_fcrp <- function(x, style, nc, nr) {
   msg <- x$msg
   cols <- get_cb_palette(maxQ)
 
+  setup_legend_layout(nfld, nc)
+
   for (f in 1:nfld) {
     if (style == "line") {
       plot(1:ncls, BCRM[f, , 1],
@@ -77,11 +79,6 @@ plot_poly_fcrp <- function(x, style, nc, nr) {
           type = "b", pch = q, lty = q, col = cols[q], lwd = 1.5
         )
       }
-      legend("topright",
-        legend = paste("Cat", 1:maxQ),
-        col = cols[1:maxQ], lty = 1:maxQ, pch = 1:maxQ,
-        cex = 0.7, bty = "n", ncol = min(maxQ, 3)
-      )
     } else if (style == "bar") {
       bar_data <- t(BCRM[f, , ])
       barplot(bar_data,
@@ -92,12 +89,21 @@ plot_poly_fcrp <- function(x, style, nc, nr) {
         ylim = c(0, 1),
         main = paste("Field", f, "- Category Response")
       )
-      legend("topright",
-        legend = paste("Cat", 1:maxQ),
-        fill = cols[1:maxQ],
-        cex = 0.7, bty = "n", ncol = min(maxQ, 3)
-      )
     }
+  }
+
+  if (style == "line") {
+    draw_legend_strip(
+      legend = paste("Cat", 1:maxQ),
+      col = cols[1:maxQ], lty = 1:maxQ, pch = 1:maxQ,
+      cex = 1.0, bty = "n", ncol = min(maxQ, 5)
+    )
+  } else {
+    draw_legend_strip(
+      legend = paste("Cat", 1:maxQ),
+      fill = cols[1:maxQ],
+      cex = 1.0, bty = "n", ncol = min(maxQ, 5)
+    )
   }
 }
 
@@ -111,6 +117,8 @@ plot_poly_fcbr <- function(x, nc, nr) {
   msg <- x$msg
   n_boundaries <- maxQ - 1
   cols <- get_cb_palette(n_boundaries)
+
+  setup_legend_layout(nfld, nc)
 
   for (f in 1:nfld) {
     boundary_probs <- matrix(0, nrow = n_boundaries, ncol = ncls)
@@ -139,14 +147,15 @@ plot_poly_fcbr <- function(x, nc, nr) {
         type = "b", pch = b, lty = b, col = cols[b], lwd = 1.5
       )
     }
-    legend("topright",
-      legend = c("P(Q>=1)", paste0("P(Q>=", 2:maxQ, ")")),
-      col = c("gray60", cols[1:n_boundaries]),
-      lty = c(1, 1:n_boundaries),
-      pch = c(0, 1:n_boundaries),
-      cex = 0.7, bty = "n"
-    )
   }
+
+  draw_legend_strip(
+    legend = c("P(Q>=1)", paste0("P(Q>=", 2:maxQ, ")")),
+    col = c("gray60", cols[1:n_boundaries]),
+    lty = c(1, 1:n_boundaries),
+    pch = c(0, 1:n_boundaries),
+    cex = 1.0, bty = "n", ncol = min(maxQ, 5)
+  )
 }
 
 #' ScoreField: 期待得点ヒートマップ

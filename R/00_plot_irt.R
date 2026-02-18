@@ -27,6 +27,7 @@ plot_irt_model <- function(x, type, plotItemID, nc, nr, overlay, colors) {
   ### IRT curve function
   plotIRTCurve <- function(params, curveFunc, titleBase, ylab, overlay) {
     if (overlay) {
+      setup_legend_layout(1, nc)
       plot(NULL,
         xlim = c(-4, 4),
         ylim = c(0, 1),
@@ -48,11 +49,12 @@ plot_irt_model <- function(x, type, plotItemID, nc, nr, overlay, colors) {
           lwd = 2
         )
       }
-      legend("topleft",
+      draw_legend_strip(
         legend = paste("Item", plotItemID),
         lty = 1:nrow(params),
         col = 1:nrow(params),
-        lwd = 2
+        lwd = 2, bty = "n",
+        ncol = min(nrow(params), 5)
       )
     } else {
       for (i in 1:nrow(params)) {
@@ -151,8 +153,6 @@ plot_grm_model <- function(x, type, plotItemID, nc, nr, colors) {
     for (k in 2:K) {
       lines(thetas, probs[, k], col = grm_colors[k])
     }
-    category_labels <- paste("Category", 1:K)
-    legend("topright", legend = category_labels, col = grm_colors, lty = 1)
   }
 
   grm_IIC <- function(a, b, title) {
@@ -169,13 +169,27 @@ plot_grm_model <- function(x, type, plotItemID, nc, nr, colors) {
 
   params <- x$params[plotItemID, , drop = FALSE]
   if (type == "IRF") {
+    setup_legend_layout(nrow(params), nc)
+    max_K <- 0
     for (j in 1:nrow(params)) {
       a <- params[j, 1]
       b <- params[j, -1]
       b <- b[!is.na(b)]
+      K <- length(b) + 1
+      if (K > max_K) max_K <- K
       title <- paste("Item Category Response Function for item", plotItemID[j])
       grm_IRF(a, b, title)
     }
+    grm_colors <- if (!is.null(colors)) {
+      colors[-1]
+    } else {
+      c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7", "#8B4513")
+    }
+    draw_legend_strip(
+      legend = paste("Category", 1:max_K),
+      col = grm_colors[1:max_K], lty = 1,
+      cex = 1.0, bty = "n", ncol = min(max_K, 5)
+    )
   }
   if (type == "IIF") {
     for (j in 1:nrow(params)) {

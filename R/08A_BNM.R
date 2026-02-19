@@ -253,6 +253,7 @@ BNM <- function(U, Z = NULL, w = NULL, na = NULL,
     connectedFLG = connectedFLG,
     param = param,
     TestFitIndices = FitIndices,
+    log_lik = model_loglike,
     CCRR_table = CCRR_table
   ), class = c("exametrika", "BNM"))
   return(ret)

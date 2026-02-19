@@ -401,7 +401,8 @@ IRT <- function(U, model = 2, na = NULL, Z = NULL, w = NULL, verbose = TRUE) {
     Q3mat = Q3mat,
     ability = theta,
     ItemFitIndices = FitIndices$item,
-    TestFitIndices = FitIndices$test
+    TestFitIndices = FitIndices$test,
+    log_lik = FitIndices$test$model_log_like
   ), class = c("exametrika", "IRT"))
   return(ret)
 }

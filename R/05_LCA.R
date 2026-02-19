@@ -147,7 +147,7 @@ LCA <- function(U, ncls = 2, na = NULL, Z = NULL, w = NULL, maxiter = 100, verbo
   FitIndices <- ItemFit(tmp$U, tmp$Z, ell_A, ncls)
 
   ret <- structure(list(
-    msg <- "Class",
+    msg = "Class",
     testlength = testlength <- NCOL(tmp$U),
     nobs = NROW(tmp$U),
     n_class = ncls, # New naming convention
@@ -160,6 +160,7 @@ LCA <- function(U, ncls = 2, na = NULL, Z = NULL, w = NULL, maxiter = 100, verbo
     IRP = IRP,
     ItemFitIndices = FitIndices$item,
     TestFitIndices = FitIndices$test,
+    log_lik = FitIndices$test$model_log_like,
     # Deprecated fields (for backward compatibility)
     Nclass = ncls,
     N_Cycle = fit$iter

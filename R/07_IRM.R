@@ -568,6 +568,9 @@ Biclustering_IRM <- function(U, Z = NULL, w = NULL, na = NULL,
 
   # Output ---------------------------------------------------------
   pifr <- t(Pcf)
+  rownames(pifr) <- paste0("Field", 1:nfld)
+  colnames(pifr) <- paste0("Class", 1:ncls)
+  FRPIndex <- IRPindex(pifr)
   flddist <- colSums(fld01)
   clsdist <- colSums(cls01)
   TRP <- colSums(pifr * flddist)
@@ -579,17 +582,21 @@ Biclustering_IRM <- function(U, Z = NULL, w = NULL, na = NULL,
     nobs = nobs,
     n_class = ncls, # New naming convention
     n_field = nfld, # New naming convention
-    em_cycle = EMt, # New naming convention
+    n_cycle = EMt, # New naming convention
+    em_cycle = EMt, # IRM-specific naming
     LFD = flddist,
     LCD = clsdist,
     FRP = pifr,
+    FRPIndex = FRPIndex,
     TRP = TRP,
     FieldEstimated = field,
     ClassEstimated = cls,
     TestFitIndices = FitIndices,
+    log_lik = llm,
     # Deprecated fields (for backward compatibility)
     Nclass = ncls,
     Nfield = nfld,
+    N_Cycle = EMt,
     EM_Cycle = EMt
   ), class = c("exametrika", "IRM"))
   return(ret)

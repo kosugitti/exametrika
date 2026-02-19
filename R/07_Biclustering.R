@@ -492,6 +492,7 @@ Biclustering.binary <- function(U,
     Students = StudentRank,
     FieldAnalysis = fieldAnalysis,
     TestFitIndices = FitIndices,
+    log_lik = test_log_lik,
     SOACflg = SOACflg,
     WOACflg = WOACflg,
     # Deprecated fields (for backward compatibility)

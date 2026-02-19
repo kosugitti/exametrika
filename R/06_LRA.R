@@ -306,6 +306,7 @@ LRA.binary <- function(U,
     IRPIndex = IRPIndex,
     ItemFitIndices = FitIndices$item,
     TestFitIndices = FitIndices$test,
+    log_lik = FitIndices$test$model_log_like,
     # Deprecated fields (for backward compatibility)
     Nrank = ncls,
     N_Cycle = fit$iter

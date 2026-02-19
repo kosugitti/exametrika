@@ -301,7 +301,18 @@ Biclustering.ordinal <- function(U,
   # Analysis model
   chi_A <- 2 * (ell_B - test_log_lik)
   df_A <- bench_nparam - nparam
-  FitIndices <- calcFitIndices(chi_A, chi_B, df_A, df_B, nobs)
+  FitIndices <- structure(
+    c(list(
+      model_log_like = test_log_lik,
+      bench_log_like = ell_B,
+      null_log_like = ell_N,
+      model_Chi_sq = chi_A,
+      null_Chi_sq = chi_B,
+      model_df = df_A,
+      null_df = df_B
+    ), calcFitIndices(chi_A, chi_B, df_A, df_B, nobs)),
+    class = c("exametrika", "ModelFit")
+  )
 
   # output ----------------------------------------------------------
   cls <- apply(clsmemb, 1, which.max)
@@ -310,8 +321,9 @@ Biclustering.ordinal <- function(U,
   flddist <- colSums(fldmemb01)
   clsmemb01 <- sign(clsmemb - apply(clsmemb, 1, max)) + 1
   clsdist <- colSums(clsmemb01)
-  StudentRank <- clsmemb
+  StudentRank <- cbind(clsmemb, Estimate = cls)
   rownames(StudentRank) <- tmp$ID
+  colnames(StudentRank) <- c(paste("Membership", 1:ncls), "Estimate")
   ## Expected score
   BFRP1 <- BFRP2 <- matrix(0, nrow = nfld, ncol = ncls)
   weights <- matrix(0, nrow = nfld, ncol = ncls)
@@ -389,6 +401,9 @@ Biclustering.ordinal <- function(U,
     mic = mic,
     converge = converge,
     nobs = nobs,
+    n_class = ncls,
+    n_field = nfld,
+    n_cycle = emt,
     Nclass = ncls,
     Nfield = nfld,
     N_Cycle = emt,

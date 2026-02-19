@@ -526,6 +526,8 @@ BINET <- function(U, Z = NULL, w = NULL, na = NULL,
     testlength = testlength,
     msg = "Rank",
     nobs = nobs,
+    n_class = ncls,
+    n_field = nfld,
     Nclass = ncls,
     Nfield = nfld,
     crr = crr(U),
@@ -546,8 +548,10 @@ BINET <- function(U, Z = NULL, w = NULL, na = NULL,
     ClassEstimated = cls,
     Students = Students,
     NextStage = NextStage,
+    TestFitIndices = indices1,
     MG_FitIndices = indices1,
-    SM_FitIndices = indices2
+    SM_FitIndices = indices2,
+    log_lik = indices$llm
   ), class = c("exametrika", "BINET"))
   return(ret)
 }

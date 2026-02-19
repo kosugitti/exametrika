@@ -170,13 +170,13 @@ GridSearch <- function(
     )
     optimal_result <- do.call(fun, optimal_args)
 
-    ret_list <- list(
+    ret_list <- structure(list(
       index_matrix = ret,
       optimal_ncls = optimal_ncls,
       optimal_nfld = optimal_nfld,
       optimal_result = optimal_result,
       failed_settings = failed_settings
-    )
+    ), class = c("exametrika", "GridSearch"))
     # ------------------------------------------ LCA / LRA
   } else if (fun == "LCA" || fun == "LRA") {
     if (max_ncls >= nobs) {
@@ -263,12 +263,12 @@ GridSearch <- function(
     )
     optimal_result <- do.call(fun, optimal_args)
 
-    ret_list <- list(
+    ret_list <- structure(list(
       index_vec = ret,
       optimal_ncls = optimal_ncls,
       optimal_result = optimal_result,
       failed_settings = failed_settings
-    )
+    ), class = c("exametrika", "GridSearch"))
   }
   return(ret_list)
 }

@@ -36,8 +36,44 @@
 
 - **FRPIndex**: Expanded documentation for the 6 profile shape indices (Alpha, A, Beta, B, Gamma, C) in `?Biclustering`, including detailed definitions and polytomous adaptation logic.
 
+### Return Value Structure Unification
+
+Systematic unification of return value structures across all analysis functions for consistency and interoperability.
+
+#### snake_case Field Names Extended to All Functions
+
+- **LDLRA**: Added `n_class` (retaining `Nclass` for backward compatibility)
+- **LDB**: Added `n_rank`, `n_field` (retaining `Nrank`, `Nfield`)
+- **BINET**: Added `n_class`, `n_field` (retaining `Nclass`, `Nfield`)
+- **Biclustering.nominal**: Added `n_class`, `n_field`, `n_cycle` (retaining `Nclass`, `Nfield`, `N_Cycle`)
+- **Biclustering.ordinal**: Added `n_class`, `n_field`, `n_cycle` (retaining `Nclass`, `Nfield`, `N_Cycle`)
+- **Biclustering_IRM**: Added `n_cycle`, `N_Cycle` (retaining `em_cycle`, `EM_Cycle` as IRM-specific aliases)
+
+#### Top-Level `log_lik` Added to All Functions
+
+- All analysis functions now consistently provide `log_lik` at the top level of the return object, matching `TestFitIndices$model_log_like`.
+- Functions updated: IRT, LCA, LRA.binary, BNM, LDLRA, LDB, BINET, Biclustering.binary, Biclustering_IRM
+
+#### TestFitIndices Structure Unified
+
+- **GRM, Biclustering.nominal, Biclustering.ordinal**: TestFitIndices now uses the full 16-field structure with `ModelFit` class, matching the format used by IRT/LCA/LRA and other functions. Previously these used bare `calcFitIndices()` output (9 fields, no class). Added fields: `model_log_like`, `bench_log_like`, `null_log_like`, `model_Chi_sq`, `null_Chi_sq`, `model_df`, `null_df`.
+- **GRM ItemFitIndices**: Also unified to the full 16-field structure with `ModelFit` class.
+- **BINET**: `TestFitIndices` added as primary name for multigroup fit indices (previously only `MG_FitIndices`). `MG_FitIndices` retained as backward-compatible alias. `SM_FitIndices` (saturated model) remains unchanged.
+
+#### Students Matrix Enhanced
+
+- **Biclustering.nominal**: Added `Estimate` column (most probable class assignment) to the Students matrix.
+- **Biclustering.ordinal**: Added `Estimate` column (most probable class assignment) to the Students matrix.
+
+#### Other Structural Improvements
+
+- **Biclustering_IRM**: Added `FRPIndex` (Field Reference Profile indices) for consistency with Biclustering.binary and LDB.
+- **LDB**: Fixed `TRP` from `matrix(1×ncls)` to `numeric vector`, consistent with all other functions.
+- **GridSearch**: Added `class = c("exametrika", "GridSearch")` to return value for method dispatch support.
+
 ### Bug Fixes
 
+- **LCA `msg` field assignment**: Fixed `msg <- "Class"` to `msg = "Class"` inside `structure()` call (line 150 of `05_LCA.R`). The `<-` operator was being interpreted as a standalone assignment rather than a named list element, causing the `msg` field name to be empty.
 - **RMP/CMP single student plot error**: Fixed dimension drop error when plotting RMP or CMP for a single student (e.g., `plot(r, type="RMP", students=1)`). Added `drop = FALSE` to prevent matrix-to-vector coercion when extracting a single row from the Students matrix.
 
 ### Internal Improvements

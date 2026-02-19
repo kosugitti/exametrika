@@ -376,7 +376,7 @@ LDB <- function(U, Z = NULL, w = NULL, na = NULL,
   pifr <- t(pifr)
 
   FRPIndex <- IRPindex(pifr)
-  TRP <- t(t(pifr) %*% flddist)
+  TRP <- as.vector(t(pifr) %*% flddist)
   RMD <- clsmembdist
   TRPlag <- TRP[2:ncls]
   TRPmic <- sum(TRPlag[1:(ncls - 1)] - TRP[1:(ncls - 1)] < 0, na.rm = TRUE)
@@ -394,6 +394,8 @@ LDB <- function(U, Z = NULL, w = NULL, na = NULL,
     testlength = testlength,
     msg = "Rank",
     nobs = nobs,
+    n_rank = ncls,
+    n_field = nfld,
     Nrank = ncls,
     Nfield = nfld,
     crr = crr(U),
@@ -413,6 +415,7 @@ LDB <- function(U, Z = NULL, w = NULL, na = NULL,
     ClassEstimated = cls,
     Students = StudentRank,
     TestFitIndices = FitIndices,
+    log_lik = test_log_lik,
     SOACflg = SOACflg,
     WOACflg = WOACflg
   ), class = c("exametrika", "LDB"))

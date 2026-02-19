@@ -484,14 +484,17 @@ LRA.ordinal <- function(U,
   # Item Fit Indices
   # ItemFitIndices1 <- calcFitIndices(model_itemchisq1, null_itemchisq1, itemdf, null_itemdf, colSums(dat$Z))
   ItemFits <- calcFitIndices(model_itemchisq2, null_itemchisq2, itemdf, null_itemdf, colSums(U$Z))
-  ItemFitIndices <- c(
-    list(
+  ItemFitIndices <- structure(
+    c(list(
+      model_log_like = model_itemll2,
+      bench_log_like = satu_itemll2,
+      null_log_like = null_itemll,
       model_Chi_sq = model_itemchisq2,
       null_Chi_sq = null_itemchisq2,
       model_df = itemdf,
       null_df = null_itemdf
-    ),
-    ItemFits
+    ), ItemFits),
+    class = c("exametrika", "ModelFit")
   )
 
   # Test Fit Indices
@@ -511,18 +514,17 @@ LRA.ordinal <- function(U,
     sum(colSums(U$Z))
   )
 
-  TestFitIndices <- c(
-    list(
-      ScoreRankCorr = rho1,
-      RankQuantCorr = rho2,
+  TestFitIndices <- structure(
+    c(list(
       model_log_like = log_lik,
-      null_log_like = log_lik_satu,
+      bench_log_like = sum(satu_itemll2),
+      null_log_like = sum(null_itemll),
       model_Chi_sq = sum(model_itemchisq2),
       null_Chi_sq = sum(null_itemchisq2),
       model_df = sum(itemdf),
       null_df = sum(null_itemdf)
-    ),
-    TestFits
+    ), TestFits),
+    class = c("exametrika", "ModelFit")
   )
 
 

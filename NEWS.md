@@ -75,6 +75,8 @@ Systematic unification of return value structures across all analysis functions 
 
 - **LCA `msg` field assignment**: Fixed `msg <- "Class"` to `msg = "Class"` inside `structure()` call (line 150 of `05_LCA.R`). The `<-` operator was being interpreted as a standalone assignment rather than a named list element, causing the `msg` field name to be empty.
 - **RMP/CMP single student plot error**: Fixed dimension drop error when plotting RMP or CMP for a single student (e.g., `plot(r, type="RMP", students=1)`). Added `drop = FALSE` to prevent matrix-to-vector coercion when extracting a single row from the Students matrix.
+- **LRA.ordinal / LRA.rated `TestFitIndices` log-likelihood fields**: Fixed `null_log_like` which incorrectly stored the saturated model log-likelihood (`log_lik_satu`) instead of the null model log-likelihood (`sum(null_itemll)`). Added missing `bench_log_like` field containing the saturated model log-likelihood (`sum(satu_itemll2)`). Note: the chi-square-based fit indices (NFI, CFI, TLI, RMSEA, AIC, BIC, etc.) were always computed correctly; only the stored log-likelihood labels were affected.
+- **LRA.ordinal / LRA.rated FitIndices structure**: Unified `TestFitIndices` and `ItemFitIndices` to the standard 16-field structure with `ModelFit` class (`c("exametrika", "ModelFit")`), matching all other analysis functions. Added `model_log_like`, `bench_log_like`, `null_log_like` to `ItemFitIndices`. Removed `ScoreRankCorr` / `RankQuantCorr` from `TestFitIndices` (already available at the top level of the return object).
 
 ### Internal Improvements
 

@@ -97,8 +97,8 @@ test_that("scoreRank", {
 
 test_that("Item Fit", {
   expect <- TesFit2[, -c(1, 4)] %>% as.data.frame()
-  actual <- result$ItemFitIndices %>% as.data.frame()
-  actual <- actual[, -c(2, 4)]
+  actual <- result$ItemFitIndices %>% unclass() %>% as.data.frame()
+  actual <- actual[, -c(1, 2, 3, 5, 7)]
   rownames(expect) <- rownames(actual) <- NULL
   colnames(expect) <- colnames(actual) <- NULL
   names(expect) <- names(actual) <- NULL
@@ -109,8 +109,8 @@ test_that("Item Fit", {
 
 test_that("Item Test", {
   expect <- TesFit3[-3, 3] %>% as.matrix()
-  actual <- result$TestFitIndices %>% as.matrix()
-  actual <- actual[-c(1, 2, 4, 6), ] %>% as.matrix()
+  actual <- result$TestFitIndices %>% unclass() %>% unlist() %>% as.matrix()
+  actual <- actual[-c(2, 3, 5), ] %>% as.matrix()
   expect <- as.matrix(expect)
   actual <- as.matrix(expect)
   expect_equal(actual, expect, tolerance = 1e-4)

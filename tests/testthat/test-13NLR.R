@@ -83,9 +83,10 @@ test_that("Score memb", {
 test_that("item fit", {
   expect <- ItemFit2[, -1] %>% as.matrix()
   actual <- result$ItemFitIndices %>%
+    unclass() %>%
     as.data.frame() %>%
     as.matrix()
-  actual <- actual[, -c(2, 4)]
+  actual <- actual[, -c(1, 2, 3, 5, 7)]
   rownames(expect) <- rownames(actual) <- NULL
   colnames(expect) <- colnames(actual) <- NULL
   expect_equal(actual, expect, tolerance = 1e-3)
@@ -99,6 +100,6 @@ test_that("test fit", {
     unlist() %>%
     as.vector()
   expect <- expect[c(1, 2, 4:10)]
-  actual <- actual[c(5, 7, 9:15)]
+  actual <- actual[c(4, 6, 8:14)]
   expect_equal(actual, expect, tolerance = 1e-3)
 })

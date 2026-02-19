@@ -36,6 +36,10 @@
 
 - **FRPIndex**: Expanded documentation for the 6 profile shape indices (Alpha, A, Beta, B, Gamma, C) in `?Biclustering`, including detailed definitions and polytomous adaptation logic.
 
+### Bug Fixes
+
+- **RMP/CMP single student plot error**: Fixed dimension drop error when plotting RMP or CMP for a single student (e.g., `plot(r, type="RMP", students=1)`). Added `drop = FALSE` to prevent matrix-to-vector coercion when extracting a single row from the Students matrix.
+
 ### Internal Improvements
 
 - **plot.exametrika() refactoring**: Split the monolithic 1200-line function into 6 model-family files for improved maintainability. No changes to the external API.

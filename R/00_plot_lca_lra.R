@@ -173,7 +173,7 @@ plot_common_profiles <- function(x, type, value, plotItemID, plotStudentID, test
     } else {
       steps <- x$Nclass
     }
-    params <- x$Students[plotStudentID, 1:steps]
+    params <- x$Students[plotStudentID, 1:steps, drop = FALSE]
     for (i in 1:NROW(params)) {
       y <- params[i, ]
       plot(y,

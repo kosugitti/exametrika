@@ -131,6 +131,95 @@ test_that("GRM performance is acceptable", {
   expect_true(is.finite(grm_result$log_lik))
 })
 
+test_that("GRM ItemFitIndices has correct structure and values", {
+  # Use example data with mixed category counts
+  data("J5S1000", package = "exametrika")
+  small_data <- J5S1000$Q[1:50, 1:3]
+  formatted_data <- dataFormat(small_data, response.type = "ordinal")
+  grm_result <- GRM(formatted_data, verbose = FALSE)
+
+  nitems <- grm_result$testlength
+
+  # ItemFitIndices: each field should be a vector of length nitems
+  ifi <- grm_result$ItemFitIndices
+  expect_s3_class(ifi, "ModelFit")
+  expect_length(ifi$model_log_like, nitems)
+  expect_length(ifi$bench_log_like, nitems)
+  expect_length(ifi$null_log_like, nitems)
+  expect_length(ifi$model_Chi_sq, nitems)
+  expect_length(ifi$null_Chi_sq, nitems)
+  expect_length(ifi$model_df, nitems)
+  expect_length(ifi$null_df, nitems)
+  expect_true(all(is.finite(ifi$model_log_like)))
+  expect_true(all(is.finite(ifi$null_log_like)))
+  expect_true(all(is.finite(ifi$bench_log_like)))
+
+  # Log-likelihoods should be negative (log of probabilities)
+  expect_true(all(ifi$model_log_like < 0))
+  expect_true(all(ifi$null_log_like < 0))
+  expect_true(all(ifi$bench_log_like < 0))
+
+  # Bench (saturated) >= Analysis >= Null in terms of log-likelihood
+  expect_true(all(ifi$bench_log_like >= ifi$model_log_like - 1e-10))
+  expect_true(all(ifi$model_log_like >= ifi$null_log_like - 1e-10))
+
+  # Chi-square should be non-negative
+  expect_true(all(ifi$model_Chi_sq >= -1e-10))
+  expect_true(all(ifi$null_Chi_sq >= -1e-10))
+
+  # TestFitIndices: each field should be a scalar
+  tfi <- grm_result$TestFitIndices
+  expect_s3_class(tfi, "ModelFit")
+  expect_length(tfi$model_log_like, 1)
+  expect_length(tfi$bench_log_like, 1)
+  expect_length(tfi$null_log_like, 1)
+  expect_true(is.finite(tfi$model_log_like))
+  expect_true(is.finite(tfi$null_log_like))
+
+  # TestFitIndices should be sums of ItemFitIndices
+  expect_equal(tfi$model_log_like, sum(ifi$model_log_like), tolerance = 1e-10)
+  expect_equal(tfi$bench_log_like, sum(ifi$bench_log_like), tolerance = 1e-10)
+  expect_equal(tfi$null_log_like, sum(ifi$null_log_like), tolerance = 1e-10)
+})
+
+test_that("GRM works correctly with uniform category counts (apply/table bug regression)", {
+
+  # This test specifically targets the apply()/table() simplification bug:
+  # When all items have the same number of categories, apply(X, 2, table)
+  # returns a matrix instead of a list, causing response_list[[j]] to fail.
+  # The fix uses lapply(seq_len(nitems), function(j) table(X[, j])) instead.
+
+  # Create data where ALL items have the same number of categories (5)
+  set.seed(42)
+  nobs <- 80
+  nitems <- 4
+  uniform_data <- matrix(sample(1:5, nobs * nitems, replace = TRUE),
+                         nrow = nobs, ncol = nitems)
+  formatted_data <- dataFormat(uniform_data, response.type = "ordinal")
+
+  # This should NOT error (the bug caused errors here)
+  grm_result <- GRM(formatted_data, verbose = FALSE)
+
+  expect_s3_class(grm_result, c("exametrika", "GRM"))
+  expect_equal(grm_result$testlength, nitems)
+  expect_equal(grm_result$nobs, nobs)
+
+  # ItemFitIndices should have correct structure
+  ifi <- grm_result$ItemFitIndices
+  expect_length(ifi$model_log_like, nitems)
+  expect_length(ifi$null_log_like, nitems)
+  expect_true(all(is.finite(ifi$model_log_like)))
+  expect_true(all(is.finite(ifi$null_log_like)))
+
+  # null_log_like should be properly computed (not NaN or Inf)
+  expect_true(all(ifi$null_log_like < 0))
+
+  # TestFitIndices should be scalar sums
+  tfi <- grm_result$TestFitIndices
+  expect_equal(tfi$model_log_like, sum(ifi$model_log_like), tolerance = 1e-10)
+  expect_equal(tfi$null_log_like, sum(ifi$null_log_like), tolerance = 1e-10)
+})
+
 test_that("GRM error handling works", {
   # Test with inappropriate data
   expect_error(GRM(matrix(letters[1:20], nrow = 5, ncol = 4)))

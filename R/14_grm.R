@@ -303,7 +303,7 @@ GRM <- function(U, na = NULL, Z = NULL, w = NULL, verbose = TRUE) {
     }
   }
   ### Null model
-  response_list <- apply(tmp$Q, 2, table)
+  response_list <- lapply(seq_len(nitems), function(j) table(tmp$Q[, j]))
   valid_response <- apply(tmp$Z, 2, sum)
   ell_N <- rep(0, nitems)
   for (j in 1:nitems) {

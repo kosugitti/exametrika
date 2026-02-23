@@ -20,6 +20,10 @@
 
 - **Fixed `apply(U$Q, 2, unique)` returning matrix instead of list**: When all items have the same number of response categories (e.g., all 5-point Likert), `apply()` returns a matrix rather than a list. The subsequent `lapply()` then iterates over individual elements instead of per-column vectors, causing `ncat` to be a vector of 1s and crashing the algorithm. Replaced with `lapply(seq_len(nitems), function(j) sort(unique(U$Q[, j])))` which always returns a proper list. Same fix applied to `catfreq999` computation. Both `LRA.ordinal` and `LRA.rated` were affected.
 
+### GRM ItemFitIndices Computation Fix
+
+- **Fixed `apply(tmp$Q, 2, table)` returning matrix instead of list**: Same class of bug as the LRA.ordinal/LRA.rated fix above. In `GRM()`, the null model log-likelihood computation used `apply(tmp$Q, 2, table)` to compute per-item category frequencies. When all items have the same number of response categories (e.g., all 5-point Likert), `apply()` returns a matrix instead of a list, causing `response_list[[j]]` to extract a single number rather than the full frequency table. This produced incorrect `null_log_like` values and consequently wrong chi-square statistics, RMSEA, TLI, and CFI in `ItemFitIndices`. Replaced with `lapply(seq_len(nitems), function(j) table(tmp$Q[, j]))` which always returns a proper list.
+
 ### LRA.ordinal Mixed Category Count Validation
 
 - **Added input validation for mixed category counts**: `LRA.ordinal()` now raises an informative error when items have different numbers of response categories (e.g., some items with 3 categories and others with 5). The internal matrix algebra uses fixed-stride indexing that assumes uniform category counts. The error message suggests alternatives (`LRA.rated`, `Biclustering.ordinal`) that support mixed category counts via list-based designs.

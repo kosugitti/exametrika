@@ -116,7 +116,15 @@ test_that("2PL Q3mat", {
   result <- result2$Q3mat %>%
     unlist() %>%
     as.numeric()
-  expect_equal(result, expect, tolerance = 1e-2)
+  # Q3 residual correlations include values near zero where relative
+  # tolerance is unreliable. Use absolute difference comparison instead.
+  max_abs_diff <- max(abs(result - expect))
+  expect_true(max_abs_diff < 0.005,
+    info = sprintf(
+      "Max absolute difference in Q3 matrix: %.6f (threshold: 0.005)",
+      max_abs_diff
+    )
+  )
 })
 
 

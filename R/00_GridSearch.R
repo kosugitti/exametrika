@@ -12,7 +12,11 @@
 #' @param fun Function name to use for analysis.
 #' Options: "Biclustering", "LCA", "LRA" (default: "Biclustering")
 #' @param index Fit index to optimize from TestFitIndices returned by
-#'  each function. Options: "AIC", "BIC", etc. (default: "BIC")
+#'  each function. Valid options: "BIC" (default), "AIC", "CAIC",
+#'  "model_log_like", "model_Chi_sq", "RMSEA", "NFI", "RFI", "IFI",
+#'  "TLI", "CFI". Aliases are also accepted: "loglik", "log_lik",
+#'  "LogLik", "LL" (all map to "model_log_like"), "Chi_sq", "chi_sq"
+#'  (map to "model_Chi_sq").
 #' @param verbose Logical; if TRUE, displays detailed progress messages during grid search. Default is TRUE.
 #' @param ... Additional arguments passed to the analysis function
 #'
@@ -60,6 +64,36 @@ GridSearch <- function(
     testlength <- NCOL(obj$Q) # ordinal data
     nobs <- NROW(obj$Q)
   }
+
+  # Index alias mapping (normalize user-friendly names to internal field names)
+  index_aliases <- c(
+    "loglik" = "model_log_like",
+    "log_lik" = "model_log_like",
+    "LogLik" = "model_log_like",
+    "LL" = "model_log_like",
+    "Chi_sq" = "model_Chi_sq",
+    "chi_sq" = "model_Chi_sq"
+  )
+  if (index %in% names(index_aliases)) {
+    original_index <- index
+    index <- index_aliases[[index]]
+    message(sprintf("Note: index '%s' mapped to '%s'", original_index, index))
+  }
+
+  # Valid indices and their optimization direction
+  minimize_indices <- c("model_Chi_sq", "RMSEA", "AIC", "CAIC", "BIC")
+  maximize_indices <- c("model_log_like", "NFI", "RFI", "IFI", "TLI", "CFI")
+  valid_indices <- c(minimize_indices, maximize_indices)
+
+  if (!(index %in% valid_indices)) {
+    stop(
+      "Unknown index: ", index, ". Please specify one of: ",
+      paste(valid_indices, collapse = ", "),
+      "\nAliases also accepted: ",
+      paste(names(index_aliases), collapse = ", ")
+    )
+  }
+
   # ------------------------------------------ Biclustering
   if (fun == "Biclustering") {
     if (max_ncls >= nobs) {
@@ -124,20 +158,10 @@ GridSearch <- function(
       stop("Grid search terminated due to convergence failure in all combinations.")
     }
 
-    # Indices where smaller is better
-    minimize_indices <- c("model_log_like", "model_Chi_sq", "RMSEA", "AIC", "CAIC", "BIC")
-    # Indices where larger is better
-    maximize_indices <- c("NFI", "RFI", "IFI", "TLI", "CFI")
-
     if (index %in% minimize_indices) {
       optimal_idx <- which(ret == min(ret, na.rm = TRUE), arr.ind = TRUE)
-    } else if (index %in% maximize_indices) {
-      optimal_idx <- which(ret == max(ret, na.rm = TRUE), arr.ind = TRUE)
     } else {
-      stop(
-        "Unknown index: ", index, ". Please specify one of: ",
-        paste(c(minimize_indices, maximize_indices), collapse = ", ")
-      )
+      optimal_idx <- which(ret == max(ret, na.rm = TRUE), arr.ind = TRUE)
     }
     optimal_ncls <- optimal_idx[1] + 1
     optimal_nfld <- optimal_idx[2] + 1
@@ -225,20 +249,10 @@ GridSearch <- function(
       stop("Grid search terminated due to convergence failure in all combinations.")
     }
 
-    # Indices where smaller is better
-    minimize_indices <- c("model_log_like", "model_Chi_sq", "RMSEA", "AIC", "CAIC", "BIC")
-    # Indices where larger is better
-    maximize_indices <- c("NFI", "RFI", "IFI", "TLI", "CFI")
-
     if (index %in% minimize_indices) {
       optimal_ncls <- which.min(ret) + 1
-    } else if (index %in% maximize_indices) {
-      optimal_ncls <- which.max(ret) + 1
     } else {
-      stop(
-        "Unknown index: ", index, ". Please specify one of: ",
-        paste(c(minimize_indices, maximize_indices), collapse = ", ")
-      )
+      optimal_ncls <- which.max(ret) + 1
     }
 
     # Display warning for failed convergence

@@ -1,5 +1,17 @@
 # exametrika 1.9.0
 
+## Bug Fixes
+
+### GridSearch `index` Parameter Fixes
+
+- **Index alias support**: `GridSearch()` now accepts common aliases for fit indices. `"loglik"`, `"log_lik"`, `"LogLik"`, and `"LL"` are mapped to `"model_log_like"`. `"Chi_sq"` and `"chi_sq"` are mapped to `"model_Chi_sq"`. Previously, using these aliases caused silent `NULL` extraction and eventual errors.
+- **Early validation**: Invalid index names are now caught immediately at the start of `GridSearch()`, before the computationally expensive grid search loop runs. The error message lists all valid options including available aliases.
+- **Log-likelihood optimization direction**: `model_log_like` is now correctly treated as a maximization target (larger log-likelihood = better fit). Previously, it was incorrectly placed in the minimization group, which would have selected the worst-fitting model.
+
+### Test Tolerance Fix
+
+- **Q3 matrix test**: Changed the 2PL Q3 matrix test from relative tolerance (`tolerance = 1e-2` in `expect_equal`) to absolute difference comparison (threshold 0.005). Q3 residual correlations include values near zero where relative tolerance comparisons are unreliable.
+
 ## New Features
 
 ### New Sample Datasets for Polytomous Biclustering

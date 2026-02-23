@@ -92,7 +92,7 @@
 #'   \item{LDLRA/LDB/BINET models}{Network and profile plots specific to each model}
 #' }
 #'
-#' @importFrom graphics curve title axis barplot mtext par text lines rect legend abline image
+#' @importFrom graphics curve title axis barplot mtext par text lines rect legend abline image layout plot.new
 #' @importFrom grDevices gray dev.off jpeg pdf png hcl.colors rainbow
 #' @importFrom stats density runif
 #' @importFrom utils tail

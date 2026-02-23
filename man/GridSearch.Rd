@@ -26,7 +26,11 @@ Biclustering (default: 10)}
 Options: "Biclustering", "LCA", "LRA" (default: "Biclustering")}
 
 \item{index}{Fit index to optimize from TestFitIndices returned by
-each function. Options: "AIC", "BIC", etc. (default: "BIC")}
+each function. Valid options: "BIC" (default), "AIC", "CAIC",
+"model_log_like", "model_Chi_sq", "RMSEA", "NFI", "RFI", "IFI",
+"TLI", "CFI". Aliases are also accepted: "loglik", "log_lik",
+"LogLik", "LL" (all map to "model_log_like"), "Chi_sq", "chi_sq"
+(map to "model_Chi_sq").}
 
 \item{verbose}{Logical; if TRUE, displays detailed progress messages during grid search. Default is TRUE.}
 

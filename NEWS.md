@@ -12,6 +12,10 @@
 
 - **Q3 matrix test**: Changed the 2PL Q3 matrix test from relative tolerance (`tolerance = 1e-2` in `expect_equal`) to absolute difference comparison (threshold 0.005). Q3 residual correlations include values near zero where relative tolerance comparisons are unreliable.
 
+### NAMESPACE Fix
+
+- **Missing imports**: Added `layout` and `plot.new` from `graphics` to NAMESPACE. These functions are used by the legend strip layout helpers for polytomous Biclustering plots.
+
 ## New Features
 
 ### New Sample Datasets for Polytomous Biclustering

@@ -75,7 +75,11 @@ LRA.ordinal <- function(U,
 
 
   # Calc Frequency
-  category999 <- lapply(apply(U$Q, 2, unique), sort)
+  # NOTE: Use lapply(seq_len, ...) instead of lapply(apply(..., 2, unique), ...)
+  # because apply() returns a matrix (not a list) when all columns have the
+  # same number of unique values, causing lapply to iterate over individual
+  # elements rather than per-column vectors.
+  category999 <- lapply(seq_len(nitems), function(j) sort(unique(U$Q[, j])))
   # Calc Frequency excluding missing
   category <- lapply(
     category999,
@@ -86,8 +90,24 @@ LRA.ordinal <- function(U,
   # number of categories excluding missing
   ncat <- sapply(category, length)
 
+  ## Check for mixed category counts
+  ## LRA.ordinal uses fixed-stride matrix indexing (nitems * max(ncat)) that
+
+  ## assumes all items have the same number of categories. Mixed category counts
+  ## cause dimension mismatches in the saturation/restricted model matrices.
+  if (length(unique(ncat)) > 1) {
+    stop(
+      "LRA.ordinal does not support items with different numbers of categories.\n",
+      "  Found category counts: ", paste(unique(ncat), collapse = ", "),
+      " across items.\n",
+      "  All items must have the same number of response categories.\n",
+      "  Note: LRA.rated supports mixed category counts via its list-based design.\n",
+      "  Consider using Biclustering.ordinal, which also supports mixed categories."
+    )
+  }
+
   # Frequency table of categories
-  catfreq999 <- apply(U$Q, 2, table)
+  catfreq999 <- lapply(seq_len(nitems), function(j) table(U$Q[, j]))
   catfreq <- lapply(catfreq999, function(x) x[names(x) != "-1"])
 
 

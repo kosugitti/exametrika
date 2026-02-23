@@ -16,6 +16,14 @@
 
 - **Missing imports**: Added `layout` and `plot.new` from `graphics` to NAMESPACE. These functions are used by the legend strip layout helpers for polytomous Biclustering plots.
 
+### LRA.ordinal / LRA.rated Category Computation Fix
+
+- **Fixed `apply(U$Q, 2, unique)` returning matrix instead of list**: When all items have the same number of response categories (e.g., all 5-point Likert), `apply()` returns a matrix rather than a list. The subsequent `lapply()` then iterates over individual elements instead of per-column vectors, causing `ncat` to be a vector of 1s and crashing the algorithm. Replaced with `lapply(seq_len(nitems), function(j) sort(unique(U$Q[, j])))` which always returns a proper list. Same fix applied to `catfreq999` computation. Both `LRA.ordinal` and `LRA.rated` were affected.
+
+### LRA.ordinal Mixed Category Count Validation
+
+- **Added input validation for mixed category counts**: `LRA.ordinal()` now raises an informative error when items have different numbers of response categories (e.g., some items with 3 categories and others with 5). The internal matrix algebra uses fixed-stride indexing that assumes uniform category counts. The error message suggests alternatives (`LRA.rated`, `Biclustering.ordinal`) that support mixed category counts via list-based designs.
+
 ## New Features
 
 ### New Sample Datasets for Polytomous Biclustering
@@ -95,9 +103,15 @@ Systematic unification of return value structures across all analysis functions 
 - **LRA.ordinal / LRA.rated FitIndices structure**: Unified `TestFitIndices` and `ItemFitIndices` to the standard 16-field structure with `ModelFit` class (`c("exametrika", "ModelFit")`), matching all other analysis functions. Added `model_log_like`, `bench_log_like`, `null_log_like` to `ItemFitIndices`. Removed `ScoreRankCorr` / `RankQuantCorr` from `TestFitIndices` (already available at the top level of the return object).
 - **LRA.ordinal / LRA.rated test updates**: Updated `test-12OLR.R` and `test-13NLR.R` to handle the new `ModelFit` class (add `unclass()` before `as.data.frame()`) and adjusted column/index references to match the unified 16-field structure.
 
+### Plot Layout Improvements
+
+- **Legend strip layout**: Moved per-panel legends to a shared legend strip below the plot area for FCRP (line/bar), FCBR, GRM IRF, and IRT overlay (IRF/IIF) plots. Uses `layout()` with a thin dedicated row (height ratio 0.2) to reduce visual clutter in data panels. Added `setup_legend_layout()` and `draw_legend_strip()` internal helper functions.
+- **FCBR reference line**: Added `P(Q>=1)=1.0` reference line at the top of FCBR plots for visual completeness.
+
 ### Internal Improvements
 
 - **plot.exametrika() refactoring**: Split the monolithic 1200-line function into 6 model-family files for improved maintainability. No changes to the external API.
+- **CI/CD**: Added GitHub Actions workflows for automated R CMD check (`R-CMD-check.yaml`) and test coverage reporting (`test-coverage.yaml`).
 
 ---
 

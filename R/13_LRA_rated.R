@@ -82,7 +82,11 @@ LRA.rated <- function(U,
 
 
   # Calc Frequency
-  category999 <- lapply(apply(U$Q, 2, unique), sort)
+  # NOTE: Use lapply(seq_len, ...) instead of lapply(apply(..., 2, unique), ...)
+  # because apply() returns a matrix (not a list) when all columns have the
+  # same number of unique values, causing lapply to iterate over individual
+  # elements rather than per-column vectors.
+  category999 <- lapply(seq_len(nitems), function(j) sort(unique(U$Q[, j])))
   # Calc Frequency excluding missing
   category <- lapply(
     category999,
@@ -94,7 +98,7 @@ LRA.rated <- function(U,
   ncat <- sapply(category, length)
 
   # Frequency table of categories
-  catfreq999 <- apply(U$Q, 2, table)
+  catfreq999 <- lapply(seq_len(nitems), function(j) table(U$Q[, j]))
   catfreq <- lapply(catfreq999, function(x) x[names(x) != "-1"])
 
   ## Count Correct Ans

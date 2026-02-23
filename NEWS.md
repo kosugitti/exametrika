@@ -32,6 +32,11 @@
 
 - **Removed "FRP" from valid plot types for LCA and LRA**: Field Reference Profile (FRP) requires a field structure (item grouping), which LCA and LRA do not have. Previously, `plot(lca_result, type = "FRP")` passed validation but failed at runtime because the `$FRP` field does not exist in LCA/LRA return values. Now properly rejected with an informative error message at the validation stage.
 
+### BINET `g_list` / `adj_list` Input Path Fix
+
+- **Fixed `g_csv` variable undefined error when using `g_list` or `adj_list` input**: `BINET()` crashed with an undefined variable error at the graph construction step when the DAG was specified via `g_list` or `adj_list` parameters. The internal variable `g_csv` (used to build the integrated graph object `all_g`) was only defined in the `adj_file` code path. Added logic to reconstruct `g_csv` from `adj_list` for the `g_list` and `adj_list` input paths, ensuring `all_g` is correctly built with Field edge attributes regardless of input method.
+- **Fixed `g_list` / `adj_list` length validation**: The length check for `g_list` and `adj_list` incorrectly compared against `ncls` (number of classes) instead of `nfld` (number of fields). In BINET, each element of `adj_list` represents the DAG structure at a specific field, so the list length should equal `nfld`. Also fixed `g_list` type check from `g_list[[1]]` (always checking the first element) to `g_list[[j]]` (checking each element).
+
 ## New Features
 
 ### New Sample Datasets for Polytomous Biclustering

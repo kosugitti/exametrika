@@ -192,13 +192,13 @@ BINET <- function(U, Z = NULL, w = NULL, na = NULL,
 
   # g_list check
   if (!is.null(g_list)) {
-    if (length(g_list) != ncls) {
-      stop("The number of classes does not match the length of the list.
-           Please specify a graph for all classes.")
+    if (length(g_list) != nfld) {
+      stop("The number of fields does not match the length of g_list.
+           Please specify a graph for all fields.")
     }
     adj_list <- list()
-    for (j in 1:ncls) {
-      if (!inherits(g_list[[1]], "igraph")) {
+    for (j in 1:nfld) {
+      if (!inherits(g_list[[j]], "igraph")) {
         stop("Some items in g_list are not recognized as graph objects.")
       }
       adj_list[[j]] <- fill_adj(g_list[[j]], FieldLabel)
@@ -206,11 +206,11 @@ BINET <- function(U, Z = NULL, w = NULL, na = NULL,
   }
   # adj_list check
   if (!is.null(adj_list)) {
-    if (length(adj_list) != ncls) {
-      stop("The number of classes does not match the length of the list.
-           Please specify a graph for all classes.")
+    if (length(adj_list) != nfld) {
+      stop("The number of fields does not match the length of adj_list.
+           Please specify an adjacency matrix for all fields.")
     }
-    for (j in 1:ncls) {
+    for (j in 1:nfld) {
       g <- igraph::graph_from_adjacency_matrix(adj_list[[j]])
       adj_list[[j]] <- fill_adj(g, FieldLabel)
     }
@@ -228,6 +228,32 @@ BINET <- function(U, Z = NULL, w = NULL, na = NULL,
       adj_list[[i]] <- fill_adj(g_tmp, FieldLabel)
     }
     g_csv$Field <- sprintf("Field%02d", g_csv$Field)
+  }
+
+  # Construct g_csv from adj_list for g_list/adj_list input paths
+  if (is.null(adj_file)) {
+    edge_rows <- list()
+    for (k in seq_len(nfld)) {
+      edges <- which(adj_list[[k]] == 1, arr.ind = TRUE)
+      if (nrow(edges) > 0) {
+        edge_rows[[length(edge_rows) + 1]] <- data.frame(
+          From = FieldLabel[edges[, 1]],
+          To = FieldLabel[edges[, 2]],
+          Field = sprintf("Field%02d", k),
+          stringsAsFactors = FALSE
+        )
+      }
+    }
+    if (length(edge_rows) > 0) {
+      g_csv <- do.call(rbind, edge_rows)
+    } else {
+      g_csv <- data.frame(
+        From = character(0),
+        To = character(0),
+        Field = character(0),
+        stringsAsFactors = FALSE
+      )
+    }
   }
 
   all_adj <- Reduce("|", adj_list) * 1

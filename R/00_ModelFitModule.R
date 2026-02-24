@@ -276,7 +276,7 @@ calcFitIndices <- function(chi_A, chi_B, df_A, df_B, nobs) {
   RMSEA <- sqrt(corrected_values / (df_A * (nobs - 1)))
 
   AIC <- chi_A - 2 * df_A
-  CAIC <- chi_A - df_A * log(nobs + 1)
+  CAIC <- chi_A - df_A * (log(nobs) + 1)
   BIC <- chi_A - df_A * log(nobs)
 
   NFI <- (chi_A / chi_B)

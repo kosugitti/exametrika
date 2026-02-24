@@ -2,6 +2,10 @@
 
 ## Bug Fixes
 
+### CAIC (Consistent AIC) Formula Correction
+
+- **Fixed CAIC formula to match Bozdogan (1987) original definition**: The CAIC penalty term was `log(n + 1)` but should be `log(n) + 1` per Bozdogan (1987, Psychometrika, 52(3), p.358, Proposition 2, Eq.44). The original Mathematica implementation had this error, and the R port inherited it. The numerical difference is approximately 1 (constant), but the corrected formula now matches the published definition: `CAIC(k) = -2 log L + k × (log(n) + 1)`. This affects all models that compute fit indices (IRT, LCA, LRA, Biclustering, BNM, LDLRA, LDB, BINET, GRM).
+
 ### GridSearch `index` Parameter Fixes
 
 - **Index alias support**: `GridSearch()` now accepts common aliases for fit indices. `"loglik"`, `"log_lik"`, `"LogLik"`, and `"LL"` are mapped to `"model_log_like"`. `"Chi_sq"` and `"chi_sq"` are mapped to `"model_Chi_sq"`. Previously, using these aliases caused silent `NULL` extraction and eventual errors.

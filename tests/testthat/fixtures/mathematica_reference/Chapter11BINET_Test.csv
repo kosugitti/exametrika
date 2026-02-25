@@ -1,0 +1,32 @@
+"Author","SHOJIMA Kojiro","...3"
+"Analysis Date","Tue 24 Feb 2026 19:13:38",NA
+"N of Items","35.0",NA
+"Sample Size","515.0",NA
+"Mean","12.749514563106796",NA
+"SE of Mean","0.3567865140306771",NA
+"SD","8.096774514953083",NA
+"Skewness","0.7703382465193783",NA
+"Kurtosis","0.0359465678636659",NA
+"Min","0.0",NA
+"Max","35.0",NA
+"Model","Bicluster Network Model",NA
+"N of Fields","12.0",NA
+"N of Classes","13.0",NA
+"N of EM Cycles","25.0",NA
+"Benchmark Model","Multigroup Model (Table 11.7)","Saturated Model (Table 11.9)"
+"Log-Likelihood(Benchmark Model)","-5891.314145785653","0.0"
+"Log-Likelihood(Null Model)","-9862.114459105207","-9862.114459105207"
+"Chi-square(Null Model)","7941.600626639109","19724.228918210414"
+"DF(Null Model)","1155.0","17045.0"
+"Log-Likelihood(Analysis Model)","-5786.942122781459","-5786.942122781459"
+"Chi-square(Analysis Model)","-208.74404600838716","11573.884245562918"
+"DF(Analysis Model)","1005.0","16895.0"
+"NFI","1.0","0.4132148692070128"
+"RFI","1.0","0.40800517582915263"
+"IFI","1.0","1.0"
+"TLI","1.0","1.0"
+"CFI","1.0","1.0"
+"RMSEA","0.0","0.0"
+"AIC","-2218.744046008387","-22216.11575443708"
+"CAIC","-7489.1317811754425","-110816.3155411509"
+"BIC","-6484.1317811754425","-93921.3155411509"

@@ -1,0 +1,30 @@
+"Total Score","Statistics"
+"Test Length",20
+"Sample Size",400
+"Mean",13.5175
+"SE of Mean",0.186544180297879
+"Variance",13.919492481203
+"SD",3.73088360595758
+"Skewness",-0.671121628854425
+"Kurtosis",-0.184242451060688
+"Min",2
+"Max",20
+"Range",18
+"Q1(25%)",11
+"Median(50%)",14
+"Q3(75%)",16
+"Interquartile Range",5
+"Q2(Stanine)",6
+"Q3(Stanine)",8
+"Q4(Stanine)",11
+"Q5(Stanine)",13
+"Q6(Stanine)",15
+"Q7(Stanine)",17
+"Q8(Stanine)",18
+"Q9(Stanine)",19
+"Alpha(Covariance)",0.765882804758202
+"Alpha(Phi)",0.778067902653442
+"Alpha(Tetrachoric)",0.881001775688779
+"Omega(Covariance)",0.781223016174121
+"Omega(Phi)",0.790372178703134
+"Omega(Tetrachoric)",0.894028423601569

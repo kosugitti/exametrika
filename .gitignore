@@ -53,5 +53,11 @@ src/*.o
 src/*.so
 src/*.dll
 
+# Auto-generated plot files
+Rplots.pdf
+
+# Dropbox conflict copies
+*競合コピー*
+
 # claude
 .claude/

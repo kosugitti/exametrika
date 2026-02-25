@@ -78,12 +78,12 @@ result.GRM
 
 GRM supports similar plot types as IRT:
 
-```{r grm-irf, fig.width=7, fig.height=5, message=FALSE, warning=FALSE}
-plot(result.GRM, type = "IRF")
+```{r grm-irf, fig.width=7, fig.height=8, message=FALSE, warning=FALSE}
+plot(result.GRM, type = "IRF", nc = 2)
 ```
 
-```{r grm-iif, fig.width=7, fig.height=5, message=FALSE, warning=FALSE}
-plot(result.GRM, type = "IIF")
+```{r grm-iif, fig.width=7, fig.height=8, message=FALSE, warning=FALSE}
+plot(result.GRM, type = "IIF", nc = 2)
 ```
 
 ```{r grm-tif, fig.width=7, fig.height=5, message=FALSE, warning=FALSE}

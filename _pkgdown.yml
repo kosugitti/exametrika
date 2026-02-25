@@ -14,6 +14,7 @@ navbar:
     github:
       icon: fa-github
       href: https://github.com/kosugitti/exametrika
+      aria-label: GitHub
 
 articles:
   - title: Getting Started
@@ -155,6 +156,25 @@ reference:
     - StrLearningGA_BNM
     - StrLearningPBIL_BNM
     - StrLearningPBIL_LDLRA
+
+  - title: S3 Methods
+    desc: Plot and print methods for exametrika objects
+    contents:
+    - plot.exametrika
+    - print.exametrika
+
+  - title: Internal
+    desc: Internal helper functions (not intended for direct use)
+    contents:
+    - AlphaIfDel
+    - BitRespPtn
+    - LD_param_est
+    - PSD_item_params
+    - asymprior
+    - maxParents_penalty
+    - objective_function_IRT
+    - slopeprior
+    - softmax
 
   - title: Sample Datasets
     desc: Included datasets for examples and testing

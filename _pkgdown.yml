@@ -1,0 +1,172 @@
+url: https://kosugitti.github.io/exametrika/
+
+template:
+  bootstrap: 5
+
+navbar:
+  structure:
+    left: [intro, reference, articles, news]
+    right: [search, tutorial_ja, github]
+  components:
+    tutorial_ja:
+      text: "日本語チュートリアル"
+      href: https://kosugitti.github.io/slides/BMS2025spring/docs/
+    github:
+      icon: fa-github
+      href: https://github.com/kosugitti/exametrika
+
+articles:
+  - title: Getting Started
+    contents:
+    - getting-started
+  - title: Models
+    contents:
+    - irt
+    - latent-class-rank
+    - biclustering
+    - network-models
+  - title: 日本語
+    contents:
+    - guide-ja
+
+reference:
+  - title: Data Preparation
+    desc: Functions for formatting and preparing test data
+    contents:
+    - dataFormat
+    - longdataFormat
+
+  - title: Descriptive Statistics
+    desc: Item-level and test-level descriptive statistics
+    contents:
+    - TestStatistics
+    - ItemStatistics
+    - ItemReport
+    - ScoreReport
+    - StudentAnalysis
+
+  - title: Classical Test Theory
+    desc: CTT reliability and item analysis
+    contents:
+    - CTT
+    - AlphaCoefficient
+    - OmegaCoefficient
+    - Dimensionality
+
+  - title: Item Analysis
+    desc: Item-level analysis functions
+    contents:
+    - ItemFit
+    - ItemTotalCorr
+    - ItemEntropy
+    - ItemThreshold
+    - ItemLift
+    - ItemOdds
+    - ITBiserial
+    - InterItemAnalysis
+
+  - title: Test-level Analysis
+    desc: Test-level fit and response functions
+    contents:
+    - TestFit
+    - TestFitSaturated
+    - TestResponseFunc
+    - TestInformationFunc
+
+  - title: Correlation Measures
+    desc: Correlation and association measures
+    contents:
+    - BiserialCorrelation
+    - TetrachoricCorrelationMatrix
+    - PolychoricCorrelationMatrix
+    - PhiCoefficient
+    - MutualInformation
+    - tetrachoric
+    - polychoric
+    - polyserial
+
+  - title: Item Response Theory
+    desc: IRT models for binary and polytomous data
+    contents:
+    - IRT
+    - GRM
+    - RaschModel
+    - TwoPLM
+    - ThreePLM
+    - LogisticModel
+    - IIF2PLM
+    - IIF3PLM
+    - ItemInformationFunc
+    - grm_prob
+    - grm_iif
+
+  - title: Latent Class / Rank Analysis
+    desc: LCA and LRA for classification of examinees
+    contents:
+    - LCA
+    - LRA
+
+  - title: Biclustering
+    desc: Simultaneous clustering of items and examinees
+    contents:
+    - Biclustering
+    - Biclustering_IRM
+    - GridSearch
+
+  - title: Bayesian Network Models
+    desc: Network models and structure learning
+    contents:
+    - BNM
+    - BNM_GA
+    - BNM_PBIL
+
+  - title: Local Dependence Models
+    desc: Models combining latent structure with item dependencies
+    contents:
+    - LDLRA
+    - LDLRA_PBIL
+    - LDB
+    - BINET
+
+  - title: Scoring Functions
+    desc: Scoring and scaling functions
+    contents:
+    - crr
+    - nrs
+    - passage
+    - percentile
+    - sscore
+    - stanine
+    - CSR
+    - JSR
+    - CCRR
+    - JCRR
+    - JointSampleSize
+
+  - title: Model Fit
+    desc: Model fit index computation
+    contents:
+    - calcFitIndices
+
+  - title: Deprecated
+    desc: Functions deprecated since v1.5.0 (to be removed in v2.0.0)
+    contents:
+    - IRM
+    - StrLearningGA_BNM
+    - StrLearningPBIL_BNM
+    - StrLearningPBIL_LDLRA
+
+  - title: Sample Datasets
+    desc: Included datasets for examples and testing
+    contents:
+    - J5S10
+    - J5S1000
+    - J12S5000
+    - J15S500
+    - J15S3810
+    - J20S400
+    - J20S600
+    - J35S500
+    - J35S515
+    - J35S5000
+    - J50S100

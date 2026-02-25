@@ -1,0 +1,96 @@
+---
+title: "Item Response Theory (IRT)"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Item Response Theory (IRT)}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.width = 7,
+  fig.height = 5,
+  out.width = "100%"
+)
+```
+
+```{r library, message=FALSE, warning=FALSE}
+library(exametrika)
+```
+
+## IRT for Binary Data
+
+The `IRT()` function estimates item parameters using logistic models. It supports 2PL, 3PL, and 4PL models via the `model` option.
+
+```{r model-irt, message=FALSE, warning=FALSE}
+result.IRT <- IRT(J15S500, model = 3)
+result.IRT
+```
+
+The estimated ability parameters for each examinee are included in the returned object:
+
+```{r results-irt-ability, message=FALSE, warning=FALSE}
+head(result.IRT$ability)
+```
+
+### Plot Types
+
+IRT provides several plot types:
+
+- **IRF**: Item Response Function (Item Characteristic Curves)
+- **IIC**: Item Information Curves
+- **TRF**: Test Response Function
+- **TIC**: Test Information Curve
+
+Items can be specified using the `items` argument. The layout is controlled by `nr` (rows) and `nc` (columns).
+
+```{r plot-irt-irf, fig.width=7, fig.height=5, message=FALSE, warning=FALSE}
+plot(result.IRT, type = "IRF", items = 1:6, nc = 2, nr = 3)
+```
+
+```{r plot-irt-overlay, fig.width=7, fig.height=5, message=FALSE, warning=FALSE}
+plot(result.IRT, type = "IRF", overlay = TRUE)
+```
+
+```{r plot-irt-iic, fig.width=7, fig.height=5, message=FALSE, warning=FALSE}
+plot(result.IRT, type = "IIC", items = 1:6, nc = 2, nr = 3)
+```
+
+```{r plot-irt-trf, fig.width=7, fig.height=5, message=FALSE, warning=FALSE}
+plot(result.IRT, type = "TRF")
+```
+
+```{r plot-irt-tic, fig.width=7, fig.height=5, message=FALSE, warning=FALSE}
+plot(result.IRT, type = "TIC")
+```
+
+## GRM: Graded Response Model
+
+The Graded Response Model (Samejima, 1969) extends IRT to polytomous response data. It can be applied using the `GRM()` function.
+
+```{r grm, message=FALSE, warning=FALSE}
+result.GRM <- GRM(J5S1000)
+result.GRM
+```
+
+GRM supports similar plot types as IRT:
+
+```{r grm-irf, fig.width=7, fig.height=5, message=FALSE, warning=FALSE}
+plot(result.GRM, type = "IRF")
+```
+
+```{r grm-iif, fig.width=7, fig.height=5, message=FALSE, warning=FALSE}
+plot(result.GRM, type = "IIF")
+```
+
+```{r grm-tif, fig.width=7, fig.height=5, message=FALSE, warning=FALSE}
+plot(result.GRM, type = "TIF")
+```
+
+## References
+
+- Shojima, K. (2022). *Test Data Engineering*. Springer.
+- Samejima, F. (1969). Estimation of latent ability using a response pattern of graded scores. *Psychometrika*, 34(S1), 1--97.

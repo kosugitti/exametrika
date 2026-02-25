@@ -1,0 +1,125 @@
+---
+title: "Latent Class and Rank Analysis"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Latent Class and Rank Analysis}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.width = 7,
+  fig.height = 5,
+  out.width = "100%"
+)
+```
+
+```{r library, message=FALSE, warning=FALSE}
+library(exametrika)
+```
+
+## Latent Class Analysis (LCA)
+
+LCA classifies examinees into unordered latent classes. Specify the dataset and the number of classes.
+
+```{r model-lca, message=FALSE, warning=FALSE}
+LCA(J15S500, ncls = 5)
+```
+
+The Class Membership Matrix indicates which latent class each examinee belongs to:
+
+```{r results-lca-membership, message=FALSE, warning=FALSE}
+result.LCA <- LCA(J15S500, ncls = 5)
+head(result.LCA$Students)
+```
+
+### LCA Plot Types
+
+- **IRP**: Item Reference Profile
+- **CMP**: Class Membership Profile
+- **TRP**: Test Reference Profile
+- **LCD**: Latent Class Distribution
+
+```{r plot-lca, fig.width=7, fig.height=5, message=FALSE, warning=FALSE}
+plot(result.LCA, type = "IRP", items = 1:6, nc = 2, nr = 3)
+plot(result.LCA, type = "CMP", students = 1:9, nc = 3, nr = 3)
+plot(result.LCA, type = "TRP")
+plot(result.LCA, type = "LCD")
+```
+
+## Latent Rank Analysis (LRA)
+
+LRA is similar to LCA but assumes an ordering among the latent classes (ranks). Specify the dataset and the number of ranks.
+
+```{r model-lra, message=FALSE, warning=FALSE}
+LRA(J15S500, nrank = 6)
+```
+
+Rank membership probabilities and rank-up/rank-down odds are calculated:
+
+```{r results-lra-membership, message=FALSE, warning=FALSE}
+result.LRA <- LRA(J15S500, nrank = 6)
+head(result.LRA$Students)
+```
+
+```{r plot-lra, fig.width=7, fig.height=5, message=FALSE, warning=FALSE}
+plot(result.LRA, type = "IRP", items = 1:6, nc = 2, nr = 3)
+plot(result.LRA, type = "RMP", students = 1:9, nc = 3, nr = 3)
+plot(result.LRA, type = "TRP")
+plot(result.LRA, type = "LRD")
+```
+
+## LRA for Ordinal Data
+
+LRA can also handle ordinal scale data. The `mic` option enforces monotonic increasing constraints.
+
+```{r model-lra-ordinal, message=FALSE, warning=FALSE}
+result.LRAord <- LRA(J15S3810, nrank = 3, mic = TRUE)
+```
+
+Score-rank relationship visualizations:
+
+```{r plot-lra-ordinal-score, fig.width=7, fig.height=5, message=FALSE, warning=FALSE}
+plot(result.LRAord, type = "ScoreFreq")
+plot(result.LRAord, type = "ScoreRank")
+```
+
+Item-rank relationship plots:
+
+- **ICBR**: Item Category Boundary Reference -- cumulative probability curves for each category threshold
+- **ICRP**: Item Category Response Profile -- probability of each response category across ranks
+
+```{r plot-lra-ordinal-icbr, fig.width=7, fig.height=5, message=FALSE, warning=FALSE}
+plot(result.LRAord, type = "ICBR", items = 1:4, nc = 2, nr = 2)
+plot(result.LRAord, type = "ICRP", items = 1:4, nc = 2, nr = 2)
+```
+
+Rank membership profiles for individual examinees:
+
+```{r plot-lra-ordinal-rmp, fig.width=7, fig.height=5, message=FALSE, warning=FALSE}
+plot(result.LRAord, type = "RMP", students = 1:9, nc = 3, nr = 3)
+```
+
+## LRA for Rated/Nominal Data
+
+For multiple-choice tests (nominal scale), LRA can analyze response patterns including distractor choices.
+
+```{r lra-rated, message=FALSE, warning=FALSE}
+result.LRArated <- LRA(J35S5000, nrank = 10, mic = TRUE)
+```
+
+```{r plot-lra-rated-score, fig.width=7, fig.height=5, message=FALSE, warning=FALSE}
+plot(result.LRArated, type = "ScoreFreq")
+plot(result.LRArated, type = "ScoreRank")
+```
+
+```{r plot-lra-rated-icrp, fig.width=7, fig.height=5, message=FALSE, warning=FALSE}
+plot(result.LRArated, type = "ICRP", items = 1:4, nc = 2, nr = 2)
+```
+
+## Reference
+
+Shojima, K. (2022). *Test Data Engineering*. Springer.

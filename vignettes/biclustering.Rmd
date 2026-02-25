@@ -1,0 +1,131 @@
+---
+title: "Biclustering and Ranklustering"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Biclustering and Ranklustering}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.width = 7,
+  fig.height = 5,
+  out.width = "100%"
+)
+```
+
+```{r library, message=FALSE, warning=FALSE}
+library(exametrika)
+```
+
+## Biclustering and Ranklustering
+
+Biclustering and Ranklustering simultaneously cluster items into fields and examinees into classes/ranks. The difference is specified via the `method` option:
+
+- `method = "B"`: Biclustering (no filtering matrix)
+- `method = "R"`: Ranklustering (with filtering matrix for ordered ranks)
+
+### Biclustering
+
+```{r model-biclustering, message=FALSE, warning=FALSE}
+Biclustering(J35S515, nfld = 5, ncls = 6, method = "B")
+```
+
+### Ranklustering
+
+```{r model-ranklustering, message=FALSE, warning=FALSE}
+result.Ranklustering <- Biclustering(J35S515, nfld = 5, ncls = 6, method = "R")
+```
+
+```{r plot-ranklustering, fig.width=7, fig.height=5, message=FALSE, warning=FALSE}
+plot(result.Ranklustering, type = "Array")
+plot(result.Ranklustering, type = "FRP", nc = 2, nr = 3)
+plot(result.Ranklustering, type = "RRV")
+plot(result.Ranklustering, type = "RMP", students = 1:9, nc = 3, nr = 3)
+plot(result.Ranklustering, type = "LRD")
+```
+
+## Finding Optimal Number of Classes and Fields
+
+### Grid Search
+
+`GridSearch()` systematically evaluates multiple parameter combinations and selects the best-fitting model:
+
+```{r grid-search, message=FALSE, warning=FALSE}
+result <- GridSearch(J35S515, method = "R", max_ncls = 10, max_nfld = 10, index = "BIC")
+result$optimal_ncls
+result$optimal_nfld
+result$optimal_result
+```
+
+### Infinite Relational Model (IRM)
+
+The IRM uses the Chinese Restaurant Process to automatically determine the optimal number of fields and classes:
+
+```{r model-irm, message=FALSE, warning=FALSE}
+result.IRM <- Biclustering_IRM(J35S515, gamma_c = 1, gamma_f = 1, verbose = TRUE)
+plot(result.IRM, type = "Array")
+plot(result.IRM, type = "FRP", nc = 3)
+plot(result.IRM, type = "TRP")
+```
+
+## Biclustering for Polytomous Data
+
+### Ordinal Data
+
+```{r bic-ord, message=FALSE, warning=FALSE}
+result.B.ord <- Biclustering(J35S500, ncls = 5, nfld = 5, method = "R")
+result.B.ord
+plot(result.B.ord, type = "Array")
+```
+
+FRP (Field Reference Profile) shows the expected score per field across latent ranks:
+
+```{r bic-ord-frp, fig.width=7, fig.height=5, message=FALSE, warning=FALSE}
+plot(result.B.ord, type = "FRP", nc = 3, nr = 2)
+```
+
+FCRP (Field Category Response Profile) shows category probabilities across ranks. The `style` parameter can be `"line"` or `"bar"`:
+
+```{r bic-ord-fcrp, fig.width=7, fig.height=5, message=FALSE, warning=FALSE}
+plot(result.B.ord, type = "FCRP", nc = 3, nr = 2)
+plot(result.B.ord, type = "FCRP", style = "bar", nc = 3, nr = 2)
+```
+
+FCBR (Field Cumulative Boundary Reference) shows cumulative boundary probabilities (ordinal only):
+
+```{r bic-ord-fcbr, fig.width=7, fig.height=5, message=FALSE, warning=FALSE}
+plot(result.B.ord, type = "FCBR", nc = 3, nr = 2)
+```
+
+ScoreField and RRV plots:
+
+```{r bic-ord-scorefield, fig.width=7, fig.height=5, message=FALSE, warning=FALSE}
+plot(result.B.ord, type = "ScoreField")
+plot(result.B.ord, type = "RRV")
+```
+
+### Nominal Data
+
+```{r bic-nom, message=FALSE, warning=FALSE}
+result.B.nom <- Biclustering(J20S600, ncls = 5, nfld = 4)
+result.B.nom
+plot(result.B.nom, type = "Array")
+```
+
+Nominal Biclustering supports FRP, FCRP, ScoreField, and RRV (but not FCBR):
+
+```{r bic-nom-plots, fig.width=7, fig.height=5, message=FALSE, warning=FALSE}
+plot(result.B.nom, type = "FRP", nc = 2, nr = 2)
+plot(result.B.nom, type = "FCRP", nc = 2, nr = 2)
+plot(result.B.nom, type = "FCRP", style = "bar", nc = 2, nr = 2)
+plot(result.B.nom, type = "ScoreField")
+plot(result.B.nom, type = "RRV")
+```
+
+## Reference
+
+Shojima, K. (2022). *Test Data Engineering*. Springer.

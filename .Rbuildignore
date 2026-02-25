@@ -13,3 +13,6 @@
 ^docs$
 ^tools$
 ^\.claude
+^_pkgdown\.yml$
+^pkgdown$
+^CLAUDE\.md$

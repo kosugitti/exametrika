@@ -129,10 +129,18 @@ Systematic unification of return value structures across all analysis functions 
 - **Legend strip layout**: Moved per-panel legends to a shared legend strip below the plot area for FCRP (line/bar), FCBR, GRM IRF, and IRT overlay (IRF/IIF) plots. Uses `layout()` with a thin dedicated row (height ratio 0.2) to reduce visual clutter in data panels. Added `setup_legend_layout()` and `draw_legend_strip()` internal helper functions.
 - **FCBR reference line**: Added `P(Q>=1)=1.0` reference line at the top of FCBR plots for visual completeness.
 
+### Test Suite Modernization
+
+- **Complete migration from Excel to CSV fixtures**: Removed all 14 legacy test files that depended on `tidyverse` and `readxl` for reading Excel-based Mathematica reference data. Replaced with 23 modern test files using base R `read.csv()` and `test_path()` to load CSV fixtures from `tests/testthat/fixtures/mathematica_reference/`. The new test suite has zero external package dependencies beyond `testthat`.
+- **Removed `readxl`/`tidyverse` from test dependencies**: DESCRIPTION `Suggests` no longer requires any packages beyond `knitr`, `rmarkdown`, and `testthat`.
+- **Fixture file reorganization**: Shortened overly long CSV fixture filenames to comply with CRAN's 100-byte portable path requirement.
+- **Test coverage**: 23 test files covering all models (CTT, IRT 2PL/3PL/4PL, LCA, LRA binary/ordinal/nominal, Biclustering binary/ordinal/nominal, IRM, BNM, LDLRA, LDB, BINET, GRM, GridSearch, dataFormat, polychoric correlation, scoring, student/test analysis). 85 Mathematica reference CSV files for cross-validation.
+
 ### Internal Improvements
 
 - **plot.exametrika() refactoring**: Split the monolithic 1200-line function into 6 model-family files for improved maintainability. No changes to the external API.
 - **CI/CD**: Added GitHub Actions workflows for automated R CMD check (`R-CMD-check.yaml`) and test coverage reporting (`test-coverage.yaml`).
+- **.Rbuildignore cleanup**: Removed `^tests$` and `^inst$` entries that were incorrectly excluding tests and vignettes from the built package.
 
 ---
 

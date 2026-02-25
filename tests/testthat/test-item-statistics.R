@@ -3,8 +3,8 @@ library(exametrika)
 
 # Mathematica 参照データをシートごとに読み込み
 sheets <- c(
-  "Item", "Joint_Sample_Size", "Joint_Correct_Response_Rate",
-  "Conditional_Correct_Response_Ra", "Item_Lift", "Mutual_Information",
+  "Item", "JSS", "JCRR",
+  "CCRR", "Item_Lift", "Mutual_Information",
   "Phi_Coefficient", "Tetrachoric_Correlation"
 )
 

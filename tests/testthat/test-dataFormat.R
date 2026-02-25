@@ -450,21 +450,22 @@ test_that("dataFormat preserves data integrity", {
   expect_true(all(result$Z %in% c(0, 1)))
 })
 
-test_that("dataFormat works with real-world datasets", {
-  # Test with package datasets if available
-  skip_if_not_installed("ltm")
-
-  # Science dataset from ltm package
-  data("Science", package = "ltm")
-  result <- dataFormat(Science, response.type = "ordinal")
+test_that("dataFormat works with various ordinal data patterns", {
+  # Simulate ordinal data (Likert-like)
+  set.seed(42)
+  ordinal_data <- matrix(sample(1:5, 100, replace = TRUE), nrow = 20, ncol = 5)
+  colnames(ordinal_data) <- paste0("Item", 1:5)
+  result <- dataFormat(ordinal_data, response.type = "ordinal")
   expect_s3_class(result, "exametrika")
   expect_equal(result$response.type, "ordinal")
 
-  # Test with psych package data if available
-  skip_if_not_installed("psych")
-  data("bfi", package = "psych")
-  result <- dataFormat(psych::bfi[1:100, 1:10]) # Use subset for speed
-  expect_s3_class(result, "exametrika")
+  # Simulate larger dataset with mixed response patterns
+  set.seed(123)
+  larger_data <- matrix(sample(1:4, 500, replace = TRUE), nrow = 50, ncol = 10)
+  colnames(larger_data) <- paste0("Q", 1:10)
+  result2 <- dataFormat(larger_data, response.type = "ordinal")
+  expect_s3_class(result2, "exametrika")
+  expect_equal(ncol(result2$Q), 10)
 })
 
 test_that("dataFormat handles Japanese/Unicode labels", {

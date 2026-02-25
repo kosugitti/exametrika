@@ -5,8 +5,6 @@
 ^README\.Rmd$
 ^README_files$
 ^cran-comments\.md$
-^tests$
-^inst$
 ^\.github$
 ^_config\.yml$
 ^CRAN-SUBMISSION$

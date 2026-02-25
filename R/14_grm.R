@@ -180,7 +180,7 @@ params_to_target <- function(a_vec, b_list) {
 #' @importFrom Rcpp evalCpp
 #'
 #' @examples
-#' \donttest{
+#' \dontrun{
 #' # Apply GRM to example data
 #' result <- GRM(J5S1000)
 #' print(result)

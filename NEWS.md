@@ -32,6 +32,10 @@
 
 - **Added input validation for mixed category counts**: `LRA.ordinal()` now raises an informative error when items have different numbers of response categories (e.g., some items with 3 categories and others with 5). The internal matrix algebra uses fixed-stride indexing that assumes uniform category counts. The error message suggests alternatives (`LRA.rated`, `Biclustering.ordinal`) that support mixed category counts via list-based designs.
 
+### GRM Example Fix
+
+- **Changed GRM examples from `\donttest` to `\dontrun`**: GRM's multi-panel plot examples caused "invalid graphics state" errors in non-interactive environments (pkgdown, CI). Changed to `\dontrun` to prevent build failures.
+
 ### LCA/LRA FRP Plot Type Removal
 
 - **Removed "FRP" from valid plot types for LCA and LRA**: Field Reference Profile (FRP) requires a field structure (item grouping), which LCA and LRA do not have. Previously, `plot(lca_result, type = "FRP")` passed validation but failed at runtime because the `$FRP` field does not exist in LCA/LRA return values. Now properly rejected with an informative error message at the validation stage.

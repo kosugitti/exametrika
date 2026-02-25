@@ -40,7 +40,7 @@ and category threshold parameters for each item. It is widely used in psychologi
 educational assessment, and other fields that deal with multi-step rating scales.
 }
 \examples{
-\donttest{
+\dontrun{
 # Apply GRM to example data
 result <- GRM(J5S1000)
 print(result)

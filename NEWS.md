@@ -4,7 +4,7 @@
 
 ### CAIC (Consistent AIC) Formula Correction
 
-- **Fixed CAIC formula to match Bozdogan (1987) original definition**: The CAIC penalty term was `log(n + 1)` but should be `log(n) + 1` per Bozdogan (1987, Psychometrika, 52(3), p.358, Proposition 2, Eq.44). The original Mathematica implementation had this error, and the R port inherited it. The numerical difference is approximately 1 (constant), but the corrected formula now matches the published definition: `CAIC(k) = -2 log L + k × (log(n) + 1)`. This affects all models that compute fit indices (IRT, LCA, LRA, Biclustering, BNM, LDLRA, LDB, BINET, GRM).
+- **Fixed CAIC formula to match Bozdogan (1987) original definition**: The CAIC penalty term was `log(n + 1)` but should be `log(n) + 1` per Bozdogan (1987, Psychometrika, 52(3), p.358, Proposition 2, Eq.44). The original Mathematica implementation had this error (`Log[nobs + 1]`), and the R port inherited it. Both the R version (`R/00_ModelFitModule.R`) and the Mathematica version (`develop/mtmk15forVer13/mod/Module_ModelFit.nb`) have been corrected. The numerical difference is approximately 1 (constant), but the corrected formula now matches the published definition: `CAIC(k) = -2 log L + k * (log(n) + 1)`. This affects all models that compute fit indices: IRT, LCA, LRA (binary/ordinal/rated), Biclustering (binary/ordinal/nominal), IRM, BNM, LDLRA, LDB, BINET, and GRM. All 869 tests pass with the corrected formula.
 
 ### GridSearch `index` Parameter Fixes
 

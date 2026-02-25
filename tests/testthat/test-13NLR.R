@@ -29,13 +29,15 @@ test_that("Test Info", {
 })
 
 test_that("Item Info", {
-  expect <- ItemReport[, 2:6] %>% as.matrix()
+  # Exclude CORR column (col 5) which contains Mathematica formula strings
+  expect <- ItemReport[, c(2:4, 6)] %>% as.matrix()
   actual <- result$ItemReport %>%
     unclass() %>%
     as.data.frame() %>%
     select(-ItemLabel) %>%
     as.matrix()
-  actual <- actual[, -4]
+  # Remove ItemSD (col 4) and ItemCORR (col 5); keep Obs, ObsRatio, ItemMean, ItemCORR_R
+  actual <- actual[, -c(4, 5)]
   rownames(actual) <- NULL
   colnames(actual) <- colnames(expect) <- NULL
   expect_equal(actual, expect, tolerance = 1e-6)
@@ -62,7 +64,8 @@ test_that("catIRPreport", {
 })
 
 test_that("Rank score mat", {
-  expect <- RankScoreMat %>% as.matrix()
+  # col_names=FALSE causes character columns; convert to numeric
+  expect <- apply(as.matrix(RankScoreMat), 2, as.numeric)
   actual <- result$ScoreRank %>% as.matrix()
   # actual[,1:10] <- actual[,10:1]
   actual[1:36, ] <- actual[36:1, ]
@@ -72,7 +75,8 @@ test_that("Rank score mat", {
 })
 
 test_that("Score memb", {
-  expect <- ScoreMemb %>% as.matrix()
+  # col_names=FALSE causes character columns; convert to numeric
+  expect <- apply(as.matrix(ScoreMemb), 2, as.numeric)
   actual <- result$ScoreMembership %>% as.matrix()
   actual[1:36, ] <- actual[36:1, ] %>% round(8)
   rownames(expect) <- rownames(actual) <- NULL

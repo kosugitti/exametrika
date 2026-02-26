@@ -15,7 +15,7 @@ Biclustering_IRM(
   stable_limit = 5,
   minSize = 20,
   EM_limit = 20,
-  seed = NULL,
+  seed = 123,
   verbose = TRUE
 )
 }
@@ -53,8 +53,9 @@ default of 20.}
 
 \item{seed}{Random seed for reproducibility. When a numeric value is provided,
 \code{set.seed(seed)} is called before the Gibbs sampling begins, ensuring
-reproducible results. When \code{NULL} (the default), no seed is set and
-the results depend on the current state of the random number generator.}
+reproducible results. The default is \code{123}, which guarantees deterministic
+output. Set to \code{NULL} to disable seed setting and let the results depend
+on the current state of the random number generator.}
 
 \item{verbose}{verbose output Flag. default is TRUE}
 }

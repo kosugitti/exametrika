@@ -90,8 +90,8 @@ test_that("IRM Seed NULL does not set seed", {
   expect_true(!is.null(result_null$n_field))
 })
 
-test_that("IRM Default seed is NULL", {
-  # Verify the default value of seed parameter is NULL
+test_that("IRM Default seed is 123", {
+  # Verify the default value of seed parameter is 123
   fn_formals <- formals(Biclustering_IRM)
-  expect_null(fn_formals$seed)
+  expect_equal(fn_formals$seed, 123)
 })

@@ -1,11 +1,5 @@
 # exametrika 1.9.0
 
-## Enhancements
-
-### `Biclustering_IRM()` Seed Parameter Change
-
-- **Changed `seed` parameter default from `123` to `NULL`**: Previously, `Biclustering_IRM()` always called `set.seed(123)` by default, which meant the Gibbs sampling results were deterministic even when the user did not explicitly request reproducibility. Now the default is `seed = NULL`, which does not set any seed and lets the random number generator proceed from its current state. Users can pass an explicit seed value (e.g., `seed = 42`) when reproducibility is desired.
-
 ## Bug Fixes
 
 ### CAIC (Consistent AIC) Formula Correction

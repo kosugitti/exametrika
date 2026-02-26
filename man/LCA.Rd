@@ -13,7 +13,8 @@ LCA(
   maxiter = 100,
   verbose = TRUE,
   beta1 = 1,
-  beta2 = 1
+  beta2 = 1,
+  conf = NULL
 )
 }
 \arguments{
@@ -36,6 +37,12 @@ observed responses, while 0 indicates missing data.}
 \item{beta1}{Beta distribution parameter 1 for prior density of class reference matrix. Default is 1.}
 
 \item{beta2}{Beta distribution parameter 2 for prior density of class reference matrix. Default is 1.}
+
+\item{conf}{Confirmatory IRP matrix (items x ncls) for test equating.
+Same format as the IRP output. Non-NA values are fixed throughout estimation,
+NA values are freely estimated. Fixed values must be in the open interval (0, 1).
+When row names are present, items are matched by label; otherwise by position.
+Default is NULL (fully exploratory).}
 }
 \value{
 An object of class "exametrika" and "LCA" containing:

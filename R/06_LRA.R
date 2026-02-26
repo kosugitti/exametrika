@@ -80,6 +80,11 @@ LRA.default <- function(U, na = NULL, Z = NULL, w = NULL, ...) {
 #' @param verbose Logical; if TRUE, displays detailed progress during estimation. Default is TRUE.
 #' @param beta1 Beta distribution parameter 1 for prior density of rank reference matrix (GTM method only). Default is 1.
 #' @param beta2 Beta distribution parameter 2 for prior density of rank reference matrix (GTM method only). Default is 1.
+#' @param conf Confirmatory IRP matrix (items x nrank) for test equating.
+#'   Same format as the IRP output. Non-NA values are fixed throughout estimation,
+#'   NA values are freely estimated. Fixed values must be in the open interval (0, 1).
+#'   When row names are present, items are matched by label; otherwise by position.
+#'   Default is NULL (fully exploratory).
 #'
 #' @return
 #' For binary data (\code{LRA.binary}), the returned list additionally includes:
@@ -116,7 +121,8 @@ LRA.binary <- function(U,
                        seed = NULL,
                        verbose = FALSE,
                        beta1 = 1,
-                       beta2 = 1, ...) {
+                       beta2 = 1,
+                       conf = NULL, ...) {
   tmp <- U
   U <- tmp$U * tmp$Z
   testlength <- NCOL(tmp$U)
@@ -132,108 +138,16 @@ LRA.binary <- function(U,
     stop("Please set the number of classes to a number between 2 and less than 20.")
   }
 
+  # Validate and align confirmatory IRP matrix
+  if (!is.null(conf)) {
+    conf <- validate_conf(conf, ncls, tmp$ItemLabel)
+  }
 
   if (method == "SOM") {
-    somt <- 0
-    alpha1 <- 1
-    alphaT <- 0.01
-    sigma1 <- 1
-    sigmaT <- 0.12
-
-    alpha_list <- ((maxiter - 1:maxiter) * alpha1 + (1:maxiter - 1) * alphaT) / (maxiter - 1)
-    sigma_list <- ((maxiter - 1:maxiter) * sigma1 + (1:maxiter - 1) * sigmaT) / (maxiter - 1)
-
-    kappa1 <- 0.01
-    kappaT <- 0.0001
-
-    kappa_list <- ((maxiter - 1:maxiter) * kappa1 + (1:maxiter - 1) * kappaT) / (maxiter - 1)
-
-    prior_list <- rep(1 / ncls, ncls)
-
-    r_list <- seq(-ncls + 1, ncls - 1)
-    hhhmat <- array(NA, c(maxiter, length(r_list)))
-    for (t in 1:maxiter) {
-      hhhmat[t, ] <- alpha_list[t] * ncls / samplesize * exp(-(r_list)^2 / (2 * ncls^2 * sigma_list[t]^2))
-    }
-
-    clsRefMat <- matrix(rep(1:ncls / (ncls + 1), testlength), ncol = testlength)
-    RefMat <- t(clsRefMat)
-    oldBIC <- 1e5
-    ### SOM iteration
-    converge <- TRUE
-    FLG <- TRUE
-    while (FLG) {
-      somt <- somt + 1
-
-      if (somt <= maxiter) {
-        h_count <- somt
-      } else {
-        h_cout <- maxiter
-      }
-
-      loglike <- 0
-
-      if (is.null(seed)) {
-        set.seed(sum(tmp$U) + somt)
-      } else {
-        set.seed(seed)
-      }
-
-      is <- order(runif(samplesize, 1, 100))
-
-      for (s in 1:samplesize) {
-        ss <- is[s]
-        mlrank <- tmp$U[ss, ] %*% log(RefMat + const) + (1 - tmp$U[ss, ]) %*% log(1 - RefMat + const) + log(prior_list)
-        winner <- which.max(mlrank)
-        loglike <- loglike + mlrank[winner]
-        hhh <- matrix(rep(hhhmat[h_count, (ncls + 1 - winner):(2 * ncls - winner)], testlength),
-          nrow = testlength, byrow = T
-        )
-        RefMat <- RefMat + hhh * (tmp$U[ss, ] - RefMat)
-        prior_list <- prior_list + (kappa_list[h_count] / ncls)
-        prior_list[winner] <- prior_list[winner] - kappa_list[h_count]
-        prior_list[prior_list > 1] <- 1
-        prior_list[prior_list < const] <- const
-      }
-      if (mic) {
-        RefMat <- t(apply(RefMat, 1, sort))
-      }
-      llmat <- tmp$U %*% t(log(t(RefMat) + const)) + (tmp$Z * (1 - tmp$U)) %*%
-        t(log(1 - t(RefMat) + const))
-      expllmat <- exp(llmat)
-      postdist <- expllmat / rowSums(expllmat)
-      item_ell <- item_log_lik(tmp$U, tmp$Z, postdist, t(RefMat))
-      if (BIC.check) {
-        if (somt > maxiter * 10) {
-          message("\nReached ten times the maximum number of iterations.")
-          message("Warning: Algorithm may not have converged. Interpret results with caution.")
-          converge <- FALSE
-          FLG <- FALSE
-          break
-        }
-        FI <- ItemFit(tmp$U, tmp$Z, item_ell, ncls)
-        diff <- abs(oldBIC - FI$test$BIC)
-        oldsBIC <- FI$test$BIC
-        if (diff < 1e-4) {
-          message("\nConverged before reaching maximum iterations.")
-          FLG <- FALSE
-          break
-        }
-      } else {
-        if (somt == maxiter) {
-          message("\nReached the maximum number of iterations.")
-          message("Warning: Algorithm may not have converged. Interpret results with caution.")
-          converge <- FALSE
-          FLG <- FALSE
-        }
-      }
-    }
-
-    fit <- list(
-      iter = somt,
-      converge = converge,
-      postDist = postdist,
-      classRefMat = t(RefMat)
+    fit <- somclus(tmp$U, tmp$Z, ncls,
+      mic = mic, maxiter = maxiter,
+      BIC.check = BIC.check, seed = seed, verbose = verbose,
+      conf = conf
     )
   } else {
     # GTM.
@@ -241,7 +155,8 @@ LRA.binary <- function(U,
 
     fit <- emclus(tmp$U, tmp$Z,
       ncls = ncls,
-      Fil = Filter, beta1, beta2, mic = mic
+      Fil = Filter, beta1, beta2, mic = mic,
+      conf = conf
     )
   }
 

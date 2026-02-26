@@ -23,6 +23,7 @@ LRA(U, ...)
   verbose = FALSE,
   beta1 = 1,
   beta2 = 1,
+  conf = NULL,
   ...
 )
 
@@ -78,6 +79,12 @@ it is converted to the exametrika class with the \code{\link{dataFormat}} functi
 \item{beta1}{Beta distribution parameter 1 for prior density of rank reference matrix (GTM method only). Default is 1.}
 
 \item{beta2}{Beta distribution parameter 2 for prior density of rank reference matrix (GTM method only). Default is 1.}
+
+\item{conf}{Confirmatory IRP matrix (items x nrank) for test equating.
+Same format as the IRP output. Non-NA values are fixed throughout estimation,
+NA values are freely estimated. Fixed values must be in the open interval (0, 1).
+When row names are present, items are matched by label; otherwise by position.
+Default is NULL (fully exploratory).}
 
 \item{trapezoidal}{Specifies the height of both tails when using a trapezoidal
 prior distribution. Must be less than 1/nrank. The default value is 0, which

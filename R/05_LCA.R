@@ -15,6 +15,11 @@
 #' @param verbose Logical; if TRUE, displays progress during estimation. Default is TRUE.
 #' @param beta1 Beta distribution parameter 1 for prior density of class reference matrix. Default is 1.
 #' @param beta2 Beta distribution parameter 2 for prior density of class reference matrix. Default is 1.
+#' @param conf Confirmatory IRP matrix (items x ncls) for test equating.
+#'   Same format as the IRP output. Non-NA values are fixed throughout estimation,
+#'   NA values are freely estimated. Fixed values must be in the open interval (0, 1).
+#'   When row names are present, items are matched by label; otherwise by position.
+#'   Default is NULL (fully exploratory).
 #'
 #' @return
 #' An object of class "exametrika" and "LCA" containing:
@@ -103,7 +108,8 @@
 #' }
 #'
 #' @export
-LCA <- function(U, ncls = 2, na = NULL, Z = NULL, w = NULL, maxiter = 100, verbose = TRUE, beta1 = 1, beta2 = 1) {
+LCA <- function(U, ncls = 2, na = NULL, Z = NULL, w = NULL, maxiter = 100,
+                verbose = TRUE, beta1 = 1, beta2 = 1, conf = NULL) {
   # data format
   if (!inherits(U, "exametrika")) {
     tmp <- dataFormat(data = U, na = na, Z = Z, w = w)
@@ -119,11 +125,17 @@ LCA <- function(U, ncls = 2, na = NULL, Z = NULL, w = NULL, maxiter = 100, verbo
     stop("Please set the number of classes to a number between 2 and less than 20.")
   }
 
+  # Validate and align confirmatory IRP matrix
+  if (!is.null(conf)) {
+    conf <- validate_conf(conf, ncls, colnames(tmp$U))
+  }
+
   fit <- emclus(tmp$U, tmp$Z, ncls,
     Fil = diag(rep(1, ncls)),
     beta1 = beta1, beta2 = beta2, maxiter = maxiter,
     mic = FALSE,
-    verbose = verbose
+    verbose = verbose,
+    conf = conf
   )
 
   ## Returns

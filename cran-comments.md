@@ -13,10 +13,12 @@ issue during the check and not related to the package itself.
 
 There are currently no downstream dependencies for this package on CRAN.
 
-## Version 1.9.0
+## Version 1.10.0
 
 This is a minor release with bug fixes, new features for polytomous Biclustering
-analysis, and a complete test suite modernization. No breaking changes.
+analysis, confirmatory LCA/LRA, and a complete test suite modernization.
+No breaking changes. This release includes changes originally planned for v1.9.0
+(which was not submitted to CRAN).
 
 ### Bug Fixes
 
@@ -35,6 +37,10 @@ analysis, and a complete test suite modernization. No breaking changes.
 * **GRM ItemFitIndices fix**: Same class of `apply()/table()` bug as above.
 * **LRA.ordinal mixed category count validation**: Added informative error for
   datasets with non-uniform category counts.
+* **dataFormat robustness improvements**: Fixed auto-detection ignoring `CA`
+  parameter, `id` parameter not working for column 1, missing values in rated `U`
+  matrix, and `drop=FALSE` missing in item exclusion. Added diagnostic messages
+  for problematic data.
 * **BINET `g_list`/`adj_list` input path fix**: Fixed undefined variable error
   and incorrect length validation.
 * **LCA/LRA FRP plot type removal**: Properly rejected unsupported FRP plot type.
@@ -45,6 +51,9 @@ analysis, and a complete test suite modernization. No breaking changes.
 
 ### New Features
 
+* **Confirmatory LCA/LRA (Test Equating)**: `LCA()` and `LRA()` now support a
+  `conf` parameter for confirmatory analysis with label-based item matching.
+  Works with both GTM and SOM methods for LRA.
 * **New sample datasets**: J35S500 (ordinal, 500x35) and J20S600 (nominal, 600x20).
 * **New plot types for polytomous Biclustering**: FRP, FCRP, FCBR, ScoreField, RRV.
 * **FRPIndex**: Field Reference Profile indices for ordinal Biclustering.

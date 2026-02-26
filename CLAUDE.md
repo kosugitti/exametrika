@@ -5,8 +5,9 @@
 `exametrika` is an R package for Test Data Engineering based on Shojima (2022, ISBN:978-9811699856).
 It provides psychometric analysis tools: CTT, IRT, GRM, LCA, LRA, Biclustering, BNM, LDLRA, LDB, BINET.
 
-- **Current version**: 1.9.0 (development complete, CRAN submission pending)
+- **Current version**: 1.10.0 (development)
 - **CRAN version**: 1.8.1
+- **GitHub Release**: v1.9.0
 - **License**: MIT
 - **Website**: https://kosugitti.github.io/exametrika/
 - **Language**: English (Japanese guide available as `vignettes/guide-ja.Rmd`)
@@ -84,11 +85,11 @@ docs/                # .gitignore'd (removed from repo); pkgdown site deployed t
 - **Reference data**: Mathematica implementation outputs in `tests/testthat/fixtures/mathematica_reference/`
   (85 CSV files) used for cross-validation
 - **Test naming**: `test-<model>.R` for model tests (e.g., `test-irt.R`, `test-lca.R`)
-- **Test dependencies**: Only `testthat` (no tidyverse/readxl — migrated to CSV/base-R in v1.9.0)
+- **Test dependencies**: Only `testthat` (no tidyverse/readxl — migrated to CSV/base-R in v1.10.0)
 - **CI/CD**: GitHub Actions — `R-CMD-check.yaml` (multi-platform), `test-coverage.yaml`
   (codecov), `pkgdown.yaml` (site deployment to gh-pages), `rhub.yaml` (R-hub v2)
 - **Build config**: `.Rbuildignore` excludes `develop/`, `docs/`, `.claude/`, `CLAUDE.md`,
-  `tools/`, `.github/`, etc. Tests and inst are NOT excluded (fixed in v1.9.0)
+  `tools/`, `.github/`, etc. Tests and inst are NOT excluded (fixed in v1.10.0)
 - **Current status**: 680 tests, all passing (FAIL 0 | WARN 0 | SKIP 0 | PASS 680)
 - **R CMD check**: 0 errors | 0 warnings | 1 note ("unable to verify current time" — transient network issue)
 
@@ -120,25 +121,23 @@ docs/                # .gitignore'd (removed from repo); pkgdown site deployed t
 
 ## Roadmap
 
-### v1.9.0 (development complete, CRAN submission pending)
-- ~~CAIC formula correction~~ — Done (commit 9f3b57e)
-- ~~Test suite modernization~~ — Done (commit 67454c2: 14 legacy tests removed,
-  23 CSV/base-R tests, 680 tests, zero external dependencies beyond testthat)
-- ~~.Rbuildignore cleanup~~ — Done (commit 67454c2: removed `^inst$` and `^tests$`
-  that were incorrectly excluding tests and vignettes from the built package)
-- ~~Polytomous Biclustering plots~~ — Done (FRP, FCRP, FCBR, ScoreField, RRV)
-- ~~Return value structure unification~~ — Done (snake_case, ModelFit class)
-- ~~pkgdown site migration~~ — Done (gh-pages branch via GitHub Actions)
-- ~~Vignettes~~ — Done (6 vignettes including Japanese guide)
-- ~~cran-comments.md~~ — Done (CAIC fix, full v1.9.0 changelog)
-- ~~R CMD check~~ — Done (0 errors | 0 warnings | 1 note)
-- **Remaining**: CRAN submission (`devtools::submit_cran()`)
-- **Codecov badge** — Add coverage badge to README
+### v1.9.0 (GitHub Release済み)
+- Polytomous Biclustering plots, Return value structure unification,
+  pkgdown site migration, Vignettes, GridSearch/LRA/GRM bug fixes
 
-### v1.10.0 (next minor release)
+### v1.10.0 (current development)
+- CAIC formula correction (Bozdogan 1987)
+- Confirmatory LCA/LRA (`conf` parameter for test equating)
+- SOM estimation refactoring (`somclus()`)
+- dataFormat robustness improvements
+- BINET g_list/adj_list fix
+- Test suite modernization (Excel→CSV, tidyverse dependency removal)
+- pkgdown migration, CI/CD, .Rbuildignore cleanup
+
+### v1.11.0 (next minor release)
 - **Nominal IRM** — Dirichlet-Multinomial extension of IRM. Design finalized.
   Design notes: `develop/IRM_polytomous.tex`
-- Ordinal IRM, Rated IRM to follow in v1.10.x series
+- Ordinal IRM, Rated IRM to follow in v1.11.x series
   - Design memo: `develop/多値IRM設計メモ_20260221.md`
 
 ### v2.0.0 (breaking changes)

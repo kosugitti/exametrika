@@ -36,6 +36,7 @@ LRA(
   verbose = FALSE,
   beta1 = 1,
   beta2 = 1,
+  conf = NULL,
   ...
 )
 
@@ -132,6 +133,14 @@ LRA(
 
   Beta distribution parameter 2 for prior density of rank reference
   matrix (GTM method only). Default is 1.
+
+- conf:
+
+  Confirmatory IRP matrix (items x nrank) for test equating. Same format
+  as the IRP output. Non-NA values are fixed throughout estimation, NA
+  values are freely estimated. Fixed values must be in the open interval
+  (0, 1). When row names are present, items are matched by label;
+  otherwise by position. Default is NULL (fully exploratory).
 
 - trapezoidal:
 

@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">exametrika</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.9.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.10.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -34,14 +34,93 @@
     </div>
 
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="1.9.0" id="exametrika-190">exametrika 1.9.0<a class="anchor" aria-label="anchor" href="#exametrika-190"></a></h2>
+<h2 class="pkg-version" data-toc-text="1.10.0" id="exametrika-1100">exametrika 1.10.0<a class="anchor" aria-label="anchor" href="#exametrika-1100"></a></h2>
 <div class="section level3">
-<h3 id="bug-fixes-1-9-0">Bug Fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-1-9-0"></a></h3>
+<h3 id="bug-fixes-1-10-0">Bug Fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-1-10-0"></a></h3>
 <div class="section level4">
-<h4 id="caic-consistent-aic-formula-correction-1-9-0">CAIC (Consistent AIC) Formula Correction<a class="anchor" aria-label="anchor" href="#caic-consistent-aic-formula-correction-1-9-0"></a></h4>
+<h4 id="caic-consistent-aic-formula-correction-1-10-0">CAIC (Consistent AIC) Formula Correction<a class="anchor" aria-label="anchor" href="#caic-consistent-aic-formula-correction-1-10-0"></a></h4>
 <ul><li>
 <strong>Fixed CAIC formula to match Bozdogan (1987) original definition</strong>: The CAIC penalty term was <code>log(n + 1)</code> but should be <code>log(n) + 1</code> per Bozdogan (1987, Psychometrika, 52(3), p.358, Proposition 2, Eq.44). The original Mathematica implementation had this error (<code>Log[nobs + 1]</code>), and the R port inherited it. Both the R version (<code>R/00_ModelFitModule.R</code>) and the Mathematica version (<code>develop/mtmk15forVer13/mod/Module_ModelFit.nb</code>) have been corrected. The numerical difference is approximately 1 (constant), but the corrected formula now matches the published definition: <code>CAIC(k) = -2 log L + k * (log(n) + 1)</code>. This affects all models that compute fit indices: IRT, LCA, LRA (binary/ordinal/rated), Biclustering (binary/ordinal/nominal), IRM, BNM, LDLRA, LDB, BINET, and GRM. All 680 tests pass with the corrected formula.</li>
 </ul></div>
+<div class="section level4">
+<h4 id="grm-example-fix-1-10-0">GRM Example Fix<a class="anchor" aria-label="anchor" href="#grm-example-fix-1-10-0"></a></h4>
+<ul><li>
+<strong>Changed GRM examples from <code>\donttest</code> to <code>\dontrun</code></strong>: GRM’s multi-panel plot examples caused “invalid graphics state” errors in non-interactive environments (pkgdown, CI). Changed to <code>\dontrun</code> to prevent build failures.</li>
+</ul></div>
+<div class="section level4">
+<h4 id="dataformat-robustness-improvements-1-10-0">dataFormat Robustness Improvements<a class="anchor" aria-label="anchor" href="#dataformat-robustness-improvements-1-10-0"></a></h4>
+<ul><li>
+<strong>Fixed auto-detection ignoring <code>CA</code> parameter</strong>: When <code>CA</code> (correct answer vector) was provided but <code>response.type</code> was not explicitly specified, <code><a href="../reference/dataFormat.html">dataFormat()</a></code> incorrectly classified the data as <code>"ordinal"</code> instead of <code>"rated"</code>. This caused <code>$U</code> (binary scoring matrix) to be <code>NULL</code>. The auto-detection now checks for <code>CA</code> before ordinal/nominal detection: binary → rated (if CA provided) → ordinal → nominal.</li>
+<li>
+<strong>Fixed <code>id</code> parameter not working for column 1</strong>: Changed <code>id</code> default from <code>1</code> to <code>NULL</code>. Previously, <code>id = 1</code> (both default and explicit) triggered auto-detection heuristics, making it impossible to explicitly specify the first column as the ID column. Now <code>id = NULL</code> triggers auto-detection, and any numeric value (including <code>1</code>) forces that column to be used as ID.</li>
+<li>
+<strong>Improved ID auto-detection for consecutive integers</strong>: Simplified the first-column heuristic to treat unique consecutive integers (e.g., <code>1:N</code>) as ID regardless of whether they also look like valid response values. Previously, <code>1:10</code> was misclassified as response data because <code>looks_like_response_data()</code> returned TRUE.</li>
+<li>
+<strong>Fixed missing values in rated <code>U</code> matrix</strong>: When the response matrix contained missing values (<code>-1</code>), the binary scoring matrix <code>U</code> incorrectly scored them as <code>0</code> (incorrect) instead of <code>-1</code> (missing). Now <code>U[i,j] = -1</code> when <code>Q[i,j] = -1</code>.</li>
+<li>
+<strong>Fixed <code>drop=FALSE</code> missing in item exclusion</strong>: When items were excluded due to invalid variance (e.g., containing <code>Inf</code>), the column subsetting <code>response.matrix[, mask]</code> dropped matrix dimensions if only one item remained, causing a crash. Added <code>drop = FALSE</code>.</li>
+<li>
+<strong>Added diagnostic messages</strong>: <code><a href="../reference/dataFormat.html">dataFormat()</a></code> now reports via <code><a href="https://rdrr.io/r/base/message.html" class="external-link">message()</a></code> when it detects problematic data:
+<ul><li>Items with all missing values</li>
+<li>Items with zero variance (constant response values)</li>
+<li>Students with all missing responses</li>
+</ul></li>
+</ul></div>
+<div class="section level4">
+<h4 id="binet-g_list--adj_list-input-path-fix-1-10-0">BINET <code>g_list</code> / <code>adj_list</code> Input Path Fix<a class="anchor" aria-label="anchor" href="#binet-g_list--adj_list-input-path-fix-1-10-0"></a></h4>
+<ul><li>
+<strong>Fixed <code>g_csv</code> variable undefined error when using <code>g_list</code> or <code>adj_list</code> input</strong>: <code><a href="../reference/BINET.html">BINET()</a></code> crashed with an undefined variable error at the graph construction step when the DAG was specified via <code>g_list</code> or <code>adj_list</code> parameters. The internal variable <code>g_csv</code> (used to build the integrated graph object <code>all_g</code>) was only defined in the <code>adj_file</code> code path. Added logic to reconstruct <code>g_csv</code> from <code>adj_list</code> for the <code>g_list</code> and <code>adj_list</code> input paths, ensuring <code>all_g</code> is correctly built with Field edge attributes regardless of input method.</li>
+<li>
+<strong>Fixed <code>g_list</code> / <code>adj_list</code> length validation</strong>: The length check for <code>g_list</code> and <code>adj_list</code> incorrectly compared against <code>ncls</code> (number of classes) instead of <code>nfld</code> (number of fields). In BINET, each element of <code>adj_list</code> represents the DAG structure at a specific field, so the list length should equal <code>nfld</code>. Also fixed <code>g_list</code> type check from <code>g_list[[1]]</code> (always checking the first element) to <code>g_list[[j]]</code> (checking each element).</li>
+</ul></div>
+<div class="section level4">
+<h4 id="biclustering_irm-seed-default-1-10-0">Biclustering_IRM Seed Default<a class="anchor" aria-label="anchor" href="#biclustering_irm-seed-default-1-10-0"></a></h4>
+<ul><li>
+<strong>Reverted <code><a href="../reference/Biclustering_IRM.html">Biclustering_IRM()</a></code> seed default back to 123</strong>: Ensures reproducibility by default.</li>
+</ul></div>
+</div>
+<div class="section level3">
+<h3 id="new-features-1-10-0">New Features<a class="anchor" aria-label="anchor" href="#new-features-1-10-0"></a></h3>
+<div class="section level4">
+<h4 id="confirmatory-lcalra-test-equating-1-10-0">Confirmatory LCA/LRA (Test Equating)<a class="anchor" aria-label="anchor" href="#confirmatory-lcalra-test-equating-1-10-0"></a></h4>
+<ul><li>
+<strong><code><a href="../reference/LCA.html">LCA()</a></code> and <code><a href="../reference/LRA.html">LRA()</a></code> now support a <code>conf</code> parameter for confirmatory analysis</strong>: The <code>conf</code> argument accepts an IRP matrix (ncls/nrank x testlength) where non-NA values are held fixed throughout EM estimation and NA values are freely estimated. This enables test equating scenarios where anchor items retain their known IRPs while new items are calibrated against them.</li>
+<li>
+<strong>Label-based item matching</strong>: When <code>conf</code> has column names, items are matched by label rather than by position. This allows <code>conf</code> to contain a subset of items (anchor items only) or items in a different order than the data. Items in the data but not in <code>conf</code> are automatically set to freely estimated. Unknown labels in <code>conf</code> produce an informative error.</li>
+<li>
+<strong>Works with both GTM and SOM methods</strong> for LRA.</li>
+</ul></div>
+<div class="section level4">
+<h4 id="internal-refactoring-som-estimation-1-10-0">Internal Refactoring: SOM Estimation<a class="anchor" aria-label="anchor" href="#internal-refactoring-som-estimation-1-10-0"></a></h4>
+<ul><li>
+<strong>Extracted SOM estimation into <code>somclus()</code> internal function</strong>: The Self-Organizing Maps estimation code previously inlined in <code><a href="../reference/LRA.html">LRA.binary()</a></code> (~100 lines) has been extracted into a standalone internal function <code>somclus()</code> in <code>00_EMclus.R</code>. This parallels <code>emclus()</code> (GTM/EM) and returns the same structure. Also fixed a pre-existing typo (<code>h_cout</code> → <code>h_count</code>) and another (<code>oldsBIC</code> → <code>oldBIC</code>).</li>
+</ul></div>
+</div>
+<div class="section level3">
+<h3 id="test-suite-modernization-1-10-0">Test Suite Modernization<a class="anchor" aria-label="anchor" href="#test-suite-modernization-1-10-0"></a></h3>
+<ul><li>
+<strong>Complete migration from Excel to CSV fixtures</strong>: Removed all 14 legacy test files that depended on <code>tidyverse</code> and <code>readxl</code> for reading Excel-based Mathematica reference data. Replaced with 23 modern test files using base R <code><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.csv()</a></code> and <code>test_path()</code> to load CSV fixtures from <code>tests/testthat/fixtures/mathematica_reference/</code>. The new test suite has zero external package dependencies beyond <code>testthat</code>.</li>
+<li>
+<strong>Removed <code>readxl</code>/<code>tidyverse</code> from test dependencies</strong>: DESCRIPTION <code>Suggests</code> no longer requires any packages beyond <code>knitr</code>, <code>rmarkdown</code>, and <code>testthat</code>.</li>
+<li>
+<strong>Fixture file reorganization</strong>: Shortened overly long CSV fixture filenames to comply with CRAN’s 100-byte portable path requirement.</li>
+<li>
+<strong>Test coverage</strong>: 23 test files covering all models (CTT, IRT 2PL/3PL/4PL, LCA, LRA binary/ordinal/nominal, Biclustering binary/ordinal/nominal, IRM, BNM, LDLRA, LDB, BINET, GRM, GridSearch, dataFormat, polychoric correlation, scoring, student/test analysis). 85 Mathematica reference CSV files for cross-validation.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="internal-improvements-1-10-0">Internal Improvements<a class="anchor" aria-label="anchor" href="#internal-improvements-1-10-0"></a></h3>
+<ul><li>
+<strong>pkgdown migration</strong>: Migrated documentation site from Jekyll (main/docs) to pkgdown (gh-pages branch via GitHub Actions).</li>
+<li>
+<strong>CI/CD</strong>: Added GitHub Actions workflows for automated R CMD check, test coverage reporting, and pkgdown site deployment.</li>
+<li>
+<strong>.Rbuildignore cleanup</strong>: Removed <code>^tests$</code> and <code>^inst$</code> entries that were incorrectly excluding tests and vignettes from the built package.</li>
+</ul><hr></div>
+</div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.9.0" id="exametrika-190">exametrika 1.9.0<a class="anchor" aria-label="anchor" href="#exametrika-190"></a></h2>
+<div class="section level3">
+<h3 id="bug-fixes-1-9-0">Bug Fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-1-9-0"></a></h3>
 <div class="section level4">
 <h4 id="gridsearch-index-parameter-fixes-1-9-0">GridSearch <code>index</code> Parameter Fixes<a class="anchor" aria-label="anchor" href="#gridsearch-index-parameter-fixes-1-9-0"></a></h4>
 <ul><li>
@@ -77,40 +156,9 @@
 <strong>Added input validation for mixed category counts</strong>: <code><a href="../reference/LRA.html">LRA.ordinal()</a></code> now raises an informative error when items have different numbers of response categories (e.g., some items with 3 categories and others with 5). The internal matrix algebra uses fixed-stride indexing that assumes uniform category counts. The error message suggests alternatives (<code>LRA.rated</code>, <code>Biclustering.ordinal</code>) that support mixed category counts via list-based designs.</li>
 </ul></div>
 <div class="section level4">
-<h4 id="grm-example-fix-1-9-0">GRM Example Fix<a class="anchor" aria-label="anchor" href="#grm-example-fix-1-9-0"></a></h4>
-<ul><li>
-<strong>Changed GRM examples from <code>\donttest</code> to <code>\dontrun</code></strong>: GRM’s multi-panel plot examples caused “invalid graphics state” errors in non-interactive environments (pkgdown, CI). Changed to <code>\dontrun</code> to prevent build failures.</li>
-</ul></div>
-<div class="section level4">
 <h4 id="lcalra-frp-plot-type-removal-1-9-0">LCA/LRA FRP Plot Type Removal<a class="anchor" aria-label="anchor" href="#lcalra-frp-plot-type-removal-1-9-0"></a></h4>
 <ul><li>
 <strong>Removed “FRP” from valid plot types for LCA and LRA</strong>: Field Reference Profile (FRP) requires a field structure (item grouping), which LCA and LRA do not have. Previously, <code>plot(lca_result, type = "FRP")</code> passed validation but failed at runtime because the <code>$FRP</code> field does not exist in LCA/LRA return values. Now properly rejected with an informative error message at the validation stage.</li>
-</ul></div>
-<div class="section level4">
-<h4 id="dataformat-rated-response-type-detection-fix-1-9-0">dataFormat Rated Response Type Detection Fix<a class="anchor" aria-label="anchor" href="#dataformat-rated-response-type-detection-fix-1-9-0"></a></h4>
-<ul><li>
-<strong>Fixed auto-detection ignoring <code>CA</code> parameter</strong>: When <code>CA</code> (correct answer vector) was provided but <code>response.type</code> was not explicitly specified, <code><a href="../reference/dataFormat.html">dataFormat()</a></code> incorrectly classified the data as <code>"ordinal"</code> instead of <code>"rated"</code>. This caused <code>$U</code> (binary scoring matrix) to be <code>NULL</code>. The auto-detection now checks for <code>CA</code> before ordinal/nominal detection: binary → rated (if CA provided) → ordinal → nominal.</li>
-<li>
-<strong>Fixed <code>id</code> parameter not working for column 1</strong>: Changed <code>id</code> default from <code>1</code> to <code>NULL</code>. Previously, <code>id = 1</code> (both default and explicit) triggered auto-detection heuristics, making it impossible to explicitly specify the first column as the ID column. Now <code>id = NULL</code> triggers auto-detection, and any numeric value (including <code>1</code>) forces that column to be used as ID.</li>
-<li>
-<strong>Improved ID auto-detection for consecutive integers</strong>: Simplified the first-column heuristic to treat unique consecutive integers (e.g., <code>1:N</code>) as ID regardless of whether they also look like valid response values. Previously, <code>1:10</code> was misclassified as response data because <code>looks_like_response_data()</code> returned TRUE.</li>
-<li>
-<strong>Fixed missing values in rated <code>U</code> matrix</strong>: When the response matrix contained missing values (<code>-1</code>), the binary scoring matrix <code>U</code> incorrectly scored them as <code>0</code> (incorrect) instead of <code>-1</code> (missing). Now <code>U[i,j] = -1</code> when <code>Q[i,j] = -1</code>.</li>
-<li>
-<strong>Fixed <code>drop=FALSE</code> missing in item exclusion</strong>: When items were excluded due to invalid variance (e.g., containing <code>Inf</code>), the column subsetting <code>response.matrix[, mask]</code> dropped matrix dimensions if only one item remained, causing a crash. Added <code>drop = FALSE</code>.</li>
-<li>
-<strong>Added diagnostic messages</strong>: <code><a href="../reference/dataFormat.html">dataFormat()</a></code> now reports via <code><a href="https://rdrr.io/r/base/message.html" class="external-link">message()</a></code> when it detects problematic data:
-<ul><li>Items with all missing values</li>
-<li>Items with zero variance (constant response values)</li>
-<li>Students with all missing responses</li>
-</ul></li>
-</ul></div>
-<div class="section level4">
-<h4 id="binet-g_list--adj_list-input-path-fix-1-9-0">BINET <code>g_list</code> / <code>adj_list</code> Input Path Fix<a class="anchor" aria-label="anchor" href="#binet-g_list--adj_list-input-path-fix-1-9-0"></a></h4>
-<ul><li>
-<strong>Fixed <code>g_csv</code> variable undefined error when using <code>g_list</code> or <code>adj_list</code> input</strong>: <code><a href="../reference/BINET.html">BINET()</a></code> crashed with an undefined variable error at the graph construction step when the DAG was specified via <code>g_list</code> or <code>adj_list</code> parameters. The internal variable <code>g_csv</code> (used to build the integrated graph object <code>all_g</code>) was only defined in the <code>adj_file</code> code path. Added logic to reconstruct <code>g_csv</code> from <code>adj_list</code> for the <code>g_list</code> and <code>adj_list</code> input paths, ensuring <code>all_g</code> is correctly built with Field edge attributes regardless of input method.</li>
-<li>
-<strong>Fixed <code>g_list</code> / <code>adj_list</code> length validation</strong>: The length check for <code>g_list</code> and <code>adj_list</code> incorrectly compared against <code>ncls</code> (number of classes) instead of <code>nfld</code> (number of fields). In BINET, each element of <code>adj_list</code> represents the DAG structure at a specific field, so the list length should equal <code>nfld</code>. Also fixed <code>g_list</code> type check from <code>g_list[[1]]</code> (always checking the first element) to <code>g_list[[j]]</code> (checking each element).</li>
 </ul></div>
 </div>
 <div class="section level3">
@@ -230,26 +278,6 @@
 <strong>Legend strip layout</strong>: Moved per-panel legends to a shared legend strip below the plot area for FCRP (line/bar), FCBR, GRM IRF, and IRT overlay (IRF/IIF) plots. Uses <code><a href="https://rdrr.io/r/graphics/layout.html" class="external-link">layout()</a></code> with a thin dedicated row (height ratio 0.2) to reduce visual clutter in data panels. Added <code>setup_legend_layout()</code> and <code>draw_legend_strip()</code> internal helper functions.</li>
 <li>
 <strong>FCBR reference line</strong>: Added <code>P(Q&gt;=1)=1.0</code> reference line at the top of FCBR plots for visual completeness.</li>
-</ul></div>
-<div class="section level4">
-<h4 id="test-suite-modernization-1-9-0">Test Suite Modernization<a class="anchor" aria-label="anchor" href="#test-suite-modernization-1-9-0"></a></h4>
-<ul><li>
-<strong>Complete migration from Excel to CSV fixtures</strong>: Removed all 14 legacy test files that depended on <code>tidyverse</code> and <code>readxl</code> for reading Excel-based Mathematica reference data. Replaced with 23 modern test files using base R <code><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.csv()</a></code> and <code>test_path()</code> to load CSV fixtures from <code>tests/testthat/fixtures/mathematica_reference/</code>. The new test suite has zero external package dependencies beyond <code>testthat</code>.</li>
-<li>
-<strong>Removed <code>readxl</code>/<code>tidyverse</code> from test dependencies</strong>: DESCRIPTION <code>Suggests</code> no longer requires any packages beyond <code>knitr</code>, <code>rmarkdown</code>, and <code>testthat</code>.</li>
-<li>
-<strong>Fixture file reorganization</strong>: Shortened overly long CSV fixture filenames to comply with CRAN’s 100-byte portable path requirement.</li>
-<li>
-<strong>Test coverage</strong>: 23 test files covering all models (CTT, IRT 2PL/3PL/4PL, LCA, LRA binary/ordinal/nominal, Biclustering binary/ordinal/nominal, IRM, BNM, LDLRA, LDB, BINET, GRM, GridSearch, dataFormat, polychoric correlation, scoring, student/test analysis). 85 Mathematica reference CSV files for cross-validation.</li>
-</ul></div>
-<div class="section level4">
-<h4 id="internal-improvements-1-9-0">Internal Improvements<a class="anchor" aria-label="anchor" href="#internal-improvements-1-9-0"></a></h4>
-<ul><li>
-<strong>plot.exametrika() refactoring</strong>: Split the monolithic 1200-line function into 6 model-family files for improved maintainability. No changes to the external API.</li>
-<li>
-<strong>CI/CD</strong>: Added GitHub Actions workflows for automated R CMD check (<code>R-CMD-check.yaml</code>) and test coverage reporting (<code>test-coverage.yaml</code>).</li>
-<li>
-<strong>.Rbuildignore cleanup</strong>: Removed <code>^tests$</code> and <code>^inst$</code> entries that were incorrectly excluding tests and vignettes from the built package.</li>
 </ul><hr></div>
 </div>
 </div>

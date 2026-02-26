@@ -11,7 +11,7 @@ and estimates both the class characteristics and individual membership probabili
 
     <a class="navbar-brand me-2" href="../index.html">exametrika</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.9.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.10.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -55,7 +55,8 @@ and estimates both the class characteristics and individual membership probabili
 <span>  maxiter <span class="op">=</span> <span class="fl">100</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  beta1 <span class="op">=</span> <span class="fl">1</span>,</span>
-<span>  beta2 <span class="op">=</span> <span class="fl">1</span></span>
+<span>  beta2 <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>  conf <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -99,6 +100,14 @@ observed responses, while 0 indicates missing data.</p></dd>
 
 <dt id="arg-beta-">beta2<a class="anchor" aria-label="anchor" href="#arg-beta-"></a></dt>
 <dd><p>Beta distribution parameter 2 for prior density of class reference matrix. Default is 1.</p></dd>
+
+
+<dt id="arg-conf">conf<a class="anchor" aria-label="anchor" href="#arg-conf"></a></dt>
+<dd><p>Confirmatory IRP matrix (items x ncls) for test equating.
+Same format as the IRP output. Non-NA values are fixed throughout estimation,
+NA values are freely estimated. Fixed values must be in the open interval (0, 1).
+When row names are present, items are matched by label; otherwise by position.
+Default is NULL (fully exploratory).</p></dd>
 
 </dl></div>
     <div class="section level2">

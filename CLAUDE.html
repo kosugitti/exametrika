@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="index.html">exametrika</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.9.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.10.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -39,9 +39,11 @@
 <h2 id="package-overview">Package Overview<a class="anchor" aria-label="anchor" href="#package-overview"></a></h2>
 <p><code>exametrika</code> is an R package for Test Data Engineering based on Shojima (2022, <a href="ISBN:978-9811699856" class="uri">ISBN:978-9811699856</a>). It provides psychometric analysis tools: CTT, IRT, GRM, LCA, LRA, Biclustering, BNM, LDLRA, LDB, BINET.</p>
 <ul><li>
-<strong>Current version</strong>: 1.9.0 (development complete, CRAN submission pending)</li>
+<strong>Current version</strong>: 1.10.0 (development)</li>
 <li>
 <strong>CRAN version</strong>: 1.8.1</li>
+<li>
+<strong>GitHub Release</strong>: v1.9.0</li>
 <li>
 <strong>License</strong>: MIT</li>
 <li>
@@ -119,11 +121,11 @@ docs/                # .gitignore'd (removed from repo); pkgdown site deployed t
 <li>
 <strong>Test naming</strong>: <code>test-&lt;model&gt;.R</code> for model tests (e.g., <code>test-irt.R</code>, <code>test-lca.R</code>)</li>
 <li>
-<strong>Test dependencies</strong>: Only <code>testthat</code> (no tidyverse/readxl — migrated to CSV/base-R in v1.9.0)</li>
+<strong>Test dependencies</strong>: Only <code>testthat</code> (no tidyverse/readxl — migrated to CSV/base-R in v1.10.0)</li>
 <li>
 <strong>CI/CD</strong>: GitHub Actions — <code>R-CMD-check.yaml</code> (multi-platform), <code>test-coverage.yaml</code> (codecov), <code>pkgdown.yaml</code> (site deployment to gh-pages), <code>rhub.yaml</code> (R-hub v2)</li>
 <li>
-<strong>Build config</strong>: <code>.Rbuildignore</code> excludes <code>develop/</code>, <code>docs/</code>, <code>.claude/</code>, <code>CLAUDE.md</code>, <code>tools/</code>, <code>.github/</code>, etc. Tests and inst are NOT excluded (fixed in v1.9.0)</li>
+<strong>Build config</strong>: <code>.Rbuildignore</code> excludes <code>develop/</code>, <code>docs/</code>, <code>.claude/</code>, <code>CLAUDE.md</code>, <code>tools/</code>, <code>.github/</code>, etc. Tests and inst are NOT excluded (fixed in v1.10.0)</li>
 <li>
 <strong>Current status</strong>: 680 tests, all passing (FAIL 0 | WARN 0 | SKIP 0 | PASS 680)</li>
 <li>
@@ -181,36 +183,25 @@ docs/                # .gitignore'd (removed from repo); pkgdown site deployed t
 <div class="section level2">
 <h2 id="roadmap">Roadmap<a class="anchor" aria-label="anchor" href="#roadmap"></a></h2>
 <div class="section level3">
-<h3 id="v190-development-complete-cran-submission-pending">v1.9.0 (development complete, CRAN submission pending)<a class="anchor" aria-label="anchor" href="#v190-development-complete-cran-submission-pending"></a></h3>
-<ul><li>
-<del>CAIC formula correction</del> — Done (commit 9f3b57e)</li>
-<li>
-<del>Test suite modernization</del> — Done (commit 67454c2: 14 legacy tests removed, 23 CSV/base-R tests, 680 tests, zero external dependencies beyond testthat)</li>
-<li>
-<del>.Rbuildignore cleanup</del> — Done (commit 67454c2: removed <code>^inst$</code> and <code>^tests$</code> that were incorrectly excluding tests and vignettes from the built package)</li>
-<li>
-<del>Polytomous Biclustering plots</del> — Done (FRP, FCRP, FCBR, ScoreField, RRV)</li>
-<li>
-<del>Return value structure unification</del> — Done (snake_case, ModelFit class)</li>
-<li>
-<del>pkgdown site migration</del> — Done (gh-pages branch via GitHub Actions)</li>
-<li>
-<del>Vignettes</del> — Done (6 vignettes including Japanese guide)</li>
-<li>
-<del>cran-comments.md</del> — Done (CAIC fix, full v1.9.0 changelog)</li>
-<li>
-<del>R CMD check</del> — Done (0 errors | 0 warnings | 1 note)</li>
-<li>
-<strong>Remaining</strong>: CRAN submission (<code>devtools::submit_cran()</code>)</li>
-<li>
-<strong>Codecov badge</strong> — Add coverage badge to README</li>
+<h3 id="v190-github-release済み">v1.9.0 (GitHub Release済み)<a class="anchor" aria-label="anchor" href="#v190-github-release%E6%B8%88%E3%81%BF"></a></h3>
+<ul><li>Polytomous Biclustering plots, Return value structure unification, pkgdown site migration, Vignettes, GridSearch/LRA/GRM bug fixes</li>
 </ul></div>
 <div class="section level3">
-<h3 id="v1100-next-minor-release">v1.10.0 (next minor release)<a class="anchor" aria-label="anchor" href="#v1100-next-minor-release"></a></h3>
+<h3 id="v1100-current-development">v1.10.0 (current development)<a class="anchor" aria-label="anchor" href="#v1100-current-development"></a></h3>
+<ul><li>CAIC formula correction (Bozdogan 1987)</li>
+<li>Confirmatory LCA/LRA (<code>conf</code> parameter for test equating)</li>
+<li>SOM estimation refactoring (<code>somclus()</code>)</li>
+<li>dataFormat robustness improvements</li>
+<li>BINET g_list/adj_list fix</li>
+<li>Test suite modernization (Excel→CSV, tidyverse dependency removal)</li>
+<li>pkgdown migration, CI/CD, .Rbuildignore cleanup</li>
+</ul></div>
+<div class="section level3">
+<h3 id="v1110-next-minor-release">v1.11.0 (next minor release)<a class="anchor" aria-label="anchor" href="#v1110-next-minor-release"></a></h3>
 <ul><li>
 <strong>Nominal IRM</strong> — Dirichlet-Multinomial extension of IRM. Design finalized. Design notes: <code>develop/IRM_polytomous.tex</code>
 </li>
-<li>Ordinal IRM, Rated IRM to follow in v1.10.x series
+<li>Ordinal IRM, Rated IRM to follow in v1.11.x series
 <ul><li>Design memo: <code>develop/多値IRM設計メモ_20260221.md</code>
 </li>
 </ul></li>

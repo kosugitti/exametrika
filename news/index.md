@@ -1,6 +1,6 @@
 # Changelog
 
-## exametrika 1.9.0
+## exametrika 1.10.0
 
 ### Bug Fixes
 
@@ -19,6 +19,142 @@
   compute fit indices: IRT, LCA, LRA (binary/ordinal/rated),
   Biclustering (binary/ordinal/nominal), IRM, BNM, LDLRA, LDB, BINET,
   and GRM. All 680 tests pass with the corrected formula.
+
+#### GRM Example Fix
+
+- **Changed GRM examples from `\donttest` to `\dontrun`**: GRM’s
+  multi-panel plot examples caused “invalid graphics state” errors in
+  non-interactive environments (pkgdown, CI). Changed to `\dontrun` to
+  prevent build failures.
+
+#### dataFormat Robustness Improvements
+
+- **Fixed auto-detection ignoring `CA` parameter**: When `CA` (correct
+  answer vector) was provided but `response.type` was not explicitly
+  specified,
+  [`dataFormat()`](https://kosugitti.github.io/exametrika/reference/dataFormat.md)
+  incorrectly classified the data as `"ordinal"` instead of `"rated"`.
+  This caused `$U` (binary scoring matrix) to be `NULL`. The
+  auto-detection now checks for `CA` before ordinal/nominal detection:
+  binary → rated (if CA provided) → ordinal → nominal.
+- **Fixed `id` parameter not working for column 1**: Changed `id`
+  default from `1` to `NULL`. Previously, `id = 1` (both default and
+  explicit) triggered auto-detection heuristics, making it impossible to
+  explicitly specify the first column as the ID column. Now `id = NULL`
+  triggers auto-detection, and any numeric value (including `1`) forces
+  that column to be used as ID.
+- **Improved ID auto-detection for consecutive integers**: Simplified
+  the first-column heuristic to treat unique consecutive integers (e.g.,
+  `1:N`) as ID regardless of whether they also look like valid response
+  values. Previously, `1:10` was misclassified as response data because
+  `looks_like_response_data()` returned TRUE.
+- **Fixed missing values in rated `U` matrix**: When the response matrix
+  contained missing values (`-1`), the binary scoring matrix `U`
+  incorrectly scored them as `0` (incorrect) instead of `-1` (missing).
+  Now `U[i,j] = -1` when `Q[i,j] = -1`.
+- **Fixed `drop=FALSE` missing in item exclusion**: When items were
+  excluded due to invalid variance (e.g., containing `Inf`), the column
+  subsetting `response.matrix[, mask]` dropped matrix dimensions if only
+  one item remained, causing a crash. Added `drop = FALSE`.
+- **Added diagnostic messages**:
+  [`dataFormat()`](https://kosugitti.github.io/exametrika/reference/dataFormat.md)
+  now reports via [`message()`](https://rdrr.io/r/base/message.html)
+  when it detects problematic data:
+  - Items with all missing values
+  - Items with zero variance (constant response values)
+  - Students with all missing responses
+
+#### BINET `g_list` / `adj_list` Input Path Fix
+
+- **Fixed `g_csv` variable undefined error when using `g_list` or
+  `adj_list` input**:
+  [`BINET()`](https://kosugitti.github.io/exametrika/reference/BINET.md)
+  crashed with an undefined variable error at the graph construction
+  step when the DAG was specified via `g_list` or `adj_list` parameters.
+  The internal variable `g_csv` (used to build the integrated graph
+  object `all_g`) was only defined in the `adj_file` code path. Added
+  logic to reconstruct `g_csv` from `adj_list` for the `g_list` and
+  `adj_list` input paths, ensuring `all_g` is correctly built with Field
+  edge attributes regardless of input method.
+- **Fixed `g_list` / `adj_list` length validation**: The length check
+  for `g_list` and `adj_list` incorrectly compared against `ncls`
+  (number of classes) instead of `nfld` (number of fields). In BINET,
+  each element of `adj_list` represents the DAG structure at a specific
+  field, so the list length should equal `nfld`. Also fixed `g_list`
+  type check from `g_list[[1]]` (always checking the first element) to
+  `g_list[[j]]` (checking each element).
+
+#### Biclustering_IRM Seed Default
+
+- **Reverted
+  [`Biclustering_IRM()`](https://kosugitti.github.io/exametrika/reference/Biclustering_IRM.md)
+  seed default back to 123**: Ensures reproducibility by default.
+
+### New Features
+
+#### Confirmatory LCA/LRA (Test Equating)
+
+- **[`LCA()`](https://kosugitti.github.io/exametrika/reference/LCA.md)
+  and [`LRA()`](https://kosugitti.github.io/exametrika/reference/LRA.md)
+  now support a `conf` parameter for confirmatory analysis**: The `conf`
+  argument accepts an IRP matrix (ncls/nrank x testlength) where non-NA
+  values are held fixed throughout EM estimation and NA values are
+  freely estimated. This enables test equating scenarios where anchor
+  items retain their known IRPs while new items are calibrated against
+  them.
+- **Label-based item matching**: When `conf` has column names, items are
+  matched by label rather than by position. This allows `conf` to
+  contain a subset of items (anchor items only) or items in a different
+  order than the data. Items in the data but not in `conf` are
+  automatically set to freely estimated. Unknown labels in `conf`
+  produce an informative error.
+- **Works with both GTM and SOM methods** for LRA.
+
+#### Internal Refactoring: SOM Estimation
+
+- **Extracted SOM estimation into `somclus()` internal function**: The
+  Self-Organizing Maps estimation code previously inlined in
+  [`LRA.binary()`](https://kosugitti.github.io/exametrika/reference/LRA.md)
+  (~100 lines) has been extracted into a standalone internal function
+  `somclus()` in `00_EMclus.R`. This parallels `emclus()` (GTM/EM) and
+  returns the same structure. Also fixed a pre-existing typo (`h_cout` →
+  `h_count`) and another (`oldsBIC` → `oldBIC`).
+
+### Test Suite Modernization
+
+- **Complete migration from Excel to CSV fixtures**: Removed all 14
+  legacy test files that depended on `tidyverse` and `readxl` for
+  reading Excel-based Mathematica reference data. Replaced with 23
+  modern test files using base R
+  [`read.csv()`](https://rdrr.io/r/utils/read.table.html) and
+  `test_path()` to load CSV fixtures from
+  `tests/testthat/fixtures/mathematica_reference/`. The new test suite
+  has zero external package dependencies beyond `testthat`.
+- **Removed `readxl`/`tidyverse` from test dependencies**: DESCRIPTION
+  `Suggests` no longer requires any packages beyond `knitr`,
+  `rmarkdown`, and `testthat`.
+- **Fixture file reorganization**: Shortened overly long CSV fixture
+  filenames to comply with CRAN’s 100-byte portable path requirement.
+- **Test coverage**: 23 test files covering all models (CTT, IRT
+  2PL/3PL/4PL, LCA, LRA binary/ordinal/nominal, Biclustering
+  binary/ordinal/nominal, IRM, BNM, LDLRA, LDB, BINET, GRM, GridSearch,
+  dataFormat, polychoric correlation, scoring, student/test analysis).
+  85 Mathematica reference CSV files for cross-validation.
+
+### Internal Improvements
+
+- **pkgdown migration**: Migrated documentation site from Jekyll
+  (main/docs) to pkgdown (gh-pages branch via GitHub Actions).
+- **CI/CD**: Added GitHub Actions workflows for automated R CMD check,
+  test coverage reporting, and pkgdown site deployment.
+- **.Rbuildignore cleanup**: Removed `^tests$` and `^inst$` entries that
+  were incorrectly excluding tests and vignettes from the built package.
+
+------------------------------------------------------------------------
+
+## exametrika 1.9.0
+
+### Bug Fixes
 
 #### GridSearch `index` Parameter Fixes
 
@@ -92,13 +228,6 @@
   alternatives (`LRA.rated`, `Biclustering.ordinal`) that support mixed
   category counts via list-based designs.
 
-#### GRM Example Fix
-
-- **Changed GRM examples from `\donttest` to `\dontrun`**: GRM’s
-  multi-panel plot examples caused “invalid graphics state” errors in
-  non-interactive environments (pkgdown, CI). Changed to `\dontrun` to
-  prevent build failures.
-
 #### LCA/LRA FRP Plot Type Removal
 
 - **Removed “FRP” from valid plot types for LCA and LRA**: Field
@@ -108,63 +237,6 @@
   runtime because the `$FRP` field does not exist in LCA/LRA return
   values. Now properly rejected with an informative error message at the
   validation stage.
-
-#### dataFormat Rated Response Type Detection Fix
-
-- **Fixed auto-detection ignoring `CA` parameter**: When `CA` (correct
-  answer vector) was provided but `response.type` was not explicitly
-  specified,
-  [`dataFormat()`](https://kosugitti.github.io/exametrika/reference/dataFormat.md)
-  incorrectly classified the data as `"ordinal"` instead of `"rated"`.
-  This caused `$U` (binary scoring matrix) to be `NULL`. The
-  auto-detection now checks for `CA` before ordinal/nominal detection:
-  binary → rated (if CA provided) → ordinal → nominal.
-- **Fixed `id` parameter not working for column 1**: Changed `id`
-  default from `1` to `NULL`. Previously, `id = 1` (both default and
-  explicit) triggered auto-detection heuristics, making it impossible to
-  explicitly specify the first column as the ID column. Now `id = NULL`
-  triggers auto-detection, and any numeric value (including `1`) forces
-  that column to be used as ID.
-- **Improved ID auto-detection for consecutive integers**: Simplified
-  the first-column heuristic to treat unique consecutive integers (e.g.,
-  `1:N`) as ID regardless of whether they also look like valid response
-  values. Previously, `1:10` was misclassified as response data because
-  `looks_like_response_data()` returned TRUE.
-- **Fixed missing values in rated `U` matrix**: When the response matrix
-  contained missing values (`-1`), the binary scoring matrix `U`
-  incorrectly scored them as `0` (incorrect) instead of `-1` (missing).
-  Now `U[i,j] = -1` when `Q[i,j] = -1`.
-- **Fixed `drop=FALSE` missing in item exclusion**: When items were
-  excluded due to invalid variance (e.g., containing `Inf`), the column
-  subsetting `response.matrix[, mask]` dropped matrix dimensions if only
-  one item remained, causing a crash. Added `drop = FALSE`.
-- **Added diagnostic messages**:
-  [`dataFormat()`](https://kosugitti.github.io/exametrika/reference/dataFormat.md)
-  now reports via [`message()`](https://rdrr.io/r/base/message.html)
-  when it detects problematic data:
-  - Items with all missing values
-  - Items with zero variance (constant response values)
-  - Students with all missing responses
-
-#### BINET `g_list` / `adj_list` Input Path Fix
-
-- **Fixed `g_csv` variable undefined error when using `g_list` or
-  `adj_list` input**:
-  [`BINET()`](https://kosugitti.github.io/exametrika/reference/BINET.md)
-  crashed with an undefined variable error at the graph construction
-  step when the DAG was specified via `g_list` or `adj_list` parameters.
-  The internal variable `g_csv` (used to build the integrated graph
-  object `all_g`) was only defined in the `adj_file` code path. Added
-  logic to reconstruct `g_csv` from `adj_list` for the `g_list` and
-  `adj_list` input paths, ensuring `all_g` is correctly built with Field
-  edge attributes regardless of input method.
-- **Fixed `g_list` / `adj_list` length validation**: The length check
-  for `g_list` and `adj_list` incorrectly compared against `ncls`
-  (number of classes) instead of `nfld` (number of fields). In BINET,
-  each element of `adj_list` represents the DAG structure at a specific
-  field, so the list length should equal `nfld`. Also fixed `g_list`
-  type check from `g_list[[1]]` (always checking the first element) to
-  `g_list[[j]]` (checking each element).
 
 ### New Features
 
@@ -330,38 +402,6 @@ functions for consistency and interoperability.
   internal helper functions.
 - **FCBR reference line**: Added `P(Q>=1)=1.0` reference line at the top
   of FCBR plots for visual completeness.
-
-#### Test Suite Modernization
-
-- **Complete migration from Excel to CSV fixtures**: Removed all 14
-  legacy test files that depended on `tidyverse` and `readxl` for
-  reading Excel-based Mathematica reference data. Replaced with 23
-  modern test files using base R
-  [`read.csv()`](https://rdrr.io/r/utils/read.table.html) and
-  `test_path()` to load CSV fixtures from
-  `tests/testthat/fixtures/mathematica_reference/`. The new test suite
-  has zero external package dependencies beyond `testthat`.
-- **Removed `readxl`/`tidyverse` from test dependencies**: DESCRIPTION
-  `Suggests` no longer requires any packages beyond `knitr`,
-  `rmarkdown`, and `testthat`.
-- **Fixture file reorganization**: Shortened overly long CSV fixture
-  filenames to comply with CRAN’s 100-byte portable path requirement.
-- **Test coverage**: 23 test files covering all models (CTT, IRT
-  2PL/3PL/4PL, LCA, LRA binary/ordinal/nominal, Biclustering
-  binary/ordinal/nominal, IRM, BNM, LDLRA, LDB, BINET, GRM, GridSearch,
-  dataFormat, polychoric correlation, scoring, student/test analysis).
-  85 Mathematica reference CSV files for cross-validation.
-
-#### Internal Improvements
-
-- **plot.exametrika() refactoring**: Split the monolithic 1200-line
-  function into 6 model-family files for improved maintainability. No
-  changes to the external API.
-- **CI/CD**: Added GitHub Actions workflows for automated R CMD check
-  (`R-CMD-check.yaml`) and test coverage reporting
-  (`test-coverage.yaml`).
-- **.Rbuildignore cleanup**: Removed `^tests$` and `^inst$` entries that
-  were incorrectly excluding tests and vignettes from the built package.
 
 ------------------------------------------------------------------------
 

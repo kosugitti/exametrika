@@ -213,11 +213,24 @@
 <strong>FCBR reference line</strong>: Added <code>P(Q&gt;=1)=1.0</code> reference line at the top of FCBR plots for visual completeness.</li>
 </ul></div>
 <div class="section level4">
+<h4 id="test-suite-modernization-1-9-0">Test Suite Modernization<a class="anchor" aria-label="anchor" href="#test-suite-modernization-1-9-0"></a></h4>
+<ul><li>
+<strong>Complete migration from Excel to CSV fixtures</strong>: Removed all 14 legacy test files that depended on <code>tidyverse</code> and <code>readxl</code> for reading Excel-based Mathematica reference data. Replaced with 23 modern test files using base R <code><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.csv()</a></code> and <code>test_path()</code> to load CSV fixtures from <code>tests/testthat/fixtures/mathematica_reference/</code>. The new test suite has zero external package dependencies beyond <code>testthat</code>.</li>
+<li>
+<strong>Removed <code>readxl</code>/<code>tidyverse</code> from test dependencies</strong>: DESCRIPTION <code>Suggests</code> no longer requires any packages beyond <code>knitr</code>, <code>rmarkdown</code>, and <code>testthat</code>.</li>
+<li>
+<strong>Fixture file reorganization</strong>: Shortened overly long CSV fixture filenames to comply with CRAN’s 100-byte portable path requirement.</li>
+<li>
+<strong>Test coverage</strong>: 23 test files covering all models (CTT, IRT 2PL/3PL/4PL, LCA, LRA binary/ordinal/nominal, Biclustering binary/ordinal/nominal, IRM, BNM, LDLRA, LDB, BINET, GRM, GridSearch, dataFormat, polychoric correlation, scoring, student/test analysis). 85 Mathematica reference CSV files for cross-validation.</li>
+</ul></div>
+<div class="section level4">
 <h4 id="internal-improvements-1-9-0">Internal Improvements<a class="anchor" aria-label="anchor" href="#internal-improvements-1-9-0"></a></h4>
 <ul><li>
 <strong>plot.exametrika() refactoring</strong>: Split the monolithic 1200-line function into 6 model-family files for improved maintainability. No changes to the external API.</li>
 <li>
 <strong>CI/CD</strong>: Added GitHub Actions workflows for automated R CMD check (<code>R-CMD-check.yaml</code>) and test coverage reporting (<code>test-coverage.yaml</code>).</li>
+<li>
+<strong>.Rbuildignore cleanup</strong>: Removed <code>^tests$</code> and <code>^inst$</code> entries that were incorrectly excluding tests and vignettes from the built package.</li>
 </ul><hr></div>
 </div>
 </div>

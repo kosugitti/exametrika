@@ -433,6 +433,7 @@ result.LDLRA.PBIL <- LDLRA_PBIL(J35S515,
 #> Gen 11 ID.19 BIC -689.508 BEST -791.319 limit count 2                           
 #> Gen 11 ID.20 BIC -508.428 BEST -791.319 limit count 2                           
 #> The maximum generation has been reached
+#> No ID column detected. All columns treated as response data. Sequential IDs (Student1, Student2, ...) were generated. Use id= parameter to specify the ID column explicitly.
 
 # Examine the learned network structure
 # Plot Item Response Profiles showing item patterns across ranks

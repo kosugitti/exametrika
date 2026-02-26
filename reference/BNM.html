@@ -149,9 +149,9 @@ structure is specified.</p>
 <span class="r-in"><span><span class="co"># Convert the DAG matrix to an igraph object for network analysis</span></span></span>
 <span class="r-in"><span><span class="va">g</span> <span class="op">&lt;-</span> <span class="fu">igraph</span><span class="fu">::</span><span class="fu"><a href="https://r.igraph.org/reference/graph_from_data_frame.html" class="external-link">graph_from_data_frame</a></span><span class="op">(</span><span class="va">DAG</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">g</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> IGRAPH c49416d DN-- 5 5 -- </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> IGRAPH fc43bbb DN-- 5 5 -- </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> + attr: name (v/c)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> + edges from c49416d (vertex names):</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> + edges from fc43bbb (vertex names):</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] Item01-&gt;Item02 Item02-&gt;Item03 Item02-&gt;Item04 Item03-&gt;Item05 Item04-&gt;Item05</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Create adjacency matrix from the graph</span></span></span>
@@ -168,6 +168,7 @@ structure is specified.</p>
 <span class="r-in"><span><span class="co"># Fit Bayesian Network Model using the specified adjacency matrix</span></span></span>
 <span class="r-in"><span><span class="co"># Analyzes probabilistic relationships between items based on the graph structure</span></span></span>
 <span class="r-in"><span><span class="va">result.BNM</span> <span class="op">&lt;-</span> <span class="fu">BNM</span><span class="op">(</span><span class="va">J5S10</span>, adj_matrix <span class="op">=</span> <span class="va">adj_mat</span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> No ID column detected. All columns treated as response data. Sequential IDs (Student1, Student2, ...) were generated. Use id= parameter to specify the ID column explicitly.</span>
 <span class="r-in"><span><span class="va">result.BNM</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Adjacency Matrix</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>        Item01 Item02 Item03 Item04 Item05</span>

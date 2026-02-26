@@ -359,6 +359,7 @@ result.Bi <- Biclustering(J35S515, nfld = 5, ncls = 6, method = "B")
 #> iter 32 log_lik -6884.98                                                        
 #> iter 33 log_lik -6884.58                                                        
 #> 
+#> No ID column detected. All columns treated as response data. Sequential IDs (Student1, Student2, ...) were generated. Use id= parameter to specify the ID column explicitly.
 
 # Perform Biclustering with Rank method (R)
 # Store results for further analysis and visualization
@@ -374,6 +375,7 @@ result.Rank <- Biclustering(J35S515, nfld = 5, ncls = 6, method = "R")
 #> 
 #> 
 #> Strongly ordinal alignment condition was satisfied.
+#> No ID column detected. All columns treated as response data. Sequential IDs (Student1, Student2, ...) were generated. Use id= parameter to specify the ID column explicitly.
 
 # Display the Bicluster Reference Matrix (BRM) as a heatmap
 plot(result.Rank, type = "Array")
@@ -407,6 +409,7 @@ result.Conf <- Biclustering(J35S515, nfld = 3, ncls = 5, conf = field_assignment
 #> 
 #> 
 #> Weakly ordinal alignment condition was satisfied.
+#> No ID column detected. All columns treated as response data. Sequential IDs (Student1, Student2, ...) were generated. Use id= parameter to specify the ID column explicitly.
 # }
 # \donttest{
 # Perform Biclustering for nominal sample data()
@@ -447,5 +450,6 @@ result.Bi <- Biclustering(J35S515, nfld = 5, ncls = 6, method = "B")
 #> iter 32 log_lik -6884.98                                                        
 #> iter 33 log_lik -6884.58                                                        
 #> 
+#> No ID column detected. All columns treated as response data. Sequential IDs (Student1, Student2, ...) were generated. Use id= parameter to specify the ID column explicitly.
 # }
 ```

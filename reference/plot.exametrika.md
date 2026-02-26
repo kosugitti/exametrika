@@ -348,6 +348,7 @@ biclustering_result <- exametrika::Biclustering(J35S515)
 #> 
 #> 
 #> Strongly ordinal alignment condition was satisfied.
+#> No ID column detected. All columns treated as response data. Sequential IDs (Student1, Student2, ...) were generated. Use id= parameter to specify the ID column explicitly.
 # Custom colors and file output
 my_colors <- c("#404040", "#E69F00", "#56B4E9", "#009E73", "#F0E442")
 plot(biclustering_result, type = "Array", colors = my_colors)

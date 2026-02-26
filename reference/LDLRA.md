@@ -197,6 +197,7 @@ result.LDLRA1 <- LDLRA(J12S5000,
   g_list = g_list,
   adj_list = adj_list
 )
+#> No ID column detected. All columns treated as response data. Sequential IDs (Student1, Student2, ...) were generated. Use id= parameter to specify the ID column explicitly.
 
 # Plot Item Reference Profiles (IRP) in a 4x3 grid
 # Shows the probability patterns of correct responses for each item across ranks

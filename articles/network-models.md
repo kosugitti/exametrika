@@ -28,9 +28,9 @@ DAG <- matrix(
 # Graph object
 g <- igraph::graph_from_data_frame(DAG)
 g
-#> IGRAPH 81aa361 DN-- 5 5 -- 
+#> IGRAPH 45550c6 DN-- 5 5 -- 
 #> + attr: name (v/c)
-#> + edges from 81aa361 (vertex names):
+#> + edges from 45550c6 (vertex names):
 #> [1] Item01->Item02 Item02->Item03 Item02->Item04 Item03->Item05 Item04->Item05
 
 # Adjacency matrix
@@ -1968,23 +1968,31 @@ LDB combines biclustering with Bayesian network models, analyzing
 relationships between item fields within each rank.
 
 ``` r
-conf <- c(1, 6, 6, 8, 9, 9, 4, 7, 7, 7, 5, 8, 9, 10, 10,
-          9, 9, 10, 10, 10, 2, 2, 3, 3, 5, 5, 6, 9, 9, 10,
-          1, 1, 7, 9, 10)
+conf <- c(
+  1, 6, 6, 8, 9, 9, 4, 7, 7, 7, 5, 8, 9, 10, 10,
+  9, 9, 10, 10, 10, 2, 2, 3, 3, 5, 5, 6, 9, 9, 10,
+  1, 1, 7, 9, 10
+)
 
 edges_data <- data.frame(
-  "From Field (Parent) >>>" = c(6, 4, 5, 1, 1, 4,
-                                 3, 4, 6, 2, 4, 4,
-                                 3, 6, 4, 1,
-                                 7, 9, 6, 7),
-  ">>> To Field (Child)" = c(8, 7, 8, 7, 2, 5,
-                              5, 8, 8, 4, 6, 7,
-                              5, 8, 5, 8,
-                              10, 10, 8, 9),
-  "At Class/Rank (Locus)" = c(2, 2, 2, 2, 2, 2,
-                               3, 3, 3, 3, 3, 3,
-                               4, 4, 4, 4,
-                               5, 5, 5, 5)
+  "From Field (Parent) >>>" = c(
+    6, 4, 5, 1, 1, 4,
+    3, 4, 6, 2, 4, 4,
+    3, 6, 4, 1,
+    7, 9, 6, 7
+  ),
+  ">>> To Field (Child)" = c(
+    8, 7, 8, 7, 2, 5,
+    5, 8, 8, 4, 6, 7,
+    5, 8, 5, 8,
+    10, 10, 8, 9
+  ),
+  "At Class/Rank (Locus)" = c(
+    2, 2, 2, 2, 2, 2,
+    3, 3, 3, 3, 3, 3,
+    4, 4, 4, 4,
+    5, 5, 5, 5
+  )
 )
 
 edgeFile <- tempfile(fileext = ".csv")
@@ -2335,20 +2343,28 @@ BINET combines biclustering with class-level network analysis. Unlike
 LDB where nodes are fields, in BINET the nodes represent classes.
 
 ``` r
-conf <- c(1, 5, 5, 5, 9, 9, 6, 6, 6, 6, 2, 7, 7, 11, 11,
-          7, 7, 12, 12, 12, 2, 2, 3, 3, 4, 4, 4, 8, 8, 12,
-          1, 1, 6, 10, 10)
+conf <- c(
+  1, 5, 5, 5, 9, 9, 6, 6, 6, 6, 2, 7, 7, 11, 11,
+  7, 7, 12, 12, 12, 2, 2, 3, 3, 4, 4, 4, 8, 8, 12,
+  1, 1, 6, 10, 10
+)
 
 edges_data <- data.frame(
-  "From Class (Parent) >>>" = c(1, 2, 3, 4, 5, 7,
-                                 2, 4, 6, 8, 10,
-                                 6, 6, 11, 8, 9, 12),
-  ">>> To Class (Child)" = c(2, 4, 5, 5, 6, 11,
-                              3, 7, 9, 12, 12,
-                              10, 8, 12, 12, 11, 13),
-  "At Field (Locus)" = c(1, 2, 2, 3, 4, 4,
-                          5, 5, 5, 5, 5,
-                          7, 8, 8, 9, 9, 12)
+  "From Class (Parent) >>>" = c(
+    1, 2, 3, 4, 5, 7,
+    2, 4, 6, 8, 10,
+    6, 6, 11, 8, 9, 12
+  ),
+  ">>> To Class (Child)" = c(
+    2, 4, 5, 5, 6, 11,
+    3, 7, 9, 12, 12,
+    10, 8, 12, 12, 11, 13
+  ),
+  "At Field (Locus)" = c(
+    1, 2, 2, 3, 4, 4,
+    5, 5, 5, 5, 5,
+    7, 8, 8, 9, 9, 12
+  )
 )
 
 edgeFile <- tempfile(fileext = ".csv")

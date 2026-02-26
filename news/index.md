@@ -109,6 +109,43 @@
   values. Now properly rejected with an informative error message at the
   validation stage.
 
+#### dataFormat Rated Response Type Detection Fix
+
+- **Fixed auto-detection ignoring `CA` parameter**: When `CA` (correct
+  answer vector) was provided but `response.type` was not explicitly
+  specified,
+  [`dataFormat()`](https://kosugitti.github.io/exametrika/reference/dataFormat.md)
+  incorrectly classified the data as `"ordinal"` instead of `"rated"`.
+  This caused `$U` (binary scoring matrix) to be `NULL`. The
+  auto-detection now checks for `CA` before ordinal/nominal detection:
+  binary → rated (if CA provided) → ordinal → nominal.
+- **Fixed `id` parameter not working for column 1**: Changed `id`
+  default from `1` to `NULL`. Previously, `id = 1` (both default and
+  explicit) triggered auto-detection heuristics, making it impossible to
+  explicitly specify the first column as the ID column. Now `id = NULL`
+  triggers auto-detection, and any numeric value (including `1`) forces
+  that column to be used as ID.
+- **Improved ID auto-detection for consecutive integers**: Simplified
+  the first-column heuristic to treat unique consecutive integers (e.g.,
+  `1:N`) as ID regardless of whether they also look like valid response
+  values. Previously, `1:10` was misclassified as response data because
+  `looks_like_response_data()` returned TRUE.
+- **Fixed missing values in rated `U` matrix**: When the response matrix
+  contained missing values (`-1`), the binary scoring matrix `U`
+  incorrectly scored them as `0` (incorrect) instead of `-1` (missing).
+  Now `U[i,j] = -1` when `Q[i,j] = -1`.
+- **Fixed `drop=FALSE` missing in item exclusion**: When items were
+  excluded due to invalid variance (e.g., containing `Inf`), the column
+  subsetting `response.matrix[, mask]` dropped matrix dimensions if only
+  one item remained, causing a crash. Added `drop = FALSE`.
+- **Added diagnostic messages**:
+  [`dataFormat()`](https://kosugitti.github.io/exametrika/reference/dataFormat.md)
+  now reports via [`message()`](https://rdrr.io/r/base/message.html)
+  when it detects problematic data:
+  - Items with all missing values
+  - Items with zero variance (constant response values)
+  - Students with all missing responses
+
 #### BINET `g_list` / `adj_list` Input Path Fix
 
 - **Fixed `g_csv` variable undefined error when using `g_list` or

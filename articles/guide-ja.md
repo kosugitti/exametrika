@@ -1002,8 +1002,10 @@ plot(result.B.nom, type = "RRV")
 ``` r
 library(igraph)
 DAG <- matrix(
-  c("Item01", "Item02", "Item02", "Item03", "Item02", "Item04",
-    "Item03", "Item05", "Item04", "Item05"),
+  c(
+    "Item01", "Item02", "Item02", "Item03", "Item02", "Item04",
+    "Item03", "Item05", "Item04", "Item05"
+  ),
   ncol = 2, byrow = TRUE
 )
 g <- igraph::graph_from_data_frame(DAG)
@@ -1601,9 +1603,11 @@ plot(result.LDLRA, type = "LRD")
 ### 局所依存バイクラスタリング
 
 ``` r
-conf <- c(1, 6, 6, 8, 9, 9, 4, 7, 7, 7, 5, 8, 9, 10, 10,
-          9, 9, 10, 10, 10, 2, 2, 3, 3, 5, 5, 6, 9, 9, 10,
-          1, 1, 7, 9, 10)
+conf <- c(
+  1, 6, 6, 8, 9, 9, 4, 7, 7, 7, 5, 8, 9, 10, 10,
+  9, 9, 10, 10, 10, 2, 2, 3, 3, 5, 5, 6, 9, 9, 10,
+  1, 1, 7, 9, 10
+)
 
 edges_data <- data.frame(
   "From Field (Parent) >>>" = c(6, 4, 5, 1, 1, 4, 3, 4, 6, 2, 4, 4, 3, 6, 4, 1, 7, 9, 6, 7),
@@ -1954,9 +1958,11 @@ plot(result.LDB, type = "FieldPIRP")
 ### バイクラスターネットワークモデル
 
 ``` r
-conf <- c(1, 5, 5, 5, 9, 9, 6, 6, 6, 6, 2, 7, 7, 11, 11,
-          7, 7, 12, 12, 12, 2, 2, 3, 3, 4, 4, 4, 8, 8, 12,
-          1, 1, 6, 10, 10)
+conf <- c(
+  1, 5, 5, 5, 9, 9, 6, 6, 6, 6, 2, 7, 7, 11, 11,
+  7, 7, 12, 12, 12, 2, 2, 3, 3, 4, 4, 4, 8, 8, 12,
+  1, 1, 6, 10, 10
+)
 
 edges_data <- data.frame(
   "From Class (Parent) >>>" = c(1, 2, 3, 4, 5, 7, 2, 4, 6, 8, 10, 6, 6, 11, 8, 9, 12),
@@ -1969,8 +1975,10 @@ write.csv(edges_data, file = edgeFile, row.names = FALSE)
 ```
 
 ``` r
-result.BINET <- BINET(U = J35S515, ncls = 13, nfld = 12,
-                       conf = conf, adj_file = edgeFile)
+result.BINET <- BINET(
+  U = J35S515, ncls = 13, nfld = 12,
+  conf = conf, adj_file = edgeFile
+)
 print(result.BINET)
 #> Total Graph
 #>         Class01 Class02 Class03 Class04 Class05 Class06 Class07 Class08 Class09

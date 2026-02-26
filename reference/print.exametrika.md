@@ -104,6 +104,8 @@ interpreting complex relationships between items or latent variables.
 # \donttest{
 # Print IRT analysis results with 4 decimal places
 result <- IRT(J15S500)
+#> No ID column detected. All columns treated as response data. Sequential IDs (Student1, Student2, ...) were generated. Use id= parameter to specify the ID column explicitly.
+#> No ID column detected. All columns treated as response data. Sequential IDs (Student1, Student2, ...) were generated. Use id= parameter to specify the ID column explicitly.
 #> iter 1 LogLik -3915.61                                                          
 #> iter 2 LogLik -3901.1                                                           
 #> iter 3 LogLik -3896.89                                                          

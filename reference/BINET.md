@@ -242,6 +242,8 @@ result.BINET <- BINET(
   conf = conf, # Field configuration vector
   adj_file = tmp_file # Path to the CSV file
 )
+#> No ID column detected. All columns treated as response data. Sequential IDs (Student1, Student2, ...) were generated. Use id= parameter to specify the ID column explicitly.
+#> No ID column detected. All columns treated as response data. Sequential IDs (Student1, Student2, ...) were generated. Use id= parameter to specify the ID column explicitly.
 
 # Clean up temporary file
 unlink(tmp_file)

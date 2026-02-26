@@ -87,6 +87,25 @@
 <strong>Removed “FRP” from valid plot types for LCA and LRA</strong>: Field Reference Profile (FRP) requires a field structure (item grouping), which LCA and LRA do not have. Previously, <code>plot(lca_result, type = "FRP")</code> passed validation but failed at runtime because the <code>$FRP</code> field does not exist in LCA/LRA return values. Now properly rejected with an informative error message at the validation stage.</li>
 </ul></div>
 <div class="section level4">
+<h4 id="dataformat-rated-response-type-detection-fix-1-9-0">dataFormat Rated Response Type Detection Fix<a class="anchor" aria-label="anchor" href="#dataformat-rated-response-type-detection-fix-1-9-0"></a></h4>
+<ul><li>
+<strong>Fixed auto-detection ignoring <code>CA</code> parameter</strong>: When <code>CA</code> (correct answer vector) was provided but <code>response.type</code> was not explicitly specified, <code><a href="../reference/dataFormat.html">dataFormat()</a></code> incorrectly classified the data as <code>"ordinal"</code> instead of <code>"rated"</code>. This caused <code>$U</code> (binary scoring matrix) to be <code>NULL</code>. The auto-detection now checks for <code>CA</code> before ordinal/nominal detection: binary → rated (if CA provided) → ordinal → nominal.</li>
+<li>
+<strong>Fixed <code>id</code> parameter not working for column 1</strong>: Changed <code>id</code> default from <code>1</code> to <code>NULL</code>. Previously, <code>id = 1</code> (both default and explicit) triggered auto-detection heuristics, making it impossible to explicitly specify the first column as the ID column. Now <code>id = NULL</code> triggers auto-detection, and any numeric value (including <code>1</code>) forces that column to be used as ID.</li>
+<li>
+<strong>Improved ID auto-detection for consecutive integers</strong>: Simplified the first-column heuristic to treat unique consecutive integers (e.g., <code>1:N</code>) as ID regardless of whether they also look like valid response values. Previously, <code>1:10</code> was misclassified as response data because <code>looks_like_response_data()</code> returned TRUE.</li>
+<li>
+<strong>Fixed missing values in rated <code>U</code> matrix</strong>: When the response matrix contained missing values (<code>-1</code>), the binary scoring matrix <code>U</code> incorrectly scored them as <code>0</code> (incorrect) instead of <code>-1</code> (missing). Now <code>U[i,j] = -1</code> when <code>Q[i,j] = -1</code>.</li>
+<li>
+<strong>Fixed <code>drop=FALSE</code> missing in item exclusion</strong>: When items were excluded due to invalid variance (e.g., containing <code>Inf</code>), the column subsetting <code>response.matrix[, mask]</code> dropped matrix dimensions if only one item remained, causing a crash. Added <code>drop = FALSE</code>.</li>
+<li>
+<strong>Added diagnostic messages</strong>: <code><a href="../reference/dataFormat.html">dataFormat()</a></code> now reports via <code><a href="https://rdrr.io/r/base/message.html" class="external-link">message()</a></code> when it detects problematic data:
+<ul><li>Items with all missing values</li>
+<li>Items with zero variance (constant response values)</li>
+<li>Students with all missing responses</li>
+</ul></li>
+</ul></div>
+<div class="section level4">
 <h4 id="binet-g_list--adj_list-input-path-fix-1-9-0">BINET <code>g_list</code> / <code>adj_list</code> Input Path Fix<a class="anchor" aria-label="anchor" href="#binet-g_list--adj_list-input-path-fix-1-9-0"></a></h4>
 <ul><li>
 <strong>Fixed <code>g_csv</code> variable undefined error when using <code>g_list</code> or <code>adj_list</code> input</strong>: <code><a href="../reference/BINET.html">BINET()</a></code> crashed with an undefined variable error at the graph construction step when the DAG was specified via <code>g_list</code> or <code>adj_list</code> parameters. The internal variable <code>g_csv</code> (used to build the integrated graph object <code>all_g</code>) was only defined in the <code>adj_file</code> code path. Added logic to reconstruct <code>g_csv</code> from <code>adj_list</code> for the <code>g_list</code> and <code>adj_list</code> input paths, ensuring <code>all_g</code> is correctly built with Field edge attributes regardless of input method.</li>

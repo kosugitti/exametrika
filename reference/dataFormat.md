@@ -9,7 +9,7 @@ analysis.
 dataFormat(
   data,
   na = NULL,
-  id = 1,
+  id = NULL,
   Z = NULL,
   w = NULL,
   response.type = NULL,
@@ -30,10 +30,10 @@ dataFormat(
 
 - id:
 
-  id indicates the column number containing the examinee ID. The default
-  is 1. If no ID column is specified or if the specified column contains
-  response data, sequential IDs ("Student1", "Student2", etc.) will be
-  generated and all columns will be treated as response data.
+  id indicates the column number containing the examinee ID. If NULL
+  (default), the first column is auto-detected as ID or response data.
+  If a column number is specified, that column is always used as the ID
+  column.
 
 - Z:
 

@@ -18,7 +18,7 @@
   `CAIC(k) = -2 log L + k * (log(n) + 1)`. This affects all models that
   compute fit indices: IRT, LCA, LRA (binary/ordinal/rated),
   Biclustering (binary/ordinal/nominal), IRM, BNM, LDLRA, LDB, BINET,
-  and GRM. All 869 tests pass with the corrected formula.
+  and GRM. All 680 tests pass with the corrected formula.
 
 #### GridSearch `index` Parameter Fixes
 

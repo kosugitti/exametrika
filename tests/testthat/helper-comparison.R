@@ -44,7 +44,13 @@ expect_matrix_equal <- function(actual, expected, tolerance = 1e-4) {
 #' @param expected Expected value (vector, list, or data.frame)
 #' @param tolerance Numeric tolerance (default 1e-4)
 expect_numeric_equal <- function(actual, expected, tolerance = 1e-4) {
-  actual <- actual |> unlist() |> unname() |> as.numeric()
-  expected <- expected |> unlist() |> unname() |> as.numeric()
+  actual <- actual |>
+    unlist() |>
+    unname() |>
+    as.numeric()
+  expected <- expected |>
+    unlist() |>
+    unname() |>
+    as.numeric()
   expect_equal(actual, expected, tolerance = tolerance)
 }

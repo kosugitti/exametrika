@@ -4,8 +4,10 @@ library(exametrika)
 
 ### Setup - run Biclustering GridSearch once and share across tests
 tmp_gs <- dataFormat(J35S515)
-result_gs_bic <- GridSearch(tmp_gs, max_ncls = 3, max_nfld = 3,
-                            fun = "Biclustering", index = "BIC", verbose = FALSE)
+result_gs_bic <- GridSearch(tmp_gs,
+  max_ncls = 3, max_nfld = 3,
+  fun = "Biclustering", index = "BIC", verbose = FALSE
+)
 
 test_that("GridSearch Basic Execution (Biclustering)", {
   # Basic structure checks
@@ -38,8 +40,10 @@ test_that("GridSearch Optimal Result Has Fit Indices", {
 
 test_that("GridSearch LCA Method", {
   tmp <- dataFormat(J15S500)
-  result <- GridSearch(tmp, max_ncls = 4,
-                       fun = "LCA", index = "BIC", verbose = FALSE)
+  result <- GridSearch(tmp,
+    max_ncls = 4,
+    fun = "LCA", index = "BIC", verbose = FALSE
+  )
 
   # Basic structure
   expect_s3_class(result, "exametrika")

@@ -10,8 +10,10 @@ sheets <- c(
 
 data_list <- lapply(sheets, function(sheet) {
   df <- read.csv(
-    test_path("fixtures", "mathematica_reference",
-              paste0("Chapter03CTT_", sheet, ".csv")),
+    test_path(
+      "fixtures", "mathematica_reference",
+      paste0("Chapter03CTT_", sheet, ".csv")
+    ),
     check.names = FALSE
   )
   # select numeric columns only

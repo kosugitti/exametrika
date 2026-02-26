@@ -183,7 +183,6 @@ test_that("GRM ItemFitIndices has correct structure and values", {
 })
 
 test_that("GRM works correctly with uniform category counts (apply/table bug regression)", {
-
   # This test specifically targets the apply()/table() simplification bug:
   # When all items have the same number of categories, apply(X, 2, table)
   # returns a matrix instead of a list, causing response_list[[j]] to fail.
@@ -194,7 +193,8 @@ test_that("GRM works correctly with uniform category counts (apply/table bug reg
   nobs <- 80
   nitems <- 4
   uniform_data <- matrix(sample(1:5, nobs * nitems, replace = TRUE),
-                         nrow = nobs, ncol = nitems)
+    nrow = nobs, ncol = nitems
+  )
   formatted_data <- dataFormat(uniform_data, response.type = "ordinal")
 
   # This should NOT error (the bug caused errors here)

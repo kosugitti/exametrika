@@ -3,10 +3,9 @@
 #' This function serves the role of formatting the data prior to the analysis.
 #' @param data is a data matrix of the type matrix or data.frame.
 #' @param na na argument specifies the numbers or characters to be treated as missing values.
-#' @param id id indicates the column number containing the examinee ID. The default is 1.
-#' If no ID column is specified or if the specified column contains response data,
-#' sequential IDs ("Student1", "Student2", etc.) will be generated and all columns
-#' will be treated as response data.
+#' @param id id indicates the column number containing the examinee ID.
+#' If NULL (default), the first column is auto-detected as ID or response data.
+#' If a column number is specified, that column is always used as the ID column.
 #' @param Z Z is a missing indicator matrix of the type matrix or data.frame
 #' @param w w is item weight vector
 #' @param response.type Character string specifying the type of response data:
@@ -41,7 +40,7 @@
 #' }
 #' @importFrom stats sd
 #' @export
-dataFormat <- function(data, na = NULL, id = 1, Z = NULL, w = NULL,
+dataFormat <- function(data, na = NULL, id = NULL, Z = NULL, w = NULL,
                        response.type = NULL, CA = NULL) {
   # Check if the object is already formatted
   if (inherits(data, "exametrika")) {
@@ -110,53 +109,61 @@ dataFormat <- function(data, na = NULL, id = 1, Z = NULL, w = NULL,
     length(unique_vals) < 20 && all(unique_vals >= 0) && all(unique_vals == round(unique_vals))
   }
 
-  # ID processing section
-  if (id > ncol(data)) {
-    stop("ID column number exceeds the number of columns in data")
-  }
-
-  if (id != 1) {
+  # Phase 1: ID column identification and response matrix extraction
+  if (!is.null(id)) {
     # Explicit ID column specified
-    ID <- data[, id]
-    if (is.factor(ID)) {
-      ID <- as.character(ID)
-    } else {
-      ID <- as.character(ID)
+    if (id > ncol(data)) {
+      stop("ID column number exceeds the number of columns in data")
     }
-    response.matrix <- data[, -id]
+    ID <- as.character(data[, id])
+    response.matrix <- data[, -id, drop = FALSE]
   } else {
-    # Analyze first column to determine if it's an ID column
+    # Auto-detect: analyze first column to determine if it's an ID column
     first_col <- data[, 1]
 
-    # Check if first column looks like IDs
-    # A factor with few unique values (< 20) is likely response data, not ID
     if (is.factor(first_col)) {
       is_string_or_factor <- length(unique(first_col)) >= 20
     } else {
       is_string_or_factor <- is.character(first_col)
     }
     is_consecutive <- is_consecutive_numbers(first_col)
-    looks_like_response <- looks_like_response_data(first_col)
 
-    if (is_string_or_factor || (is_consecutive && !looks_like_response)) {
-      # First column is ID
+    if (is_string_or_factor || is_consecutive) {
+      # First column is ID (strings, or unique consecutive integers)
       ID <- as.character(first_col)
-      response.matrix <- data[, -1]
-    } else if (!is.null(rownames(data)) && !all(rownames(data) == as.character(seq_len(nrow(data))))) {
-      # Use rownames as ID
-      ID <- rownames(data)
-      response.matrix <- data
+      response.matrix <- data[, -1, drop = FALSE]
     } else {
-      # Generate automatic IDs
+      # First column treated as response data → auto-generate IDs
       ID <- paste0("Student", seq_len(nrow(data)))
       response.matrix <- data
+      message(
+        "No ID column detected. All columns treated as response data. ",
+        "Sequential IDs (Student1, Student2, ...) were generated. ",
+        "Use id= parameter to specify the ID column explicitly."
+      )
+      # Warn if first column has many unique values (might be an undetected ID column)
+      n_unique_first <- length(unique(first_col[!is.na(first_col)]))
+      if (n_unique_first > nrow(data) * 0.5 && n_unique_first < nrow(data)) {
+        message(
+          "Note: The first column ('", colnames(data)[1],
+          "') has ", n_unique_first, " unique values out of ", nrow(data),
+          " rows. If this is an ID column, specify id=1."
+        )
+      }
     }
   }
 
   # Check for duplicate IDs
   if (any(duplicated(ID))) {
-    duplicated_ids <- ID[duplicated(ID)]
-    stop(paste("Duplicated IDs found:", paste(unique(duplicated_ids), collapse = ", ")))
+    dup_ids <- unique(ID[duplicated(ID)])
+    dup_details <- vapply(dup_ids, function(id) {
+      rows <- which(ID == id)
+      paste0("'", id, "' (rows ", paste(rows, collapse = ","), ")")
+    }, character(1))
+    stop(
+      "Duplicated IDs found. Each ID must be unique.\n",
+      paste(dup_details, collapse = "\n")
+    )
   }
 
   # Store factor labels and convert factors to numeric (response columns only)
@@ -249,13 +256,13 @@ dataFormat <- function(data, na = NULL, id = 1, Z = NULL, w = NULL,
 
     if (is_all_binary) {
       response.type <- "binary"
+    } else if (!is.null(CA)) {
+      response.type <- "rated"
     } else {
       is_all_ordinal <- all(apply(response.matrix, 2, is_ordinal, na_value = na))
 
       if (is_all_ordinal) {
         response.type <- "ordinal"
-      } else if (!is.null(CA)) {
-        response.type <- "rated"
       } else {
         response.type <- "nominal"
       }
@@ -298,8 +305,8 @@ dataFormat <- function(data, na = NULL, id = 1, Z = NULL, w = NULL,
       "The following items with no variance.Excluded from the data:\n",
       paste(excluded_items, collapse = ", "), "\n"
     )
-    response.matrix <- response.matrix[, !is.na(sd.check)]
-    Z <- Z[, !is.na(sd.check)]
+    response.matrix <- response.matrix[, !is.na(sd.check), drop = FALSE]
+    Z <- Z[, !is.na(sd.check), drop = FALSE]
     ItemLabel <- ItemLabel[!is.na(sd.check)]
     w <- w[!is.na(sd.check)]
 
@@ -309,6 +316,34 @@ dataFormat <- function(data, na = NULL, id = 1, Z = NULL, w = NULL,
     }
   }
 
+  # Warn about items with all missing values
+  all_missing_cols <- which(apply(response.matrix, 2, function(x) all(x == -1)))
+  if (length(all_missing_cols) > 0) {
+    message(
+      "Warning: The following items have all missing values: ",
+      paste(ItemLabel[all_missing_cols], collapse = ", ")
+    )
+  }
+
+  # Warn about items with zero variance (constant values, excluding all-missing)
+  zero_var_cols <- which(!is.na(sd.check[seq_len(ncol(response.matrix))]) &
+    sd.check[seq_len(ncol(response.matrix))] == 0)
+  zero_var_cols <- setdiff(zero_var_cols, all_missing_cols)
+  if (length(zero_var_cols) > 0) {
+    message(
+      "Warning: The following items have zero variance (constant values): ",
+      paste(ItemLabel[zero_var_cols], collapse = ", ")
+    )
+  }
+
+  # Warn about students with all missing responses
+  all_missing_rows <- which(apply(response.matrix, 1, function(x) all(x == -1)))
+  if (length(all_missing_rows) > 0) {
+    message(
+      "Warning: The following students have all missing responses: ",
+      paste(ID[all_missing_rows], collapse = ", ")
+    )
+  }
 
   # Add category information
   categories <- apply(response.matrix, 2, function(x) length(unique(x[x != -1])))
@@ -338,7 +373,9 @@ dataFormat <- function(data, na = NULL, id = 1, Z = NULL, w = NULL,
     }
     U <- matrix(NA, nrow = nrow(response.matrix), ncol = ncol(response.matrix))
     for (i in 1:nrow(response.matrix)) {
-      U[i, ] <- ifelse(response.matrix[i, ] == CA, 1, 0)
+      U[i, ] <- ifelse(response.matrix[i, ] == -1, -1,
+        ifelse(response.matrix[i, ] == CA, 1, 0)
+      )
     }
   }
 

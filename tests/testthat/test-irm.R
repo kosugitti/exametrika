@@ -4,7 +4,7 @@ library(exametrika)
 
 ### Setup - run model once and share across tests
 tmp_irm <- dataFormat(J35S515)
-result_irm <- Biclustering_IRM(tmp_irm, gamma_c = 1, gamma_f = 1, verbose = FALSE)
+result_irm <- Biclustering_IRM(tmp_irm, gamma_c = 1, gamma_f = 1, seed = 123, verbose = FALSE)
 
 test_that("IRM Basic Execution", {
   # Basic structure checks
@@ -63,4 +63,35 @@ test_that("IRM FRP Validity", {
 test_that("IRM FRPIndex Exists", {
   # FRPIndex should exist
   expect_true(!is.null(result_irm$FRPIndex))
+})
+
+test_that("IRM Seed Reproducibility", {
+  # Same seed should produce identical results
+  result_a <- Biclustering_IRM(tmp_irm, gamma_c = 1, gamma_f = 1, seed = 42, verbose = FALSE)
+  result_b <- Biclustering_IRM(tmp_irm, gamma_c = 1, gamma_f = 1, seed = 42, verbose = FALSE)
+
+  expect_equal(result_a$n_class, result_b$n_class)
+  expect_equal(result_a$n_field, result_b$n_field)
+  expect_equal(result_a$FRP, result_b$FRP)
+  expect_equal(result_a$TRP, result_b$TRP)
+  expect_equal(result_a$FieldEstimated, result_b$FieldEstimated)
+  expect_equal(result_a$ClassEstimated, result_b$ClassEstimated)
+  expect_equal(result_a$log_lik, result_b$log_lik)
+})
+
+test_that("IRM Seed NULL does not set seed", {
+  # With seed = NULL, the function should not call set.seed()
+  # and the results should depend on the current RNG state.
+  # We verify that the function runs without error with seed = NULL.
+  result_null <- Biclustering_IRM(tmp_irm, gamma_c = 1, gamma_f = 1, seed = NULL, verbose = FALSE)
+  expect_s3_class(result_null, "exametrika")
+  expect_true("IRM" %in% class(result_null))
+  expect_true(!is.null(result_null$n_class))
+  expect_true(!is.null(result_null$n_field))
+})
+
+test_that("IRM Default seed is NULL", {
+  # Verify the default value of seed parameter is NULL
+  fn_formals <- formals(Biclustering_IRM)
+  expect_null(fn_formals$seed)
 })

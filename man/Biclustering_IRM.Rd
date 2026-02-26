@@ -15,7 +15,7 @@ Biclustering_IRM(
   stable_limit = 5,
   minSize = 20,
   EM_limit = 20,
-  seed = 123,
+  seed = NULL,
   verbose = TRUE
 )
 }
@@ -51,7 +51,10 @@ under limit of size is not used for either all correct or all incorrect class.}
 This process using EM algorithm,\code{EM_limit} is the maximum number of iteration with
 default of 20.}
 
-\item{seed}{seed value for random numbers.}
+\item{seed}{Random seed for reproducibility. When a numeric value is provided,
+\code{set.seed(seed)} is called before the Gibbs sampling begins, ensuring
+reproducible results. When \code{NULL} (the default), no seed is set and
+the results depend on the current state of the random number generator.}
 
 \item{verbose}{verbose output Flag. default is TRUE}
 }

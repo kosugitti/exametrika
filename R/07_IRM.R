@@ -27,7 +27,10 @@
 #' @param EM_limit After IRM process, resizing the number of classes process will starts.
 #' This process using EM algorithm,\code{EM_limit} is the maximum number of iteration with
 #' default of 20.
-#' @param seed seed value for random numbers.
+#' @param seed Random seed for reproducibility. When a numeric value is provided,
+#' \code{set.seed(seed)} is called before the Gibbs sampling begins, ensuring
+#' reproducible results. When \code{NULL} (the default), no seed is set and
+#' the results depend on the current state of the random number generator.
 #' @param verbose verbose output Flag. default is TRUE
 #' @return
 #' \describe{
@@ -80,7 +83,7 @@
 Biclustering_IRM <- function(U, Z = NULL, w = NULL, na = NULL,
                              gamma_c = 1, gamma_f = 1,
                              max_iter = 100, stable_limit = 5, minSize = 20, EM_limit = 20,
-                             seed = 123, verbose = TRUE) {
+                             seed = NULL, verbose = TRUE) {
   # data format
   if (!inherits(U, "exametrika")) {
     tmp <- dataFormat(data = U, na = na, Z = Z, w = w)
@@ -94,7 +97,9 @@ Biclustering_IRM <- function(U, Z = NULL, w = NULL, na = NULL,
   gamp <- 1
 
   # Initialize
-  set.seed(seed)
+  if (!is.null(seed)) {
+    set.seed(seed)
+  }
   limit_count <- 0
   iter <- 1
   pattern <- sort(unique(nrs(tmp)))

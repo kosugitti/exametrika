@@ -127,7 +127,11 @@ default of 20.</p></dd>
 
 
 <dt id="arg-seed">seed<a class="anchor" aria-label="anchor" href="#arg-seed"></a></dt>
-<dd><p>seed value for random numbers.</p></dd>
+<dd><p>Random seed for reproducibility. When a numeric value is provided,
+<code>set.seed(seed)</code> is called before the Gibbs sampling begins, ensuring
+reproducible results. The default is <code>123</code>, which guarantees deterministic
+output. Set to <code>NULL</code> to disable seed setting and let the results depend
+on the current state of the random number generator.</p></dd>
 
 
 <dt id="arg-verbose">verbose<a class="anchor" aria-label="anchor" href="#arg-verbose"></a></dt>

@@ -86,7 +86,12 @@ Biclustering_IRM(
 
 - seed:
 
-  seed value for random numbers.
+  Random seed for reproducibility. When a numeric value is provided,
+  `set.seed(seed)` is called before the Gibbs sampling begins, ensuring
+  reproducible results. The default is `123`, which guarantees
+  deterministic output. Set to `NULL` to disable seed setting and let
+  the results depend on the current state of the random number
+  generator.
 
 - verbose:
 

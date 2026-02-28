@@ -4,7 +4,7 @@
 
 ### CAIC (Consistent AIC) Formula Correction
 
-- **Fixed CAIC formula to match Bozdogan (1987) original definition**: The CAIC penalty term was `log(n + 1)` but should be `log(n) + 1` per Bozdogan (1987, Psychometrika, 52(3), p.358, Proposition 2, Eq.44). The original Mathematica implementation had this error (`Log[nobs + 1]`), and the R port inherited it. Both the R version (`R/00_ModelFitModule.R`) and the Mathematica version (`develop/mtmk15forVer13/mod/Module_ModelFit.nb`) have been corrected. The numerical difference is approximately 1 (constant), but the corrected formula now matches the published definition: `CAIC(k) = -2 log L + k * (log(n) + 1)`. This affects all models that compute fit indices: IRT, LCA, LRA (binary/ordinal/rated), Biclustering (binary/ordinal/nominal), IRM, BNM, LDLRA, LDB, BINET, and GRM. All 680 tests pass with the corrected formula.
+- **Fixed CAIC formula to match Bozdogan (1987) original definition**: The CAIC penalty term was `log(n + 1)` but should be `log(n) + 1` per Bozdogan (1987, Psychometrika, 52(3), p.358, Proposition 2, Eq.44). The original Mathematica implementation had this error (`Log[nobs + 1]`), and the R port inherited it. Both the R version (`R/00_ModelFitModule.R`) and the Mathematica version (`develop/mtmk15forVer13/mod/Module_ModelFit.nb`) have been corrected. The numerical difference is approximately 1 (constant), but the corrected formula now matches the published definition: `CAIC(k) = -2 log L + k * (log(n) + 1)`. This affects all models that compute fit indices: IRT, LCA, LRA (binary/ordinal/rated), Biclustering (binary/ordinal/nominal), IRM, BNM, LDLRA, LDB, BINET, and GRM. All 873 tests pass with the corrected formula.
 
 ### GRM Example Fix
 
@@ -45,15 +45,19 @@
 
 ## Test Suite Modernization
 
-- **Complete migration from Excel to CSV fixtures**: Removed all 14 legacy test files that depended on `tidyverse` and `readxl` for reading Excel-based Mathematica reference data. Replaced with 23 modern test files using base R `read.csv()` and `test_path()` to load CSV fixtures from `tests/testthat/fixtures/mathematica_reference/`. The new test suite has zero external package dependencies beyond `testthat`.
+- **Complete migration from Excel to CSV fixtures**: Removed all 14 legacy test files that depended on `tidyverse` and `readxl` for reading Excel-based Mathematica reference data. Replaced with 24 modern test files using base R `read.csv()` and `test_path()` to load CSV fixtures from `tests/testthat/fixtures/mathematica_reference/`. The new test suite has zero external package dependencies beyond `testthat`.
 - **Removed `readxl`/`tidyverse` from test dependencies**: DESCRIPTION `Suggests` no longer requires any packages beyond `knitr`, `rmarkdown`, and `testthat`.
 - **Fixture file reorganization**: Shortened overly long CSV fixture filenames to comply with CRAN's 100-byte portable path requirement.
-- **Test coverage**: 23 test files covering all models (CTT, IRT 2PL/3PL/4PL, LCA, LRA binary/ordinal/nominal, Biclustering binary/ordinal/nominal, IRM, BNM, LDLRA, LDB, BINET, GRM, GridSearch, dataFormat, polychoric correlation, scoring, student/test analysis). 85 Mathematica reference CSV files for cross-validation.
+- **Test coverage**: 24 test files, 873 tests, covering all models (CTT, IRT 2PL/3PL/4PL, LCA, LRA binary/ordinal/nominal, Biclustering binary/ordinal/nominal, IRM, BNM, LDLRA, LDB, BINET, GRM, GridSearch, dataFormat, polychoric correlation, scoring, student/test analysis, confirmatory LCA/LRA). 85 Mathematica reference CSV files for cross-validation.
+
+## Documentation
+
+- **TestStatistics example**: Added stem-and-leaf plot example using `stem(nrs(dataFormat(J15S500)))` to demonstrate score distribution visualization.
 
 ## Internal Improvements
 
 - **pkgdown migration**: Migrated documentation site from Jekyll (main/docs) to pkgdown (gh-pages branch via GitHub Actions).
-- **CI/CD**: Added GitHub Actions workflows for automated R CMD check, test coverage reporting, and pkgdown site deployment.
+- **CI/CD**: Added GitHub Actions workflows for automated R CMD check, test coverage reporting, and pkgdown site deployment. Removed Codecov upload step from test-coverage workflow.
 - **.Rbuildignore cleanup**: Removed `^tests$` and `^inst$` entries that were incorrectly excluding tests and vignettes from the built package.
 
 ---

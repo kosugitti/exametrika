@@ -64,8 +64,8 @@ No breaking changes. This release includes changes originally planned for v1.9.0
 ### Test Suite Modernization
 
 * **Complete migration from Excel to CSV fixtures**: Removed all 14 legacy test
-  files that depended on `tidyverse` and `readxl`. Replaced with 23 modern test
+  files that depended on `tidyverse` and `readxl`. Replaced with 24 modern test
   files using base R `read.csv()`. Zero external package dependencies beyond
   `testthat`.
 * **85 Mathematica reference CSV files** for cross-validation across all models.
-* **680 tests**, all passing.
+* **873 tests**, all passing.

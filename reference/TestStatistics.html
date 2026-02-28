@@ -186,6 +186,27 @@ its result. See <code><a href="ScoreReport.html">ScoreReport</a></code> for deta
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">summary_stats</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     Min Q1 Median  Mean Q3 Max</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 25%   2  8     10 9.664 12  15</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Stem-and-leaf plot of score distribution</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/stem.html" class="external-link">stem</a></span><span class="op">(</span><span class="fu"><a href="nrs.html">nrs</a></span><span class="op">(</span><span class="fu"><a href="dataFormat.html">dataFormat</a></span><span class="op">(</span><span class="va">J15S500</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   The decimal point is at the |</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    2 | 000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    3 | 00</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    4 | 0000000000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    5 | 0000000000000000000000000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    6 | 000000000000000000000000000000000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    7 | 00000000000000000000000000000000000000000000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    8 | 0000000000000000000000000000000000000000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    9 | 00000000000000000000000000000000000000000000000000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   10 | 00000000000000000000000000000000000000000000000000000000000000000000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   11 | 00000000000000000000000000000000000000000000000000000000000000000000+2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   12 | 00000000000000000000000000000000000000000000000000000000000000000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   13 | 000000000000000000000000000000000000000000000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   14 | 000000000000000000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   15 | 000000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

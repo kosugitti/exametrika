@@ -59,6 +59,9 @@
 #'   Max = stats$Max
 #' )
 #' print(summary_stats)
+#'
+#' # Stem-and-leaf plot of score distribution
+#' stem(nrs(dataFormat(J15S500)))
 #' @export
 #'
 TestStatistics <- function(U, na = NULL, Z = NULL, w = NULL) {

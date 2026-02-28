@@ -78,4 +78,7 @@ summary_stats <- data.frame(
   Max = stats$Max
 )
 print(summary_stats)
+
+# Stem-and-leaf plot of score distribution
+stem(nrs(dataFormat(J15S500)))
 }

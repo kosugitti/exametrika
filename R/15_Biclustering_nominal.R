@@ -246,11 +246,11 @@ Biclustering.nominal <- function(U,
   df_B <- bench_nparam - null_nparam
   chi_B <- 2 * (ell_B - ell_N)
   # Analysis model
-  chi_A <- 2 * (ell_B - test_log_lik)
+  chi_A <- 2 * (ell_B - testell)
   df_A <- bench_nparam - nparam
   FitIndices <- structure(
     c(list(
-      model_log_like = test_log_lik,
+      model_log_like = testell,
       bench_log_like = ell_B,
       null_log_like = ell_N,
       model_Chi_sq = chi_A,
@@ -287,9 +287,9 @@ Biclustering.nominal <- function(U,
     ClassEstimated = cls,
     Students = StudentRank,
     TestFitIndices = FitIndices,
-    log_lik = test_log_lik, # New naming convention
+    log_lik = testell, # New naming convention
     # Deprecated fields (for backward compatibility)
-    LogLik = test_log_lik
+    LogLik = testell
   ), class = c("exametrika", "nominalBiclustering"))
 
   return(ret)

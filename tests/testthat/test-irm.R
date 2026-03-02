@@ -92,6 +92,6 @@ test_that("IRM Seed NULL does not set seed", {
 
 test_that("IRM Default seed is 123", {
   # Verify the default value of seed parameter is 123
-  fn_formals <- formals(Biclustering_IRM)
+  fn_formals <- formals(Biclustering_IRM.binary)
   expect_equal(fn_formals$seed, 123)
 })

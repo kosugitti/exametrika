@@ -40,7 +40,8 @@ R/                   # R source files (42 files)
   05_LCA.R           # Latent Class Analysis
   06_LRA.R           # Latent Rank Analysis (binary)
   07_Biclustering.R  # Biclustering/Ranklustering (binary)
-  07_IRM.R           # Infinite Relational Model
+  07_IRM.R           # Infinite Relational Model (S3 generic + binary method)
+  17_Biclustering_nominal_IRM.R  # IRM for nominal data
   08*.R              # Bayesian Network Models (BNM, GA, PBIL)
   09_LDLRA.R         # Local Dependence LRA
   10_LDB.R           # Local Dependence Biclustering
@@ -133,15 +134,16 @@ docs/                # .gitignore'd (removed from repo); pkgdown site deployed t
 - BINET g_list/adj_list fix
 - GRM example fix (`\donttest` → `\dontrun`)
 - Biclustering_IRM seed default reverted to 123
+- **Nominal IRM** (`Biclustering_IRM.nominal`): Dirichlet-Multinomial collapsed Gibbs sampler
+- **Biclustering_IRM S3 generic**: dispatches to .binary/.nominal/.ordinal by data type
+- J20S400 dataset fix (response.type nominal → binary)
 - CI: removed Codecov upload from test-coverage workflow
 - TestStatistics docs: stem-and-leaf plot example
 - Test suite modernization (Excel→CSV, tidyverse dependency removal)
 - pkgdown migration, CI/CD, .Rbuildignore cleanup
 
 ### v1.11.0 (next minor release)
-- **Nominal IRM** — Dirichlet-Multinomial extension of IRM. Design finalized.
-  Design notes: `develop/IRM_polytomous.tex`
-- Ordinal IRM, Rated IRM to follow in v1.11.x series
+- **Ordinal IRM** — Nominal Gibbs base + Phase 2 ordinal EM constraints (cumulative normalization)
   - Design memo: `develop/多値IRM設計メモ_20260221.md`
 
 ### v2.0.0 (breaking changes)

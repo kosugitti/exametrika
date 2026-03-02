@@ -31,7 +31,25 @@
 
 - **Reverted `Biclustering_IRM()` seed default back to 123**: Ensures reproducibility by default.
 
+### Biclustering_IRM Log-Probability Normalization Fix
+
+- **Fixed log-to-probability conversion in `Biclustering_IRM()` Gibbs sampler**: Changed `exp(ptab - min(ptab))` to `exp(ptab - max(ptab))` for numerical stability. The previous implementation subtracted the minimum log-probability, which could cause overflow (`exp(large positive) = Inf`) when the range of log-probabilities was large, resulting in `NaN` after normalization. Subtracting the maximum ensures the largest value becomes `exp(0) = 1` and all others underflow harmlessly to near-zero values.
+
+### Biclustering.nominal Model Fit Fix
+
+- **Fixed `Biclustering.nominal()` using stale log-likelihood in model fit indices**: When the EM algorithm exited due to log-likelihood decrease, `BCRM` was correctly reverted to the previous iteration's value, but `test_log_lik` was not. The model fit section recalculated the correct log-likelihood as `testell`, but `chi_A`, `model_log_like`, `log_lik`, and `LogLik` all referenced the stale `test_log_lik` instead of `testell`. Also removed a duplicated model fit code block (copy-paste error).
+
+### J20S400 Dataset Fix
+
+- **Fixed `J20S400` response type from `nominal` to `binary`**: The `J20S400.rda` dataset was incorrectly stored with `response.type = "nominal"` despite being a binary (0/1) dataset with -99 as missing values. Missing values were not properly handled (Z was all 1s, Q contained raw -99 values). Regenerated from the original CSV source (`develop/sampleData/J20S400.csv`) with `dataFormat(..., na = -99)`, now correctly typed as `binary` with 86 missing values properly masked in Z.
+
 ## New Features
+
+### Nominal IRM (Biclustering_IRM.nominal)
+
+- **New `Biclustering_IRM.nominal()` for nominal/polytomous data**: Extends the Infinite Relational Model (IRM) from binary to nominal scale data using a Dirichlet-Multinomial collapsed Gibbs sampler. The Chinese Restaurant Process (CRP) automatically determines the optimal number of classes and fields. After the Gibbs sampling phase, small classes are consolidated and refined with an EM algorithm. The Dirichlet prior concentration parameter `alpha` controls smoothing of category probabilities.
+- **`Biclustering_IRM()` is now an S3 generic**: Dispatches to `Biclustering_IRM.binary` (existing binary IRM), `Biclustering_IRM.nominal` (new), with `Biclustering_IRM.ordinal` planned for future release. Raw data is automatically formatted and dispatched based on `response.type`.
+- **Performance optimization**: The Gibbs sampler uses differential updates for the sufficient statistics array `U_fcq`, computing only the contribution of the target student/item rather than recalculating the full array at each step.
 
 ### Confirmatory LCA/LRA (Test Equating)
 

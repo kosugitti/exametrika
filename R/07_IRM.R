@@ -110,7 +110,7 @@ Biclustering_IRM.default <- function(U, na = NULL, Z = NULL, w = NULL, ...) {
 Biclustering_IRM.binary <- function(U, Z = NULL, w = NULL, na = NULL,
                                     gamma_c = 1, gamma_f = 1,
                                     max_iter = 100, stable_limit = 5, minSize = 20, EM_limit = 20,
-                                    seed = 123, verbose = TRUE) {
+                                    seed = 123, verbose = TRUE, ...) {
   # data format
   if (!inherits(U, "exametrika")) {
     tmp <- dataFormat(data = U, na = na, Z = Z, w = w)

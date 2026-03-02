@@ -25,7 +25,8 @@ Biclustering_IRM(U, ...)
   minSize = 20,
   EM_limit = 20,
   seed = 123,
-  verbose = TRUE
+  verbose = TRUE,
+  ...
 )
 
 \method{Biclustering_IRM}{nominal}(

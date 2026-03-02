@@ -27,6 +27,10 @@
 - **Fixed `g_csv` variable undefined error when using `g_list` or `adj_list` input**: `BINET()` crashed with an undefined variable error at the graph construction step when the DAG was specified via `g_list` or `adj_list` parameters. The internal variable `g_csv` (used to build the integrated graph object `all_g`) was only defined in the `adj_file` code path. Added logic to reconstruct `g_csv` from `adj_list` for the `g_list` and `adj_list` input paths, ensuring `all_g` is correctly built with Field edge attributes regardless of input method.
 - **Fixed `g_list` / `adj_list` length validation**: The length check for `g_list` and `adj_list` incorrectly compared against `ncls` (number of classes) instead of `nfld` (number of fields). In BINET, each element of `adj_list` represents the DAG structure at a specific field, so the list length should equal `nfld`. Also fixed `g_list` type check from `g_list[[1]]` (always checking the first element) to `g_list[[j]]` (checking each element).
 
+### Biclustering_IRM.binary S3 Method Consistency Fix
+
+- **Added `...` to `Biclustering_IRM.binary()` signature**: The S3 generic `Biclustering_IRM(U, ...)` requires all methods to include `...` in their formal arguments. The `.binary` method was missing it, causing an R CMD check WARNING. Added `...` to match the generic and the `.nominal`/`.ordinal` methods.
+
 ### Biclustering_IRM Seed Default
 
 - **Reverted `Biclustering_IRM()` seed default back to 123**: Ensures reproducibility by default.
@@ -68,7 +72,9 @@
 - **Complete migration from Excel to CSV fixtures**: Removed all 14 legacy test files that depended on `tidyverse` and `readxl` for reading Excel-based Mathematica reference data. Replaced with 24 modern test files using base R `read.csv()` and `test_path()` to load CSV fixtures from `tests/testthat/fixtures/mathematica_reference/`. The new test suite has zero external package dependencies beyond `testthat`.
 - **Removed `readxl`/`tidyverse` from test dependencies**: DESCRIPTION `Suggests` no longer requires any packages beyond `knitr`, `rmarkdown`, and `testthat`.
 - **Fixture file reorganization**: Shortened overly long CSV fixture filenames to comply with CRAN's 100-byte portable path requirement.
-- **Test coverage**: 24 test files, 873 tests, covering all models (CTT, IRT 2PL/3PL/4PL, LCA, LRA binary/ordinal/nominal, Biclustering binary/ordinal/nominal, IRM, BNM, LDLRA, LDB, BINET, GRM, GridSearch, dataFormat, polychoric correlation, scoring, student/test analysis, confirmatory LCA/LRA). 85 Mathematica reference CSV files for cross-validation.
+- **Test coverage**: 26 test files, 321 test blocks, covering all models (CTT, IRT 2PL/3PL/4PL, LCA, LRA binary/ordinal/nominal, Biclustering binary/ordinal/nominal, IRM binary/nominal/ordinal, BNM, LDLRA, LDB, BINET, GRM, GridSearch, dataFormat, polychoric correlation, scoring, student/test analysis, confirmatory LCA/LRA). 85 Mathematica reference CSV files for cross-validation.
+- **Added Nominal IRM tests** (`test-irm-nominal.R`): 18 test blocks for `Biclustering_IRM.nominal()` using J20S600 data — basic execution, dimensions, FRP validity, membership, fit indices, backward compatibility, seed reproducibility, alpha validation.
+- **Added Ordinal IRM tests** (`test-irm-ordinal.R`): 25 test blocks for `Biclustering_IRM.ordinal()` using J35S500 data — basic execution, dimensions, FRP validity, expected scores, TRP, BFRP, FRPIndex, SOAC/WOAC flags, mic parameter, fit indices, backward compatibility, seed reproducibility, alpha validation.
 
 ## Documentation
 

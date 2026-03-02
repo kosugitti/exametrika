@@ -2,15 +2,20 @@
 
 This function performs Biclustering structure learning using the
 Infinite Relational Model (IRM) to automatically determine the optimal
-number of classes C and optimal number of fields F. It can be found in a
-single run of the analysis, but it takes a long computation time when
-the sample size S is large. This method incorporates the Chinese
-restaurant process and Gibbs sampling. In detail, See Section 7.8 in
-Shojima(2022).
+number of classes C and optimal number of fields F. It dispatches to the
+appropriate method based on the data type: binary, ordinal, or nominal.
+For binary data, see Section 7.8 in Shojima(2022). For nominal data, a
+Dirichlet-Multinomial collapsed Gibbs sampler is used.
 
 ## Usage
 
 ``` r
+Biclustering_IRM(U, ...)
+
+# Default S3 method
+Biclustering_IRM(U, na = NULL, Z = NULL, w = NULL, ...)
+
+# S3 method for class 'binary'
 Biclustering_IRM(
   U,
   Z = NULL,
@@ -25,6 +30,21 @@ Biclustering_IRM(
   seed = 123,
   verbose = TRUE
 )
+
+# S3 method for class 'nominal'
+Biclustering_IRM(
+  U,
+  gamma_c = 1,
+  gamma_f = 1,
+  alpha = 1,
+  max_iter = 100,
+  stable_limit = 5,
+  minSize = 20,
+  EM_limit = 20,
+  seed = 123,
+  verbose = TRUE,
+  ...
+)
 ```
 
 ## Arguments
@@ -36,6 +56,15 @@ Biclustering_IRM(
   [dataFormat](https://kosugitti.github.io/exametrika/reference/dataFormat.md)
   function.
 
+- ...:
+
+  Additional arguments passed to specific methods.
+
+- na:
+
+  na argument specifies the numbers or characters to be treated as
+  missing values.
+
 - Z:
 
   Z is a missing indicator matrix of the type matrix or data.frame
@@ -43,11 +72,6 @@ Biclustering_IRM(
 - w:
 
   w is item weight vector
-
-- na:
-
-  na argument specifies the numbers or characters to be treated as
-  missing values.
 
 - gamma_c:
 
@@ -97,7 +121,16 @@ Biclustering_IRM(
 
   verbose output Flag. default is TRUE
 
+- alpha:
+
+  Dirichlet distribution concentration parameter for the prior density
+  of field reference probabilities (nominal IRM only). Must be positive.
+  The default is 1.
+
 ## Value
+
+An object of class "exametrika" containing the IRM results. See
+`Biclustering_IRM.binary` or `Biclustering_IRM.nominal` for details.
 
 - nobs:
 
@@ -185,6 +218,76 @@ Biclustering_IRM(
   Overall fit index for the test.See also
   [TestFit](https://kosugitti.github.io/exametrika/reference/TestFit.md)
 
+For nominal data, the returned list includes:
+
+- Q:
+
+  Response matrix.
+
+- Z:
+
+  Missing indicator matrix.
+
+- testlength:
+
+  Number of items.
+
+- nobs:
+
+  Sample size.
+
+- n_class:
+
+  Optimal number of classes.
+
+- n_field:
+
+  Optimal number of fields.
+
+- n_cycle:
+
+  Number of EM algorithm iterations.
+
+- FRP:
+
+  Field Reference Profile, a 3D array (nfld x ncls x maxQ).
+
+- LFD:
+
+  Latent Field Distribution.
+
+- LCD:
+
+  Latent Class Distribution.
+
+- FieldMembership:
+
+  Field membership probability matrix.
+
+- ClassMembership:
+
+  Class membership probability matrix.
+
+- FieldEstimated:
+
+  Estimated field assignment for each item.
+
+- ClassEstimated:
+
+  Estimated class assignment for each student.
+
+- Students:
+
+  Rank Membership Profile matrix with estimated class.
+
+- TestFitIndices:
+
+  Overall fit index for the test.
+
+- log_lik:
+
+  Log-likelihood of the model.
+
 ## Examples
 
 ``` r
@@ -210,21 +313,50 @@ result <- Biclustering_IRM(J35S515, gamma_c = 1, gamma_f = 1, verbose = TRUE)
 #> Adjusting classes: BIC=-100001.3 ncls=17 (min size < 20)
 
 # Display the Bicluster Reference Matrix (BRM) as a heatmap
-# Shows the discovered clustering structure of items and students
 plot(result, type = "Array")
 
 
 # Plot Field Reference Profiles (FRP) in a 3-column grid
-# Shows the probability patterns for each automatically determined field
 plot(result, type = "FRP", nc = 3)
 
 
 
 
+# }
 
-# Plot Test Reference Profile (TRP)
-# Shows the overall response pattern across all fields
-plot(result, type = "TRP")
+# \donttest{
+result <- Biclustering_IRM(J35S515, gamma_c = 1, gamma_f = 1, verbose = TRUE)
+#> iter 1: match=0 nfld=15 ncls=30
+#> iter 2: match=0 nfld=12 ncls=27
+#> iter 3: match=1 nfld=12 ncls=24
+#> iter 4: match=2 nfld=12 ncls=23
+#> iter 5: match=3 nfld=12 ncls=23
+#> iter 6: match=0 nfld=12 ncls=23
+#> iter 7: match=1 nfld=12 ncls=23
+#> iter 8: match=2 nfld=12 ncls=23
+#> iter 9: match=3 nfld=12 ncls=21
+#> iter 10: match=4 nfld=12 ncls=21
+#> iter 11: match=5 nfld=12 ncls=21
+#> Adjusting classes: BIC=-99592.5 ncls=21 (min size < 20)
+#> Adjusting classes: BIC=-99980.4 ncls=20 (min size < 20)
+#> Adjusting classes: BIC=-99959.7 ncls=19 (min size < 20)
+#> Adjusting classes: BIC=-99988.3 ncls=18 (min size < 20)
+#> Adjusting classes: BIC=-100001.3 ncls=17 (min size < 20)
+plot(result, type = "Array")
+
+# }
+# \donttest{
+# Fit a nominal Biclustering IRM model
+result <- Biclustering_IRM(J20S600, gamma_c = 1, gamma_f = 1, verbose = TRUE)
+#> iter 1: match=0 nfld=6 ncls=6
+#> iter 2: match=0 nfld=4 ncls=6
+#> iter 3: match=1 nfld=4 ncls=7
+#> iter 4: match=2 nfld=4 ncls=7
+#> iter 5: match=3 nfld=4 ncls=5
+#> iter 6: match=4 nfld=4 ncls=6
+#> iter 7: match=5 nfld=4 ncls=6
+#> Adjusting classes: BIC=28686.8 ncls=6 (min size < 20)
+plot(result, type = "Array")
 
 # }
 ```

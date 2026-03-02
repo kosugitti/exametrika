@@ -945,23 +945,23 @@ result.B.nom
 #> Number of Latent Field: 4
 #> Number of EM cycle: 9 
 #>                     value
-#> model_log_like -13935.073
+#> model_log_like -13940.683
 #> bench_log_like      0.000
 #> null_log_like  -16424.042
-#> model_Chi_sq    27870.147
+#> model_Chi_sq    27881.366
 #> null_Chi_sq     32848.085
 #> model_df        11940.000
 #> null_df         11980.000
-#> NFI                 0.152
-#> RFI                 0.149
+#> NFI                 0.151
+#> RFI                 0.148
 #> IFI                 0.238
 #> TLI                 0.234
-#> CFI                 0.237
+#> CFI                 0.236
 #> RMSEA               0.047
-#> AIC              3990.147
-#> CAIC           -60449.193
-#> BIC            -48509.193
-#> LogLik         -13935.073
+#> AIC              4001.366
+#> CAIC           -60437.974
+#> BIC            -48497.974
+#> LogLik         -13940.683
 plot(result.B.nom, type = "Array")
 ```
 

@@ -78,9 +78,33 @@
 <ul><li>
 <strong>Reverted <code><a href="../reference/Biclustering_IRM.html">Biclustering_IRM()</a></code> seed default back to 123</strong>: Ensures reproducibility by default.</li>
 </ul></div>
+<div class="section level4">
+<h4 id="biclustering_irm-log-probability-normalization-fix-1-10-0">Biclustering_IRM Log-Probability Normalization Fix<a class="anchor" aria-label="anchor" href="#biclustering_irm-log-probability-normalization-fix-1-10-0"></a></h4>
+<ul><li>
+<strong>Fixed log-to-probability conversion in <code><a href="../reference/Biclustering_IRM.html">Biclustering_IRM()</a></code> Gibbs sampler</strong>: Changed <code>exp(ptab - min(ptab))</code> to <code>exp(ptab - max(ptab))</code> for numerical stability. The previous implementation subtracted the minimum log-probability, which could cause overflow (<code>exp(large positive) = Inf</code>) when the range of log-probabilities was large, resulting in <code>NaN</code> after normalization. Subtracting the maximum ensures the largest value becomes <code>exp(0) = 1</code> and all others underflow harmlessly to near-zero values.</li>
+</ul></div>
+<div class="section level4">
+<h4 id="biclusteringnominal-model-fit-fix-1-10-0">Biclustering.nominal Model Fit Fix<a class="anchor" aria-label="anchor" href="#biclusteringnominal-model-fit-fix-1-10-0"></a></h4>
+<ul><li>
+<strong>Fixed <code><a href="../reference/Biclustering.html">Biclustering.nominal()</a></code> using stale log-likelihood in model fit indices</strong>: When the EM algorithm exited due to log-likelihood decrease, <code>BCRM</code> was correctly reverted to the previous iteration’s value, but <code>test_log_lik</code> was not. The model fit section recalculated the correct log-likelihood as <code>testell</code>, but <code>chi_A</code>, <code>model_log_like</code>, <code>log_lik</code>, and <code>LogLik</code> all referenced the stale <code>test_log_lik</code> instead of <code>testell</code>. Also removed a duplicated model fit code block (copy-paste error).</li>
+</ul></div>
+<div class="section level4">
+<h4 id="j20s400-dataset-fix-1-10-0">J20S400 Dataset Fix<a class="anchor" aria-label="anchor" href="#j20s400-dataset-fix-1-10-0"></a></h4>
+<ul><li>
+<strong>Fixed <code>J20S400</code> response type from <code>nominal</code> to <code>binary</code></strong>: The <code>J20S400.rda</code> dataset was incorrectly stored with <code>response.type = "nominal"</code> despite being a binary (0/1) dataset with -99 as missing values. Missing values were not properly handled (Z was all 1s, Q contained raw -99 values). Regenerated from the original CSV source (<code>develop/sampleData/J20S400.csv</code>) with <code>dataFormat(..., na = -99)</code>, now correctly typed as <code>binary</code> with 86 missing values properly masked in Z.</li>
+</ul></div>
 </div>
 <div class="section level3">
 <h3 id="new-features-1-10-0">New Features<a class="anchor" aria-label="anchor" href="#new-features-1-10-0"></a></h3>
+<div class="section level4">
+<h4 id="nominal-irm-biclustering_irmnominal-1-10-0">Nominal IRM (Biclustering_IRM.nominal)<a class="anchor" aria-label="anchor" href="#nominal-irm-biclustering_irmnominal-1-10-0"></a></h4>
+<ul><li>
+<strong>New <code><a href="../reference/Biclustering_IRM.html">Biclustering_IRM.nominal()</a></code> for nominal/polytomous data</strong>: Extends the Infinite Relational Model (IRM) from binary to nominal scale data using a Dirichlet-Multinomial collapsed Gibbs sampler. The Chinese Restaurant Process (CRP) automatically determines the optimal number of classes and fields. After the Gibbs sampling phase, small classes are consolidated and refined with an EM algorithm. The Dirichlet prior concentration parameter <code>alpha</code> controls smoothing of category probabilities.</li>
+<li>
+<strong><code><a href="../reference/Biclustering_IRM.html">Biclustering_IRM()</a></code> is now an S3 generic</strong>: Dispatches to <code>Biclustering_IRM.binary</code> (existing binary IRM), <code>Biclustering_IRM.nominal</code> (new), with <code>Biclustering_IRM.ordinal</code> planned for future release. Raw data is automatically formatted and dispatched based on <code>response.type</code>.</li>
+<li>
+<strong>Performance optimization</strong>: The Gibbs sampler uses differential updates for the sufficient statistics array <code>U_fcq</code>, computing only the contribution of the target student/item rather than recalculating the full array at each step.</li>
+</ul></div>
 <div class="section level4">
 <h4 id="confirmatory-lcalra-test-equating-1-10-0">Confirmatory LCA/LRA (Test Equating)<a class="anchor" aria-label="anchor" href="#confirmatory-lcalra-test-equating-1-10-0"></a></h4>
 <ul><li>

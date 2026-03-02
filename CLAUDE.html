@@ -77,7 +77,8 @@
   05_LCA.R           # Latent Class Analysis
   06_LRA.R           # Latent Rank Analysis (binary)
   07_Biclustering.R  # Biclustering/Ranklustering (binary)
-  07_IRM.R           # Infinite Relational Model
+  07_IRM.R           # Infinite Relational Model (S3 generic + binary method)
+  17_Biclustering_nominal_IRM.R  # IRM for nominal data
   08*.R              # Bayesian Network Models (BNM, GA, PBIL)
   09_LDLRA.R         # Local Dependence LRA
   10_LDB.R           # Local Dependence Biclustering
@@ -195,6 +196,11 @@ docs/                # .gitignore'd (removed from repo); pkgdown site deployed t
 <li>BINET g_list/adj_list fix</li>
 <li>GRM example fix (<code>\donttest</code> → <code>\dontrun</code>)</li>
 <li>Biclustering_IRM seed default reverted to 123</li>
+<li>
+<strong>Nominal IRM</strong> (<code>Biclustering_IRM.nominal</code>): Dirichlet-Multinomial collapsed Gibbs sampler</li>
+<li>
+<strong>Biclustering_IRM S3 generic</strong>: dispatches to .binary/.nominal/.ordinal by data type</li>
+<li>J20S400 dataset fix (response.type nominal → binary)</li>
 <li>CI: removed Codecov upload from test-coverage workflow</li>
 <li>TestStatistics docs: stem-and-leaf plot example</li>
 <li>Test suite modernization (Excel→CSV, tidyverse dependency removal)</li>
@@ -203,9 +209,7 @@ docs/                # .gitignore'd (removed from repo); pkgdown site deployed t
 <div class="section level3">
 <h3 id="v1110-next-minor-release">v1.11.0 (next minor release)<a class="anchor" aria-label="anchor" href="#v1110-next-minor-release"></a></h3>
 <ul><li>
-<strong>Nominal IRM</strong> — Dirichlet-Multinomial extension of IRM. Design finalized. Design notes: <code>develop/IRM_polytomous.tex</code>
-</li>
-<li>Ordinal IRM, Rated IRM to follow in v1.11.x series
+<strong>Ordinal IRM</strong> — Nominal Gibbs base + Phase 2 ordinal EM constraints (cumulative normalization)
 <ul><li>Design memo: <code>develop/多値IRM設計メモ_20260221.md</code>
 </li>
 </ul></li>

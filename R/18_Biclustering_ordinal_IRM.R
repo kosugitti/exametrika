@@ -1,8 +1,8 @@
 #' @rdname Biclustering_IRM
-#' @param alpha Dirichlet distribution concentration parameter for the prior density of
-#' field reference probabilities (nominal IRM only). Must be positive. The default is 1.
+#' @param mic Logical; if TRUE, forces Field Reference Profiles to be monotonically
+#' increasing across classes (ordinal IRM only). Default is TRUE.
 #' @return
-#' For nominal data, the returned list includes:
+#' For ordinal data, the returned list includes:
 #' \describe{
 #'  \item{Q}{Response matrix.}
 #'  \item{Z}{Missing indicator matrix.}
@@ -11,7 +11,12 @@
 #'  \item{n_class}{Optimal number of classes.}
 #'  \item{n_field}{Optimal number of fields.}
 #'  \item{n_cycle}{Number of EM algorithm iterations.}
-#'  \item{FRP}{Field Reference Profile, a 3D array (nfld x ncls x maxQ).}
+#'  \item{FRP}{Field Reference Profile (BCRM), a 3D array (nfld x ncls x maxQ).}
+#'  \item{FRPIndex}{Index of FRP includes the item location parameters B and Beta,
+#'  the slope parameters A and Alpha, and the monotonicity indices C and Gamma.}
+#'  \item{TRP}{Test Reference Profile.}
+#'  \item{BFRP}{Bicluster Field Reference Profile (expected scores), a list with
+#'  Weighted and Observed components.}
 #'  \item{LFD}{Latent Field Distribution.}
 #'  \item{LCD}{Latent Class Distribution.}
 #'  \item{FieldMembership}{Field membership probability matrix.}
@@ -21,18 +26,21 @@
 #'  \item{Students}{Rank Membership Profile matrix with estimated class.}
 #'  \item{TestFitIndices}{Overall fit index for the test.}
 #'  \item{log_lik}{Log-likelihood of the model.}
+#'  \item{SOACflg}{Logical; TRUE if Strongly Ordinal Alignment Condition is satisfied.}
+#'  \item{WOACflg}{Logical; TRUE if Weakly Ordinal Alignment Condition is satisfied.}
 #' }
 #' @examples
 #' \donttest{
-#' # Fit a nominal Biclustering IRM model
-#' result <- Biclustering_IRM(J20S600, gamma_c = 1, gamma_f = 1, verbose = TRUE)
+#' # Fit an ordinal Biclustering IRM model
+#' result <- Biclustering_IRM(J35S500, gamma_c = 1, gamma_f = 1, verbose = TRUE)
 #' plot(result, type = "Array")
 #' }
 #' @export
-Biclustering_IRM.nominal <- function(U,
+Biclustering_IRM.ordinal <- function(U,
                                      gamma_c = 1, gamma_f = 1, alpha = 1,
+                                     mic = TRUE,
                                      max_iter = 100, stable_limit = 5,
-                                     minSize = 20, EM_limit = 20,
+                                     minSize = 20, EM_limit = 100,
                                      seed = 123, verbose = TRUE, ...) {
   tmp <- U
 
@@ -59,16 +67,13 @@ Biclustering_IRM.nominal <- function(U,
     set.seed(seed)
   }
 
-  ## Initial Class: assign by mode category
-  mode_cat <- apply(tmp$Q, 1, function(x) {
-    tab <- table(x)
-    as.integer(names(which.max(tab)))
-  })
-  unique_vec <- unique(mode_cat)
+  ## Initial Class: assign by mean response score
+  means <- apply(tmp$Q, 1, mean)
+  unique_vec <- unique(sort(means))
   ncls <- length(unique_vec)
   cls01 <- matrix(0, ncol = ncls, nrow = nobs)
   for (i in 1:nobs) {
-    cls01[i, mode_cat[i]] <- 1
+    cls01[i, which(unique_vec == means[i])] <- 1
   }
   colnames(cls01) <- paste("Class", 1:ncls)
   rownames(cls01) <- tmp$ID
@@ -92,45 +97,31 @@ Biclustering_IRM.nominal <- function(U,
   ncls <- gibbs$ncls
   nfld <- gibbs$nfld
 
-  # Phase 2: BCRM estimation (direct normalization) -------------------------
+  # Phase 2: Initial BCRM/BBRM estimation ----------------------------------
   U_fcq <- irm_calc_Ufcq(Uq, tmp$Z, cls01, fld01, maxQ)
   BCRM <- sweep(U_fcq, 3, alpha_vec, "+")
   denom <- apply(BCRM, c(1, 2), sum)
   BCRM <- sweep(BCRM, c(1, 2), denom, "/")
 
-  # Reorganizing small-sized classes ----------------------------------------
+  # Bicluster Boundary Reference Matrix (FxCxQ+1)
+  BBRM <- array(NA, dim = c(nfld, ncls, maxQ + 1))
+  BBRM[, , 1] <- 1
+  BBRM[, , maxQ + 1] <- 0
+  for (q in maxQ:2) {
+    BBRM[, , q] <- BCRM[, , q] + BBRM[, , q + 1]
+  }
+
+  # Phase 3: EM refinement with ordering + small-class adjustment -----------
   bic <- irm_bic_calc(Uq, tmp$Z, fld01, cls01, BCRM, maxQ, const)
-  best_BCRM <- BCRM
-  best_cls01 <- cls01
-  EMt <- 0
+  n_cycle <- 0
 
-  DelRepFLG <- TRUE
-  while (DelRepFLG) {
-    bestfit <- 10^10
-    Nc <- colSums(cls01)
-    NcTable <- matrix(Nc)
-    minclass <- NcTable[order(NcTable[, 1]), ]
-    if (minclass[1] < minSize) {
-      if (verbose) {
-        message(
-          sprintf(
-            "Adjusting classes: BIC=%.1f ncls=%d (min size < %d)",
-            bic, ncls, minSize
-          )
-        )
-      }
-    } else {
-      DelRepFLG <- FALSE
-      break
-    }
-
-    ncls <- ncls - 1
-    del_class <- which.min(NcTable)
-    BCRM <- BCRM[, -del_class, , drop = FALSE]
-
+  ConstFLG <- TRUE
+  while (ConstFLG) {
+    EMt <- 1
     EMrepFLG <- TRUE
+    bestfit <- 10^10
+
     while (EMrepFLG) {
-      EMt <- EMt + 1
       # E-step
       V_scq <- array(0, dim = c(nobs, ncls, maxQ))
       for (q in 1:maxQ) {
@@ -143,30 +134,86 @@ Biclustering_IRM.nominal <- function(U,
       for (i in 1:nobs) {
         cls01[i, cls[i]] <- 1
       }
-
-      # M-step
       U_fcq <- irm_calc_Ufcq(Uq, tmp$Z, cls01, fld01, maxQ)
-      BCRM <- sweep(U_fcq, 3, alpha_vec, "+")
-      denom <- apply(BCRM, c(1, 2), sum)
-      BCRM <- sweep(BCRM, c(1, 2), denom, "/")
+
+      # M-step: cumulative normalization (ordinal)
+      Ufcq_prior <- U_fcq + alpha - 1
+      Ufcq_prior <- pmax(Ufcq_prior, 1e-10)
+      cUfcq <- aperm(
+        apply(Ufcq_prior, c(1, 2), function(x) rev(cumsum(rev(x)))),
+        c(2, 3, 1)
+      )
+
+      for (q in 1:maxQ) {
+        BBRM[, , q] <- cUfcq[, , q] / cUfcq[, , 1]
+      }
+
+      # Forced ordering (monotonicity constraint)
+      if (mic) {
+        overall_order <- array(0, dim = ncls)
+        for (i in 1:ncls) {
+          total_expected <- 0
+          for (j in 1:nfld) {
+            field_expected <- sum(BBRM[j, i, 1:maxQ])
+            total_expected <- total_expected + field_expected
+          }
+          overall_order[i] <- total_expected
+        }
+        overall_order <- order(overall_order)
+        BBRM <- BBRM[, overall_order, ]
+      }
+      for (q in 1:maxQ) {
+        BCRM[, , q] <- BBRM[, , q] - BBRM[, , q + 1]
+      }
 
       # Model fit
       bic <- irm_bic_calc(Uq, tmp$Z, fld01, cls01, BCRM, maxQ, const)
 
       # Converge check
       if (bic < bestfit) {
+        EMt <- EMt + 1
         bestfit <- bic
-        best_BCRM <- BCRM
-        best_cls01 <- cls01
       } else {
-        BCRM <- best_BCRM
-        cls01 <- best_cls01
         EMrepFLG <- FALSE
       }
 
       if (EMt >= EM_limit) {
         EMrepFLG <- FALSE
       }
+    }
+
+    n_cycle <- n_cycle + EMt
+
+    # Small-class adjustment
+    AdjustFLG <- FALSE
+    Nc <- colSums(cls01)
+    NcTable <- matrix(Nc)
+    minclass <- NcTable[order(NcTable[, 1]), ]
+    if (minclass[1] < minSize) {
+      AdjustFLG <- TRUE
+      if (verbose) {
+        message(
+          sprintf(
+            "Adjusting classes: BIC=%.1f ncls=%d (min size < %d)",
+            bic, ncls, minSize
+          )
+        )
+      }
+      ncls <- ncls - 1
+      del_class <- which.min(NcTable)
+      BCRM <- BCRM[, -del_class, , drop = FALSE]
+      # Rebuild BBRM from BCRM
+      BBRM <- array(NA, dim = c(nfld, ncls, maxQ + 1))
+      BBRM[, , 1] <- 1
+      BBRM[, , maxQ + 1] <- 0
+      for (q in maxQ:2) {
+        BBRM[, , q] <- BCRM[, , q] + BBRM[, , q + 1]
+      }
+      cls01 <- cls01[, -del_class, drop = FALSE]
+    }
+
+    if (!AdjustFLG) {
+      ConstFLG <- FALSE
     }
   }
 
@@ -206,6 +253,54 @@ Biclustering_IRM.nominal <- function(U,
   rownames(StudentRank) <- tmp$ID
   colnames(StudentRank) <- c(paste("Membership", 1:ncls), "Estimate")
 
+  ## Expected score
+  BFRP1 <- BFRP2 <- matrix(0, nrow = nfld, ncol = ncls)
+  weights <- matrix(0, nrow = nfld, ncol = ncls)
+
+  for (q in 1:maxQ) {
+    contrib <- (t(fldmemb) %*% t(tmp$Z * Uq[, , q]) %*% clsmemb) * (BCRM[, , q])
+    BFRP1 <- BFRP1 + q * contrib
+    weights <- weights + contrib
+  }
+  BFRP1 <- BFRP1 / weights
+
+  for (i in 1:ncls) {
+    for (j in 1:nfld) {
+      BFRP2[j, i] <- mean(tmp$Z[cls == i, fld == j] * tmp$Q[cls == i, fld == j])
+    }
+  }
+
+  TRP <- colSums(BFRP1)
+  TRPlag <- TRP[2:ncls]
+  TRPmic <- sum(TRPlag[1:(ncls - 1)] - TRP[1:(ncls - 1)] < 0, na.rm = TRUE)
+
+  ## FRPIndex: normalized expected score -> IRPindex
+  model_esp <- matrix(0, nrow = nfld, ncol = ncls)
+  for (f in 1:nfld) {
+    for (cc in 1:ncls) {
+      model_esp[f, cc] <- sum((1:maxQ) * BCRM[f, cc, ])
+    }
+  }
+  norm_frp <- (model_esp - 1) / (maxQ - 1)
+  FRPIndex <- IRPindex(norm_frp)
+  FRPmic <- sum(abs(FRPIndex$C))
+
+  SOACflg <- WOACflg <- FALSE
+  if (TRPmic == 0) {
+    WOACflg <- TRUE
+    if (FRPmic == 0) {
+      SOACflg <- TRUE
+    }
+  }
+  if (verbose) {
+    if (SOACflg & WOACflg) {
+      message("Strongly ordinal alignment condition was satisfied.")
+    }
+    if (!SOACflg & WOACflg) {
+      message("Weakly ordinal alignment condition was satisfied.")
+    }
+  }
+
   # Model fit ---------------------------------------------------------------
   testell <- 0
   for (q in 1:maxQ) {
@@ -216,12 +311,12 @@ Biclustering_IRM.nominal <- function(U,
   nparam <- ncls * nfld * (maxQ - 1)
 
   # Full model
-  ptn <- apply(tmp$Q * tmp$Z, 1, function(x) paste(x, collapse = ""))
-  benchGroup <- as.numeric(as.factor(ptn))
-  fullG <- length(unique(benchGroup))
+  ptn <- apply(tmp$Q, 1, function(x) paste(x, collapse = ""))
+  benchG <- as.numeric(as.factor(ptn))
+  fullG <- length(unique(benchG))
   benchmemb <- matrix(0, nrow = nobs, ncol = fullG)
   for (i in 1:nobs) {
-    benchmemb[i, benchGroup[i]] <- 1
+    benchmemb[i, benchG[i]] <- 1
   }
 
   BenchFRQ <- array(NA, dim = c(nitems, fullG, maxQ))
@@ -269,17 +364,20 @@ Biclustering_IRM.nominal <- function(U,
     Z = tmp$Z,
     testlength = nitems,
     msg = msg,
+    mic = mic,
     nobs = nobs,
     n_class = ncls,
     n_field = nfld,
-    n_cycle = EMt,
+    n_cycle = n_cycle,
     Nclass = ncls,
     Nfield = nfld,
-    N_Cycle = EMt,
+    N_Cycle = n_cycle,
     LFD = flddist,
     LRD = clsdist,
     LCD = clsdist,
     FRP = BCRM,
+    FRPIndex = FRPIndex,
+    TRP = TRP,
     CMD = colSums(clsmemb),
     RMD = colSums(clsmemb),
     FieldMembership = fldmemb,
@@ -287,11 +385,14 @@ Biclustering_IRM.nominal <- function(U,
     FieldEstimated = fld,
     ClassEstimated = cls,
     Students = StudentRank,
+    BFRP = list(Weighted = BFRP1, Observed = BFRP2),
     TestFitIndices = FitIndices,
     log_lik = testell,
+    SOACflg = SOACflg,
+    WOACflg = WOACflg,
     # Deprecated fields (for backward compatibility)
     LogLik = testell
-  ), class = c("exametrika", "nominalBiclustering"))
+  ), class = c("exametrika", "ordinalBiclustering"))
 
   return(ret)
 }

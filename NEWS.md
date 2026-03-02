@@ -45,10 +45,12 @@
 
 ## New Features
 
-### Nominal IRM (Biclustering_IRM.nominal)
+### Polytomous IRM (Biclustering_IRM.nominal / Biclustering_IRM.ordinal)
 
 - **New `Biclustering_IRM.nominal()` for nominal/polytomous data**: Extends the Infinite Relational Model (IRM) from binary to nominal scale data using a Dirichlet-Multinomial collapsed Gibbs sampler. The Chinese Restaurant Process (CRP) automatically determines the optimal number of classes and fields. After the Gibbs sampling phase, small classes are consolidated and refined with an EM algorithm. The Dirichlet prior concentration parameter `alpha` controls smoothing of category probabilities.
-- **`Biclustering_IRM()` is now an S3 generic**: Dispatches to `Biclustering_IRM.binary` (existing binary IRM), `Biclustering_IRM.nominal` (new), with `Biclustering_IRM.ordinal` planned for future release. Raw data is automatically formatted and dispatched based on `response.type`.
+- **New `Biclustering_IRM.ordinal()` for ordinal/polytomous data**: Extends IRM to ordinal scale data. Shares the same Dirichlet-Multinomial collapsed Gibbs sampler as nominal IRM (Phase 1), then applies ordinal-specific EM refinement (Phase 2) with cumulative normalization to enforce monotonic category boundaries. The `mic` parameter (default `TRUE`) enforces monotone increasing class ordering by expected score sum. Reports BFRP (Bicluster Field Reference Profile), FRPIndex, TRP, and Strongly/Weakly Ordinal Alignment Conditions (SOACflg/WOACflg).
+- **`Biclustering_IRM()` is now an S3 generic**: Dispatches to `Biclustering_IRM.binary` (existing binary IRM), `Biclustering_IRM.nominal` (new), and `Biclustering_IRM.ordinal` (new). Raw data is automatically formatted and dispatched based on `response.type`.
+- **Shared Gibbs sampler core**: The collapsed Gibbs sampler has been extracted into a shared internal function `irm_gibbs_core()` (in `R/00_IRM_Gibbs_CORE.R`), used by both nominal and ordinal IRM. Helper functions (`irm_calc_Ufcq`, `irm_lmvbeta`, `irm_log_to_prob`, `irm_bic_calc`, etc.) are also shared.
 - **Performance optimization**: The Gibbs sampler uses differential updates for the sufficient statistics array `U_fcq`, computing only the contribution of the target student/item rather than recalculating the full array at each step.
 
 ### Confirmatory LCA/LRA (Test Equating)

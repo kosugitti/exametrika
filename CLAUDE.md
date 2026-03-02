@@ -31,7 +31,7 @@ Rscript -e 'roxygen2::roxygenise()'
 ## Repository Structure
 
 ```
-R/                   # R source files (42 files)
+R/                   # R source files (45 files)
   00_*.R             # Utilities: plot, print, model fit, grid search, helpers
   01_dataFormat.R    # Data input/formatting
   02_*.R             # Item/test statistics, inter-item analysis, correlations
@@ -40,8 +40,10 @@ R/                   # R source files (42 files)
   05_LCA.R           # Latent Class Analysis
   06_LRA.R           # Latent Rank Analysis (binary)
   07_Biclustering.R  # Biclustering/Ranklustering (binary)
+  00_IRM_Gibbs_CORE.R  # Shared Gibbs sampler core + helpers for IRM
   07_IRM.R           # Infinite Relational Model (S3 generic + binary method)
   17_Biclustering_nominal_IRM.R  # IRM for nominal data
+  18_Biclustering_ordinal_IRM.R  # IRM for ordinal data
   08*.R              # Bayesian Network Models (BNM, GA, PBIL)
   09_LDLRA.R         # Local Dependence LRA
   10_LDB.R           # Local Dependence Biclustering
@@ -66,7 +68,7 @@ docs/                # .gitignore'd (removed from repo); pkgdown site deployed t
   Return value fields use snake_case (e.g., `n_class`, `log_lik`). Old PascalCase
   fields (`Nclass`, `LogLik`) are deprecated but retained for backward compatibility
   until v2.0.0.
-- **S3 dispatch**: `Biclustering()` and `LRA()` dispatch on data type
+- **S3 dispatch**: `Biclustering()`, `LRA()`, and `Biclustering_IRM()` dispatch on data type
   (binary/ordinal/rated/nominal) via `UseMethod()`. Plot and print methods
   dispatch on `exametrika` class.
 - **Model fit**: All models return `TestFitIndices` as a 16-field `ModelFit` object
@@ -135,6 +137,8 @@ docs/                # .gitignore'd (removed from repo); pkgdown site deployed t
 - GRM example fix (`\donttest` → `\dontrun`)
 - Biclustering_IRM seed default reverted to 123
 - **Nominal IRM** (`Biclustering_IRM.nominal`): Dirichlet-Multinomial collapsed Gibbs sampler
+- **Ordinal IRM** (`Biclustering_IRM.ordinal`): Shared Gibbs core + ordinal EM with cumulative normalization
+- **Shared Gibbs core** (`R/00_IRM_Gibbs_CORE.R`): Extracted collapsed Gibbs sampler + helpers
 - **Biclustering_IRM S3 generic**: dispatches to .binary/.nominal/.ordinal by data type
 - J20S400 dataset fix (response.type nominal → binary)
 - CI: removed Codecov upload from test-coverage workflow
@@ -143,7 +147,8 @@ docs/                # .gitignore'd (removed from repo); pkgdown site deployed t
 - pkgdown migration, CI/CD, .Rbuildignore cleanup
 
 ### v1.11.0 (next minor release)
-- **Ordinal IRM** — Nominal Gibbs base + Phase 2 ordinal EM constraints (cumulative normalization)
+- **Biclustering.rated** — Reuse Biclustering.nominal EM engine + two-layer output via CA (correct answer)
+- **Rated IRM** — Nominal Gibbs base + same two-layer output (correct rate summary + distractor analysis)
   - Design memo: `develop/多値IRM設計メモ_20260221.md`
 
 ### v2.0.0 (breaking changes)

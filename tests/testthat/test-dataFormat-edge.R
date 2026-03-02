@@ -762,8 +762,10 @@ test_that("all same ID value causes duplicate error with row numbers", {
 
 test_that("duplicate IDs error shows which rows are duplicated", {
   data <- data.frame(
-    id = c("A", "B", "C", "A", "D", "E", "B", "F", "G", "H",
-           "I", "J", "K", "L", "M"),
+    id = c(
+      "A", "B", "C", "A", "D", "E", "B", "F", "G", "H",
+      "I", "J", "K", "L", "M"
+    ),
     item1 = sample(1:4, 15, replace = TRUE),
     item2 = sample(1:4, 15, replace = TRUE)
   )
@@ -777,8 +779,10 @@ test_that("first column with many unique values triggers ID hint", {
   # → not consecutive, not detected as ID → auto-generate
   # But 80% unique is suspicious, so a hint message is shown
   data <- data.frame(
-    subject = c(101, 102, 103, 104, 105, 106, 107, 108, 109, 110,
-                111, 112, 101, 102, 103),  # 12 unique out of 15
+    subject = c(
+      101, 102, 103, 104, 105, 106, 107, 108, 109, 110,
+      111, 112, 101, 102, 103
+    ), # 12 unique out of 15
     item1 = sample(1:4, 15, replace = TRUE),
     item2 = sample(1:4, 15, replace = TRUE)
   )

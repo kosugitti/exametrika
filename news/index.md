@@ -84,6 +84,15 @@
   type check from `g_list[[1]]` (always checking the first element) to
   `g_list[[j]]` (checking each element).
 
+#### Biclustering_IRM.binary S3 Method Consistency Fix
+
+- **Added `...` to
+  [`Biclustering_IRM.binary()`](https://kosugitti.github.io/exametrika/reference/Biclustering_IRM.md)
+  signature**: The S3 generic `Biclustering_IRM(U, ...)` requires all
+  methods to include `...` in their formal arguments. The `.binary`
+  method was missing it, causing an R CMD check WARNING. Added `...` to
+  match the generic and the `.nominal`/`.ordinal` methods.
+
 #### Biclustering_IRM Seed Default
 
 - **Reverted
@@ -127,7 +136,7 @@
 
 ### New Features
 
-#### Nominal IRM (Biclustering_IRM.nominal)
+#### Polytomous IRM (Biclustering_IRM.nominal / Biclustering_IRM.ordinal)
 
 - **New
   [`Biclustering_IRM.nominal()`](https://kosugitti.github.io/exametrika/reference/Biclustering_IRM.md)
@@ -138,11 +147,26 @@
   After the Gibbs sampling phase, small classes are consolidated and
   refined with an EM algorithm. The Dirichlet prior concentration
   parameter `alpha` controls smoothing of category probabilities.
+- **New
+  [`Biclustering_IRM.ordinal()`](https://kosugitti.github.io/exametrika/reference/Biclustering_IRM.md)
+  for ordinal/polytomous data**: Extends IRM to ordinal scale data.
+  Shares the same Dirichlet-Multinomial collapsed Gibbs sampler as
+  nominal IRM (Phase 1), then applies ordinal-specific EM refinement
+  (Phase 2) with cumulative normalization to enforce monotonic category
+  boundaries. The `mic` parameter (default `TRUE`) enforces monotone
+  increasing class ordering by expected score sum. Reports BFRP
+  (Bicluster Field Reference Profile), FRPIndex, TRP, and
+  Strongly/Weakly Ordinal Alignment Conditions (SOACflg/WOACflg).
 - **[`Biclustering_IRM()`](https://kosugitti.github.io/exametrika/reference/Biclustering_IRM.md)
   is now an S3 generic**: Dispatches to `Biclustering_IRM.binary`
-  (existing binary IRM), `Biclustering_IRM.nominal` (new), with
-  `Biclustering_IRM.ordinal` planned for future release. Raw data is
-  automatically formatted and dispatched based on `response.type`.
+  (existing binary IRM), `Biclustering_IRM.nominal` (new), and
+  `Biclustering_IRM.ordinal` (new). Raw data is automatically formatted
+  and dispatched based on `response.type`.
+- **Shared Gibbs sampler core**: The collapsed Gibbs sampler has been
+  extracted into a shared internal function `irm_gibbs_core()` (in
+  `R/00_IRM_Gibbs_CORE.R`), used by both nominal and ordinal IRM. Helper
+  functions (`irm_calc_Ufcq`, `irm_lmvbeta`, `irm_log_to_prob`,
+  `irm_bic_calc`, etc.) are also shared.
 - **Performance optimization**: The Gibbs sampler uses differential
   updates for the sufficient statistics array `U_fcq`, computing only
   the contribution of the target student/item rather than recalculating
@@ -191,12 +215,23 @@
   `rmarkdown`, and `testthat`.
 - **Fixture file reorganization**: Shortened overly long CSV fixture
   filenames to comply with CRAN’s 100-byte portable path requirement.
-- **Test coverage**: 24 test files, 873 tests, covering all models (CTT,
-  IRT 2PL/3PL/4PL, LCA, LRA binary/ordinal/nominal, Biclustering
-  binary/ordinal/nominal, IRM, BNM, LDLRA, LDB, BINET, GRM, GridSearch,
-  dataFormat, polychoric correlation, scoring, student/test analysis,
-  confirmatory LCA/LRA). 85 Mathematica reference CSV files for
-  cross-validation.
+- **Test coverage**: 26 test files, 321 test blocks, covering all models
+  (CTT, IRT 2PL/3PL/4PL, LCA, LRA binary/ordinal/nominal, Biclustering
+  binary/ordinal/nominal, IRM binary/nominal/ordinal, BNM, LDLRA, LDB,
+  BINET, GRM, GridSearch, dataFormat, polychoric correlation, scoring,
+  student/test analysis, confirmatory LCA/LRA). 85 Mathematica reference
+  CSV files for cross-validation.
+- **Added Nominal IRM tests** (`test-irm-nominal.R`): 18 test blocks for
+  [`Biclustering_IRM.nominal()`](https://kosugitti.github.io/exametrika/reference/Biclustering_IRM.md)
+  using J20S600 data — basic execution, dimensions, FRP validity,
+  membership, fit indices, backward compatibility, seed reproducibility,
+  alpha validation.
+- **Added Ordinal IRM tests** (`test-irm-ordinal.R`): 25 test blocks for
+  [`Biclustering_IRM.ordinal()`](https://kosugitti.github.io/exametrika/reference/Biclustering_IRM.md)
+  using J35S500 data — basic execution, dimensions, FRP validity,
+  expected scores, TRP, BFRP, FRPIndex, SOAC/WOAC flags, mic parameter,
+  fit indices, backward compatibility, seed reproducibility, alpha
+  validation.
 
 ### Documentation
 

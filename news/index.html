@@ -74,6 +74,11 @@
 <strong>Fixed <code>g_list</code> / <code>adj_list</code> length validation</strong>: The length check for <code>g_list</code> and <code>adj_list</code> incorrectly compared against <code>ncls</code> (number of classes) instead of <code>nfld</code> (number of fields). In BINET, each element of <code>adj_list</code> represents the DAG structure at a specific field, so the list length should equal <code>nfld</code>. Also fixed <code>g_list</code> type check from <code>g_list[[1]]</code> (always checking the first element) to <code>g_list[[j]]</code> (checking each element).</li>
 </ul></div>
 <div class="section level4">
+<h4 id="biclustering_irmbinary-s3-method-consistency-fix-1-10-0">Biclustering_IRM.binary S3 Method Consistency Fix<a class="anchor" aria-label="anchor" href="#biclustering_irmbinary-s3-method-consistency-fix-1-10-0"></a></h4>
+<ul><li>
+<strong>Added <code>...</code> to <code><a href="../reference/Biclustering_IRM.html">Biclustering_IRM.binary()</a></code> signature</strong>: The S3 generic <code>Biclustering_IRM(U, ...)</code> requires all methods to include <code>...</code> in their formal arguments. The <code>.binary</code> method was missing it, causing an R CMD check WARNING. Added <code>...</code> to match the generic and the <code>.nominal</code>/<code>.ordinal</code> methods.</li>
+</ul></div>
+<div class="section level4">
 <h4 id="biclustering_irm-seed-default-1-10-0">Biclustering_IRM Seed Default<a class="anchor" aria-label="anchor" href="#biclustering_irm-seed-default-1-10-0"></a></h4>
 <ul><li>
 <strong>Reverted <code><a href="../reference/Biclustering_IRM.html">Biclustering_IRM()</a></code> seed default back to 123</strong>: Ensures reproducibility by default.</li>
@@ -97,11 +102,15 @@
 <div class="section level3">
 <h3 id="new-features-1-10-0">New Features<a class="anchor" aria-label="anchor" href="#new-features-1-10-0"></a></h3>
 <div class="section level4">
-<h4 id="nominal-irm-biclustering_irmnominal-1-10-0">Nominal IRM (Biclustering_IRM.nominal)<a class="anchor" aria-label="anchor" href="#nominal-irm-biclustering_irmnominal-1-10-0"></a></h4>
+<h4 id="polytomous-irm-biclustering_irmnominal--biclustering_irmordinal-1-10-0">Polytomous IRM (Biclustering_IRM.nominal / Biclustering_IRM.ordinal)<a class="anchor" aria-label="anchor" href="#polytomous-irm-biclustering_irmnominal--biclustering_irmordinal-1-10-0"></a></h4>
 <ul><li>
 <strong>New <code><a href="../reference/Biclustering_IRM.html">Biclustering_IRM.nominal()</a></code> for nominal/polytomous data</strong>: Extends the Infinite Relational Model (IRM) from binary to nominal scale data using a Dirichlet-Multinomial collapsed Gibbs sampler. The Chinese Restaurant Process (CRP) automatically determines the optimal number of classes and fields. After the Gibbs sampling phase, small classes are consolidated and refined with an EM algorithm. The Dirichlet prior concentration parameter <code>alpha</code> controls smoothing of category probabilities.</li>
 <li>
-<strong><code><a href="../reference/Biclustering_IRM.html">Biclustering_IRM()</a></code> is now an S3 generic</strong>: Dispatches to <code>Biclustering_IRM.binary</code> (existing binary IRM), <code>Biclustering_IRM.nominal</code> (new), with <code>Biclustering_IRM.ordinal</code> planned for future release. Raw data is automatically formatted and dispatched based on <code>response.type</code>.</li>
+<strong>New <code><a href="../reference/Biclustering_IRM.html">Biclustering_IRM.ordinal()</a></code> for ordinal/polytomous data</strong>: Extends IRM to ordinal scale data. Shares the same Dirichlet-Multinomial collapsed Gibbs sampler as nominal IRM (Phase 1), then applies ordinal-specific EM refinement (Phase 2) with cumulative normalization to enforce monotonic category boundaries. The <code>mic</code> parameter (default <code>TRUE</code>) enforces monotone increasing class ordering by expected score sum. Reports BFRP (Bicluster Field Reference Profile), FRPIndex, TRP, and Strongly/Weakly Ordinal Alignment Conditions (SOACflg/WOACflg).</li>
+<li>
+<strong><code><a href="../reference/Biclustering_IRM.html">Biclustering_IRM()</a></code> is now an S3 generic</strong>: Dispatches to <code>Biclustering_IRM.binary</code> (existing binary IRM), <code>Biclustering_IRM.nominal</code> (new), and <code>Biclustering_IRM.ordinal</code> (new). Raw data is automatically formatted and dispatched based on <code>response.type</code>.</li>
+<li>
+<strong>Shared Gibbs sampler core</strong>: The collapsed Gibbs sampler has been extracted into a shared internal function <code>irm_gibbs_core()</code> (in <code>R/00_IRM_Gibbs_CORE.R</code>), used by both nominal and ordinal IRM. Helper functions (<code>irm_calc_Ufcq</code>, <code>irm_lmvbeta</code>, <code>irm_log_to_prob</code>, <code>irm_bic_calc</code>, etc.) are also shared.</li>
 <li>
 <strong>Performance optimization</strong>: The Gibbs sampler uses differential updates for the sufficient statistics array <code>U_fcq</code>, computing only the contribution of the target student/item rather than recalculating the full array at each step.</li>
 </ul></div>
@@ -129,7 +138,11 @@
 <li>
 <strong>Fixture file reorganization</strong>: Shortened overly long CSV fixture filenames to comply with CRAN’s 100-byte portable path requirement.</li>
 <li>
-<strong>Test coverage</strong>: 24 test files, 873 tests, covering all models (CTT, IRT 2PL/3PL/4PL, LCA, LRA binary/ordinal/nominal, Biclustering binary/ordinal/nominal, IRM, BNM, LDLRA, LDB, BINET, GRM, GridSearch, dataFormat, polychoric correlation, scoring, student/test analysis, confirmatory LCA/LRA). 85 Mathematica reference CSV files for cross-validation.</li>
+<strong>Test coverage</strong>: 26 test files, 321 test blocks, covering all models (CTT, IRT 2PL/3PL/4PL, LCA, LRA binary/ordinal/nominal, Biclustering binary/ordinal/nominal, IRM binary/nominal/ordinal, BNM, LDLRA, LDB, BINET, GRM, GridSearch, dataFormat, polychoric correlation, scoring, student/test analysis, confirmatory LCA/LRA). 85 Mathematica reference CSV files for cross-validation.</li>
+<li>
+<strong>Added Nominal IRM tests</strong> (<code>test-irm-nominal.R</code>): 18 test blocks for <code><a href="../reference/Biclustering_IRM.html">Biclustering_IRM.nominal()</a></code> using J20S600 data — basic execution, dimensions, FRP validity, membership, fit indices, backward compatibility, seed reproducibility, alpha validation.</li>
+<li>
+<strong>Added Ordinal IRM tests</strong> (<code>test-irm-ordinal.R</code>): 25 test blocks for <code><a href="../reference/Biclustering_IRM.html">Biclustering_IRM.ordinal()</a></code> using J35S500 data — basic execution, dimensions, FRP validity, expected scores, TRP, BFRP, FRPIndex, SOAC/WOAC flags, mic parameter, fit indices, backward compatibility, seed reproducibility, alpha validation.</li>
 </ul></div>
 <div class="section level3">
 <h3 id="documentation-1-10-0">Documentation<a class="anchor" aria-label="anchor" href="#documentation-1-10-0"></a></h3>

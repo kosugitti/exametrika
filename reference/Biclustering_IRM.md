@@ -28,7 +28,8 @@ Biclustering_IRM(
   minSize = 20,
   EM_limit = 20,
   seed = 123,
-  verbose = TRUE
+  verbose = TRUE,
+  ...
 )
 
 # S3 method for class 'nominal'
@@ -41,6 +42,22 @@ Biclustering_IRM(
   stable_limit = 5,
   minSize = 20,
   EM_limit = 20,
+  seed = 123,
+  verbose = TRUE,
+  ...
+)
+
+# S3 method for class 'ordinal'
+Biclustering_IRM(
+  U,
+  gamma_c = 1,
+  gamma_f = 1,
+  alpha = 1,
+  mic = TRUE,
+  max_iter = 100,
+  stable_limit = 5,
+  minSize = 20,
+  EM_limit = 100,
   seed = 123,
   verbose = TRUE,
   ...
@@ -126,6 +143,11 @@ Biclustering_IRM(
   Dirichlet distribution concentration parameter for the prior density
   of field reference probabilities (nominal IRM only). Must be positive.
   The default is 1.
+
+- mic:
+
+  Logical; if TRUE, forces Field Reference Profiles to be monotonically
+  increasing across classes (ordinal IRM only). Default is TRUE.
 
 ## Value
 
@@ -288,6 +310,99 @@ For nominal data, the returned list includes:
 
   Log-likelihood of the model.
 
+For ordinal data, the returned list includes:
+
+- Q:
+
+  Response matrix.
+
+- Z:
+
+  Missing indicator matrix.
+
+- testlength:
+
+  Number of items.
+
+- nobs:
+
+  Sample size.
+
+- n_class:
+
+  Optimal number of classes.
+
+- n_field:
+
+  Optimal number of fields.
+
+- n_cycle:
+
+  Number of EM algorithm iterations.
+
+- FRP:
+
+  Field Reference Profile (BCRM), a 3D array (nfld x ncls x maxQ).
+
+- FRPIndex:
+
+  Index of FRP includes the item location parameters B and Beta, the
+  slope parameters A and Alpha, and the monotonicity indices C and
+  Gamma.
+
+- TRP:
+
+  Test Reference Profile.
+
+- BFRP:
+
+  Bicluster Field Reference Profile (expected scores), a list with
+  Weighted and Observed components.
+
+- LFD:
+
+  Latent Field Distribution.
+
+- LCD:
+
+  Latent Class Distribution.
+
+- FieldMembership:
+
+  Field membership probability matrix.
+
+- ClassMembership:
+
+  Class membership probability matrix.
+
+- FieldEstimated:
+
+  Estimated field assignment for each item.
+
+- ClassEstimated:
+
+  Estimated class assignment for each student.
+
+- Students:
+
+  Rank Membership Profile matrix with estimated class.
+
+- TestFitIndices:
+
+  Overall fit index for the test.
+
+- log_lik:
+
+  Log-likelihood of the model.
+
+- SOACflg:
+
+  Logical; TRUE if Strongly Ordinal Alignment Condition is satisfied.
+
+- WOACflg:
+
+  Logical; TRUE if Weakly Ordinal Alignment Condition is satisfied.
+
 ## Examples
 
 ``` r
@@ -356,6 +471,23 @@ result <- Biclustering_IRM(J20S600, gamma_c = 1, gamma_f = 1, verbose = TRUE)
 #> iter 6: match=4 nfld=4 ncls=6
 #> iter 7: match=5 nfld=4 ncls=6
 #> Adjusting classes: BIC=28686.8 ncls=6 (min size < 20)
+plot(result, type = "Array")
+
+# }
+# \donttest{
+# Fit an ordinal Biclustering IRM model
+result <- Biclustering_IRM(J35S500, gamma_c = 1, gamma_f = 1, verbose = TRUE)
+#> iter 1: match=0 nfld=13 ncls=46
+#> iter 2: match=0 nfld=8 ncls=30
+#> iter 3: match=0 nfld=6 ncls=18
+#> iter 4: match=1 nfld=6 ncls=11
+#> iter 5: match=0 nfld=5 ncls=10
+#> iter 6: match=1 nfld=5 ncls=10
+#> iter 7: match=2 nfld=5 ncls=9
+#> iter 8: match=3 nfld=5 ncls=7
+#> iter 9: match=4 nfld=5 ncls=6
+#> iter 10: match=5 nfld=5 ncls=6
+#> Weakly ordinal alignment condition was satisfied.
 plot(result, type = "Array")
 
 # }

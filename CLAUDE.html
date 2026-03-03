@@ -68,7 +68,7 @@
 </div>
 <div class="section level2">
 <h2 id="repository-structure">Repository Structure<a class="anchor" aria-label="anchor" href="#repository-structure"></a></h2>
-<pre><code>R/                   # R source files (42 files)
+<pre><code>R/                   # R source files (45 files)
   00_*.R             # Utilities: plot, print, model fit, grid search, helpers
   01_dataFormat.R    # Data input/formatting
   02_*.R             # Item/test statistics, inter-item analysis, correlations
@@ -77,8 +77,10 @@
   05_LCA.R           # Latent Class Analysis
   06_LRA.R           # Latent Rank Analysis (binary)
   07_Biclustering.R  # Biclustering/Ranklustering (binary)
+  00_IRM_Gibbs_CORE.R  # Shared Gibbs sampler core + helpers for IRM
   07_IRM.R           # Infinite Relational Model (S3 generic + binary method)
   17_Biclustering_nominal_IRM.R  # IRM for nominal data
+  18_Biclustering_ordinal_IRM.R  # IRM for ordinal data
   08*.R              # Bayesian Network Models (BNM, GA, PBIL)
   09_LDLRA.R         # Local Dependence LRA
   10_LDB.R           # Local Dependence Biclustering
@@ -101,7 +103,7 @@ docs/                # .gitignore'd (removed from repo); pkgdown site deployed t
 <ul><li>
 <strong>Naming</strong>: Public functions use PascalCase (e.g., <code>ItemStatistics</code>, <code>GridSearch</code>). Return value fields use snake_case (e.g., <code>n_class</code>, <code>log_lik</code>). Old PascalCase fields (<code>Nclass</code>, <code>LogLik</code>) are deprecated but retained for backward compatibility until v2.0.0.</li>
 <li>
-<strong>S3 dispatch</strong>: <code><a href="reference/Biclustering.html">Biclustering()</a></code> and <code><a href="reference/LRA.html">LRA()</a></code> dispatch on data type (binary/ordinal/rated/nominal) via <code><a href="https://rdrr.io/r/base/UseMethod.html" class="external-link">UseMethod()</a></code>. Plot and print methods dispatch on <code>exametrika</code> class.</li>
+<strong>S3 dispatch</strong>: <code><a href="reference/Biclustering.html">Biclustering()</a></code>, <code><a href="reference/LRA.html">LRA()</a></code>, and <code><a href="reference/Biclustering_IRM.html">Biclustering_IRM()</a></code> dispatch on data type (binary/ordinal/rated/nominal) via <code><a href="https://rdrr.io/r/base/UseMethod.html" class="external-link">UseMethod()</a></code>. Plot and print methods dispatch on <code>exametrika</code> class.</li>
 <li>
 <strong>Model fit</strong>: All models return <code>TestFitIndices</code> as a 16-field <code>ModelFit</code> object via <code><a href="reference/calcFitIndices.html">calcFitIndices()</a></code> in <code>00_ModelFitModule.R</code>.</li>
 <li>
@@ -199,6 +201,10 @@ docs/                # .gitignore'd (removed from repo); pkgdown site deployed t
 <li>
 <strong>Nominal IRM</strong> (<code>Biclustering_IRM.nominal</code>): Dirichlet-Multinomial collapsed Gibbs sampler</li>
 <li>
+<strong>Ordinal IRM</strong> (<code>Biclustering_IRM.ordinal</code>): Shared Gibbs core + ordinal EM with cumulative normalization</li>
+<li>
+<strong>Shared Gibbs core</strong> (<code>R/00_IRM_Gibbs_CORE.R</code>): Extracted collapsed Gibbs sampler + helpers</li>
+<li>
 <strong>Biclustering_IRM S3 generic</strong>: dispatches to .binary/.nominal/.ordinal by data type</li>
 <li>J20S400 dataset fix (response.type nominal → binary)</li>
 <li>CI: removed Codecov upload from test-coverage workflow</li>
@@ -209,7 +215,9 @@ docs/                # .gitignore'd (removed from repo); pkgdown site deployed t
 <div class="section level3">
 <h3 id="v1110-next-minor-release">v1.11.0 (next minor release)<a class="anchor" aria-label="anchor" href="#v1110-next-minor-release"></a></h3>
 <ul><li>
-<strong>Ordinal IRM</strong> — Nominal Gibbs base + Phase 2 ordinal EM constraints (cumulative normalization)
+<strong>Biclustering.rated</strong> — Reuse Biclustering.nominal EM engine + two-layer output via CA (correct answer)</li>
+<li>
+<strong>Rated IRM</strong> — Nominal Gibbs base + same two-layer output (correct rate summary + distractor analysis)
 <ul><li>Design memo: <code>develop/多値IRM設計メモ_20260221.md</code>
 </li>
 </ul></li>

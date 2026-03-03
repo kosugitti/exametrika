@@ -38,7 +38,7 @@ For nominal data, a Dirichlet-Multinomial collapsed Gibbs sampler is used."><met
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.png" class="logo" alt=""><h1>Biclustering with Infinite Relational Model</h1>
-      <small class="dont-index">Source: <a href="https://github.com/kosugitti/exametrika/blob/main/R/07_IRM.R" class="external-link"><code>R/07_IRM.R</code></a>, <a href="https://github.com/kosugitti/exametrika/blob/main/R/17_Biclustering_nominal_IRM.R" class="external-link"><code>R/17_Biclustering_nominal_IRM.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/kosugitti/exametrika/blob/main/R/07_IRM.R" class="external-link"><code>R/07_IRM.R</code></a>, <a href="https://github.com/kosugitti/exametrika/blob/main/R/17_Biclustering_nominal_IRM.R" class="external-link"><code>R/17_Biclustering_nominal_IRM.R</code></a>, <a href="https://github.com/kosugitti/exametrika/blob/main/R/18_Biclustering_ordinal_IRM.R" class="external-link"><code>R/18_Biclustering_ordinal_IRM.R</code></a></small>
       <div class="d-none name"><code>Biclustering_IRM.Rd</code></div>
     </div>
 
@@ -70,7 +70,8 @@ For nominal data, a Dirichlet-Multinomial collapsed Gibbs sampler is used.</p>
 <span>  minSize <span class="op">=</span> <span class="fl">20</span>,</span>
 <span>  EM_limit <span class="op">=</span> <span class="fl">20</span>,</span>
 <span>  seed <span class="op">=</span> <span class="fl">123</span>,</span>
-<span>  verbose <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span>  verbose <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># S3 method for class 'nominal'</span></span>
@@ -83,6 +84,22 @@ For nominal data, a Dirichlet-Multinomial collapsed Gibbs sampler is used.</p>
 <span>  stable_limit <span class="op">=</span> <span class="fl">5</span>,</span>
 <span>  minSize <span class="op">=</span> <span class="fl">20</span>,</span>
 <span>  EM_limit <span class="op">=</span> <span class="fl">20</span>,</span>
+<span>  seed <span class="op">=</span> <span class="fl">123</span>,</span>
+<span>  verbose <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  <span class="va">...</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for class 'ordinal'</span></span>
+<span><span class="fu">Biclustering_IRM</span><span class="op">(</span></span>
+<span>  <span class="va">U</span>,</span>
+<span>  gamma_c <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>  gamma_f <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>  alpha <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>  mic <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  max_iter <span class="op">=</span> <span class="fl">100</span>,</span>
+<span>  stable_limit <span class="op">=</span> <span class="fl">5</span>,</span>
+<span>  minSize <span class="op">=</span> <span class="fl">20</span>,</span>
+<span>  EM_limit <span class="op">=</span> <span class="fl">100</span>,</span>
 <span>  seed <span class="op">=</span> <span class="fl">123</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  <span class="va">...</span></span>
@@ -163,6 +180,11 @@ on the current state of the random number generator.</p></dd>
 <dt id="arg-alpha">alpha<a class="anchor" aria-label="anchor" href="#arg-alpha"></a></dt>
 <dd><p>Dirichlet distribution concentration parameter for the prior density of
 field reference probabilities (nominal IRM only). Must be positive. The default is 1.</p></dd>
+
+
+<dt id="arg-mic">mic<a class="anchor" aria-label="anchor" href="#arg-mic"></a></dt>
+<dd><p>Logical; if TRUE, forces Field Reference Profiles to be monotonically
+increasing across classes (ordinal IRM only). Default is TRUE.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -283,6 +305,75 @@ as well as the rank-up odds and rank-down odds.</p></dd>
 <dd><p>Log-likelihood of the model.</p></dd>
 
 
+</dl><p>For ordinal data, the returned list includes:</p><dl><dt>Q</dt>
+<dd><p>Response matrix.</p></dd>
+
+<dt>Z</dt>
+<dd><p>Missing indicator matrix.</p></dd>
+
+<dt>testlength</dt>
+<dd><p>Number of items.</p></dd>
+
+<dt>nobs</dt>
+<dd><p>Sample size.</p></dd>
+
+<dt>n_class</dt>
+<dd><p>Optimal number of classes.</p></dd>
+
+<dt>n_field</dt>
+<dd><p>Optimal number of fields.</p></dd>
+
+<dt>n_cycle</dt>
+<dd><p>Number of EM algorithm iterations.</p></dd>
+
+<dt>FRP</dt>
+<dd><p>Field Reference Profile (BCRM), a 3D array (nfld x ncls x maxQ).</p></dd>
+
+<dt>FRPIndex</dt>
+<dd><p>Index of FRP includes the item location parameters B and Beta,
+the slope parameters A and Alpha, and the monotonicity indices C and Gamma.</p></dd>
+
+<dt>TRP</dt>
+<dd><p>Test Reference Profile.</p></dd>
+
+<dt>BFRP</dt>
+<dd><p>Bicluster Field Reference Profile (expected scores), a list with
+Weighted and Observed components.</p></dd>
+
+<dt>LFD</dt>
+<dd><p>Latent Field Distribution.</p></dd>
+
+<dt>LCD</dt>
+<dd><p>Latent Class Distribution.</p></dd>
+
+<dt>FieldMembership</dt>
+<dd><p>Field membership probability matrix.</p></dd>
+
+<dt>ClassMembership</dt>
+<dd><p>Class membership probability matrix.</p></dd>
+
+<dt>FieldEstimated</dt>
+<dd><p>Estimated field assignment for each item.</p></dd>
+
+<dt>ClassEstimated</dt>
+<dd><p>Estimated class assignment for each student.</p></dd>
+
+<dt>Students</dt>
+<dd><p>Rank Membership Profile matrix with estimated class.</p></dd>
+
+<dt>TestFitIndices</dt>
+<dd><p>Overall fit index for the test.</p></dd>
+
+<dt>log_lik</dt>
+<dd><p>Log-likelihood of the model.</p></dd>
+
+<dt>SOACflg</dt>
+<dd><p>Logical; TRUE if Strongly Ordinal Alignment Condition is satisfied.</p></dd>
+
+<dt>WOACflg</dt>
+<dd><p>Logical; TRUE if Weakly Ordinal Alignment Condition is satisfied.</p></dd>
+
+
 </dl></div>
 
     <div class="section level2">
@@ -354,6 +445,23 @@ as well as the rank-up odds and rank-down odds.</p></dd>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Adjusting classes: BIC=28686.8 ncls=6 (min size &lt; 20)</span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">result</span>, type <span class="op">=</span> <span class="st">"Array"</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="Biclustering_IRM-7.png" alt="" width="700" height="433"></span>
+<span class="r-in"><span><span class="co"># }</span></span></span>
+<span class="r-in"><span><span class="co"># \donttest{</span></span></span>
+<span class="r-in"><span><span class="co"># Fit an ordinal Biclustering IRM model</span></span></span>
+<span class="r-in"><span><span class="va">result</span> <span class="op">&lt;-</span> <span class="fu">Biclustering_IRM</span><span class="op">(</span><span class="va">J35S500</span>, gamma_c <span class="op">=</span> <span class="fl">1</span>, gamma_f <span class="op">=</span> <span class="fl">1</span>, verbose <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 1: match=0 nfld=13 ncls=46</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 2: match=0 nfld=8 ncls=30</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 3: match=0 nfld=6 ncls=18</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 4: match=1 nfld=6 ncls=11</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 5: match=0 nfld=5 ncls=10</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 6: match=1 nfld=5 ncls=10</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 7: match=2 nfld=5 ncls=9</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 8: match=3 nfld=5 ncls=7</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 9: match=4 nfld=5 ncls=6</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 10: match=5 nfld=5 ncls=6</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Weakly ordinal alignment condition was satisfied.</span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">result</span>, type <span class="op">=</span> <span class="st">"Array"</span><span class="op">)</span></span></span>
+<span class="r-plt img"><img src="Biclustering_IRM-8.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span><span class="co"># }</span></span></span>
 </code></pre></div>
     </div>

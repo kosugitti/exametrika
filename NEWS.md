@@ -31,6 +31,10 @@
 
 - **Added `...` to `Biclustering_IRM.binary()` signature**: The S3 generic `Biclustering_IRM(U, ...)` requires all methods to include `...` in their formal arguments. The `.binary` method was missing it, causing an R CMD check WARNING. Added `...` to match the generic and the `.nominal`/`.ordinal` methods.
 
+### Biclustering_IRM `msg` Field Fix
+
+- **Fixed IRM functions returning `msg = "Class"` instead of `msg = "Rank"`**: All three IRM methods (`Biclustering_IRM.binary`, `Biclustering_IRM.nominal`, `Biclustering_IRM.ordinal`) had `msg = "Class"` hardcoded. IRM is functionally a Ranklustering model (automatic structure discovery with ordered latent classes), so `msg` should be `"Rank"`. This caused downstream packages (ggExametrika) to display "Latent Class" instead of "Latent Rank" in plot labels. Also updated internal column names of `cls01` and `FRP` from `"Class"` to `"Rank"` for consistency. The shared Gibbs core (`irm_gibbs_core()`) output column names were also updated.
+
 ### Biclustering_IRM Seed Default
 
 - **Reverted `Biclustering_IRM()` seed default back to 123**: Ensures reproducibility by default.

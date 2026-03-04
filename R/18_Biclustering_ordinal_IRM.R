@@ -75,7 +75,7 @@ Biclustering_IRM.ordinal <- function(U,
   for (i in 1:nobs) {
     cls01[i, which(unique_vec == means[i])] <- 1
   }
-  colnames(cls01) <- paste("Class", 1:ncls)
+  colnames(cls01) <- paste("Rank", 1:ncls)
   rownames(cls01) <- tmp$ID
 
   ## Initial Field: one item per field
@@ -358,7 +358,7 @@ Biclustering_IRM.ordinal <- function(U,
   )
 
   # Return ------------------------------------------------------------------
-  msg <- "Class"
+  msg <- "Rank"
   ret <- structure(list(
     Q = tmp$Q,
     Z = tmp$Z,

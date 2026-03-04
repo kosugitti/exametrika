@@ -139,7 +139,7 @@ Biclustering_IRM.binary <- function(U, Z = NULL, w = NULL, na = NULL,
   for (i in 1:nobs) {
     cls01[i, which((pattern == nrs(tmp)[i]))] <- 1
   }
-  colnames(cls01) <- paste("Class", 1:ncls)
+  colnames(cls01) <- paste("Rank", 1:ncls)
   rownames(cls01) <- tmp$ID
   cls <- cls01 %*% (1:ncls)
   Nc <- colSums(cls01)
@@ -185,7 +185,7 @@ Biclustering_IRM.binary <- function(U, Z = NULL, w = NULL, na = NULL,
     sort_list2 <- order(rowSums(Pcf), decreasing = FALSE)
     Pcf <- Pcf[sort_list2, ]
     cls01 <- cls01[, sort_list2]
-    colnames(cls01) <- paste("Class", 1:ncls)
+    colnames(cls01) <- paste("Rank", 1:ncls)
     cls <- cls01 %*% (1:ncls)
     return(list(Pcf = Pcf, cls01 = cls01, fld01 = fld01, cls = cls, field = field))
   }
@@ -568,7 +568,7 @@ Biclustering_IRM.binary <- function(U, Z = NULL, w = NULL, na = NULL,
   for (i in 1:nobs) {
     cls01[i, cls[i]] <- 1
   }
-  colnames(cls01) <- paste("Class", 1:ncls)
+  colnames(cls01) <- paste("Rank", 1:ncls)
   rownames(cls01) <- tmp$ID
 
   fld01 <- matrix(0, nrow = testlength, ncol = nfld)
@@ -599,7 +599,7 @@ Biclustering_IRM.binary <- function(U, Z = NULL, w = NULL, na = NULL,
   # Output ---------------------------------------------------------
   pifr <- t(Pcf)
   rownames(pifr) <- paste0("Field", 1:nfld)
-  colnames(pifr) <- paste0("Class", 1:ncls)
+  colnames(pifr) <- paste0("Rank", 1:ncls)
   FRPIndex <- IRPindex(pifr)
   flddist <- colSums(fld01)
   clsdist <- colSums(cls01)
@@ -608,7 +608,7 @@ Biclustering_IRM.binary <- function(U, Z = NULL, w = NULL, na = NULL,
   ret <- structure(list(
     U = U,
     testlength = testlength,
-    msg = "Class",
+    msg = "Rank",
     nobs = nobs,
     n_class = ncls, # New naming convention
     n_field = nfld, # New naming convention

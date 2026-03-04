@@ -296,7 +296,7 @@ irm_gibbs_core <- function(Uq, Z, cls01, fld01,
     }
   }
 
-  colnames(cls01) <- paste("Class", 1:ncls)
+  colnames(cls01) <- paste("Rank", 1:ncls)
   colnames(fld01) <- paste("Field", 1:nfld)
 
   list(

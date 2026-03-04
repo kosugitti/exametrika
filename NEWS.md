@@ -35,6 +35,10 @@
 
 - **Fixed IRM functions returning `msg = "Class"` instead of `msg = "Rank"`**: All three IRM methods (`Biclustering_IRM.binary`, `Biclustering_IRM.nominal`, `Biclustering_IRM.ordinal`) had `msg = "Class"` hardcoded. IRM is functionally a Ranklustering model (automatic structure discovery with ordered latent classes), so `msg` should be `"Rank"`. This caused downstream packages (ggExametrika) to display "Latent Class" instead of "Latent Rank" in plot labels. Also updated internal column names of `cls01` and `FRP` from `"Class"` to `"Rank"` for consistency. The shared Gibbs core (`irm_gibbs_core()`) output column names were also updated.
 
+### Biclustering_IRM.binary Missing `LRD` Alias
+
+- **Added `LRD` (Latent Rank Distribution) alias to `Biclustering_IRM.binary()` return value**: The binary IRM was the only Biclustering model that did not include `LRD` in its return value (it only had `LCD`). Other Biclustering models (binary Biclustering, nominal IRM, ordinal IRM) all return both `LRD` and `LCD`. Added `LRD = clsdist` as an alias for `LCD` to ensure consistency across all Biclustering-family models. This improves interoperability with downstream packages (ggExametrika) that look up `LRD` when `msg == "Rank"`.
+
 ### Biclustering_IRM Seed Default
 
 - **Reverted `Biclustering_IRM()` seed default back to 123**: Ensures reproducibility by default.

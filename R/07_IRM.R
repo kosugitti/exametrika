@@ -615,6 +615,7 @@ Biclustering_IRM.binary <- function(U, Z = NULL, w = NULL, na = NULL,
     n_cycle = EMt, # New naming convention
     em_cycle = EMt, # IRM-specific naming
     LFD = flddist,
+    LRD = clsdist,
     LCD = clsdist,
     FRP = pifr,
     FRPIndex = FRPIndex,

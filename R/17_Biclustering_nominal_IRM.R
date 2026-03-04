@@ -263,7 +263,7 @@ Biclustering_IRM.nominal <- function(U,
   )
 
   # Return ------------------------------------------------------------------
-  msg <- "Rank"
+  msg <- "Class"
   ret <- structure(list(
     Q = tmp$Q,
     Z = tmp$Z,

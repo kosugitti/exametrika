@@ -45,5 +45,5 @@ n <- 300
 x <- rnorm(n)
 y <- sample(1:5, size = n, replace = TRUE)
 polyserial(x, y)
-#> [1] 0.100766
+#> [1] -0.1123601
 ```

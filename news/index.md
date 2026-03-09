@@ -93,6 +93,31 @@
   method was missing it, causing an R CMD check WARNING. Added `...` to
   match the generic and the `.nominal`/`.ordinal` methods.
 
+#### Biclustering_IRM `msg` Field Fix
+
+- **Fixed IRM `msg` field to correctly distinguish Rank vs Class
+  models**: Binary IRM and Ordinal IRM are Ranklustering models (ordered
+  latent classes), so `msg = "Rank"` is correct. Nominal IRM has no
+  Ranklustering concept (unordered latent classes), so `msg = "Class"`
+  is correct. Previously all three methods had inconsistent values; now
+  `Biclustering_IRM.binary` and `Biclustering_IRM.ordinal` return
+  `msg = "Rank"`, while `Biclustering_IRM.nominal` returns
+  `msg = "Class"`. Also updated internal column names of `cls01` and
+  `FRP` from `"Class"` to `"Rank"` for binary/ordinal IRM. The shared
+  Gibbs core (`irm_gibbs_core()`) output column names were also updated.
+
+#### Biclustering_IRM.binary Missing `LRD` Alias
+
+- **Added `LRD` (Latent Rank Distribution) alias to
+  [`Biclustering_IRM.binary()`](https://kosugitti.github.io/exametrika/reference/Biclustering_IRM.md)
+  return value**: The binary IRM was the only Biclustering model that
+  did not include `LRD` in its return value (it only had `LCD`). Other
+  Biclustering models (binary Biclustering, nominal IRM, ordinal IRM)
+  all return both `LRD` and `LCD`. Added `LRD = clsdist` as an alias for
+  `LCD` to ensure consistency across all Biclustering-family models.
+  This improves interoperability with downstream packages (ggExametrika)
+  that look up `LRD` when `msg == "Rank"`.
+
 #### Biclustering_IRM Seed Default
 
 - **Reverted

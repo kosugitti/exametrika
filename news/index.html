@@ -79,6 +79,16 @@
 <strong>Added <code>...</code> to <code><a href="../reference/Biclustering_IRM.html">Biclustering_IRM.binary()</a></code> signature</strong>: The S3 generic <code>Biclustering_IRM(U, ...)</code> requires all methods to include <code>...</code> in their formal arguments. The <code>.binary</code> method was missing it, causing an R CMD check WARNING. Added <code>...</code> to match the generic and the <code>.nominal</code>/<code>.ordinal</code> methods.</li>
 </ul></div>
 <div class="section level4">
+<h4 id="biclustering_irm-msg-field-fix-1-10-0">Biclustering_IRM <code>msg</code> Field Fix<a class="anchor" aria-label="anchor" href="#biclustering_irm-msg-field-fix-1-10-0"></a></h4>
+<ul><li>
+<strong>Fixed IRM <code>msg</code> field to correctly distinguish Rank vs Class models</strong>: Binary IRM and Ordinal IRM are Ranklustering models (ordered latent classes), so <code>msg = "Rank"</code> is correct. Nominal IRM has no Ranklustering concept (unordered latent classes), so <code>msg = "Class"</code> is correct. Previously all three methods had inconsistent values; now <code>Biclustering_IRM.binary</code> and <code>Biclustering_IRM.ordinal</code> return <code>msg = "Rank"</code>, while <code>Biclustering_IRM.nominal</code> returns <code>msg = "Class"</code>. Also updated internal column names of <code>cls01</code> and <code>FRP</code> from <code>"Class"</code> to <code>"Rank"</code> for binary/ordinal IRM. The shared Gibbs core (<code>irm_gibbs_core()</code>) output column names were also updated.</li>
+</ul></div>
+<div class="section level4">
+<h4 id="biclustering_irmbinary-missing-lrd-alias-1-10-0">Biclustering_IRM.binary Missing <code>LRD</code> Alias<a class="anchor" aria-label="anchor" href="#biclustering_irmbinary-missing-lrd-alias-1-10-0"></a></h4>
+<ul><li>
+<strong>Added <code>LRD</code> (Latent Rank Distribution) alias to <code><a href="../reference/Biclustering_IRM.html">Biclustering_IRM.binary()</a></code> return value</strong>: The binary IRM was the only Biclustering model that did not include <code>LRD</code> in its return value (it only had <code>LCD</code>). Other Biclustering models (binary Biclustering, nominal IRM, ordinal IRM) all return both <code>LRD</code> and <code>LCD</code>. Added <code>LRD = clsdist</code> as an alias for <code>LCD</code> to ensure consistency across all Biclustering-family models. This improves interoperability with downstream packages (ggExametrika) that look up <code>LRD</code> when <code>msg == "Rank"</code>.</li>
+</ul></div>
+<div class="section level4">
 <h4 id="biclustering_irm-seed-default-1-10-0">Biclustering_IRM Seed Default<a class="anchor" aria-label="anchor" href="#biclustering_irm-seed-default-1-10-0"></a></h4>
 <ul><li>
 <strong>Reverted <code><a href="../reference/Biclustering_IRM.html">Biclustering_IRM()</a></code> seed default back to 123</strong>: Ensures reproducibility by default.</li>

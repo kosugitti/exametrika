@@ -139,10 +139,12 @@ Biclustering_IRM.ordinal <- function(U,
       # M-step: cumulative normalization (ordinal)
       Ufcq_prior <- U_fcq + alpha - 1
       Ufcq_prior <- pmax(Ufcq_prior, 1e-10)
-      cUfcq <- aperm(
-        apply(Ufcq_prior, c(1, 2), function(x) rev(cumsum(rev(x)))),
-        c(2, 3, 1)
-      )
+      cUfcq <- array(0, dim = c(nfld, ncls, maxQ))
+      for (f in seq_len(nfld)) {
+        for (cc in seq_len(ncls)) {
+          cUfcq[f, cc, ] <- rev(cumsum(rev(Ufcq_prior[f, cc, ])))
+        }
+      }
 
       for (q in 1:maxQ) {
         BBRM[, , q] <- cUfcq[, , q] / cUfcq[, , 1]

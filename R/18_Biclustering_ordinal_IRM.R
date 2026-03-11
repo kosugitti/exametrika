@@ -128,7 +128,10 @@ Biclustering_IRM.ordinal <- function(U,
         V_scq[, , q] <- (Uq[, , q] %*% fld01) %*% log(BCRM[, , q])
       }
       log_S <- apply(V_scq, c(1, 2), sum)
-      prob_S <- t(apply(log_S, 1, irm_log_to_prob))
+      prob_S <- matrix(0, nrow = nobs, ncol = ncls)
+      for (i in seq_len(nobs)) {
+        prob_S[i, ] <- irm_log_to_prob(log_S[i, ])
+      }
       cls <- apply(prob_S, 1, which.max)
       cls01 <- matrix(0, ncol = ncls, nrow = nobs)
       for (i in 1:nobs) {
@@ -227,7 +230,10 @@ Biclustering_IRM.ordinal <- function(U,
     V_scq[, , q] <- (Uq[, , q] %*% fld01) %*% log(BCRM[, , q])
   }
   log_S <- apply(V_scq, c(1, 2), sum)
-  clsmemb <- t(apply(log_S, 1, irm_log_to_prob))
+  clsmemb <- matrix(0, nrow = nobs, ncol = ncls)
+  for (i in seq_len(nobs)) {
+    clsmemb[i, ] <- irm_log_to_prob(log_S[i, ])
+  }
   cls <- apply(clsmemb, 1, which.max)
   cls01 <- matrix(0, ncol = ncls, nrow = nobs)
   for (i in 1:nobs) {
@@ -240,7 +246,10 @@ Biclustering_IRM.ordinal <- function(U,
     V_jfq[, , q] <- (t(Uq[, , q]) %*% cls01) %*% log(t(BCRM[, , q]))
   }
   log_J <- apply(V_jfq, c(1, 2), sum)
-  fldmemb <- t(apply(log_J, 1, irm_log_to_prob))
+  fldmemb <- matrix(0, nrow = nitems, ncol = nfld)
+  for (i in seq_len(nitems)) {
+    fldmemb[i, ] <- irm_log_to_prob(log_J[i, ])
+  }
   fld <- apply(fldmemb, 1, which.max)
   fld01 <- matrix(0, ncol = nfld, nrow = nitems)
   for (i in 1:nitems) {

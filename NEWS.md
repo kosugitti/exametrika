@@ -43,6 +43,10 @@
 
 - **Reverted `Biclustering_IRM()` seed default back to 123**: Ensures reproducibility by default.
 
+### Biclustering_IRM `t(apply())` Dimension Drop Fix
+
+- **Fixed `t(apply(log_S, 1, irm_log_to_prob))` dimension drop in Nominal/Ordinal IRM**: When the Gibbs sampler converged to `ncls=1` or `nfld=1`, `apply()` on a single-column matrix returned a vector instead of a matrix, causing `t()` to produce a 1-row matrix instead of an N-row matrix. This led to incorrect class/field membership assignment. Replaced all 6 instances of `t(apply(mat, 1, fun))` with explicit for-loops in both `Biclustering_IRM.nominal()` (3 locations: EM E-step, final class membership, final field membership) and `Biclustering_IRM.ordinal()` (3 locations: same). Consistent with the project's `apply()` caution policy.
+
 ### Biclustering_IRM Log-Probability Normalization Fix
 
 - **Fixed log-to-probability conversion in `Biclustering_IRM()` Gibbs sampler**: Changed `exp(ptab - min(ptab))` to `exp(ptab - max(ptab))` for numerical stability. The previous implementation subtracted the minimum log-probability, which could cause overflow (`exp(large positive) = Inf`) when the range of log-probabilities was large, resulting in `NaN` after normalization. Subtracting the maximum ensures the largest value becomes `exp(0) = 1` and all others underflow harmlessly to near-zero values.

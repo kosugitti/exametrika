@@ -124,6 +124,23 @@
   [`Biclustering_IRM()`](https://kosugitti.github.io/exametrika/reference/Biclustering_IRM.md)
   seed default back to 123**: Ensures reproducibility by default.
 
+#### Biclustering_IRM `t(apply())` Dimension Drop Fix
+
+- **Fixed `t(apply(log_S, 1, irm_log_to_prob))` dimension drop in
+  Nominal/Ordinal IRM**: When the Gibbs sampler converged to `ncls=1` or
+  `nfld=1`, [`apply()`](https://rdrr.io/r/base/apply.html) on a
+  single-column matrix returned a vector instead of a matrix, causing
+  [`t()`](https://rdrr.io/r/base/t.html) to produce a 1-row matrix
+  instead of an N-row matrix. This led to incorrect class/field
+  membership assignment. Replaced all 6 instances of
+  `t(apply(mat, 1, fun))` with explicit for-loops in both
+  [`Biclustering_IRM.nominal()`](https://kosugitti.github.io/exametrika/reference/Biclustering_IRM.md)
+  (3 locations: EM E-step, final class membership, final field
+  membership) and
+  [`Biclustering_IRM.ordinal()`](https://kosugitti.github.io/exametrika/reference/Biclustering_IRM.md)
+  (3 locations: same). Consistent with the project’s
+  [`apply()`](https://rdrr.io/r/base/apply.html) caution policy.
+
 #### Biclustering_IRM Log-Probability Normalization Fix
 
 - **Fixed log-to-probability conversion in

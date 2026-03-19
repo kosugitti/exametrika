@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">exametrika</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.10.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.10.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -30,9 +30,17 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.png" class="logo" alt=""><h1>Changelog</h1>
-      <small>Source: <a href="https://github.com/kosugitti/exametrika/blob/v1.10.0/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
+      <small>Source: <a href="https://github.com/kosugitti/exametrika/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.10.1" id="exametrika-1101">exametrika 1.10.1<a class="anchor" aria-label="anchor" href="#exametrika-1101"></a></h2>
+<div class="section level3">
+<h3 id="vignette-build-time-reduction-1-10-1">Vignette Build Time Reduction<a class="anchor" aria-label="anchor" href="#vignette-build-time-reduction-1-10-1"></a></h3>
+<ul><li>
+<strong>Reduced vignette build time from ~46 minutes to ~5 minutes</strong>: Added <code>eval=FALSE</code> to computationally intensive code chunks in vignettes (GridSearch, IRM, LDLRA, LDLRA_PBIL, LDB, BINET, ordinal/nominal Biclustering, ordinal/rated LRA). The Japanese guide (<code>guide-ja</code>) now uses <code>eval=FALSE</code> for all model estimation chunks to avoid duplicating computation from English vignettes. Full rendered output is available on the <a href="https://kosugitti.github.io/exametrika/">pkgdown site</a>.</li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.10.0" id="exametrika-1100">exametrika 1.10.0<a class="anchor" aria-label="anchor" href="#exametrika-1100"></a></h2>
 <div class="section level3">

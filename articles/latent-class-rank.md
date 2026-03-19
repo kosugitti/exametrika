@@ -1,5 +1,10 @@
 # Latent Class and Rank Analysis
 
+> **Note**: Some computationally intensive examples below are shown with
+> `eval=FALSE` to keep CRAN build times short. For full rendered output,
+> see the [pkgdown
+> site](https://kosugitti.github.io/exametrika/articles/latent-class-rank.html).
+
 ``` r
 library(exametrika)
 ```
@@ -341,15 +346,8 @@ Score-rank relationship visualizations:
 
 ``` r
 plot(result.LRAord, type = "ScoreFreq")
-```
-
-![](latent-class-rank_files/figure-html/plot-lra-ordinal-score-1.png)
-
-``` r
 plot(result.LRAord, type = "ScoreRank")
 ```
-
-![](latent-class-rank_files/figure-html/plot-lra-ordinal-score-2.png)
 
 Item-rank relationship plots:
 
@@ -360,23 +358,14 @@ Item-rank relationship plots:
 
 ``` r
 plot(result.LRAord, type = "ICBR", items = 1:4, nc = 2, nr = 2)
-```
-
-![](latent-class-rank_files/figure-html/plot-lra-ordinal-icbr-1.png)
-
-``` r
 plot(result.LRAord, type = "ICRP", items = 1:4, nc = 2, nr = 2)
 ```
-
-![](latent-class-rank_files/figure-html/plot-lra-ordinal-icbr-2.png)
 
 Rank membership profiles for individual examinees:
 
 ``` r
 plot(result.LRAord, type = "RMP", students = 1:9, nc = 3, nr = 3)
 ```
-
-![](latent-class-rank_files/figure-html/plot-lra-ordinal-rmp-1.png)
 
 ## LRA for Rated/Nominal Data
 
@@ -389,21 +378,12 @@ result.LRArated <- LRA(J35S5000, nrank = 10, mic = TRUE)
 
 ``` r
 plot(result.LRArated, type = "ScoreFreq")
-```
-
-![](latent-class-rank_files/figure-html/plot-lra-rated-score-1.png)
-
-``` r
 plot(result.LRArated, type = "ScoreRank")
 ```
-
-![](latent-class-rank_files/figure-html/plot-lra-rated-score-2.png)
 
 ``` r
 plot(result.LRArated, type = "ICRP", items = 1:4, nc = 2, nr = 2)
 ```
-
-![](latent-class-rank_files/figure-html/plot-lra-rated-icrp-1.png)
 
 ## Reference
 

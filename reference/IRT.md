@@ -121,12 +121,12 @@ result.IRT <- IRT(J15S500, model = 3)
 # Display the first few rows of estimated student abilities
 head(result.IRT$ability)
 #>           ID         EAP       PSD
-#> 1 Student001 -0.75526232 0.5805697
-#> 2 Student002 -0.17398823 0.5473602
-#> 3 Student003  0.01382209 0.5530499
-#> 4 Student004  0.57628085 0.5749108
-#> 5 Student005 -0.97449561 0.5915604
-#> 6 Student006  0.85233081 0.5820533
+#> 1 Student001 -0.75526328 0.5805697
+#> 2 Student002 -0.17398829 0.5473602
+#> 3 Student003  0.01382201 0.5530498
+#> 4 Student004  0.57628090 0.5749108
+#> 5 Student005 -0.97449559 0.5915604
+#> 6 Student006  0.85233024 0.5820533
 
 # Plot Item Response Function (IRF) for items 1-6 in a 2x3 grid
 plot(result.IRT, type = "IRF", items = 1:6, nc = 2, nr = 3)

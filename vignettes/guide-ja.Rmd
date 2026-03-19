@@ -18,6 +18,8 @@ knitr::opts_chunk$set(
 ```
 
 > 日本語チュートリアルは [こちら](https://kosugitti.github.io/slides/BMS2025spring/docs/) もご参照ください。
+>
+> **注意**: CRANビルド時間短縮のため、計算負荷の高いコード例は `eval=FALSE` としています。完全な実行結果は [pkgdownサイト](https://kosugitti.github.io/exametrika/articles/guide-ja.html) をご覧ください。
 
 ## 概要
 
@@ -178,16 +180,16 @@ CTT(J15S500)
 
 IRT関数は、ロジスティックモデルを用いてパラメータを推定します。`model`オプションで指定でき、2PL、3PL、4PLモデルに対応しています。
 
-```{r model-irt, message=FALSE, warning=FALSE}
+```{r model-irt, eval=FALSE}
 result.IRT <- IRT(J15S500, model = 3)
 result.IRT
 ```
 
-```{r results-irt-ability, message=FALSE, warning=FALSE}
+```{r results-irt-ability, eval=FALSE}
 head(result.IRT$ability)
 ```
 
-```{r plot-irt-curves, fig.width=7, fig.height=8, message=FALSE, warning=FALSE}
+```{r plot-irt-curves, eval=FALSE}
 plot(result.IRT, type = "IRF", items = 1:6, nc = 2, nr = 3)
 plot(result.IRT, type = "IRF", overlay = TRUE)
 plot(result.IRT, type = "IIC", items = 1:6, nc = 2, nr = 3)
@@ -199,12 +201,12 @@ plot(result.IRT, type = "TIC")
 
 Graded Response Model（Samejima,1969）はIRTを多値反応モデルに展開したものです。
 
-```{r GRM, message=FALSE, warning=FALSE}
+```{r GRM, eval=FALSE}
 result.GRM <- GRM(J5S1000)
 result.GRM
 ```
 
-```{r GRM-plot, fig.width=7, fig.height=8, message=FALSE, warning=FALSE}
+```{r GRM-plot, eval=FALSE}
 plot(result.GRM, type = "IRF", nc = 2)
 plot(result.GRM, type = "IIF", nc = 2)
 plot(result.GRM, type = "TIF")
@@ -214,12 +216,12 @@ plot(result.GRM, type = "TIF")
 
 潜在クラス分析では、データセットとクラス数の指定が必要です。
 
-```{r model-lca, message=FALSE, warning=FALSE}
+```{r model-lca, eval=FALSE}
 result.LCA <- LCA(J15S500, ncls = 5)
 head(result.LCA$Students)
 ```
 
-```{r plot-lca, message=FALSE, warning=FALSE}
+```{r plot-lca, eval=FALSE}
 plot(result.LCA, type = "IRP", items = 1:6, nc = 2, nr = 3)
 plot(result.LCA, type = "CMP", students = 1:9, nc = 3, nr = 3)
 plot(result.LCA, type = "TRP")
@@ -230,12 +232,12 @@ plot(result.LCA, type = "LCD")
 
 潜在ランク分析では、データセットとランク数の指定が必要です。
 
-```{r model-lra, message=FALSE, warning=FALSE}
+```{r model-lra, eval=FALSE}
 result.LRA <- LRA(J15S500, nrank = 6)
 head(result.LRA$Students)
 ```
 
-```{r plot-lra, message=FALSE, warning=FALSE}
+```{r plot-lra, eval=FALSE}
 plot(result.LRA, type = "IRP", items = 1:6, nc = 2, nr = 3)
 plot(result.LRA, type = "RMP", students = 1:9, nc = 3, nr = 3)
 plot(result.LRA, type = "TRP")
@@ -244,31 +246,31 @@ plot(result.LRA, type = "LRD")
 
 ### LRA 順序尺度データへの適用
 
-```{r model-lra-ordinal, message=FALSE, warning=FALSE}
+```{r model-lra-ordinal, eval=FALSE}
 result.LRAord <- LRA(J15S3810, nrank = 3, mic = TRUE)
 ```
 
-```{r plot-lra-ordinal-score, message=FALSE, warning=FALSE}
+```{r plot-lra-ordinal-score, eval=FALSE}
 plot(result.LRAord, type = "ScoreFreq")
 plot(result.LRAord, type = "ScoreRank")
 ```
 
-```{r plot-lra-ordinal-icbr-icrp, message=FALSE, warning=FALSE}
+```{r plot-lra-ordinal-icbr-icrp, eval=FALSE}
 plot(result.LRAord, type = "ICBR", items = 1:4, nc = 2, nr = 2)
 plot(result.LRAord, type = "ICRP", items = 1:4, nc = 2, nr = 2)
 ```
 
-```{r plot-lra-ordinal-rmp, message=FALSE, warning=FALSE}
+```{r plot-lra-ordinal-rmp, eval=FALSE}
 plot(result.LRAord, type = "RMP", students = 1:9, nc = 3, nr = 3)
 ```
 
 ### LRA 名義尺度データへの適用
 
-```{r model-lra-rated, message=FALSE, warning=FALSE}
+```{r model-lra-rated, eval=FALSE}
 result.LRArated <- LRA(J35S5000, nrank = 10, mic = TRUE)
 ```
 
-```{r plot-lra-rated, message=FALSE, warning=FALSE}
+```{r plot-lra-rated, eval=FALSE}
 plot(result.LRArated, type = "ScoreFreq")
 plot(result.LRArated, type = "ScoreRank")
 plot(result.LRArated, type = "ICRP", items = 1:4, nc = 2, nr = 2)
@@ -276,11 +278,11 @@ plot(result.LRArated, type = "ICRP", items = 1:4, nc = 2, nr = 2)
 
 ### バイクラスタリング
 
-```{r model-biclustering, message=FALSE, warning=FALSE}
+```{r model-biclustering, eval=FALSE}
 Biclustering(J35S515, nfld = 5, ncls = 6, method = "B")
 ```
 
-```{r model-ranklustering, message=FALSE, warning=FALSE}
+```{r model-ranklustering, eval=FALSE}
 result.Ranklustering <- Biclustering(J35S515, nfld = 5, ncls = 6, method = "R")
 plot(result.Ranklustering, type = "Array")
 plot(result.Ranklustering, type = "FRP", nc = 2, nr = 3)
@@ -291,7 +293,7 @@ plot(result.Ranklustering, type = "LRD")
 
 ### グリッドサーチ
 
-```{r grid-search, message=FALSE, warning=FALSE}
+```{r grid-search, eval=FALSE}
 result <- GridSearch(J35S515, method = "R", max_ncls = 10, max_nfld = 10, index = "BIC")
 result$optimal_ncls
 result$optimal_nfld
@@ -300,7 +302,7 @@ plot(result$optimal_result, type = "Array")
 
 ### 無限関係モデル
 
-```{r model-irm, message=FALSE, warning=FALSE}
+```{r model-irm, eval=FALSE}
 result.IRM <- Biclustering_IRM(J35S515, gamma_c = 1, gamma_f = 1, verbose = TRUE)
 plot(result.IRM, type = "Array")
 plot(result.IRM, type = "FRP", nc = 3)
@@ -311,7 +313,7 @@ plot(result.IRM, type = "TRP")
 
 #### 順序尺度データ
 
-```{r bic-poly-ord, message=FALSE, warning=FALSE}
+```{r bic-poly-ord, eval=FALSE}
 result.B.ord <- Biclustering(J35S500, ncls = 5, nfld = 5, method = "R")
 result.B.ord
 plot(result.B.ord, type = "Array")
@@ -325,7 +327,7 @@ plot(result.B.ord, type = "RRV")
 
 #### 名義尺度データ
 
-```{r bic-poly-nom, message=FALSE, warning=FALSE}
+```{r bic-poly-nom, eval=FALSE}
 result.B.nom <- Biclustering(J20S600, ncls = 5, nfld = 4)
 result.B.nom
 plot(result.B.nom, type = "Array")
@@ -338,7 +340,7 @@ plot(result.B.nom, type = "RRV")
 
 ### ベイジアンネットワークモデル
 
-```{r setup-igraph, message=FALSE, warning=FALSE}
+```{r setup-igraph, eval=FALSE}
 library(igraph)
 DAG <- matrix(
   c(
@@ -351,14 +353,14 @@ g <- igraph::graph_from_data_frame(DAG)
 adj_mat <- as.matrix(igraph::get.adjacency(g))
 ```
 
-```{r model-bnm, message=FALSE, warning=FALSE}
+```{r model-bnm, eval=FALSE}
 result.BNM <- BNM(J5S10, adj_matrix = adj_mat)
 result.BNM
 ```
 
 #### 遺伝的アルゴリズムによる構造学習
 
-```{r model-ga-bnm, message=FALSE, warning=FALSE}
+```{r model-ga-bnm, eval=FALSE}
 BNM_GA(J5S10,
   population = 20, Rs = 0.5, Rm = 0.002, maxParents = 2,
   maxGeneration = 100, crossover = 2, elitism = 2
@@ -367,7 +369,7 @@ BNM_GA(J5S10,
 
 #### PBILによる構造学習
 
-```{r model-pbil-bnm, message=FALSE, warning=FALSE}
+```{r model-pbil-bnm, eval=FALSE}
 BNM_PBIL(J5S10,
   population = 20, Rs = 0.5, Rm = 0.005, maxParents = 2,
   alpha = 0.05, estimate = 4
@@ -376,7 +378,7 @@ BNM_PBIL(J5S10,
 
 ### 局所依存潜在ランク分析
 
-```{r setup-ldlra-dag, message=FALSE, warning=FALSE}
+```{r setup-ldlra-dag, eval=FALSE}
 DAG_dat <- matrix(c(
   "From", "To", "Rank",
   "Item01", "Item02", 1, "Item04", "Item05", 1,
@@ -400,24 +402,24 @@ edgeFile <- tempfile(fileext = ".csv")
 write.csv(DAG_dat, edgeFile, row.names = FALSE, quote = TRUE)
 ```
 
-```{r model-ldlra, message=FALSE, warning=FALSE}
+```{r model-ldlra, eval=FALSE}
 result.LDLRA <- LDLRA(J12S5000, ncls = 5, adj_file = edgeFile)
 result.LDLRA
 ```
 
-```{r plot-ldlra, message=FALSE, warning=FALSE}
+```{r plot-ldlra, eval=FALSE}
 plot(result.LDLRA, type = "IRP", nc = 4, nr = 3)
 plot(result.LDLRA, type = "TRP")
 plot(result.LDLRA, type = "LRD")
 ```
 
 ```{r cleanup-ldlra, include=FALSE}
-unlink(edgeFile)
+if (exists("edgeFile")) unlink(edgeFile)
 ```
 
 ### 局所依存バイクラスタリング
 
-```{r setup-ldb, message=FALSE, warning=FALSE}
+```{r setup-ldb, eval=FALSE}
 conf <- c(
   1, 6, 6, 8, 9, 9, 4, 7, 7, 7, 5, 8, 9, 10, 10,
   9, 9, 10, 10, 10, 2, 2, 3, 3, 5, 5, 6, 9, 9, 10,
@@ -434,12 +436,12 @@ edgeFile <- tempfile(fileext = ".csv")
 write.csv(edges_data, file = edgeFile, row.names = FALSE)
 ```
 
-```{r model-ldb, message=FALSE, warning=FALSE}
+```{r model-ldb, eval=FALSE}
 result.LDB <- LDB(U = J35S515, ncls = 5, conf = conf, adj_file = edgeFile)
 result.LDB
 ```
 
-```{r plot-ldb, message=FALSE, warning=FALSE}
+```{r plot-ldb, eval=FALSE}
 plot(result.LDB, type = "Array")
 plot(result.LDB, type = "TRP")
 plot(result.LDB, type = "LRD")
@@ -449,12 +451,12 @@ plot(result.LDB, type = "FieldPIRP")
 ```
 
 ```{r cleanup-ldb, include=FALSE}
-unlink(edgeFile)
+if (exists("edgeFile")) unlink(edgeFile)
 ```
 
 ### バイクラスターネットワークモデル
 
-```{r setup-binet, message=FALSE, warning=FALSE}
+```{r setup-binet, eval=FALSE}
 conf <- c(
   1, 5, 5, 5, 9, 9, 6, 6, 6, 6, 2, 7, 7, 11, 11,
   7, 7, 12, 12, 12, 2, 2, 3, 3, 4, 4, 4, 8, 8, 12,
@@ -471,7 +473,7 @@ edgeFile <- tempfile(fileext = ".csv")
 write.csv(edges_data, file = edgeFile, row.names = FALSE)
 ```
 
-```{r model-binet, message=FALSE, warning=FALSE}
+```{r model-binet, eval=FALSE}
 result.BINET <- BINET(
   U = J35S515, ncls = 13, nfld = 12,
   conf = conf, adj_file = edgeFile
@@ -479,7 +481,7 @@ result.BINET <- BINET(
 print(result.BINET)
 ```
 
-```{r plot-binet, message=FALSE, warning=FALSE}
+```{r plot-binet, eval=FALSE}
 plot(result.BINET, type = "Array")
 plot(result.BINET, type = "TRP")
 plot(result.BINET, type = "LRD")
@@ -489,7 +491,7 @@ plot(result.BINET, type = "LDPSR", nc = 3, nr = 2)
 ```
 
 ```{r cleanup-binet, include=FALSE}
-unlink(edgeFile)
+if (exists("edgeFile")) unlink(edgeFile)
 ```
 
 ## 参考文献

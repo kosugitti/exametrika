@@ -1,3 +1,9 @@
+# exametrika 1.10.1
+
+## Vignette Build Time Reduction
+
+- **Reduced vignette build time from ~46 minutes to ~5 minutes**: Added `eval=FALSE` to computationally intensive code chunks in vignettes (GridSearch, IRM, LDLRA, LDLRA_PBIL, LDB, BINET, ordinal/nominal Biclustering, ordinal/rated LRA). The Japanese guide (`guide-ja`) now uses `eval=FALSE` for all model estimation chunks to avoid duplicating computation from English vignettes. Full rendered output is available on the [pkgdown site](https://kosugitti.github.io/exametrika/).
+
 # exametrika 1.10.0
 
 ## Bug Fixes

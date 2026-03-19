@@ -17,6 +17,8 @@ knitr::opts_chunk$set(
 )
 ```
 
+> **Note**: Some computationally intensive examples below are shown with `eval=FALSE` to keep CRAN build times short. For full rendered output, see the [pkgdown site](https://kosugitti.github.io/exametrika/articles/latent-class-rank.html).
+
 ```{r library, message=FALSE, warning=FALSE}
 library(exametrika)
 ```
@@ -76,13 +78,13 @@ plot(result.LRA, type = "LRD")
 
 LRA can also handle ordinal scale data. The `mic` option enforces monotonic increasing constraints.
 
-```{r model-lra-ordinal, message=FALSE, warning=FALSE}
+```{r model-lra-ordinal, eval=FALSE}
 result.LRAord <- LRA(J15S3810, nrank = 3, mic = TRUE)
 ```
 
 Score-rank relationship visualizations:
 
-```{r plot-lra-ordinal-score, fig.width=7, fig.height=5, message=FALSE, warning=FALSE}
+```{r plot-lra-ordinal-score, eval=FALSE}
 plot(result.LRAord, type = "ScoreFreq")
 plot(result.LRAord, type = "ScoreRank")
 ```
@@ -92,14 +94,14 @@ Item-rank relationship plots:
 - **ICBR**: Item Category Boundary Reference -- cumulative probability curves for each category threshold
 - **ICRP**: Item Category Response Profile -- probability of each response category across ranks
 
-```{r plot-lra-ordinal-icbr, fig.width=7, fig.height=5, message=FALSE, warning=FALSE}
+```{r plot-lra-ordinal-icbr, eval=FALSE}
 plot(result.LRAord, type = "ICBR", items = 1:4, nc = 2, nr = 2)
 plot(result.LRAord, type = "ICRP", items = 1:4, nc = 2, nr = 2)
 ```
 
 Rank membership profiles for individual examinees:
 
-```{r plot-lra-ordinal-rmp, fig.width=7, fig.height=5, message=FALSE, warning=FALSE}
+```{r plot-lra-ordinal-rmp, eval=FALSE}
 plot(result.LRAord, type = "RMP", students = 1:9, nc = 3, nr = 3)
 ```
 
@@ -107,16 +109,16 @@ plot(result.LRAord, type = "RMP", students = 1:9, nc = 3, nr = 3)
 
 For multiple-choice tests (nominal scale), LRA can analyze response patterns including distractor choices.
 
-```{r lra-rated, message=FALSE, warning=FALSE}
+```{r lra-rated, eval=FALSE}
 result.LRArated <- LRA(J35S5000, nrank = 10, mic = TRUE)
 ```
 
-```{r plot-lra-rated-score, fig.width=7, fig.height=5, message=FALSE, warning=FALSE}
+```{r plot-lra-rated-score, eval=FALSE}
 plot(result.LRArated, type = "ScoreFreq")
 plot(result.LRArated, type = "ScoreRank")
 ```
 
-```{r plot-lra-rated-icrp, fig.width=7, fig.height=5, message=FALSE, warning=FALSE}
+```{r plot-lra-rated-icrp, eval=FALSE}
 plot(result.LRArated, type = "ICRP", items = 1:4, nc = 2, nr = 2)
 ```
 

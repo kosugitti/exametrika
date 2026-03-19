@@ -1,3 +1,16 @@
+## Resubmission
+
+This is a resubmission of version 1.10.0 (now 1.10.1). The previous submission
+was rejected because vignette build time exceeded 46 minutes on Windows.
+
+### Changes since 1.10.0
+
+* **Reduced vignette build time from ~46 minutes to ~5 minutes**: Added
+  `eval=FALSE` to computationally intensive code chunks (GridSearch, IRM,
+  LDLRA, LDLRA_PBIL, LDB, BINET, ordinal/nominal Biclustering, ordinal/rated
+  LRA). The Japanese guide uses `eval=FALSE` for all model estimation to avoid
+  duplicating computation. Full rendered output is on the pkgdown site.
+
 ## Test environments
 * local macOS (aarch64-apple-darwin25.0.0): R 4.5.2
 
@@ -10,7 +23,7 @@
 
 There are currently no downstream dependencies for this package on CRAN.
 
-## Version 1.10.0
+## Version 1.10.1
 
 This is a minor release with bug fixes, new features for polytomous Biclustering
 analysis, confirmatory LCA/LRA, and a complete test suite modernization.
@@ -48,6 +61,10 @@ No breaking changes. This release includes changes originally planned for v1.9.0
 
 ### New Features
 
+* **Polytomous IRM (Nominal/Ordinal)**: `Biclustering_IRM()` is now an S3 generic
+  dispatching to `.binary`, `.nominal`, and `.ordinal` methods. Nominal IRM uses
+  Dirichlet-Multinomial collapsed Gibbs sampler; Ordinal IRM adds cumulative
+  normalization EM with monotone increasing class constraint.
 * **Confirmatory LCA/LRA (Test Equating)**: `LCA()` and `LRA()` now support a
   `conf` parameter for confirmatory analysis with label-based item matching.
   Works with both GTM and SOM methods for LRA.

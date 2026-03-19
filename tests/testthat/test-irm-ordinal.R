@@ -329,8 +329,10 @@ test_that("Ordinal IRM Students Matrix Structure", {
 
 test_that("Ordinal IRM mic=FALSE Works", {
   # Running with mic=FALSE should still produce valid results
-  result_nomic <- Biclustering_IRM(J35S500, gamma_c = 1, gamma_f = 1,
-                                   mic = FALSE, seed = 123, verbose = FALSE)
+  result_nomic <- Biclustering_IRM(J35S500,
+    gamma_c = 1, gamma_f = 1,
+    mic = FALSE, seed = 123, verbose = FALSE
+  )
   expect_s3_class(result_nomic, "exametrika")
   expect_true("ordinalBiclustering" %in% class(result_nomic))
   expect_false(result_nomic$mic)

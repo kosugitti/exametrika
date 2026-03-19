@@ -4,10 +4,7 @@
 ## R CMD check results
 
 ### Local
-0 errors | 0 warnings | 1 note
-
-The single NOTE ("unable to verify current time") is a transient network
-issue during the check and not related to the package itself.
+0 errors | 0 warnings | 0 note
 
 ### Downstream dependencies
 

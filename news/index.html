@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">exametrika</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.10.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.10.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -34,7 +34,24 @@
     </div>
 
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="1.10.1" id="exametrika-1101">exametrika 1.10.1<a class="anchor" aria-label="anchor" href="#exametrika-1101"></a></h2>
+<h2 class="pkg-version" data-toc-text="1.10.2" id="exametrika-1102">exametrika 1.10.2<a class="anchor" aria-label="anchor" href="#exametrika-1102"></a></h2>
+<div class="section level3">
+<h3 id="bug-fixes-1-10-2">Bug Fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-1-10-2"></a></h3>
+<ul><li>
+<strong>Improved <code>id</code> parameter validation in <code><a href="../reference/dataFormat.html">dataFormat()</a></code></strong>: When a vector (e.g., <code>id = tmp$ID</code>) was passed instead of a column number, the error message was cryptic (<code>the condition has length &gt; 1</code>). Now validates that <code>id</code> is a single integer and provides a clear error message.</li>
+<li>
+<strong>Fixed nominal Biclustering/IRM fit indices</strong>: Removed benchmark (saturated) model for nominal data. With many items and categories, every examinee has a unique response pattern, making the benchmark model trivially saturated (<code>ell_B = 0</code>) and chi-square based indices (NFI, RFI, IFI, TLI, CFI, RMSEA) meaningless. These indices are now reported as <code>NA</code> for nominal data. Information criteria (AIC, BIC, CAIC) are computed directly from the model log-likelihood and remain available. Also fixed a <code>length(benchGroup)</code> → <code>length(unique(benchGroup))</code> bug in <code><a href="../reference/Biclustering.html">Biclustering.nominal()</a></code> (the <code><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique()</a></code> call was missing).</li>
+</ul></div>
+<div class="section level3">
+<h3 id="documentation-fix-1-10-2">Documentation Fix<a class="anchor" aria-label="anchor" href="#documentation-fix-1-10-2"></a></h3>
+<ul><li>
+<strong>Fixed J35S5000 UseCase in data format tables</strong>: Corrected from “Nominal LRA” to “Rated LRA” in getting-started vignette, and from “名義LRA” to “評定LRA” in Japanese guide. J35S5000 is a rated (multiple-choice with correct answers) dataset, not nominal.</li>
+<li>
+<strong>Fixed J15S3810 roxygen documentation</strong>: The <code>@format</code> field incorrectly stated “nominal responses” but the dataset is ordinal (<code>response.type=ordinal</code>). Also fixed “A ordinal” to “An ordinal” in <code>@description</code>.</li>
+</ul></div>
+</div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.10.1" id="exametrika-1101">exametrika 1.10.1<a class="anchor" aria-label="anchor" href="#exametrika-1101"></a></h2><p class="text-muted">CRAN release: 2026-03-19</p>
 <div class="section level3">
 <h3 id="vignette-build-time-reduction-1-10-1">Vignette Build Time Reduction<a class="anchor" aria-label="anchor" href="#vignette-build-time-reduction-1-10-1"></a></h3>
 <ul><li>

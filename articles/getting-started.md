@@ -84,7 +84,7 @@ convention is `JxxSxxx` where J = number of items and S = sample size.
 | J20S600  |    20 |       600 | Nominal (4-cat)   | Nominal Biclustering         |
 | J35S500  |    35 |       500 | Ordinal (5-cat)   | Ordinal Biclustering         |
 | J35S515  |    35 |       515 | Binary            | Biclustering, network models |
-| J35S5000 |    35 |     5,000 | Multiple-choice   | Nominal LRA                  |
+| J35S5000 |    35 |     5,000 | Multiple-choice   | Rated LRA                    |
 | J50S100  |    50 |       100 | Binary            | Small sample testing         |
 
 ## Basic Statistics

@@ -115,9 +115,14 @@ test_that("nominal Biclustering shows cyclic mode pattern", {
 })
 
 test_that("nominal Biclustering fit indices", {
-  expect_equal(result_nom$TestFitIndices$RMSEA, 0.04719482, tolerance = 1e-3)
-  expect_equal(result_nom$TestFitIndices$AIC, 3990.147, tolerance = 1)
-  expect_equal(result_nom$TestFitIndices$BIC, -48509.19, tolerance = 1)
+  # Nominal data has no benchmark model; chi-square based indices are NA
+  expect_true(is.na(result_nom$TestFitIndices$bench_log_like))
+  expect_true(is.na(result_nom$TestFitIndices$RMSEA))
+  expect_true(is.na(result_nom$TestFitIndices$NFI))
+  expect_true(is.na(result_nom$TestFitIndices$CFI))
+  # Information criteria are computed directly from log-likelihood
+  expect_equal(result_nom$TestFitIndices$AIC, 27943.98, tolerance = 1)
+  expect_equal(result_nom$TestFitIndices$BIC, 28260.56, tolerance = 1)
 })
 
 

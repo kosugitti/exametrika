@@ -29,8 +29,8 @@
 "J12S5000"
 
 #' @title J15S3810
-#' @description A ordinal response dataset for test analysis
-#' @format An exametrika class object with 3810 students and 15 items containing nominal responses with 4 categories
+#' @description An ordinal response dataset for test analysis
+#' @format An exametrika class object with 3810 students and 15 items containing ordinal responses with 4 categories
 "J15S3810"
 
 #' @title J35S5000

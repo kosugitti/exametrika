@@ -224,50 +224,37 @@ Biclustering_IRM.nominal <- function(U,
   }
   nparam <- ncls * nfld * (maxQ - 1)
 
-  # Full model
-  ptn <- apply(tmp$Q * tmp$Z, 1, function(x) paste(x, collapse = ""))
-  benchGroup <- as.numeric(as.factor(ptn))
-  fullG <- length(unique(benchGroup))
-  benchmemb <- matrix(0, nrow = nobs, ncol = fullG)
-  for (i in 1:nobs) {
-    benchmemb[i, benchGroup[i]] <- 1
-  }
-
-  BenchFRQ <- array(NA, dim = c(nitems, fullG, maxQ))
-  Bfcq <- array(0, dim = c(nitems, fullG, maxQ))
-  for (q in 1:maxQ) {
-    Bfcq[, , q] <- (t(tmp$Z * Uq[, , q])) %*% benchmemb
-  }
-
-  BenchFRQ <- Bfcq / array(apply(Bfcq, c(1, 2), sum), dim = dim(BenchFRQ))
-  BenchFRQ[is.nan(BenchFRQ)] <- const
-
-  ell_B <- 0
-  for (q in 1:maxQ) {
-    ell_B <- ell_B + sum(t(tmp$Z * Uq[, , q]) %*% benchmemb * log(BenchFRQ[, , q] + const))
-  }
-  bench_nparam <- nitems * fullG
-
   # Null model
   Zrep <- replicate(maxQ, tmp$Z)
   NullFRQ <- apply(Zrep * Uq, c(2, 3), sum) / apply(tmp$Z, 2, sum)
   ell_N <- sum(apply(Zrep * Uq, c(2, 3), sum) * log(NullFRQ + const))
-  null_nparam <- nitems
 
-  df_B <- bench_nparam - null_nparam
-  chi_B <- 2 * (ell_B - ell_N)
-  chi_A <- 2 * (ell_B - testell)
-  df_A <- bench_nparam - nparam
+  # Fit indices: For nominal data, no meaningful benchmark (saturated) model exists
+  # because response patterns are almost always unique with many items and categories.
+  # Only information criteria (AIC, BIC, CAIC) are reported.
+  AIC <- -2 * testell + 2 * nparam
+  CAIC <- -2 * testell + nparam * (log(nobs) + 1)
+  BIC <- -2 * testell + nparam * log(nobs)
+
   FitIndices <- structure(
-    c(list(
+    list(
       model_log_like = testell,
-      bench_log_like = ell_B,
+      bench_log_like = NA,
       null_log_like = ell_N,
-      model_Chi_sq = chi_A,
-      null_Chi_sq = chi_B,
-      model_df = df_A,
-      null_df = df_B
-    ), calcFitIndices(chi_A, chi_B, df_A, df_B, nobs)),
+      model_Chi_sq = NA,
+      null_Chi_sq = NA,
+      model_df = NA,
+      null_df = NA,
+      NFI = NA,
+      RFI = NA,
+      IFI = NA,
+      TLI = NA,
+      CFI = NA,
+      RMSEA = NA,
+      AIC = AIC,
+      CAIC = CAIC,
+      BIC = BIC
+    ),
     class = c("exametrika", "ModelFit")
   )
 

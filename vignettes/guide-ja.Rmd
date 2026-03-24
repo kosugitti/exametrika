@@ -154,7 +154,7 @@ str(data)
 | J20S600 | 20 | 600 | 名義(4cat) | 名義Biclustering |
 | J35S500 | 35 | 500 | 順序(5件法) | 順序Biclustering |
 | J35S515 | 35 | 515 | 2値 | Biclustering, Network |
-| J35S5000 | 35 | 5,000 | 多肢選択 | 名義LRA |
+| J35S5000 | 35 | 5,000 | 多肢選択 | 評定LRA |
 
 ## 使用例
 

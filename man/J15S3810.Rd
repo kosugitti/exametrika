@@ -5,12 +5,12 @@
 \alias{J15S3810}
 \title{J15S3810}
 \format{
-An exametrika class object with 3810 students and 15 items containing nominal responses with 4 categories
+An exametrika class object with 3810 students and 15 items containing ordinal responses with 4 categories
 }
 \usage{
 J15S3810
 }
 \description{
-A ordinal response dataset for test analysis
+An ordinal response dataset for test analysis
 }
 \keyword{datasets}

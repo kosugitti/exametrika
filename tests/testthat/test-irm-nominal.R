@@ -123,17 +123,18 @@ test_that("Nominal IRM Test Fit Indices", {
   expect_true("ModelFit" %in% class(tfi))
 
   expect_true(!is.null(tfi$model_log_like))
-  expect_true(!is.null(tfi$bench_log_like))
   expect_true(!is.null(tfi$null_log_like))
   expect_true(!is.null(tfi$AIC))
   expect_true(!is.null(tfi$BIC))
-  expect_true(!is.null(tfi$RMSEA))
+
+  # Nominal data: no benchmark model, chi-square based indices are NA
+  expect_true(is.na(tfi$bench_log_like))
+  expect_true(is.na(tfi$RMSEA))
+  expect_true(is.na(tfi$NFI))
+  expect_true(is.na(tfi$CFI))
 
   # Log-likelihood should be negative
   expect_true(tfi$model_log_like < 0)
-
-  # Log-likelihood ordering: model < bench (bench is closer to saturated)
-  expect_true(tfi$model_log_like <= tfi$bench_log_like)
 
   # log_lik field should match
   expect_equal(result_nirm$log_lik, tfi$model_log_like)

@@ -1,3 +1,15 @@
+# exametrika 1.10.2
+
+## Bug Fixes
+
+- **Improved `id` parameter validation in `dataFormat()`**: When a vector (e.g., `id = tmp$ID`) was passed instead of a column number, the error message was cryptic (`the condition has length > 1`). Now validates that `id` is a single integer and provides a clear error message.
+- **Fixed nominal Biclustering/IRM fit indices**: Removed benchmark (saturated) model for nominal data. With many items and categories, every examinee has a unique response pattern, making the benchmark model trivially saturated (`ell_B = 0`) and chi-square based indices (NFI, RFI, IFI, TLI, CFI, RMSEA) meaningless. These indices are now reported as `NA` for nominal data. Information criteria (AIC, BIC, CAIC) are computed directly from the model log-likelihood and remain available. Also fixed a `length(benchGroup)` → `length(unique(benchGroup))` bug in `Biclustering.nominal()` (the `unique()` call was missing).
+
+## Documentation Fix
+
+- **Fixed J35S5000 UseCase in data format tables**: Corrected from "Nominal LRA" to "Rated LRA" in getting-started vignette, and from "名義LRA" to "評定LRA" in Japanese guide. J35S5000 is a rated (multiple-choice with correct answers) dataset, not nominal.
+- **Fixed J15S3810 roxygen documentation**: The `@format` field incorrectly stated "nominal responses" but the dataset is ordinal (`response.type=ordinal`). Also fixed "A ordinal" to "An ordinal" in `@description`.
+
 # exametrika 1.10.1
 
 ## Vignette Build Time Reduction

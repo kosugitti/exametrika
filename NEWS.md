@@ -4,6 +4,10 @@
 
 - **`Biclustering.rated()`: Rated (multiple-choice) Biclustering**: Performs biclustering for rated data (items with correct answers and multiple response categories). Internally calls `Biclustering.nominal()` for estimation, then post-processes the results: classes are sorted by correct response rate (ranklustering), and two layers of fit indices are reported — binary (item correct/incorrect, with full benchmark model) and nominal (category-level, AIC/BIC/CAIC only). The binary layer uses item-level correct response rates per class without field constraints (`nparam = nitems * ncls`). Supports both Biclustering (`method = "B"`) and Ranklustering (`method = "R"`) modes. Returns `TestFitIndices` (binary) and `TestFitIndices_nominal` (nominal) in the output. Added 16 tests for rated Biclustering using J35S5000.
 
+## Improvements
+
+- **Renamed `ItemFRP` to `quasiFRP` in `Biclustering.rated()` output**: The item-level correct response rate matrix (J x C) is computed without field constraints because the field assignments come from nominal analysis and have different meaning in the binary context. The name `quasiFRP` (quasi Field Reference Profile) clarifies this distinction from the standard field-constrained FRP.
+
 ## Bug Fixes
 
 - **Fixed `subscript out of bounds` in nominal/ordinal Biclustering with large `nfld`**: The initial field assignment `ceiling(1:nitems / (nitems / nfld))` could exceed `nfld` due to floating-point rounding. Added `pmin(..., nfld)` clamping, consistent with the binary Biclustering fix already in place.

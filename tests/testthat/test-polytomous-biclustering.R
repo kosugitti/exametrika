@@ -302,15 +302,15 @@ test_that("rated Biclustering classes are sorted by correct rate", {
   expect_gt(trp[length(trp)], trp[1])
 })
 
-test_that("rated Biclustering has ItemFRP and FieldFRP", {
-  expect_equal(dim(result_rated$ItemFRP), c(35, 3))
+test_that("rated Biclustering has quasiFRP and FieldFRP", {
+  expect_equal(dim(result_rated$quasiFRP), c(35, 3))
   # FieldFRP: some fields may be NA if empty
   expect_equal(nrow(result_rated$FieldFRP), 3)
   expect_equal(ncol(result_rated$FieldFRP), 3)
 })
 
-test_that("rated Biclustering ItemFRP values in [0, 1]", {
-  valid <- result_rated$ItemFRP[!is.na(result_rated$ItemFRP)]
+test_that("rated Biclustering quasiFRP values in [0, 1]", {
+  valid <- result_rated$quasiFRP[!is.na(result_rated$quasiFRP)]
   expect_true(all(valid >= 0 & valid <= 1))
 })
 

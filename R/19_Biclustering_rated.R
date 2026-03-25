@@ -130,10 +130,11 @@ Biclustering.rated <- function(U,
   colnames(clsmemb) <- paste0(msg, 1:ncls)
 
   # --- Step 8: TRP and FRPIndex (binary-based) ---
-  # Binary FRP per field (nfld x ncls)
-  ItemFRP <- PiFR
-  rownames(ItemFRP) <- colnames(tmp$U)
-  colnames(ItemFRP) <- paste0(msg, 1:ncls)
+  # quasiFRP: item-level correct response rate per class (J x C, no field constraint)
+  # "quasi" because field assignments come from nominal analysis, not binary
+  quasiFRP <- PiFR
+  rownames(quasiFRP) <- colnames(tmp$U)
+  colnames(quasiFRP) <- paste0(msg, 1:ncls)
 
   FieldFRP <- matrix(0, nrow = nfld, ncol = ncls)
   for (f in 1:nfld) {
@@ -215,7 +216,7 @@ Biclustering.rated <- function(U,
     LCD = clsdist,
     FRP = FRP,
     FieldFRP = FieldFRP,
-    ItemFRP = ItemFRP,
+    quasiFRP = quasiFRP,
     FRPIndex = FRPIndex,
     TRP = TRP,
     CMD = colSums(clsmemb),

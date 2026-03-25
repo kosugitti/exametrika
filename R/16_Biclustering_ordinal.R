@@ -99,7 +99,7 @@ Biclustering.ordinal <- function(U,
   }
 
   ##
-  fld0 <- ceiling(1:nitems / (nitems / nfld))
+  fld0 <- pmin(ceiling(1:nitems / (nitems / nfld)), nfld)
   med_order <- order(apply(tmp$Q, 2, median), decreasing = TRUE)
   fld <- fld0[match(1:nitems, med_order)]
   fldmemb <- matrix(0, nrow = nitems, ncol = nfld)

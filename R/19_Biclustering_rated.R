@@ -37,11 +37,9 @@ Biclustering.rated <- function(U,
   const <- exp(-nitems)
 
   # --- Step 1: Run nominal Biclustering internally ---
-  dat_nom <- dataFormat(
-    data = tmp$Q,
-    Z = tmp$Z,
-    response.type = "nominal"
-  )
+  # Reuse the already-formatted exametrika object as nominal (avoid re-calling dataFormat)
+  dat_nom <- tmp
+  dat_nom$response.type <- "nominal"
 
   ret_nom <- Biclustering.nominal(
     dat_nom,

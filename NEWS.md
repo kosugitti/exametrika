@@ -6,6 +6,10 @@
 
 ## Bug Fixes
 
+- **Fixed `subscript out of bounds` in nominal/ordinal Biclustering with large `nfld`**: The initial field assignment `ceiling(1:nitems / (nitems / nfld))` could exceed `nfld` due to floating-point rounding. Added `pmin(..., nfld)` clamping, consistent with the binary Biclustering fix already in place.
+- **Fixed redundant `dataFormat()` call in `Biclustering.rated()`**: The function was unnecessarily re-calling `dataFormat()` on already-formatted data, causing repeated "No ID column detected" messages during `GridSearch()`. Now reuses the existing exametrika object directly.
+- **Fixed Array plot for polytomous Biclustering (rated/nominal/ordinal)**: Array plots for polytomous Biclustering models were rendered in black and white because `x$U` (binary correctness matrix) was used instead of `x$Q` (polytomous responses). Now correctly uses `x$Q` for polytomous models.
+- **Fixed FCRP plot `invalid graphics state` error**: `par(mfrow=...)` and `layout()` conflicted when plotting FCRP/FCBR. Now skips `par(mfrow=...)` for plot types that use `layout()` internally.
 - **Improved `id` parameter validation in `dataFormat()`**: When a vector (e.g., `id = tmp$ID`) was passed instead of a column number, the error message was cryptic (`the condition has length > 1`). Now validates that `id` is a single integer and provides a clear error message.
 - **Fixed nominal Biclustering/IRM fit indices**: Removed benchmark (saturated) model for nominal data. With many items and categories, every examinee has a unique response pattern, making the benchmark model trivially saturated (`ell_B = 0`) and chi-square based indices (NFI, RFI, IFI, TLI, CFI, RMSEA) meaningless. These indices are now reported as `NA` for nominal data. Information criteria (AIC, BIC, CAIC) are computed directly from the model log-likelihood and remain available. Also fixed a `length(benchGroup)` → `length(unique(benchGroup))` bug in `Biclustering.nominal()` (the `unique()` call was missing).
 

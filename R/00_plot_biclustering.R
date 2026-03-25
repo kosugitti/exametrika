@@ -70,9 +70,12 @@ plot_array <- function(x, cell_width, cell_height, colors) {
   # Sort so that higher class numbers (higher correct response rates) appear at bottom
   case_order <- order(x$ClassEstimated, decreasing = FALSE)
   field_order <- order(x$FieldEstimated, decreasing = FALSE)
-  raw_data <- x$U
-  if (is.null(raw_data)) {
+  # For polytomous models, use Q (polytomous responses) instead of U (binary)
+  if (!is.null(x$Q) && inherits(x, c("nominalBiclustering", "ordinalBiclustering", "ratedBiclustering"))) {
     raw_data <- x$Q
+  } else {
+    raw_data <- x$U
+    if (is.null(raw_data)) raw_data <- x$Q
   }
 
   clusterd_data <- raw_data[case_order, field_order]

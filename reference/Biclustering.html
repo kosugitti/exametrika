@@ -36,7 +36,7 @@ in the data by creating a matrix with rows and columns arranged to highlight blo
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.png" class="logo" alt=""><h1>Biclustering and Ranklustering Analysis</h1>
-      <small class="dont-index">Source: <a href="https://github.com/kosugitti/exametrika/blob/main/R/07_Biclustering.R" class="external-link"><code>R/07_Biclustering.R</code></a>, <a href="https://github.com/kosugitti/exametrika/blob/main/R/15_Biclustering_nominal.R" class="external-link"><code>R/15_Biclustering_nominal.R</code></a>, <a href="https://github.com/kosugitti/exametrika/blob/main/R/16_Biclustering_ordinal.R" class="external-link"><code>R/16_Biclustering_ordinal.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/kosugitti/exametrika/blob/main/R/07_Biclustering.R" class="external-link"><code>R/07_Biclustering.R</code></a>, <a href="https://github.com/kosugitti/exametrika/blob/main/R/15_Biclustering_nominal.R" class="external-link"><code>R/15_Biclustering_nominal.R</code></a>, <a href="https://github.com/kosugitti/exametrika/blob/main/R/16_Biclustering_ordinal.R" class="external-link"><code>R/16_Biclustering_ordinal.R</code></a>, and 1 more</small>
       <div class="d-none name"><code>Biclustering.Rd</code></div>
     </div>
 
@@ -94,6 +94,19 @@ in the data by creating a matrix with rows and columns arranged to highlight blo
 <span>  verbose <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  alpha <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  <span class="va">...</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for class 'rated'</span></span>
+<span><span class="fu">Biclustering</span><span class="op">(</span></span>
+<span>  <span class="va">U</span>,</span>
+<span>  ncls <span class="op">=</span> <span class="fl">2</span>,</span>
+<span>  nfld <span class="op">=</span> <span class="fl">2</span>,</span>
+<span>  method <span class="op">=</span> <span class="st">"R"</span>,</span>
+<span>  conf <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  maxiter <span class="op">=</span> <span class="fl">100</span>,</span>
+<span>  verbose <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  alpha <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -139,7 +152,7 @@ observed responses, while 0 indicates missing data.</p></dd>
 
 <dt id="arg-conf">conf<a class="anchor" aria-label="anchor" href="#arg-conf"></a></dt>
 <dd><p>Confirmatory parameter for pre-specified field assignments. Can be either:</p><ul><li><p>A vector with items and corresponding fields in sequence</p></li>
-<li><p>A field membership profile matrix (items × fields) with 0/1 values</p></li>
+<li><p>A field membership profile matrix (items x fields) with 0/1 values</p></li>
 <li><p>NULL (default) for exploratory analysis where field memberships are estimated</p></li>
 </ul></dd>
 
@@ -420,6 +433,16 @@ Behaviormetrika, 39(2), 161-178.</p>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> iter 32 log_lik -6884.98                                                        </span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> iter 33 log_lik -6884.58                                                        </span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> No ID column detected. All columns treated as response data. Sequential IDs (Student1, Student2, ...) were generated. Use id= parameter to specify the ID column explicitly.</span>
+<span class="r-in"><span><span class="co"># }</span></span></span>
+<span class="r-in"><span><span class="co"># \donttest{</span></span></span>
+<span class="r-in"><span><span class="co"># Perform Biclustering for rated sample data</span></span></span>
+<span class="r-in"><span><span class="co"># Analyze data with 5 fields and 6 classes</span></span></span>
+<span class="r-in"><span><span class="va">result.Bi</span> <span class="op">&lt;-</span> <span class="fu">Biclustering</span><span class="op">(</span><span class="va">J35S5000</span>, nfld <span class="op">=</span> <span class="fl">5</span>, ncls <span class="op">=</span> <span class="fl">6</span>, method <span class="op">=</span> <span class="st">"R"</span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> No ID column detected. All columns treated as response data. Sequential IDs (Student1, Student2, ...) were generated. Use id= parameter to specify the ID column explicitly.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 1 log_lik -264835                                                          </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 2 log_lik -278843                                                          </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>Only 2 of 5 specified fields have items assigned. Fields 2, 4, 5 are empty. Consider reducing nfld.</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> No ID column detected. All columns treated as response data. Sequential IDs (Student1, Student2, ...) were generated. Use id= parameter to specify the ID column explicitly.</span>
 <span class="r-in"><span><span class="co"># }</span></span></span>
 </code></pre></div>

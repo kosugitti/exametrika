@@ -2,6 +2,23 @@
 
 ## exametrika 1.10.2
 
+### New Features
+
+- **[`Biclustering.rated()`](https://kosugitti.github.io/exametrika/reference/Biclustering.md):
+  Rated (multiple-choice) Biclustering**: Performs biclustering for
+  rated data (items with correct answers and multiple response
+  categories). Internally calls
+  [`Biclustering.nominal()`](https://kosugitti.github.io/exametrika/reference/Biclustering.md)
+  for estimation, then post-processes the results: classes are sorted by
+  correct response rate (ranklustering), and two layers of fit indices
+  are reported — binary (item correct/incorrect, with full benchmark
+  model) and nominal (category-level, AIC/BIC/CAIC only). The binary
+  layer uses item-level correct response rates per class without field
+  constraints (`nparam = nitems * ncls`). Supports both Biclustering
+  (`method = "B"`) and Ranklustering (`method = "R"`) modes. Returns
+  `TestFitIndices` (binary) and `TestFitIndices_nominal` (nominal) in
+  the output. Added 16 tests for rated Biclustering using J35S5000.
+
 ### Bug Fixes
 
 - **Improved `id` parameter validation in
@@ -22,6 +39,22 @@
   [`Biclustering.nominal()`](https://kosugitti.github.io/exametrika/reference/Biclustering.md)
   (the [`unique()`](https://rdrr.io/r/base/unique.html) call was
   missing).
+
+### Improvements
+
+- **Added empty field warning for all Biclustering models**: When some
+  fields have no items assigned (e.g., due to specifying too many
+  fields), a warning message is now emitted suggesting to reduce `nfld`.
+  Affects
+  [`Biclustering()`](https://kosugitti.github.io/exametrika/reference/Biclustering.md)
+  (binary/ordinal/nominal),
+  [`Biclustering_IRM()`](https://kosugitti.github.io/exametrika/reference/Biclustering_IRM.md)
+  (binary/ordinal/nominal).
+- **Renamed `field` to `fld` in
+  [`Biclustering_IRM.binary()`](https://kosugitti.github.io/exametrika/reference/Biclustering_IRM.md)**:
+  Internal variable name changed from `field` to `fld` for consistency
+  with other Biclustering models. No change to the public API
+  (`FieldEstimated` output name is unchanged).
 
 ### Documentation Fix
 

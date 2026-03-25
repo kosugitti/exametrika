@@ -36,11 +36,23 @@
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.10.2" id="exametrika-1102">exametrika 1.10.2<a class="anchor" aria-label="anchor" href="#exametrika-1102"></a></h2>
 <div class="section level3">
+<h3 id="new-features-1-10-2">New Features<a class="anchor" aria-label="anchor" href="#new-features-1-10-2"></a></h3>
+<ul><li>
+<strong><code><a href="../reference/Biclustering.html">Biclustering.rated()</a></code>: Rated (multiple-choice) Biclustering</strong>: Performs biclustering for rated data (items with correct answers and multiple response categories). Internally calls <code><a href="../reference/Biclustering.html">Biclustering.nominal()</a></code> for estimation, then post-processes the results: classes are sorted by correct response rate (ranklustering), and two layers of fit indices are reported — binary (item correct/incorrect, with full benchmark model) and nominal (category-level, AIC/BIC/CAIC only). The binary layer uses item-level correct response rates per class without field constraints (<code>nparam = nitems * ncls</code>). Supports both Biclustering (<code>method = "B"</code>) and Ranklustering (<code>method = "R"</code>) modes. Returns <code>TestFitIndices</code> (binary) and <code>TestFitIndices_nominal</code> (nominal) in the output. Added 16 tests for rated Biclustering using J35S5000.</li>
+</ul></div>
+<div class="section level3">
 <h3 id="bug-fixes-1-10-2">Bug Fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-1-10-2"></a></h3>
 <ul><li>
 <strong>Improved <code>id</code> parameter validation in <code><a href="../reference/dataFormat.html">dataFormat()</a></code></strong>: When a vector (e.g., <code>id = tmp$ID</code>) was passed instead of a column number, the error message was cryptic (<code>the condition has length &gt; 1</code>). Now validates that <code>id</code> is a single integer and provides a clear error message.</li>
 <li>
 <strong>Fixed nominal Biclustering/IRM fit indices</strong>: Removed benchmark (saturated) model for nominal data. With many items and categories, every examinee has a unique response pattern, making the benchmark model trivially saturated (<code>ell_B = 0</code>) and chi-square based indices (NFI, RFI, IFI, TLI, CFI, RMSEA) meaningless. These indices are now reported as <code>NA</code> for nominal data. Information criteria (AIC, BIC, CAIC) are computed directly from the model log-likelihood and remain available. Also fixed a <code>length(benchGroup)</code> → <code>length(unique(benchGroup))</code> bug in <code><a href="../reference/Biclustering.html">Biclustering.nominal()</a></code> (the <code><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique()</a></code> call was missing).</li>
+</ul></div>
+<div class="section level3">
+<h3 id="improvements-1-10-2">Improvements<a class="anchor" aria-label="anchor" href="#improvements-1-10-2"></a></h3>
+<ul><li>
+<strong>Added empty field warning for all Biclustering models</strong>: When some fields have no items assigned (e.g., due to specifying too many fields), a warning message is now emitted suggesting to reduce <code>nfld</code>. Affects <code><a href="../reference/Biclustering.html">Biclustering()</a></code> (binary/ordinal/nominal), <code><a href="../reference/Biclustering_IRM.html">Biclustering_IRM()</a></code> (binary/ordinal/nominal).</li>
+<li>
+<strong>Renamed <code>field</code> to <code>fld</code> in <code><a href="../reference/Biclustering_IRM.html">Biclustering_IRM.binary()</a></code></strong>: Internal variable name changed from <code>field</code> to <code>fld</code> for consistency with other Biclustering models. No change to the public API (<code>FieldEstimated</code> output name is unchanged).</li>
 </ul></div>
 <div class="section level3">
 <h3 id="documentation-fix-1-10-2">Documentation Fix<a class="anchor" aria-label="anchor" href="#documentation-fix-1-10-2"></a></h3>

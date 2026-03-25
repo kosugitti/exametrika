@@ -19,6 +19,16 @@
   `TestFitIndices` (binary) and `TestFitIndices_nominal` (nominal) in
   the output. Added 16 tests for rated Biclustering using J35S5000.
 
+### Improvements
+
+- **Renamed `ItemFRP` to `quasiFRP` in
+  [`Biclustering.rated()`](https://kosugitti.github.io/exametrika/reference/Biclustering.md)
+  output**: The item-level correct response rate matrix (J x C) is
+  computed without field constraints because the field assignments come
+  from nominal analysis and have different meaning in the binary
+  context. The name `quasiFRP` (quasi Field Reference Profile) clarifies
+  this distinction from the standard field-constrained FRP.
+
 ### Bug Fixes
 
 - **Fixed `subscript out of bounds` in nominal/ordinal Biclustering with

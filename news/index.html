@@ -41,6 +41,11 @@
 <strong><code><a href="../reference/Biclustering.html">Biclustering.rated()</a></code>: Rated (multiple-choice) Biclustering</strong>: Performs biclustering for rated data (items with correct answers and multiple response categories). Internally calls <code><a href="../reference/Biclustering.html">Biclustering.nominal()</a></code> for estimation, then post-processes the results: classes are sorted by correct response rate (ranklustering), and two layers of fit indices are reported — binary (item correct/incorrect, with full benchmark model) and nominal (category-level, AIC/BIC/CAIC only). The binary layer uses item-level correct response rates per class without field constraints (<code>nparam = nitems * ncls</code>). Supports both Biclustering (<code>method = "B"</code>) and Ranklustering (<code>method = "R"</code>) modes. Returns <code>TestFitIndices</code> (binary) and <code>TestFitIndices_nominal</code> (nominal) in the output. Added 16 tests for rated Biclustering using J35S5000.</li>
 </ul></div>
 <div class="section level3">
+<h3 id="improvements-1-10-2">Improvements<a class="anchor" aria-label="anchor" href="#improvements-1-10-2"></a></h3>
+<ul><li>
+<strong>Renamed <code>ItemFRP</code> to <code>quasiFRP</code> in <code><a href="../reference/Biclustering.html">Biclustering.rated()</a></code> output</strong>: The item-level correct response rate matrix (J x C) is computed without field constraints because the field assignments come from nominal analysis and have different meaning in the binary context. The name <code>quasiFRP</code> (quasi Field Reference Profile) clarifies this distinction from the standard field-constrained FRP.</li>
+</ul></div>
+<div class="section level3">
 <h3 id="bug-fixes-1-10-2">Bug Fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-1-10-2"></a></h3>
 <ul><li>
 <strong>Fixed <code>subscript out of bounds</code> in nominal/ordinal Biclustering with large <code>nfld</code></strong>: The initial field assignment <code>ceiling(1:nitems / (nitems / nfld))</code> could exceed <code>nfld</code> due to floating-point rounding. Added <code>pmin(..., nfld)</code> clamping, consistent with the binary Biclustering fix already in place.</li>
@@ -56,7 +61,7 @@
 <strong>Fixed nominal Biclustering/IRM fit indices</strong>: Removed benchmark (saturated) model for nominal data. With many items and categories, every examinee has a unique response pattern, making the benchmark model trivially saturated (<code>ell_B = 0</code>) and chi-square based indices (NFI, RFI, IFI, TLI, CFI, RMSEA) meaningless. These indices are now reported as <code>NA</code> for nominal data. Information criteria (AIC, BIC, CAIC) are computed directly from the model log-likelihood and remain available. Also fixed a <code>length(benchGroup)</code> → <code>length(unique(benchGroup))</code> bug in <code><a href="../reference/Biclustering.html">Biclustering.nominal()</a></code> (the <code><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique()</a></code> call was missing).</li>
 </ul></div>
 <div class="section level3">
-<h3 id="improvements-1-10-2">Improvements<a class="anchor" aria-label="anchor" href="#improvements-1-10-2"></a></h3>
+<h3 id="improvements-1-10-2-1">Improvements<a class="anchor" aria-label="anchor" href="#improvements-1-10-2-1"></a></h3>
 <ul><li>
 <strong>Added empty field warning for all Biclustering models</strong>: When some fields have no items assigned (e.g., due to specifying too many fields), a warning message is now emitted suggesting to reduce <code>nfld</code>. Affects <code><a href="../reference/Biclustering.html">Biclustering()</a></code> (binary/ordinal/nominal), <code><a href="../reference/Biclustering_IRM.html">Biclustering_IRM()</a></code> (binary/ordinal/nominal).</li>
 <li>

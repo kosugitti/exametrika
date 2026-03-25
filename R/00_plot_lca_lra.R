@@ -85,7 +85,8 @@ plot_common_profiles <- function(x, type, value, plotItemID, plotStudentID, test
       target <- x$LCD
     } else if (value == "LRA" | value == "LDLRA" | value == "LDB") {
       target <- x$LRD
-    } else if (value == "Biclustering" | value == "ordinalBiclustering" | value == "nominalBiclustering") {
+    } else if (value == "Biclustering" | value == "ordinalBiclustering" | value == "nominalBiclustering" |
+      value == "ratedBiclustering") {
       target <- x$LRD
       if (is.null(target)) {
         target <- x$LCD
@@ -135,7 +136,7 @@ plot_common_profiles <- function(x, type, value, plotItemID, plotStudentID, test
       target1 <- x$LCD
       target2 <- x$CMD
     } else if (value == "Biclustering" | value == "ordinalBiclustering" | value == "nominalBiclustering" |
-      value == "LRA" | value == "LDLRA" | value == "LDB") {
+      value == "ratedBiclustering" | value == "LRA" | value == "LDLRA" | value == "LDB") {
       target1 <- x$LRD
       target2 <- x$RMD
     }

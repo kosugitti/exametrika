@@ -146,15 +146,15 @@ Biclustering_IRM.binary <- function(U, Z = NULL, w = NULL, na = NULL,
 
   ## Initial Field
   nfld <- testlength
-  field <- 1:testlength
+  fld <- 1:testlength
   crr <- crr(tmp)
-  df_tmp <- data.frame(field, crr)
+  df_tmp <- data.frame(fld, crr)
   df_tmp <- df_tmp[order(crr, decreasing = T), ]
-  sorted_list <- df_tmp$field
-  field <- order(sorted_list)
+  sorted_list <- df_tmp$fld
+  fld <- order(sorted_list)
   fld01 <- matrix(0, nrow = testlength, ncol = nfld)
   for (i in 1:testlength) {
-    fld01[i, field[i]] <- 1
+    fld01[i, fld[i]] <- 1
   }
   colnames(fld01) <- paste("Field", 1:nfld)
   rownames(fld01) <- tmp$ItemLabel
@@ -180,14 +180,14 @@ Biclustering_IRM.binary <- function(U, Z = NULL, w = NULL, na = NULL,
     Pcf <- Pcf[, sort_list]
     fld01 <- fld01[, sort_list]
     colnames(fld01) <- paste("Field", 1:nfld)
-    field <- t((1:nfld) %*% t(fld01))
+    fld <- t((1:nfld) %*% t(fld01))
 
     sort_list2 <- order(rowSums(Pcf), decreasing = FALSE)
     Pcf <- Pcf[sort_list2, ]
     cls01 <- cls01[, sort_list2]
     colnames(cls01) <- paste("Rank", 1:ncls)
     cls <- cls01 %*% (1:ncls)
-    return(list(Pcf = Pcf, cls01 = cls01, fld01 = fld01, cls = cls, field = field))
+    return(list(Pcf = Pcf, cls01 = cls01, fld01 = fld01, cls = cls, fld = fld))
   }
 
   ### Initial value for parameter set and the model fit
@@ -335,7 +335,7 @@ Biclustering_IRM.binary <- function(U, Z = NULL, w = NULL, na = NULL,
     }
 
     # Gibbs sampler j
-    oldField <- field # J x C
+    oldField <- fld # J x C
     Cjc <- t(tmp$U) %*% cls01
     Fjc <- t(tmp$Z * (1 - tmp$U)) %*% cls01
     jRand <- sample(1:testlength, testlength, replace = F)
@@ -344,19 +344,19 @@ Biclustering_IRM.binary <- function(U, Z = NULL, w = NULL, na = NULL,
       target <- jRand[loop]
 
       # delete selected item
-      Nf[field[target]] <- Nf[field[target]] - 1
-      Ccf[, field[target]] <- Ccf[, field[target]] - t(Cjc[target, ])
-      Fcf[, field[target]] <- Fcf[, field[target]] - t(Fjc[target, ])
+      Nf[fld[target]] <- Nf[fld[target]] - 1
+      Ccf[, fld[target]] <- Ccf[, fld[target]] - t(Cjc[target, ])
+      Fcf[, fld[target]] <- Fcf[, fld[target]] - t(Fjc[target, ])
       Ncf <- Ccf + Fcf
       CcfPlus <- Ccf + matrix(rep(Cjc[target, ], nfld), nrow = ncls, byrow = F)
       FcfPlus <- Fcf + matrix(rep(Fjc[target, ], nfld), nrow = ncls, byrow = F)
 
       ## ## if the field disappeared...
-      if (Nf[field[target]] == 0) {
+      if (Nf[fld[target]] == 0) {
         nfld <- nfld - 1
-        delFld <- field[target]
+        delFld <- fld[target]
         fld01 <- fld01[, -delFld]
-        field <- fld01 %*% (1:nfld)
+        fld <- fld01 %*% (1:nfld)
         Nf <- Nf[-delFld]
         Ncf <- Ncf[, -delFld]
         Ccf <- Ccf[, -delFld]
@@ -407,14 +407,14 @@ Biclustering_IRM.binary <- function(U, Z = NULL, w = NULL, na = NULL,
 
       selected_fld <- rmultinom(1, 1, ptab)
       fld01[target, ] <- selected_fld
-      field[target] <- which.max(selected_fld)
-      Nf[field[target]] <- Nf[field[target]] + 1
-      Ccf[, field[target]] <- Ccf[, field[target]] + t(Cjc[target, ])
-      Fcf[, field[target]] <- Fcf[, field[target]] + t(Fjc[target, ])
-      Ncf[, field[target]] <- Ccf[, field[target]] + Fcf[, field[target]]
+      fld[target] <- which.max(selected_fld)
+      Nf[fld[target]] <- Nf[fld[target]] + 1
+      Ccf[, fld[target]] <- Ccf[, fld[target]] + t(Cjc[target, ])
+      Fcf[, fld[target]] <- Fcf[, fld[target]] + t(Fjc[target, ])
+      Ncf[, fld[target]] <- Ccf[, fld[target]] + Fcf[, fld[target]]
     }
 
-    limit_count <- if (sum(abs(oldField - field)) == 0) {
+    limit_count <- if (sum(abs(oldField - fld)) == 0) {
       limit_count <- limit_count + 1
     } else {
       limit_count <- 0
@@ -453,7 +453,7 @@ Biclustering_IRM.binary <- function(U, Z = NULL, w = NULL, na = NULL,
   cls01 <- ret$cls01
   fld01 <- ret$fld01
   cls <- ret$cls
-  field <- ret$field
+  fld <- ret$fld
 
   ### Pcf Update
   Cif <- tmp$U %*% fld01
@@ -563,7 +563,7 @@ Biclustering_IRM.binary <- function(U, Z = NULL, w = NULL, na = NULL,
 
   # Model Fit Finally -----------------------------------------------
   ncls <- max(cls)
-  nfld <- max(field)
+  nfld <- max(fld)
   cls01 <- matrix(0, ncol = ncls, nrow = nobs)
   for (i in 1:nobs) {
     cls01[i, cls[i]] <- 1
@@ -573,7 +573,7 @@ Biclustering_IRM.binary <- function(U, Z = NULL, w = NULL, na = NULL,
 
   fld01 <- matrix(0, nrow = testlength, ncol = nfld)
   for (i in 1:testlength) {
-    fld01[i, field[i]] <- 1
+    fld01[i, fld[i]] <- 1
   }
   colnames(fld01) <- paste("Field", 1:nfld)
   rownames(fld01) <- tmp$ItemLabel
@@ -593,10 +593,11 @@ Biclustering_IRM.binary <- function(U, Z = NULL, w = NULL, na = NULL,
   cls01 <- ret$cls01
   fld01 <- ret$fld01
   cls <- ret$cls
-  field <- ret$field
+  fld <- ret$fld
 
 
   # Output ---------------------------------------------------------
+  check_empty_fields(fld, nfld)
   pifr <- t(Pcf)
   rownames(pifr) <- paste0("Field", 1:nfld)
   colnames(pifr) <- paste0("Rank", 1:ncls)
@@ -620,7 +621,7 @@ Biclustering_IRM.binary <- function(U, Z = NULL, w = NULL, na = NULL,
     FRP = pifr,
     FRPIndex = FRPIndex,
     TRP = TRP,
-    FieldEstimated = field,
+    FieldEstimated = fld,
     ClassEstimated = cls,
     TestFitIndices = FitIndices,
     log_lik = llm,

@@ -237,3 +237,122 @@ test_that("nominal Biclustering LCD plot works", {
 test_that("nominal Biclustering FCBR is not allowed", {
   expect_error(plot(result_nom, type = "FCBR"))
 })
+
+
+# ================================================================
+# J35S5000: rated Biclustering (Ranklustering)
+# rated = nominal推定 + 正答率によるクラスソート + 二値/名義二層適合度
+# ================================================================
+
+result_rated <- Biclustering(J35S5000, ncls = 3, nfld = 3, method = "R", maxiter = 200)
+
+test_that("rated Biclustering returns correct class", {
+  expect_s3_class(result_rated, "exametrika")
+  expect_true("ratedBiclustering" %in% class(result_rated))
+})
+
+test_that("rated Biclustering converges", {
+  expect_true(result_rated$converge)
+})
+
+test_that("rated Biclustering FRP dimensions (nominal 3D array)", {
+  expect_equal(length(dim(result_rated$FRP)), 3)
+  expect_equal(dim(result_rated$FRP)[1], 3) # nfld
+  expect_equal(dim(result_rated$FRP)[2], 3) # ncls
+})
+
+test_that("rated Biclustering FRP probabilities sum to 1", {
+  nfld <- dim(result_rated$FRP)[1]
+  ncls <- dim(result_rated$FRP)[2]
+  for (f in 1:nfld) {
+    for (c in 1:ncls) {
+      expect_equal(sum(result_rated$FRP[f, c, ]), 1.0, tolerance = 1e-6)
+    }
+  }
+})
+
+test_that("rated Biclustering has both binary and nominal fit indices", {
+  # Binary layer
+  expect_false(is.null(result_rated$TestFitIndices))
+  expect_s3_class(result_rated$TestFitIndices, "ModelFit")
+  expect_false(is.na(result_rated$TestFitIndices$model_log_like))
+  expect_false(is.na(result_rated$TestFitIndices$AIC))
+  expect_false(is.na(result_rated$TestFitIndices$BIC))
+  # Nominal layer
+  expect_false(is.null(result_rated$TestFitIndices_nominal))
+  expect_s3_class(result_rated$TestFitIndices_nominal, "ModelFit")
+  expect_false(is.na(result_rated$TestFitIndices_nominal$AIC))
+  expect_false(is.na(result_rated$TestFitIndices_nominal$BIC))
+  # Nominal layer has no benchmark
+  expect_true(is.na(result_rated$TestFitIndices_nominal$bench_log_like))
+  expect_true(is.na(result_rated$TestFitIndices_nominal$RMSEA))
+})
+
+test_that("rated Biclustering field/class counts", {
+  # LFD sum may exceed nitems when field memberships have ties
+  expect_equal(sum(result_rated$LCD), 5000)
+  expect_equal(length(result_rated$LFD), 3)
+  expect_equal(length(result_rated$LCD), 3)
+})
+
+test_that("rated Biclustering classes are sorted by correct rate", {
+  # Classes are sorted by correct rate; TRP should generally increase
+  trp <- result_rated$TRP
+  # Last class should have higher TRP than first
+  expect_gt(trp[length(trp)], trp[1])
+})
+
+test_that("rated Biclustering has ItemFRP and FieldFRP", {
+  expect_equal(dim(result_rated$ItemFRP), c(35, 3))
+  # FieldFRP: some fields may be NA if empty
+  expect_equal(nrow(result_rated$FieldFRP), 3)
+  expect_equal(ncol(result_rated$FieldFRP), 3)
+})
+
+test_that("rated Biclustering ItemFRP values in [0, 1]", {
+  valid <- result_rated$ItemFRP[!is.na(result_rated$ItemFRP)]
+  expect_true(all(valid >= 0 & valid <= 1))
+})
+
+test_that("rated Biclustering has FRPIndex", {
+  expect_false(is.null(result_rated$FRPIndex))
+  expect_equal(ncol(result_rated$FRPIndex), 6)
+  expect_equal(names(result_rated$FRPIndex), c("Alpha", "A", "Beta", "B", "Gamma", "C"))
+})
+
+test_that("rated Biclustering Students table has rank-up/down odds", {
+  expect_true("Rank-Up Odds" %in% colnames(result_rated$Students))
+  expect_true("Rank-Down Odds" %in% colnames(result_rated$Students))
+  expect_true("Estimate" %in% colnames(result_rated$Students))
+  expect_equal(nrow(result_rated$Students), 5000)
+})
+
+test_that("rated Biclustering has FieldAnalysis", {
+  expect_false(is.null(result_rated$FieldAnalysis))
+  expect_equal(nrow(result_rated$FieldAnalysis), 35)
+  expect_true("CRR" %in% colnames(result_rated$FieldAnalysis))
+  expect_true("LFE" %in% colnames(result_rated$FieldAnalysis))
+})
+
+test_that("rated Biclustering has SOAC/WOAC flags", {
+  expect_true(is.logical(result_rated$SOACflg))
+  expect_true(is.logical(result_rated$WOACflg))
+})
+
+test_that("rated Biclustering log_lik fields exist", {
+  expect_false(is.na(result_rated$log_lik))
+  expect_false(is.na(result_rated$log_lik_nominal))
+  # Binary log_lik should be different from nominal
+  expect_false(result_rated$log_lik == result_rated$log_lik_nominal)
+})
+
+test_that("rated Biclustering backward compatibility fields", {
+  expect_equal(result_rated$Nclass, result_rated$n_class)
+  expect_equal(result_rated$Nfield, result_rated$n_field)
+  expect_equal(result_rated$N_Cycle, result_rated$n_cycle)
+  expect_equal(result_rated$LogLik, result_rated$log_lik)
+})
+
+test_that("rated Biclustering print works", {
+  expect_no_error(capture.output(print(result_rated)))
+})

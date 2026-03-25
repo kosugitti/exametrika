@@ -251,6 +251,7 @@ Biclustering_IRM.ordinal <- function(U,
     fldmemb[i, ] <- irm_log_to_prob(log_J[i, ])
   }
   fld <- apply(fldmemb, 1, which.max)
+  check_empty_fields(fld, nfld)
   fld01 <- matrix(0, ncol = nfld, nrow = nitems)
   for (i in 1:nitems) {
     fld01[i, fld[i]] <- 1

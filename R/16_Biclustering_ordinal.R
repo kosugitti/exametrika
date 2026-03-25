@@ -317,6 +317,7 @@ Biclustering.ordinal <- function(U,
   # output ----------------------------------------------------------
   cls <- apply(clsmemb, 1, which.max)
   fld <- apply(fldmemb, 1, which.max)
+  check_empty_fields(fld, nfld)
   fldmemb01 <- sign(fldmemb - apply(fldmemb, 1, max)) + 1
   flddist <- colSums(fldmemb01)
   clsmemb01 <- sign(clsmemb - apply(clsmemb, 1, max)) + 1

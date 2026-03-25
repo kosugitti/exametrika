@@ -100,7 +100,7 @@ Biclustering.default <- function(U, na = NULL, Z = NULL, w = NULL, ...) {
     } else if (U$response.type == "ordinal") {
       return(Biclustering.ordinal(U, ...))
     } else if (U$response.type == "rated") {
-      stop("Biclustering.rated is not implemented yet")
+      return(Biclustering.rated(U, ...))
     } else if (U$response.type == "nominal") {
       return(Biclustering.nominal(U, ...))
     }
@@ -388,6 +388,7 @@ Biclustering.binary <- function(U,
 
   cls <- apply(clsmemb, 1, which.max)
   fld <- apply(fldmemb, 1, which.max)
+  check_empty_fields(fld, nfld)
   fldmemb01 <- sign(fldmemb - apply(fldmemb, 1, max)) + 1
   flddist <- colSums(fldmemb01)
   clsmemb01 <- sign(clsmemb - apply(clsmemb, 1, max)) + 1

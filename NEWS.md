@@ -1,9 +1,18 @@
 # exametrika 1.10.2
 
+## New Features
+
+- **`Biclustering.rated()`: Rated (multiple-choice) Biclustering**: Performs biclustering for rated data (items with correct answers and multiple response categories). Internally calls `Biclustering.nominal()` for estimation, then post-processes the results: classes are sorted by correct response rate (ranklustering), and two layers of fit indices are reported — binary (item correct/incorrect, with full benchmark model) and nominal (category-level, AIC/BIC/CAIC only). The binary layer uses item-level correct response rates per class without field constraints (`nparam = nitems * ncls`). Supports both Biclustering (`method = "B"`) and Ranklustering (`method = "R"`) modes. Returns `TestFitIndices` (binary) and `TestFitIndices_nominal` (nominal) in the output. Added 16 tests for rated Biclustering using J35S5000.
+
 ## Bug Fixes
 
 - **Improved `id` parameter validation in `dataFormat()`**: When a vector (e.g., `id = tmp$ID`) was passed instead of a column number, the error message was cryptic (`the condition has length > 1`). Now validates that `id` is a single integer and provides a clear error message.
 - **Fixed nominal Biclustering/IRM fit indices**: Removed benchmark (saturated) model for nominal data. With many items and categories, every examinee has a unique response pattern, making the benchmark model trivially saturated (`ell_B = 0`) and chi-square based indices (NFI, RFI, IFI, TLI, CFI, RMSEA) meaningless. These indices are now reported as `NA` for nominal data. Information criteria (AIC, BIC, CAIC) are computed directly from the model log-likelihood and remain available. Also fixed a `length(benchGroup)` → `length(unique(benchGroup))` bug in `Biclustering.nominal()` (the `unique()` call was missing).
+
+## Improvements
+
+- **Added empty field warning for all Biclustering models**: When some fields have no items assigned (e.g., due to specifying too many fields), a warning message is now emitted suggesting to reduce `nfld`. Affects `Biclustering()` (binary/ordinal/nominal), `Biclustering_IRM()` (binary/ordinal/nominal).
+- **Renamed `field` to `fld` in `Biclustering_IRM.binary()`**: Internal variable name changed from `field` to `fld` for consistency with other Biclustering models. No change to the public API (`FieldEstimated` output name is unchanged).
 
 ## Documentation Fix
 

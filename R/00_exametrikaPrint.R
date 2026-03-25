@@ -344,6 +344,82 @@ print.exametrika <- function(x, digits = 3, ...) {
         cat("Weakly Ordinal Alignment Condition is Satisfied.\n")
       }
     },
+    ratedBiclustering = {
+      model_name <- ifelse(x$model == 1, "Biclustering", "Ranklustering")
+      mic_suffix <- if (x$mic) " [MIC]" else ""
+
+      cat(sprintf("%s Analysis (Rated)%s\n\n", model_name, mic_suffix))
+
+      cat(paste(model_name, "Reference Matrix Profile (Nominal)\n"))
+      for (q in 1:dim(x$FRP)[3]) {
+        cat(paste("For category", q, "\n"))
+        y <- x$FRP[, , q]
+        colnames(y) <- paste(x$msg, 1:x$Nclass)
+        rownames(y) <- paste("Field", 1:x$Nfield)
+        print(y, digits = digits)
+      }
+
+      cat(paste("\nField Reference Profile (Binary)\n"))
+      y <- x$FieldFRP
+      colnames(y) <- paste(x$msg, 1:x$Nclass)
+      rownames(y) <- paste("Field", 1:x$Nfield)
+      print(round(y, digits))
+
+      cat("\nField Reference Profile Indices\n")
+      print(x$FRPIndex, digits = digits)
+      cat("\n")
+
+      y <- rbind(x$TRP, x$LRD, x$CMD)
+      rownames(y) <- c(
+        "Test Reference Profile",
+        paste("Latent", x$msg, "Ditribution"),
+        paste(x$msg, "Membership Distribution")
+      )
+      colnames(y) <- paste(x$msg, 1:x$Nclass)
+      print(round(y, digits))
+
+      cat("\nField Membership Profile\n")
+      y <- format(
+        round(as.data.frame(x$FieldAnalysis), digits),
+        nsmall = digits
+      )
+      print(y)
+
+      cat("Latent Field Distribution\n")
+      y <- matrix(x$LFD, byrow = TRUE, nrow = 1)
+      rownames(y) <- "N of Items"
+      colnames(y) <- paste("Field", 1:x$Nfield)
+      print(round(y, digits))
+
+      # Layer 1: Binary fit indices
+      cat("\nModel Fit Indices (Binary)\n")
+      cat(paste("Number of Latent", x$msg, ":", x$Nclass))
+      cat(paste("\nNumber of Latent Field:", x$Nfield))
+      cat(paste("\nNumber of EM cycle:", x$N_Cycle, "\n"))
+      y <- unclass(x$TestFitIndices)
+      y <- t(as.data.frame(y))
+      colnames(y) <- "value"
+      print(round(y, digits))
+
+      # Layer 2: Nominal fit indices (AIC/BIC/CAIC/LogLik only)
+      cat("\nModel Fit Indices (Nominal)\n")
+      nom <- x$TestFitIndices_nominal
+      y <- data.frame(value = c(
+        nom$model_log_like,
+        nom$AIC,
+        nom$CAIC,
+        nom$BIC
+      ))
+      rownames(y) <- c("model_log_like", "AIC", "CAIC", "BIC")
+      print(round(y, digits))
+
+      if (x$SOACflg) {
+        cat("Strongly Ordinal Alignment Condition is Satisfied.\n")
+      }
+      if (x$WOACflg) {
+        cat("Weakly Ordinal Alignment Condition is Satisfied.\n")
+      }
+    },
     nominalBiclustering = {
       cat(paste("Biclustering Reference Matrix Profile\n"))
       for (q in 1:dim(x$FRP)[3]) {

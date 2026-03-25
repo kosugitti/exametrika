@@ -21,6 +21,31 @@
 
 ### Bug Fixes
 
+- **Fixed `subscript out of bounds` in nominal/ordinal Biclustering with
+  large `nfld`**: The initial field assignment
+  `ceiling(1:nitems / (nitems / nfld))` could exceed `nfld` due to
+  floating-point rounding. Added `pmin(..., nfld)` clamping, consistent
+  with the binary Biclustering fix already in place.
+- **Fixed redundant
+  [`dataFormat()`](https://kosugitti.github.io/exametrika/reference/dataFormat.md)
+  call in
+  [`Biclustering.rated()`](https://kosugitti.github.io/exametrika/reference/Biclustering.md)**:
+  The function was unnecessarily re-calling
+  [`dataFormat()`](https://kosugitti.github.io/exametrika/reference/dataFormat.md)
+  on already-formatted data, causing repeated “No ID column detected”
+  messages during
+  [`GridSearch()`](https://kosugitti.github.io/exametrika/reference/GridSearch.md).
+  Now reuses the existing exametrika object directly.
+- **Fixed Array plot for polytomous Biclustering
+  (rated/nominal/ordinal)**: Array plots for polytomous Biclustering
+  models were rendered in black and white because `x$U` (binary
+  correctness matrix) was used instead of `x$Q` (polytomous responses).
+  Now correctly uses `x$Q` for polytomous models.
+- **Fixed FCRP plot `invalid graphics state` error**: `par(mfrow=...)`
+  and [`layout()`](https://rdrr.io/r/graphics/layout.html) conflicted
+  when plotting FCRP/FCBR. Now skips `par(mfrow=...)` for plot types
+  that use [`layout()`](https://rdrr.io/r/graphics/layout.html)
+  internally.
 - **Improved `id` parameter validation in
   [`dataFormat()`](https://kosugitti.github.io/exametrika/reference/dataFormat.md)**:
   When a vector (e.g., `id = tmp$ID`) was passed instead of a column

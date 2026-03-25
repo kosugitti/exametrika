@@ -469,7 +469,6 @@ result.Bi <- Biclustering(J35S515, nfld = 5, ncls = 6, method = "B")
 # Perform Biclustering for rated sample data
 # Analyze data with 5 fields and 6 classes
 result.Bi <- Biclustering(J35S5000, nfld = 5, ncls = 6, method = "R")
-#> No ID column detected. All columns treated as response data. Sequential IDs (Student1, Student2, ...) were generated. Use id= parameter to specify the ID column explicitly.
 #> iter 1 log_lik -264835                                                          
 #> iter 2 log_lik -278843                                                          
 #> Warning: Only 2 of 5 specified fields have items assigned. Fields 2, 4, 5 are empty. Consider reducing nfld.

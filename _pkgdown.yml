@@ -113,6 +113,7 @@ reference:
     - Biclustering
     - Biclustering_IRM
     - GridSearch
+    - DistractorAnalysis
 
   - title: Bayesian Network Models
     desc: Network models and structure learning
@@ -188,5 +189,6 @@ reference:
     - J20S600
     - J35S500
     - J35S515
+    - J21S300
     - J35S5000
     - J50S100

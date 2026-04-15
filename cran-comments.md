@@ -4,11 +4,7 @@
 ## R CMD check results
 
 ### Local
-0 errors | 0 warnings | 2 notes
-
-Notes:
-1. CRAN incoming feasibility: URL check on README.md link
-2. HTML Tidy version check (local environment only)
+0 errors | 0 warnings | 0 notes
 
 ### Downstream dependencies
 

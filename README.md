@@ -405,8 +405,6 @@ plot(result.IRM, type = "FRP", nc = 3)
 plot(result.IRM, type = "TRP")
 ```
 
-Additionally, supplementary notes on the derivation of the Infinite Relational Model with Chinese restaurant process is [here](https://kosugitti.github.io/kosugitti10/notes/IRM_memo.pdf).
-
 ### Biclustering for Polytomous Data
 
 Biclustering and Rankclustering can also be performed on data with ordinal or nominal polytomous responses. Missing values are displayed in black in the Array plot. Color palettes can be customized using the `colors` option to specify different color schemes.

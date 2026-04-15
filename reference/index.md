@@ -138,6 +138,10 @@ Simultaneous clustering of items and examinees
   : Biclustering with Infinite Relational Model
 - [`GridSearch()`](https://kosugitti.github.io/exametrika/reference/GridSearch.md)
   : Grid Search for Optimal Parameters
+- [`DistractorAnalysis()`](https://kosugitti.github.io/exametrika/reference/DistractorAnalysis.md)
+  [`print(`*`<DistractorAnalysis>`*`)`](https://kosugitti.github.io/exametrika/reference/DistractorAnalysis.md)
+  [`plot(`*`<DistractorAnalysis>`*`)`](https://kosugitti.github.io/exametrika/reference/DistractorAnalysis.md)
+  : Distractor Analysis
 
 ## Bayesian Network Models
 
@@ -264,6 +268,8 @@ Included datasets for examples and testing
   : J35S500
 - [`J35S515`](https://kosugitti.github.io/exametrika/reference/J35S515.md)
   : J35S515
+- [`J21S300`](https://kosugitti.github.io/exametrika/reference/J21S300.md)
+  : J21S300
 - [`J35S5000`](https://kosugitti.github.io/exametrika/reference/J35S5000.md)
   : J35S5000
 - [`J50S100`](https://kosugitti.github.io/exametrika/reference/J50S100.md)

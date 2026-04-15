@@ -1,5 +1,58 @@
 # Changelog
 
+## exametrika 1.11.0
+
+### New Features
+
+- **[`Biclustering_IRM.rated()`](https://kosugitti.github.io/exametrika/reference/Biclustering_IRM.md):
+  Rated IRM (Infinite Relational Model for multiple-choice data)**:
+  Performs IRM-based biclustering for rated data (items with correct
+  answers and multiple response categories). Internally calls
+  [`Biclustering_IRM.nominal()`](https://kosugitti.github.io/exametrika/reference/Biclustering_IRM.md)
+  for estimation via Dirichlet-Multinomial collapsed Gibbs sampler, then
+  post-processes the results: classes are sorted by correct response
+  rate (ranklustering), and two layers of fit indices are reported —
+  binary (item correct/incorrect, with full benchmark model including
+  CFI/RMSEA) and nominal (category-level, AIC/BIC/CAIC only). Returns
+  `TestFitIndices` (binary, default) and `TestFitIndices_nominal`
+  (nominal) in the output.
+
+- **[`DistractorAnalysis()`](https://kosugitti.github.io/exametrika/reference/DistractorAnalysis.md):
+  Distractor analysis for rated models**: S3 generic function for
+  analyzing response category distributions by rank/class. Computes
+  observed frequency tables, proportion tables, chi-square tests against
+  chance level, and Cramer’s V effect sizes for each item-by-rank cell.
+  Works with `LRA.rated` and `Biclustering.rated` /
+  `Biclustering_IRM.rated` results. For Biclustering models, output is
+  grouped by field. Supports `items` and `ranks` filtering in both
+  [`print()`](https://rdrr.io/r/base/print.html) and
+  [`plot()`](https://rdrr.io/r/graphics/plot.default.html) methods.
+
+### New Data
+
+- **`J21S300`**: New rated sample dataset (21 items, 300 students, 4
+  response categories) for testing rated Biclustering and IRM models.
+  Smaller and faster than J35S5000 (35 items, 5000 students).
+
+### Bug Fixes
+
+- **Fixed `maxiter` parameter ignored in
+  [`Biclustering.nominal()`](https://kosugitti.github.io/exametrika/reference/Biclustering.md)**:
+  The `maxiter` parameter was accepted but internally overridden by a
+  hardcoded `maxemt <- 100`. Now correctly uses `maxiter` as the
+  iteration limit.
+
+- **Fixed spurious “No ID column detected” message in
+  [`Biclustering.rated()`](https://kosugitti.github.io/exametrika/reference/Biclustering.md)
+  and
+  [`Biclustering_IRM.rated()`](https://kosugitti.github.io/exametrika/reference/Biclustering_IRM.md)**:
+  The [`crr()`](https://kosugitti.github.io/exametrika/reference/crr.md)
+  function was called with a raw matrix (`tmp$Z * tmp$U`) instead of an
+  exametrika object, triggering an unnecessary
+  [`dataFormat()`](https://kosugitti.github.io/exametrika/reference/dataFormat.md)
+  call. Now creates a temporary binary-typed exametrika object to avoid
+  the message.
+
 ## exametrika 1.10.2
 
 ### New Features

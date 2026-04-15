@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">exametrika</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.10.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.11.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -33,6 +33,24 @@
       <small>Source: <a href="https://github.com/kosugitti/exametrika/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.11.0" id="exametrika-1110">exametrika 1.11.0<a class="anchor" aria-label="anchor" href="#exametrika-1110"></a></h2>
+<div class="section level3">
+<h3 id="new-features-1-11-0">New Features<a class="anchor" aria-label="anchor" href="#new-features-1-11-0"></a></h3>
+<ul><li><p><strong><code><a href="../reference/Biclustering_IRM.html">Biclustering_IRM.rated()</a></code>: Rated IRM (Infinite Relational Model for multiple-choice data)</strong>: Performs IRM-based biclustering for rated data (items with correct answers and multiple response categories). Internally calls <code><a href="../reference/Biclustering_IRM.html">Biclustering_IRM.nominal()</a></code> for estimation via Dirichlet-Multinomial collapsed Gibbs sampler, then post-processes the results: classes are sorted by correct response rate (ranklustering), and two layers of fit indices are reported — binary (item correct/incorrect, with full benchmark model including CFI/RMSEA) and nominal (category-level, AIC/BIC/CAIC only). Returns <code>TestFitIndices</code> (binary, default) and <code>TestFitIndices_nominal</code> (nominal) in the output.</p></li>
+<li><p><strong><code><a href="../reference/DistractorAnalysis.html">DistractorAnalysis()</a></code>: Distractor analysis for rated models</strong>: S3 generic function for analyzing response category distributions by rank/class. Computes observed frequency tables, proportion tables, chi-square tests against chance level, and Cramer’s V effect sizes for each item-by-rank cell. Works with <code>LRA.rated</code> and <code>Biclustering.rated</code> / <code>Biclustering_IRM.rated</code> results. For Biclustering models, output is grouped by field. Supports <code>items</code> and <code>ranks</code> filtering in both <code><a href="https://rdrr.io/r/base/print.html" class="external-link">print()</a></code> and <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> methods.</p></li>
+</ul></div>
+<div class="section level3">
+<h3 id="new-data-1-11-0">New Data<a class="anchor" aria-label="anchor" href="#new-data-1-11-0"></a></h3>
+<ul><li>
+<strong><code>J21S300</code></strong>: New rated sample dataset (21 items, 300 students, 4 response categories) for testing rated Biclustering and IRM models. Smaller and faster than J35S5000 (35 items, 5000 students).</li>
+</ul></div>
+<div class="section level3">
+<h3 id="bug-fixes-1-11-0">Bug Fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-1-11-0"></a></h3>
+<ul><li><p><strong>Fixed <code>maxiter</code> parameter ignored in <code><a href="../reference/Biclustering.html">Biclustering.nominal()</a></code></strong>: The <code>maxiter</code> parameter was accepted but internally overridden by a hardcoded <code>maxemt &lt;- 100</code>. Now correctly uses <code>maxiter</code> as the iteration limit.</p></li>
+<li><p><strong>Fixed spurious “No ID column detected” message in <code><a href="../reference/Biclustering.html">Biclustering.rated()</a></code> and <code><a href="../reference/Biclustering_IRM.html">Biclustering_IRM.rated()</a></code></strong>: The <code><a href="../reference/crr.html">crr()</a></code> function was called with a raw matrix (<code>tmp$Z * tmp$U</code>) instead of an exametrika object, triggering an unnecessary <code><a href="../reference/dataFormat.html">dataFormat()</a></code> call. Now creates a temporary binary-typed exametrika object to avoid the message.</p></li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.10.2" id="exametrika-1102">exametrika 1.10.2<a class="anchor" aria-label="anchor" href="#exametrika-1102"></a></h2>
 <div class="section level3">

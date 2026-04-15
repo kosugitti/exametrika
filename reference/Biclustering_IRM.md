@@ -62,6 +62,21 @@ Biclustering_IRM(
   verbose = TRUE,
   ...
 )
+
+# S3 method for class 'rated'
+Biclustering_IRM(
+  U,
+  gamma_c = 1,
+  gamma_f = 1,
+  alpha = 1,
+  max_iter = 100,
+  stable_limit = 5,
+  minSize = 20,
+  EM_limit = 20,
+  seed = 123,
+  verbose = TRUE,
+  ...
+)
 ```
 
 ## Arguments
@@ -141,8 +156,8 @@ Biclustering_IRM(
 - alpha:
 
   Dirichlet distribution concentration parameter for the prior density
-  of field reference probabilities (nominal IRM only). Must be positive.
-  The default is 1.
+  of field reference probabilities (rated/nominal IRM). Must be
+  positive. The default is 1.
 
 - mic:
 
@@ -403,6 +418,118 @@ For ordinal data, the returned list includes:
 
   Logical; TRUE if Weakly Ordinal Alignment Condition is satisfied.
 
+For rated data, the returned list includes:
+
+- Q:
+
+  Response matrix.
+
+- U:
+
+  Binary correct/incorrect matrix.
+
+- Z:
+
+  Missing indicator matrix.
+
+- testlength:
+
+  Number of items.
+
+- nobs:
+
+  Sample size.
+
+- n_class:
+
+  Optimal number of classes.
+
+- n_field:
+
+  Optimal number of fields.
+
+- n_cycle:
+
+  Number of EM algorithm iterations.
+
+- FRP:
+
+  Field Reference Profile (BCRM), a 3D array (nfld x ncls x maxQ).
+
+- FieldFRP:
+
+  Field Reference Profile based on binary correct rates (nfld x ncls).
+
+- quasiFRP:
+
+  Item-level correct response rate per class (nitems x ncls).
+
+- FRPIndex:
+
+  Index of FRP includes the item location parameters B and Beta, the
+  slope parameters A and Alpha, and the monotonicity indices C and
+  Gamma.
+
+- TRP:
+
+  Test Reference Profile.
+
+- LFD:
+
+  Latent Field Distribution.
+
+- LCD:
+
+  Latent Class Distribution.
+
+- FieldMembership:
+
+  Field membership probability matrix.
+
+- ClassMembership:
+
+  Class membership probability matrix.
+
+- FieldEstimated:
+
+  Estimated field assignment for each item.
+
+- ClassEstimated:
+
+  Estimated class assignment for each student.
+
+- Students:
+
+  Rank Membership Profile matrix with estimated class.
+
+- FieldAnalysis:
+
+  Field analysis with CRR and field memberships.
+
+- TestFitIndices:
+
+  Overall fit index for the test (binary layer, default).
+
+- TestFitIndices_nominal:
+
+  Fit indices for the nominal layer (AIC/BIC/CAIC only).
+
+- log_lik:
+
+  Log-likelihood of the binary layer model.
+
+- log_lik_nominal:
+
+  Log-likelihood of the nominal layer model.
+
+- SOACflg:
+
+  Logical; TRUE if Strongly Ordinal Alignment Condition is satisfied.
+
+- WOACflg:
+
+  Logical; TRUE if Weakly Ordinal Alignment Condition is satisfied.
+
 ## Examples
 
 ``` r
@@ -487,6 +614,22 @@ result <- Biclustering_IRM(J35S500, gamma_c = 1, gamma_f = 1, verbose = TRUE)
 #> iter 8: match=3 nfld=5 ncls=7
 #> iter 9: match=4 nfld=5 ncls=6
 #> iter 10: match=5 nfld=5 ncls=6
+#> Weakly ordinal alignment condition was satisfied.
+plot(result, type = "Array")
+
+# }
+# \donttest{
+# Fit a rated Biclustering IRM model
+result <- Biclustering_IRM(J21S300, gamma_c = 1, gamma_f = 1, verbose = TRUE)
+#> iter 1: match=0 nfld=5 ncls=4
+#> iter 2: match=0 nfld=3 ncls=6
+#> iter 3: match=1 nfld=3 ncls=7
+#> iter 4: match=2 nfld=3 ncls=6
+#> iter 5: match=3 nfld=3 ncls=7
+#> iter 6: match=4 nfld=3 ncls=5
+#> iter 7: match=5 nfld=3 ncls=6
+#> Adjusting classes: BIC=14584.5 ncls=6 (min size < 20)
+#> 
 #> Weakly ordinal alignment condition was satisfied.
 plot(result, type = "Array")
 

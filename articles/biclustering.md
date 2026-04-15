@@ -47,42 +47,42 @@ Biclustering(J35S515, nfld = 5, ncls = 6, method = "B")
 #> Class Membership Distribution 146.105  73.232  85.753 106.414  86.529  16.968
 #> 
 #> Field Membership Profile
-#>          CRR   LFE Field1 Field2 Field3 Field4 Field5
-#> Item01 0.850 1.000  1.000  0.000  0.000  0.000  0.000
-#> Item31 0.812 1.000  1.000  0.000  0.000  0.000  0.000
-#> Item32 0.808 1.000  1.000  0.000  0.000  0.000  0.000
-#> Item21 0.616 2.000  0.000  1.000  0.000  0.000  0.000
-#> Item23 0.600 2.000  0.000  1.000  0.000  0.000  0.000
-#> Item22 0.586 2.000  0.000  1.000  0.000  0.000  0.000
-#> Item24 0.567 2.000  0.000  1.000  0.000  0.000  0.000
-#> Item25 0.491 2.000  0.000  1.000  0.000  0.000  0.000
-#> Item11 0.476 2.000  0.000  1.000  0.000  0.000  0.000
-#> Item26 0.452 2.000  0.000  1.000  0.000  0.000  0.000
-#> Item27 0.414 2.000  0.000  1.000  0.000  0.000  0.000
-#> Item07 0.573 3.000  0.000  0.000  1.000  0.000  0.000
-#> Item03 0.458 3.000  0.000  0.000  1.000  0.000  0.000
-#> Item33 0.437 3.000  0.000  0.000  1.000  0.000  0.000
-#> Item02 0.392 3.000  0.000  0.000  1.000  0.000  0.000
-#> Item09 0.390 3.000  0.000  0.000  1.000  0.000  0.000
-#> Item10 0.353 3.000  0.000  0.000  1.000  0.000  0.000
-#> Item08 0.350 3.000  0.000  0.000  1.000  0.000  0.000
-#> Item12 0.340 4.000  0.000  0.000  0.000  1.000  0.000
-#> Item04 0.303 4.000  0.000  0.000  0.000  1.000  0.000
-#> Item17 0.276 4.000  0.000  0.000  0.000  1.000  0.000
-#> Item05 0.250 4.000  0.000  0.000  0.000  1.000  0.000
-#> Item13 0.237 4.000  0.000  0.000  0.000  1.000  0.000
-#> Item34 0.229 4.000  0.000  0.000  0.000  1.000  0.000
-#> Item29 0.227 4.000  0.000  0.000  0.000  1.000  0.000
-#> Item28 0.221 4.000  0.000  0.000  0.000  1.000  0.000
-#> Item06 0.216 4.000  0.000  0.000  0.000  1.000  0.000
-#> Item16 0.216 4.000  0.000  0.000  0.000  1.000  0.000
-#> Item35 0.155 5.000  0.000  0.000  0.000  0.000  1.000
-#> Item14 0.126 5.000  0.000  0.000  0.000  0.000  1.000
-#> Item15 0.087 5.000  0.000  0.000  0.000  0.000  1.000
-#> Item30 0.085 5.000  0.000  0.000  0.000  0.000  1.000
-#> Item20 0.054 5.000  0.000  0.000  0.000  0.000  1.000
-#> Item19 0.052 5.000  0.000  0.000  0.000  0.000  1.000
-#> Item18 0.049 5.000  0.000  0.000  0.000  0.000  1.000
+#>          CRR LFE Field1 Field2 Field3 Field4 Field5
+#> Item01 0.850   1  1.000  0.000  0.000  0.000  0.000
+#> Item31 0.812   1  1.000  0.000  0.000  0.000  0.000
+#> Item32 0.808   1  1.000  0.000  0.000  0.000  0.000
+#> Item21 0.616   2  0.000  1.000  0.000  0.000  0.000
+#> Item23 0.600   2  0.000  1.000  0.000  0.000  0.000
+#> Item22 0.586   2  0.000  1.000  0.000  0.000  0.000
+#> Item24 0.567   2  0.000  1.000  0.000  0.000  0.000
+#> Item25 0.491   2  0.000  1.000  0.000  0.000  0.000
+#> Item11 0.476   2  0.000  1.000  0.000  0.000  0.000
+#> Item26 0.452   2  0.000  1.000  0.000  0.000  0.000
+#> Item27 0.414   2  0.000  1.000  0.000  0.000  0.000
+#> Item07 0.573   3  0.000  0.000  1.000  0.000  0.000
+#> Item03 0.458   3  0.000  0.000  1.000  0.000  0.000
+#> Item33 0.437   3  0.000  0.000  1.000  0.000  0.000
+#> Item02 0.392   3  0.000  0.000  1.000  0.000  0.000
+#> Item09 0.390   3  0.000  0.000  1.000  0.000  0.000
+#> Item10 0.353   3  0.000  0.000  1.000  0.000  0.000
+#> Item08 0.350   3  0.000  0.000  1.000  0.000  0.000
+#> Item12 0.340   4  0.000  0.000  0.000  1.000  0.000
+#> Item04 0.303   4  0.000  0.000  0.000  1.000  0.000
+#> Item17 0.276   4  0.000  0.000  0.000  1.000  0.000
+#> Item05 0.250   4  0.000  0.000  0.000  1.000  0.000
+#> Item13 0.237   4  0.000  0.000  0.000  1.000  0.000
+#> Item34 0.229   4  0.000  0.000  0.000  1.000  0.000
+#> Item29 0.227   4  0.000  0.000  0.000  1.000  0.000
+#> Item28 0.221   4  0.000  0.000  0.000  1.000  0.000
+#> Item06 0.216   4  0.000  0.000  0.000  1.000  0.000
+#> Item16 0.216   4  0.000  0.000  0.000  1.000  0.000
+#> Item35 0.155   5  0.000  0.000  0.000  0.000  1.000
+#> Item14 0.126   5  0.000  0.000  0.000  0.000  1.000
+#> Item15 0.087   5  0.000  0.000  0.000  0.000  1.000
+#> Item30 0.085   5  0.000  0.000  0.000  0.000  1.000
+#> Item20 0.054   5  0.000  0.000  0.000  0.000  1.000
+#> Item19 0.052   5  0.000  0.000  0.000  0.000  1.000
+#> Item18 0.049   5  0.000  0.000  0.000  0.000  1.000
 #> Latent Field Distribution
 #>            Field 1 Field 2 Field 3 Field 4 Field 5
 #> N of Items       3       8       7      10       7
@@ -229,6 +229,68 @@ plot(result.B.nom, type = "FCRP", nc = 2, nr = 2)
 plot(result.B.nom, type = "FCRP", style = "bar", nc = 2, nr = 2)
 plot(result.B.nom, type = "ScoreField")
 plot(result.B.nom, type = "RRV")
+```
+
+### Rated Data (Multiple-Choice with Correct Answers)
+
+Rated data has both multiple response categories and correct answers.
+[`Biclustering.rated()`](https://kosugitti.github.io/exametrika/reference/Biclustering.md)
+internally runs nominal Biclustering, then sorts classes by correct
+response rate:
+
+``` r
+result.B.rated <- Biclustering(J21S300, ncls = 5, nfld = 3, method = "R", maxiter = 300)
+result.B.rated
+plot(result.B.rated, type = "Array")
+plot(result.B.rated, type = "FRP", nc = 3, nr = 1)
+```
+
+Two layers of fit indices are reported: binary (with CFI/RMSEA) and
+nominal (AIC/BIC/CAIC only). Access them via `result$TestFitIndices` and
+`result$TestFitIndices_nominal`.
+
+### Rated IRM
+
+The IRM also supports rated data:
+
+``` r
+result.IRM.rated <- Biclustering_IRM(J21S300, gamma_c = 1, gamma_f = 1, verbose = TRUE)
+plot(result.IRM.rated, type = "Array")
+plot(result.IRM.rated, type = "FRP", nc = 3, nr = 1)
+```
+
+## Distractor Analysis
+
+[`DistractorAnalysis()`](https://kosugitti.github.io/exametrika/reference/DistractorAnalysis.md)
+examines how examinees in each rank/class respond to each item’s
+categories. It computes observed frequencies, proportions, chi-square
+statistics, p-values, and Cramer’s V (effect size) for each item-by-rank
+cell.
+
+``` r
+result.B.rated <- Biclustering(J21S300, ncls = 5, nfld = 3, method = "R", maxiter = 300)
+da <- DistractorAnalysis(result.B.rated)
+
+# Full output (grouped by field for Biclustering)
+print(da)
+
+# Filter by items and/or ranks
+print(da, items = 1:7, ranks = c(1, 5))
+
+# Plot distractor bar charts
+plot(da, items = 1:6, nc = 3, nr = 2)
+```
+
+[`DistractorAnalysis()`](https://kosugitti.github.io/exametrika/reference/DistractorAnalysis.md)
+also works with
+[`LRA()`](https://kosugitti.github.io/exametrika/reference/LRA.md)
+results for rated data:
+
+``` r
+result.LRA.rated <- LRA(J21S300, nrank = 5, mic = TRUE)
+da_lra <- DistractorAnalysis(result.LRA.rated)
+print(da_lra, items = 1:3)
+plot(da_lra, items = 1:6, nc = 3, nr = 2)
 ```
 
 ## Reference

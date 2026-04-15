@@ -380,10 +380,6 @@ fields - Use with caution and consider computational resources
 
 `{r model-irm} result.IRM <- Biclustering_IRM(J35S515, gamma_c = 1, gamma_f = 1, verbose = TRUE) plot(result.IRM, type = "Array") plot(result.IRM, type = "FRP", nc = 3) plot(result.IRM, type = "TRP")`
 
-Additionally, supplementary notes on the derivation of the Infinite
-Relational Model with Chinese restaurant process is
-[here](https://kosugitti.github.io/kosugitti10/notes/IRM_memo.pdf).
-
 ### Biclustering for Polytomous Data
 
 Biclustering and Rankclustering can also be performed on data with

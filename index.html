@@ -449,7 +449,6 @@ library(exametrika)</code></pre>
 <p>The Infinite Relational Model uses the Chinese Restaurant Process to explore the optimal number of fields and classes automatically. This model is particularly useful when you don’t know the appropriate number of latent structures beforehand.</p>
 <p><strong>Important notes:</strong> - Execution can be time-consuming, especially with large datasets - The model tends to detect larger numbers of classes and fields - Use with caution and consider computational resources</p>
 <p><code>{r model-irm} result.IRM &lt;- Biclustering_IRM(J35S515, gamma_c = 1, gamma_f = 1, verbose = TRUE) plot(result.IRM, type = "Array") plot(result.IRM, type = "FRP", nc = 3) plot(result.IRM, type = "TRP")</code></p>
-<p>Additionally, supplementary notes on the derivation of the Infinite Relational Model with Chinese restaurant process is <a href="https://kosugitti.github.io/kosugitti10/notes/IRM_memo.pdf" class="external-link">here</a>.</p>
 </div>
 </div>
 <div class="section level3">

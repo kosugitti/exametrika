@@ -38,7 +38,7 @@ Biclustering.nominal <- function(U,
   test_log_lik <- -1 / const
   old_test_log_lik <- -2 / const
   emt <- 0
-  maxemt <- 100
+  maxemt <- maxiter
 
   ncat <- as.vector(tmp$categories)
 
@@ -124,7 +124,7 @@ Biclustering.nominal <- function(U,
       break
     }
     if (emt == maxemt) {
-      message("\nReached ten times the maximum number of iterations.")
+      message("\nReached the maximum number of iterations (", maxemt, ").")
       message("Warning: Algorithm may not have converged. Interpret results with caution.")
       converge <- FALSE
       FLG <- FALSE

@@ -1,58 +1,71 @@
-#' @rdname Biclustering
-#' @param ncls Number of latent classes/ranks to identify (between 2 and 20).
-#' @param nfld Number of latent fields (item clusters) to identify.
-#' @param Z Missing indicator matrix of type matrix or data.frame. Values of 1 indicate
-#' observed responses, while 0 indicates missing data.
-#' @param w Item weight vector specifying the relative importance of each item.
-#' @param na Values to be treated as missing values.
-#' @param method Analysis method to use (character string):
-#'   * "B" or "Biclustering": Standard biclustering (default)
-#'   * "R" or "Ranklustering": Ranklustering with ordered class structure
-#' @param conf Confirmatory parameter for pre-specified field assignments. Can be either:
-#'   * A vector with items and corresponding fields in sequence
-#'   * A field membership profile matrix (items x fields) with 0/1 values
-#'   * NULL (default) for exploratory analysis where field memberships are estimated
-#' @param maxiter Maximum number of EM algorithm iterations. Default is 100.
-#' @param verbose Logical; if TRUE, displays progress during estimation. Default is TRUE.
-#' @param alpha Dirichlet distribution concentration parameter for prior density of field reference probabilities. Default is 1.
-#' @param ... Additional arguments passed to specific methods.
-#'
+#' @rdname Biclustering_IRM
+#' @param alpha Dirichlet distribution concentration parameter for the prior density of
+#' field reference probabilities (rated/nominal IRM). Must be positive. The default is 1.
+#' @return
+#' For rated data, the returned list includes:
+#' \describe{
+#'  \item{Q}{Response matrix.}
+#'  \item{U}{Binary correct/incorrect matrix.}
+#'  \item{Z}{Missing indicator matrix.}
+#'  \item{testlength}{Number of items.}
+#'  \item{nobs}{Sample size.}
+#'  \item{n_class}{Optimal number of classes.}
+#'  \item{n_field}{Optimal number of fields.}
+#'  \item{n_cycle}{Number of EM algorithm iterations.}
+#'  \item{FRP}{Field Reference Profile (BCRM), a 3D array (nfld x ncls x maxQ).}
+#'  \item{FieldFRP}{Field Reference Profile based on binary correct rates (nfld x ncls).}
+#'  \item{quasiFRP}{Item-level correct response rate per class (nitems x ncls).}
+#'  \item{FRPIndex}{Index of FRP includes the item location parameters B and Beta,
+#'  the slope parameters A and Alpha, and the monotonicity indices C and Gamma.}
+#'  \item{TRP}{Test Reference Profile.}
+#'  \item{LFD}{Latent Field Distribution.}
+#'  \item{LCD}{Latent Class Distribution.}
+#'  \item{FieldMembership}{Field membership probability matrix.}
+#'  \item{ClassMembership}{Class membership probability matrix.}
+#'  \item{FieldEstimated}{Estimated field assignment for each item.}
+#'  \item{ClassEstimated}{Estimated class assignment for each student.}
+#'  \item{Students}{Rank Membership Profile matrix with estimated class.}
+#'  \item{FieldAnalysis}{Field analysis with CRR and field memberships.}
+#'  \item{TestFitIndices}{Overall fit index for the test (binary layer, default).}
+#'  \item{TestFitIndices_nominal}{Fit indices for the nominal layer (AIC/BIC/CAIC only).}
+#'  \item{log_lik}{Log-likelihood of the binary layer model.}
+#'  \item{log_lik_nominal}{Log-likelihood of the nominal layer model.}
+#'  \item{SOACflg}{Logical; TRUE if Strongly Ordinal Alignment Condition is satisfied.}
+#'  \item{WOACflg}{Logical; TRUE if Weakly Ordinal Alignment Condition is satisfied.}
+#' }
 #' @examples
 #' \donttest{
-#' # Perform Biclustering for rated sample data
-#' # Analyze data with 5 fields and 6 classes
-#' result.Bi <- Biclustering(J35S5000, nfld = 5, ncls = 6, method = "R")
+#' # Fit a rated Biclustering IRM model
+#' result <- Biclustering_IRM(J21S300, gamma_c = 1, gamma_f = 1, verbose = TRUE)
+#' plot(result, type = "Array")
 #' }
 #' @export
-Biclustering.rated <- function(U,
-                               ncls = 2, nfld = 2,
-                               method = "R",
-                               conf = NULL,
-                               maxiter = 100,
-                               verbose = TRUE,
-                               alpha = 1, ...) {
+Biclustering_IRM.rated <- function(U,
+                                   gamma_c = 1, gamma_f = 1, alpha = 1,
+                                   max_iter = 100, stable_limit = 5,
+                                   minSize = 20, EM_limit = 20,
+                                   seed = 123, verbose = TRUE, ...) {
   tmp <- U
   nobs <- NROW(tmp$Q)
   nitems <- NCOL(tmp$Q)
   const <- exp(-nitems)
 
-  # --- Step 1: Run nominal Biclustering internally ---
-  # Reuse the already-formatted exametrika object as nominal (avoid re-calling dataFormat)
+  # --- Step 1: Run nominal IRM internally ---
   dat_nom <- tmp
   dat_nom$response.type <- "nominal"
 
-  ret_nom <- Biclustering.nominal(
+  ret_nom <- Biclustering_IRM.nominal(
     dat_nom,
-    ncls = ncls,
-    nfld = nfld,
-    conf = conf,
-    maxiter = maxiter,
-    verbose = verbose,
-    alpha = alpha,
+    gamma_c = gamma_c, gamma_f = gamma_f, alpha = alpha,
+    max_iter = max_iter, stable_limit = stable_limit,
+    minSize = minSize, EM_limit = EM_limit,
+    seed = seed, verbose = verbose,
     ...
   )
 
   # --- Step 2: Retrieve nominal results ---
+  ncls <- ret_nom$n_class
+  nfld <- ret_nom$n_field
   fld <- ret_nom$FieldEstimated
   fldmemb <- ret_nom$FieldMembership
   fldmemb01 <- sign(fldmemb - apply(fldmemb, 1, max)) + 1
@@ -60,16 +73,6 @@ Biclustering.rated <- function(U,
   BCRM <- ret_nom$FRP
 
   # --- Step 3: Sort classes by correct response rate (Ranklustering) ---
-  if (method == "R" || method == "Ranklustering") {
-    model <- 2
-    mic <- TRUE
-    msg <- "Rank"
-  } else {
-    model <- 1
-    mic <- FALSE
-    msg <- "Class"
-  }
-
   clsmemb <- ret_nom$ClassMembership
   ord <- order(colSums(t(tmp$U) %*% clsmemb) / colSums(clsmemb))
   clsmemb <- clsmemb[, ord]
@@ -81,23 +84,17 @@ Biclustering.rated <- function(U,
   # --- Step 4: Student rank membership ---
   StudentRank <- clsmemb
   rownames(StudentRank) <- tmp$ID
-  if (model == 2) {
-    RU <- ifelse(cls + 1 > ncls, NA, cls + 1)
-    RD <- ifelse(cls - 1 < 1, NA, cls - 1)
-    RUO <- StudentRank[cbind(1:nobs, RU)] / StudentRank[cbind(1:nobs, cls)]
-    RDO <- StudentRank[cbind(1:nobs, RD)] / StudentRank[cbind(1:nobs, cls)]
-    StudentRank <- cbind(StudentRank, cls, RUO, RDO)
-    colnames(StudentRank) <- c(
-      paste("Membership", 1:ncls), "Estimate",
-      "Rank-Up Odds", "Rank-Down Odds"
-    )
-  } else {
-    StudentRank <- cbind(StudentRank, Estimate = cls)
-    colnames(StudentRank) <- c(paste("Membership", 1:ncls), "Estimate")
-  }
+  RU <- ifelse(cls + 1 > ncls, NA, cls + 1)
+  RD <- ifelse(cls - 1 < 1, NA, cls - 1)
+  RUO <- StudentRank[cbind(1:nobs, RU)] / StudentRank[cbind(1:nobs, cls)]
+  RDO <- StudentRank[cbind(1:nobs, RD)] / StudentRank[cbind(1:nobs, cls)]
+  StudentRank <- cbind(StudentRank, cls, RUO, RDO)
+  colnames(StudentRank) <- c(
+    paste("Membership", 1:ncls), "Estimate",
+    "Rank-Up Odds", "Rank-Down Odds"
+  )
 
   # --- Step 5: Binary fit indices (Layer 1) ---
-  # Compute item correct response rate per class (no field constraint)
   PiFR <- matrix(0, nrow = nitems, ncol = ncls)
   for (c in 1:ncls) {
     students_c <- which(cls == c)
@@ -118,10 +115,11 @@ Biclustering.rated <- function(U,
   nparam_binary <- nitems * ncls
   FitIndices_binary <- TestFit(tmp$U, tmp$Z, test_log_lik_binary, nparam_binary)
 
-  # --- Step 6: Nominal fit indices (Layer 2) --- from ret_nom directly
+  # --- Step 6: Nominal fit indices (Layer 2) ---
   FitIndices_nominal <- ret_nom$TestFitIndices
 
   # --- Step 7: FRP labels ---
+  msg <- "Rank"
   FRP <- BCRM
   colnames(FRP) <- paste0(msg, 1:ncls)
   rownames(FRP) <- paste0("Field", 1:nfld)
@@ -130,8 +128,6 @@ Biclustering.rated <- function(U,
   colnames(clsmemb) <- paste0(msg, 1:ncls)
 
   # --- Step 8: TRP and FRPIndex (binary-based) ---
-  # quasiFRP: item-level correct response rate per class (J x C, no field constraint)
-  # "quasi" because field assignments come from nominal analysis, not binary
   quasiFRP <- PiFR
   rownames(quasiFRP) <- colnames(tmp$U)
   colnames(quasiFRP) <- paste0(msg, 1:ncls)
@@ -151,7 +147,6 @@ Biclustering.rated <- function(U,
   colnames(FieldFRP) <- paste0(msg, 1:ncls)
 
   TRP <- colSums(FieldFRP * flddist, na.rm = TRUE)
-  # IRPindex only on non-empty fields
   valid_fields <- which(!is.na(FieldFRP[, 1]))
   if (length(valid_fields) > 0) {
     FRPIndex <- IRPindex(FieldFRP[valid_fields, , drop = FALSE])
@@ -201,10 +196,9 @@ Biclustering.rated <- function(U,
 
   # --- Return ---
   ret <- structure(list(
-    model = model,
-    mic = mic,
+    model = 2,
+    mic = TRUE,
     msg = msg,
-    converge = ret_nom$converge,
     Q = tmp$Q,
     U = tmp$U,
     Z = tmp$Z,

@@ -42,7 +42,7 @@ Biclustering_IRM.default <- function(U, na = NULL, Z = NULL, w = NULL, ...) {
     } else if (U$response.type == "ordinal") {
       return(Biclustering_IRM.ordinal(U, ...))
     } else if (U$response.type == "rated") {
-      stop("Biclustering_IRM.rated is not supported for nominal-scale IRM")
+      return(Biclustering_IRM.rated(U, ...))
     } else if (U$response.type == "nominal") {
       return(Biclustering_IRM.nominal(U, ...))
     }

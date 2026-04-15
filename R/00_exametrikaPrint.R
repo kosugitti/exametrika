@@ -318,10 +318,10 @@ print.exametrika <- function(x, digits = 3, ...) {
       print(round(y, digits))
 
       cat("\nField Membership Profile\n")
-      y <- format(
-        round(as.data.frame(x$FieldAnalysis), digits),
-        nsmall = digits
-      )
+      y <- as.data.frame(x$FieldAnalysis)
+      y$LFE <- as.integer(y$LFE)
+      num_cols <- setdiff(names(y), "LFE")
+      y[num_cols] <- lapply(y[num_cols], function(v) format(round(v, digits), nsmall = digits))
       print(y)
 
       cat("Latent Field Distribution\n")
@@ -379,10 +379,10 @@ print.exametrika <- function(x, digits = 3, ...) {
       print(round(y, digits))
 
       cat("\nField Membership Profile\n")
-      y <- format(
-        round(as.data.frame(x$FieldAnalysis), digits),
-        nsmall = digits
-      )
+      y <- as.data.frame(x$FieldAnalysis)
+      y$LFE <- as.integer(y$LFE)
+      num_cols <- setdiff(names(y), "LFE")
+      y[num_cols] <- lapply(y[num_cols], function(v) format(round(v, digits), nsmall = digits))
       print(y)
 
       cat("Latent Field Distribution\n")

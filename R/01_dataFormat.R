@@ -113,8 +113,10 @@ dataFormat <- function(data, na = NULL, id = NULL, Z = NULL, w = NULL,
   if (!is.null(id)) {
     # Explicit ID column specified
     if (!is.numeric(id) || length(id) != 1) {
-      stop("id must be a single integer specifying the column number (e.g., id = 1). ",
-           "To pass ID labels, use a data.frame with an ID column instead.")
+      stop(
+        "id must be a single integer specifying the column number (e.g., id = 1). ",
+        "To pass ID labels, use a data.frame with an ID column instead."
+      )
     }
     if (id > ncol(data)) {
       stop("ID column number exceeds the number of columns in data")

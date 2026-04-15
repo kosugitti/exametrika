@@ -67,3 +67,12 @@
 #'   Contains approximately 0.5\% missing values.
 #' @format An exametrika class object with 600 students and 20 items containing nominal responses with 4 categories
 "J20S600"
+
+#' @title J21S300
+#' @description A simulated rated dataset for Rated IRM and Biclustering analysis.
+#'   This is a synthetic dataset generated with a known structure
+#'   (5 latent classes, 3 fields, 4 response categories with correct answers)
+#'   for demonstration and testing purposes. Each field contains 7 items.
+#' @format An exametrika class object with 300 students and 21 items containing
+#'   rated responses (multiple-choice with correct answers) with 4 categories
+"J21S300"

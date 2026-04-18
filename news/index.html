@@ -34,7 +34,7 @@
     </div>
 
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="1.11.0" id="exametrika-1110">exametrika 1.11.0<a class="anchor" aria-label="anchor" href="#exametrika-1110"></a></h2>
+<h2 class="pkg-version" data-toc-text="1.11.0" id="exametrika-1110">exametrika 1.11.0<a class="anchor" aria-label="anchor" href="#exametrika-1110"></a></h2><p class="text-muted">CRAN release: 2026-04-15</p>
 <div class="section level3">
 <h3 id="new-features-1-11-0">New Features<a class="anchor" aria-label="anchor" href="#new-features-1-11-0"></a></h3>
 <ul><li><p><strong><code><a href="../reference/Biclustering_IRM.html">Biclustering_IRM.rated()</a></code>: Rated IRM (Infinite Relational Model for multiple-choice data)</strong>: Performs IRM-based biclustering for rated data (items with correct answers and multiple response categories). Internally calls <code><a href="../reference/Biclustering_IRM.html">Biclustering_IRM.nominal()</a></code> for estimation via Dirichlet-Multinomial collapsed Gibbs sampler, then post-processes the results: classes are sorted by correct response rate (ranklustering), and two layers of fit indices are reported — binary (item correct/incorrect, with full benchmark model including CFI/RMSEA) and nominal (category-level, AIC/BIC/CAIC only). Returns <code>TestFitIndices</code> (binary, default) and <code>TestFitIndices_nominal</code> (nominal) in the output.</p></li>

@@ -2,6 +2,8 @@
 
 ## exametrika 1.11.0
 
+CRAN release: 2026-04-15
+
 ### New Features
 
 - **[`Biclustering_IRM.rated()`](https://kosugitti.github.io/exametrika/reference/Biclustering_IRM.md):

@@ -1,7 +1,7 @@
-# ネットワークモデル プロット関数（LDLRA / LDB / BINET）
-# plot.exametrika() から呼び出される内部関数群
+# Network model plot functions (LDLRA / LDB / BINET)
+# Internal functions called from plot.exametrika()
 
-#' FieldPIRP プロット（LDB 専用）
+#' FieldPIRP plot (LDB only)
 #' @noRd
 plot_field_pirp <- function(x) {
   target <- x$IRP
@@ -30,7 +30,7 @@ plot_field_pirp <- function(x) {
   }
 }
 
-#' LDPSR プロット（BINET 専用）
+#' LDPSR plot (BINET only)
 #' @noRd
 plot_ldpsr <- function(x) {
   for (i in 1:length(x$params)) {

@@ -1,7 +1,7 @@
-# 多値 Biclustering プロット関数（ordinal / nominal）
-# plot.exametrika() から呼び出される内部関数群
+# Polytomous Biclustering plot functions (ordinal / nominal)
+# Internal functions called from plot.exametrika()
 
-#' BCRM から期待得点行列を計算（FRP / RRV 共通ヘルパー）
+#' Compute expected score matrix from BCRM (shared helper for FRP / RRV)
 #' @noRd
 calc_expected_scores <- function(BCRM, stat) {
   nfld <- dim(BCRM)[1]
@@ -25,7 +25,7 @@ calc_expected_scores <- function(BCRM, stat) {
   FRP_mat
 }
 
-#' FRP: 期待得点折れ線プロット
+#' FRP: expected score line plot
 #' @noRd
 plot_poly_frp <- function(x, stat, nc, nr) {
   BCRM <- x$FRP
@@ -51,7 +51,7 @@ plot_poly_frp <- function(x, stat, nc, nr) {
   }
 }
 
-#' FCRP: カテゴリ確率プロット
+#' FCRP: category probability plot
 #' @noRd
 plot_poly_fcrp <- function(x, style, nc, nr) {
   BCRM <- x$FRP
@@ -107,7 +107,7 @@ plot_poly_fcrp <- function(x, style, nc, nr) {
   }
 }
 
-#' FCBR: 境界確率プロット（ordinal Biclustering 専用）
+#' FCBR: boundary probability plot (ordinal Biclustering only)
 #' @noRd
 plot_poly_fcbr <- function(x, nc, nr) {
   BCRM <- x$FRP
@@ -158,7 +158,7 @@ plot_poly_fcbr <- function(x, nc, nr) {
   )
 }
 
-#' ScoreField: 期待得点ヒートマップ
+#' ScoreField: expected score heatmap
 #' @noRd
 plot_scorefield <- function(x) {
   BCRM <- x$FRP
@@ -194,7 +194,7 @@ plot_scorefield <- function(x) {
   }
 }
 
-#' RRV: フィールド横軸転置版（多値 Biclustering）
+#' RRV: transposed field-axis version (polytomous Biclustering)
 #' @noRd
 plot_poly_rrv <- function(x, stat) {
   BCRM <- x$FRP

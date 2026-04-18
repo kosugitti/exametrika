@@ -1,7 +1,7 @@
-# IRT / GRM プロット関数
-# plot.exametrika() から呼び出される内部関数群
+# IRT / GRM plot functions
+# Internal functions called from plot.exametrika()
 
-#' IRT モデルのプロット（IRF / TRF / IIF / TIF）
+#' Plot IRT model (IRF / TRF / IIF / TIF)
 #' @noRd
 plot_irt_model <- function(x, type, plotItemID, nc, nr, overlay, colors) {
   testlength <- x$testlength
@@ -106,7 +106,7 @@ plot_irt_model <- function(x, type, plotItemID, nc, nr, overlay, colors) {
   }
 }
 
-#' GRM モデルのプロット（IRF / IIF / TIF）
+#' Plot GRM model (IRF / IIF / TIF)
 #' @noRd
 plot_grm_model <- function(x, type, plotItemID, nc, nr, colors) {
   testlength <- x$testlength

@@ -1,7 +1,7 @@
-# Biclustering プロット関数（二値 Array + 共通カラーパレット）
-# plot.exametrika() から呼び出される内部関数群
+# Biclustering plot functions (binary Array + shared color palette)
+# Internal functions called from plot.exametrika()
 
-#' カラーブラインド対応パレット (Paul Tol Vibrant + Bright extension)
+#' Colorblind-friendly palette (Paul Tol Vibrant + Bright extension)
 #' @noRd
 get_cb_palette <- function(n) {
   base <- c(
@@ -22,8 +22,8 @@ get_cb_palette <- function(n) {
   return(c(base, rainbow(n - length(base))))
 }
 
-#' パネルグリッド＋凡例ストリップのレイアウトを設定
-#' mfrow を上書きし、最下行に薄い凡例領域を確保する
+#' Set up panel grid + legend strip layout
+#' Overrides mfrow, reserving a thin legend area in the bottom row
 #' @noRd
 setup_legend_layout <- function(n_panels, nc) {
   if (n_panels <= 1) {
@@ -41,8 +41,8 @@ setup_legend_layout <- function(n_panels, nc) {
   }
 }
 
-#' レイアウト最下行の凡例領域に凡例を描画する
-#' setup_legend_layout() の後、全パネル描画後に呼ぶ
+#' Draw legend in the bottom row of the layout
+#' Call after setup_legend_layout() and all panels are drawn
 #' @noRd
 draw_legend_strip <- function(...) {
   par(mar = c(0, 0, 0, 0))
@@ -50,7 +50,7 @@ draw_legend_strip <- function(...) {
   legend("center", ...)
 }
 
-#' Array プロット（Biclustering / IRM / LDB / BINET 共通）
+#' Array plot (shared by Biclustering / IRM / LDB / BINET)
 #' @noRd
 plot_array <- function(x, cell_width, cell_height, colors) {
   cell_w <- cell_width

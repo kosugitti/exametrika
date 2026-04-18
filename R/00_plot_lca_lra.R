@@ -1,7 +1,7 @@
-# LCA / LRA / LRAordinal / LRArated プロット関数
-# plot.exametrika() から呼び出される内部関数群
+# LCA / LRA / LRAordinal / LRArated plot functions
+# Internal functions called from plot.exametrika()
 
-#' 共通プロファイルプロット（IRP / FRP / TRP / LCD / LRD / CMP / RMP / CRV / RRV）
+#' Common profile plots (IRP / FRP / TRP / LCD / LRD / CMP / RMP / CRV / RRV)
 #' @noRd
 plot_common_profiles <- function(x, type, value, plotItemID, plotStudentID, testlength) {
   if (type == "IRP") {
@@ -188,7 +188,7 @@ plot_common_profiles <- function(x, type, value, plotItemID, plotStudentID, test
   }
 }
 
-#' LRA ordinal/rated プロットディスパッチ
+#' LRA ordinal/rated plot dispatch
 #' @noRd
 plot_lra_ordinal <- function(x, type, plotItemID) {
   if (type == "ScoreFreq") {
@@ -200,7 +200,7 @@ plot_lra_ordinal <- function(x, type, plotItemID) {
   }
 }
 
-#' ScoreFreq: 得点分布の頻度多角形
+#' ScoreFreq: score distribution frequency polygon
 #' @noRd
 score_freq_plot <- function(x) {
   tmp <- as.data.frame(x$Students)
@@ -224,7 +224,7 @@ score_freq_plot <- function(x) {
   )
 }
 
-#' ScoreRank: 得点メンバーシップ確率のヒートマップ
+#' ScoreRank: score-membership probability heatmap
 #' @noRd
 score_rank_plot <- function(x) {
   score_rank_matrix <- x$ScoreRank
@@ -241,7 +241,7 @@ score_rank_plot <- function(x) {
   axis(1, at = 1:ncol(score_rank_matrix))
 }
 
-#' ICRP / ICBR プロット
+#' ICRP / ICBR plot
 #' @noRd
 IC_RP_BR_plot <- function(x, type, plotItemID) {
   label <- x$U$ItemLabel[plotItemID]

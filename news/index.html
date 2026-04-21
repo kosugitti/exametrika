@@ -49,6 +49,11 @@
 <li><p><strong>Vectorized 3-D apply reductions in <code><a href="../reference/Biclustering.html">Biclustering.nominal()</a></code></strong>: The same <code>rowSums/colSums(X, dims = ...)</code> substitutions were applied to the nominal M-step and null-model blocks, and <code>Zrep</code> was eliminated in favor of the <code>ZU</code> precomputation. Output is bit-identical to 1.11.0.</p></li>
 </ul></div>
 <div class="section level3">
+<h3 id="bug-fixes-1-12-0">Bug Fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-1-12-0"></a></h3>
+<ul><li>
+<strong><code><a href="../reference/GridSearch.html">GridSearch()</a></code> now tolerates per-cell fit errors</strong>: Previously, a single <code><a href="../reference/Biclustering.html">Biclustering()</a></code> (or <code><a href="../reference/LCA.html">LCA()</a></code> / <code><a href="../reference/LRA.html">LRA()</a></code>) call that raised an error at a grid corner (for example, empty-cluster edge cases at large <code>ncls</code>/<code>nfld</code> with small <code>nobs</code>/<code>nitems</code>) would propagate out of <code><a href="../reference/GridSearch.html">GridSearch()</a></code> and abort the entire grid. The call to the underlying analysis function is now wrapped in <code>tryCatch</code>, and errors are handled the same way as non-convergence: the cell is marked <code>NA</code> in the index matrix and the <code>(ncls, nfld)</code> pair is recorded in <code>failed_settings</code>. <code><a href="../reference/GridSearch.html">GridSearch()</a></code> still raises only when <em>all</em> grid cells fail, preserving the existing “all-failed” error.</li>
+</ul></div>
+<div class="section level3">
 <h3 id="notes-1-12-0">Notes<a class="anchor" aria-label="anchor" href="#notes-1-12-0"></a></h3>
 <ul><li>No changes to package <code>Imports</code> or <code>Depends</code>.</li>
 <li>No new exported functions. No user-visible API changes.</li>

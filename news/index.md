@@ -50,6 +50,25 @@
   in favor of the `ZU` precomputation. Output is bit-identical to
   1.11.0.
 
+### Bug Fixes
+
+- **[`GridSearch()`](https://kosugitti.github.io/exametrika/reference/GridSearch.md)
+  now tolerates per-cell fit errors**: Previously, a single
+  [`Biclustering()`](https://kosugitti.github.io/exametrika/reference/Biclustering.md)
+  (or [`LCA()`](https://kosugitti.github.io/exametrika/reference/LCA.md)
+  / [`LRA()`](https://kosugitti.github.io/exametrika/reference/LRA.md))
+  call that raised an error at a grid corner (for example, empty-cluster
+  edge cases at large `ncls`/`nfld` with small `nobs`/`nitems`) would
+  propagate out of
+  [`GridSearch()`](https://kosugitti.github.io/exametrika/reference/GridSearch.md)
+  and abort the entire grid. The call to the underlying analysis
+  function is now wrapped in `tryCatch`, and errors are handled the same
+  way as non-convergence: the cell is marked `NA` in the index matrix
+  and the `(ncls, nfld)` pair is recorded in `failed_settings`.
+  [`GridSearch()`](https://kosugitti.github.io/exametrika/reference/GridSearch.md)
+  still raises only when *all* grid cells fail, preserving the existing
+  “all-failed” error.
+
 ### Notes
 
 - No changes to package `Imports` or `Depends`.

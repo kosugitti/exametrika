@@ -36,7 +36,7 @@ Biclustering.ordinal <- function(U,
   test_log_lik <- -1 / const
   old_test_log_lik <- -2 / const
   emt <- 0
-  maxemt <- 100
+  maxemt <- maxiter
   ncat <- as.vector(tmp$categories)
   # if (length(unique(ncat)) > 1) {
   #   stop("Error: Variables have different numbers of categories. Nominal data processing requires the same number of categories for all variables.")
@@ -129,13 +129,17 @@ Biclustering.ordinal <- function(U,
     BBRM[, , q] <- BCRM[, , q] + BBRM[, , q + 1]
   }
 
+  # One-hot encode tmp$Q into Uq[i, j, tmp$Q[i,j]] = 1 using matrix indexing.
+  # Replaces a nobs*nitems R-level double loop with a single C-level write
+  # into the flat backing storage of the 3-D array.
+  # Missing entries (tmp$Z == 0, flagged as tmp$Q == -1 by dataFormat) are
+  # left at zero; every downstream use of Uq is masked by tmp$Z so the
+  # missing-cell values are never read.
   Uq <- array(0, dim = c(nobs, nitems, maxQ))
-  for (i in 1:nobs) {
-    for (j in 1:nitems) {
-      q <- tmp$Q[i, j]
-      Uq[i, j, q] <- 1
-    }
-  }
+  valid <- as.vector(tmp$Z) == 1
+  Uq[cbind(rep(seq_len(nobs), times = nitems)[valid],
+           rep(seq_len(nitems), each  = nobs)[valid],
+           as.vector(tmp$Q)[valid])] <- 1
 
   # Precompute Z * Uq[,,q] once; neither Z nor Uq changes after this point.
   # Uq is stored column-major with dim1 (nobs) varying fastest, so multiplying

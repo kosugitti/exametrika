@@ -120,6 +120,43 @@ also benefits from further work in `Biclustering.ordinal`; that work
 (if any) should preserve the same identity gate and be tracked in a
 new WORKLOG entry.
 
+### Uq one-hot vectorization + maxiter bug fix (same day)
+
+Discovered while preparing simulation deployment that the `Uq`
+one-hot encoding in both `Biclustering.ordinal()` and
+`Biclustering.nominal()` is still a nobs*nitems nested R loop:
+
+    for (i in 1:nobs) for (j in 1:nitems)
+      Uq[i, j, tmp$Q[i, j]] <- 1
+
+Replaced with a single matrix-index assignment using masked
+`cbind(i_idx, j_idx, q_idx)` restricted to `tmp$Z == 1`. The old
+loop also had a silent bug: for missing entries (`tmp$Q[i,j] == -1`
+set by `dataFormat()`), `Uq[i, j, -1] <- 1` sets every Uq[i, j, k]
+for k in 2..maxQ to 1 due to R's negative-subscript semantics. The
+values were never read (every consumer applies the `tmp$Z` mask),
+but the vectorized version correctly leaves those positions at zero.
+Downstream outputs (BCRM, ClassMembership, TestFitIndices, log-lik)
+remain bit-identical to the pre-refactor baseline.
+
+Wall-clock impact on the 8-configuration validation matrix:
+
+    O1 (J35S500,  B, 5,5)   0.068s -> 0.033s  (2.06x)
+    O2 (J35S500,  B, 10,5)  0.178s -> 0.147s  (1.21x)
+    O3 (J35S500,  R, 5,5)   0.060s -> 0.038s  (1.58x)
+    O4 (J35S500,  B, 5,5, mic=TRUE)
+                            0.049s -> 0.024s  (2.04x)
+    O5 (J15S3810, B, 5,5)   0.364s -> 0.241s  (1.51x)
+    O6 (J15S3810, R, 8,4, non-converge)
+                            0.802s -> 0.552s  (1.45x)
+    N1 (J20S600,  -, 4,3)   0.021s -> 0.004s  (5.25x)
+    N2 (J20S600,  -, 6,4)   0.058s -> 0.049s  (1.18x)
+
+Independent maxiter bug: ordinal also had `maxemt <- 100` hardcoded at
+line 39, identical in spirit to the nominal bug fixed in 1.11.0. The
+user-supplied `maxiter` argument was being ignored. Fixed in the same
+commit. testthat passes (4750, FAIL 0).
+
 ### GridSearch() per-cell error tolerance (same day)
 
 While preparing the simulation-harness refactor, we discovered that

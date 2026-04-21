@@ -119,3 +119,23 @@ The project-level ask for v1.12.0 mentions the simulation pipeline
 also benefits from further work in `Biclustering.ordinal`; that work
 (if any) should preserve the same identity gate and be tracked in a
 new WORKLOG entry.
+
+### GridSearch() per-cell error tolerance (same day)
+
+While preparing the simulation-harness refactor, we discovered that
+`GridSearch()` does not wrap its inner `do.call(fun, args_list)` call
+in `tryCatch`: any error raised by `Biclustering()` at a single grid
+cell terminates the whole grid search, and the caller's higher-level
+`tryCatch` then turns the entire configuration into an all-NA row.
+This has a disproportionate effect on small `(nobs, nitems)`
+conditions (empty-cluster edge cases at corners of the grid), which
+we observed wiping out the Biclustering-branch rows for small
+conditions in the Phase3 simulation.
+
+The fix is a two-line `tryCatch` wrapper in both branches
+(Biclustering and LCA/LRA) of `R/00_GridSearch.R`, treating errors
+exactly like non-convergence (NA in the index matrix,
+record in `failed_settings`). All 4750 testthat tests still pass.
+This behavior change is non-breaking for successful grids but is a
+genuine bug fix for pathological grids, and is shipped as part of
+v1.12.0.

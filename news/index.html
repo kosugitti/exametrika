@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">exametrika</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.11.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.12.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -33,6 +33,27 @@
       <small>Source: <a href="https://github.com/kosugitti/exametrika/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.12.0" id="exametrika-1120">exametrika 1.12.0<a class="anchor" aria-label="anchor" href="#exametrika-1120"></a></h2>
+<div class="section level3">
+<h3 id="performance-1-12-0">Performance<a class="anchor" aria-label="anchor" href="#performance-1-12-0"></a></h3>
+<ul><li>
+<p><strong>Vectorized EM hot path in <code><a href="../reference/Biclustering.html">Biclustering.ordinal()</a></code></strong>: The per-iteration cost of the ordinal EM loop has been reduced by rewriting five hot spots in base R without introducing new package dependencies.</p>
+<ul><li>Replaced <code>apply(Ufcq_prior, c(1, 2), function(x) rev(cumsum(rev(x))))</code> with an in-place reverse cumulative sum loop over the category axis. The previous form dispatched <code>nfld * ncls</code> R-level calls per EM iteration; the new form performs <code>maxQ - 1</code> vectorized array additions.</li>
+<li>Replaced <code>apply(X, 1, min)</code> and <code>apply(X, 1, max)</code> with <code>do.call(pmin.int, as.data.frame(X))</code> / <code>do.call(pmax.int, as.data.frame(X))</code>. These compute the row-wise reduction in a small number of C-level calls rather than one R-level call per row. <code>apply(X, 1, which.max)</code> was similarly replaced by <code>max.col(X, ties.method = "first")</code>.</li>
+<li>Precomputed <code>log(BBRM[,,q] - BBRM[,,q+1] + const)</code> once per EM iteration instead of independently in the class-side and field-side E-steps for every <code>q</code>.</li>
+<li>Precomputed <code>Z * Uq[,,q]</code> once per fit (call it <code>ZU</code>) via column-major recycling (<code>Uq * as.vector(Z)</code>), replacing about eight separate elementwise products per EM iteration and reusing the same array in the post-EM fit-index blocks. The <code>replicate(maxQ, Z)</code> allocation that produced <code>Zrep</code> has been removed as a byproduct.</li>
+<li>Replaced <code>apply(X, c(1, 2), sum)</code> and <code>apply(X, c(2, 3), sum)</code> on 3-D arrays with <code>rowSums(X, dims = 2)</code> / <code>colSums(X, dims = 1)</code>, and <code>apply(M, 2, sum)</code> on matrices with <code>colSums(M)</code>.</li>
+</ul><p>Output is bit-identical to 1.11.0 on every tested configuration (<code>max(abs(old - new)) == 0</code> for <code>BCRM</code>, <code>BBRM</code>, <code>ClassMembership</code>, <code>FieldMembership</code>, <code>TestFitIndices</code>, and the full EM trajectory). Single-fit wall-clock on typical sizes (ncls, nfld up to 20 by 15 on J35S500) improves by roughly 1.2 to 1.3 times; the per-EM-iteration speedup compounds across <code><a href="../reference/GridSearch.html">GridSearch()</a></code> grids.</p>
+</li>
+<li><p><strong>Vectorized 3-D apply reductions in <code><a href="../reference/Biclustering.html">Biclustering.nominal()</a></code></strong>: The same <code>rowSums/colSums(X, dims = ...)</code> substitutions were applied to the nominal M-step and null-model blocks, and <code>Zrep</code> was eliminated in favor of the <code>ZU</code> precomputation. Output is bit-identical to 1.11.0.</p></li>
+</ul></div>
+<div class="section level3">
+<h3 id="notes-1-12-0">Notes<a class="anchor" aria-label="anchor" href="#notes-1-12-0"></a></h3>
+<ul><li>No changes to package <code>Imports</code> or <code>Depends</code>.</li>
+<li>No new exported functions. No user-visible API changes.</li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.11.0" id="exametrika-1110">exametrika 1.11.0<a class="anchor" aria-label="anchor" href="#exametrika-1110"></a></h2><p class="text-muted">CRAN release: 2026-04-15</p>
 <div class="section level3">

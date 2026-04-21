@@ -72,3 +72,57 @@ Evaluate after Phase 1 measurement.
   match to `max(abs(old - new)) < 1e-12` for every EM step.
 - All 3,532 tests in `tests/testthat/` must pass (FAIL 0, WARN 0).
 - `R CMD check --as-cran` must remain 0/0/0.
+
+### Implementation and results (same day)
+
+All five hot spots implemented incrementally, validated against the
+pre-refactor baseline after each step. Baseline captured on commit
+bbafdbe (pkg 1.11.0) via
+`develop/vectorization_ordinal_v1_12_0/capture_baseline.R` over 8
+configurations spanning ordinal B/R methods, ncls in {5, 8, 10}, nfld in
+{4, 5}, J35S500 and J15S3810 datasets, plus mic=TRUE and a
+non-converging case, and two nominal configurations on J20S600.
+
+`compare_to_baseline.R` reports IDENTICAL (max abs diff == 0) for all
+eight configurations across every monitored field (BCRM, BBRM,
+ClassMembership, FieldMembership, TestFitIndices, FRP, TRP, LFD, LRD,
+FieldEstimated, ClassEstimated, log_lik, n_cycle, converge) after every
+incremental step.
+
+Per-step wall-clock ratios measured on those same 8 configurations
+(single-run, not averaged; noise dominates for \<0.1s runs):
+
+- After H1 alone: 0.78x to 1.02x (within noise)
+- After H1+H2: 0.81x to 1.09x
+- After H1+H2+H3: 0.91x to 1.21x (O6 J15S3810 ncls=8 nfld=4)
+- After H1+H2+H3+H4: 0.91x to 1.28x
+- After all 5: 1.04x (N1) to 1.33x (O6)
+
+Larger single-cell benchmark on J35S500 with variable grid cells,
+against baseline bbafdbe:
+
+``` R
+ncls=5  nfld=5   : 0.073s -> 0.059s  (1.24x)
+ncls=10 nfld=10  : 0.161s -> 0.127s  (1.27x)
+ncls=15 nfld=10  : 0.065s -> 0.051s  (1.27x)
+ncls=20 nfld=15  : 0.071s -> 0.061s  (1.16x)
+```
+
+log_lik identical to every digit in all four cases.
+
+testthat: FAIL 0, WARN 0, SKIP 0, PASS 4750 (test count higher than the
+3,532 figure in the outdated CLAUDE.md because of rated Biclustering and
+DistractorAnalysis additions in 1.11.0; all pass).
+
+### Phase 2 stance for v1.12.0
+
+The E-step and log-lik q-loops (H5 in the original plan; fuse Q matmuls
+into one big matmul over reshaped arrays) were *not* applied in this
+release because the summation order would change and break the
+`max(abs(old - new)) == 0` gate. Deferred to a future release or a
+separate experiment branch.
+
+The project-level ask for v1.12.0 mentions the simulation pipeline also
+benefits from further work in `Biclustering.ordinal`; that work (if any)
+should preserve the same identity gate and be tracked in a new WORKLOG
+entry.

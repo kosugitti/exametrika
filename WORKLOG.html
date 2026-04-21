@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="index.html">exametrika</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.11.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.12.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -76,6 +76,29 @@
 <li>
 <code>R CMD check --as-cran</code> must remain 0/0/0.</li>
 </ul></div>
+<div class="section level3">
+<h3 id="implementation-and-results-same-day">Implementation and results (same day)<a class="anchor" aria-label="anchor" href="#implementation-and-results-same-day"></a></h3>
+<p>All five hot spots implemented incrementally, validated against the pre-refactor baseline after each step. Baseline captured on commit bbafdbe (pkg 1.11.0) via <code>develop/vectorization_ordinal_v1_12_0/capture_baseline.R</code> over 8 configurations spanning ordinal B/R methods, ncls in {5, 8, 10}, nfld in {4, 5}, J35S500 and J15S3810 datasets, plus mic=TRUE and a non-converging case, and two nominal configurations on J20S600.</p>
+<p><code>compare_to_baseline.R</code> reports IDENTICAL (max abs diff == 0) for all eight configurations across every monitored field (BCRM, BBRM, ClassMembership, FieldMembership, TestFitIndices, FRP, TRP, LFD, LRD, FieldEstimated, ClassEstimated, log_lik, n_cycle, converge) after every incremental step.</p>
+<p>Per-step wall-clock ratios measured on those same 8 configurations (single-run, not averaged; noise dominates for &lt;0.1s runs):</p>
+<ul><li>After H1 alone: 0.78x to 1.02x (within noise)</li>
+<li>After H1+H2: 0.81x to 1.09x</li>
+<li>After H1+H2+H3: 0.91x to 1.21x (O6 J15S3810 ncls=8 nfld=4)</li>
+<li>After H1+H2+H3+H4: 0.91x to 1.28x</li>
+<li>After all 5: 1.04x (N1) to 1.33x (O6)</li>
+</ul><p>Larger single-cell benchmark on J35S500 with variable grid cells, against baseline bbafdbe:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a>ncls<span class="ot">=</span><span class="dv">5</span>  nfld<span class="ot">=</span><span class="dv">5</span>   <span class="sc">:</span> <span class="fl">0.073</span>s <span class="ot">-&gt;</span> <span class="fl">0.059</span><span class="fu">s</span>  (<span class="fl">1.24</span>x)</span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a>ncls<span class="ot">=</span><span class="dv">10</span> nfld<span class="ot">=</span><span class="dv">10</span>  <span class="sc">:</span> <span class="fl">0.161</span>s <span class="ot">-&gt;</span> <span class="fl">0.127</span><span class="fu">s</span>  (<span class="fl">1.27</span>x)</span>
+<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a>ncls<span class="ot">=</span><span class="dv">15</span> nfld<span class="ot">=</span><span class="dv">10</span>  <span class="sc">:</span> <span class="fl">0.065</span>s <span class="ot">-&gt;</span> <span class="fl">0.051</span><span class="fu">s</span>  (<span class="fl">1.27</span>x)</span>
+<span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a>ncls<span class="ot">=</span><span class="dv">20</span> nfld<span class="ot">=</span><span class="dv">15</span>  <span class="sc">:</span> <span class="fl">0.071</span>s <span class="ot">-&gt;</span> <span class="fl">0.061</span><span class="fu">s</span>  (<span class="fl">1.16</span>x)</span></code></pre></div>
+<p>log_lik identical to every digit in all four cases.</p>
+<p>testthat: FAIL 0, WARN 0, SKIP 0, PASS 4750 (test count higher than the 3,532 figure in the outdated CLAUDE.md because of rated Biclustering and DistractorAnalysis additions in 1.11.0; all pass).</p>
+</div>
+<div class="section level3">
+<h3 id="phase-2-stance-for-v1120">Phase 2 stance for v1.12.0<a class="anchor" aria-label="anchor" href="#phase-2-stance-for-v1120"></a></h3>
+<p>The E-step and log-lik q-loops (H5 in the original plan; fuse Q matmuls into one big matmul over reshaped arrays) were <em>not</em> applied in this release because the summation order would change and break the <code>max(abs(old - new)) == 0</code> gate. Deferred to a future release or a separate experiment branch.</p>
+<p>The project-level ask for v1.12.0 mentions the simulation pipeline also benefits from further work in <code>Biclustering.ordinal</code>; that work (if any) should preserve the same identity gate and be tracked in a new WORKLOG entry.</p>
+</div>
 </div>
 </div>
 

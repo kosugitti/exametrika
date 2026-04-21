@@ -1,3 +1,51 @@
+# exametrika 1.12.0
+
+## Performance
+
+- **Vectorized EM hot path in `Biclustering.ordinal()`**: The per-iteration
+  cost of the ordinal EM loop has been reduced by rewriting five hot spots
+  in base R without introducing new package dependencies.
+    - Replaced `apply(Ufcq_prior, c(1, 2), function(x) rev(cumsum(rev(x))))`
+      with an in-place reverse cumulative sum loop over the category axis.
+      The previous form dispatched `nfld * ncls` R-level calls per EM
+      iteration; the new form performs `maxQ - 1` vectorized array
+      additions.
+    - Replaced `apply(X, 1, min)` and `apply(X, 1, max)` with
+      `do.call(pmin.int, as.data.frame(X))` /
+      `do.call(pmax.int, as.data.frame(X))`. These compute the row-wise
+      reduction in a small number of C-level calls rather than one
+      R-level call per row. `apply(X, 1, which.max)` was similarly
+      replaced by `max.col(X, ties.method = "first")`.
+    - Precomputed `log(BBRM[,,q] - BBRM[,,q+1] + const)` once per EM
+      iteration instead of independently in the class-side and field-side
+      E-steps for every `q`.
+    - Precomputed `Z * Uq[,,q]` once per fit (call it `ZU`) via
+      column-major recycling (`Uq * as.vector(Z)`), replacing about eight
+      separate elementwise products per EM iteration and reusing the
+      same array in the post-EM fit-index blocks. The `replicate(maxQ, Z)`
+      allocation that produced `Zrep` has been removed as a byproduct.
+    - Replaced `apply(X, c(1, 2), sum)` and `apply(X, c(2, 3), sum)` on
+      3-D arrays with `rowSums(X, dims = 2)` / `colSums(X, dims = 1)`,
+      and `apply(M, 2, sum)` on matrices with `colSums(M)`.
+
+  Output is bit-identical to 1.11.0 on every tested configuration
+  (`max(abs(old - new)) == 0` for `BCRM`, `BBRM`, `ClassMembership`,
+  `FieldMembership`, `TestFitIndices`, and the full EM trajectory).
+  Single-fit wall-clock on typical sizes (ncls, nfld up to 20 by 15 on
+  J35S500) improves by roughly 1.2 to 1.3 times; the per-EM-iteration
+  speedup compounds across `GridSearch()` grids.
+
+- **Vectorized 3-D apply reductions in `Biclustering.nominal()`**: The
+  same `rowSums/colSums(X, dims = ...)` substitutions were applied to
+  the nominal M-step and null-model blocks, and `Zrep` was eliminated
+  in favor of the `ZU` precomputation. Output is bit-identical to
+  1.11.0.
+
+## Notes
+
+- No changes to package `Imports` or `Depends`.
+- No new exported functions. No user-visible API changes.
+
 # exametrika 1.11.0
 
 ## New Features

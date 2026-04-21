@@ -137,6 +137,13 @@ Biclustering.ordinal <- function(U,
     }
   }
 
+  # Precompute Z * Uq[,,q] once; neither Z nor Uq changes after this point.
+  # Uq is stored column-major with dim1 (nobs) varying fastest, so multiplying
+  # by as.vector(Z) recycles Z across the maxQ slices, giving ZU[i,j,q] =
+  # Z[i,j] * Uq[i,j,q]. This replaces repeated elementwise products inside
+  # the EM loop and the post-EM fit blocks.
+  ZU <- Uq * as.vector(tmp$Z)
+
   if (model != 2) {
     Fil <- diag(rep(1, ncls))
   } else {
@@ -160,16 +167,23 @@ Biclustering.ordinal <- function(U,
     emt <- emt + 1
     old_test_log_lik <- test_log_lik
 
+    # Precompute log(BBRM[,,q] - BBRM[,,q+1] + const) once per EM iteration.
+    # Both E-steps (class and field) use the same values across all q; the old
+    # code recomputed this 2*maxQ times per iteration. Using drop=FALSE on
+    # array slicing keeps the 3D shape even when nfld == 1.
+    log_delta <- log(BBRM[, , seq_len(maxQ),     drop = FALSE] -
+                     BBRM[, , seq_len(maxQ) + 1, drop = FALSE] + const)
+
     ## Msc <- Pi, Mjf
     tmpL <- matrix(0, nrow = nobs, ncol = ncls)
     for (q in 1:maxQ) {
-      log_probs <- log((BBRM[, , q] - BBRM[, , q + 1]) + const)
-      if (nfld == 1) {
-        log_probs <- matrix(log_probs, nrow = 1)
-      }
-      tmpL <- tmpL + (tmp$Z * Uq[, , q]) %*% fldmemb %*% log_probs
+      log_probs <- matrix(log_delta[, , q], nrow = nfld, ncol = ncls)
+      tmpL <- tmpL + ZU[, , q] %*% fldmemb %*% log_probs
     }
-    minllsr <- apply(tmpL, 1, min)
+    # Row-wise min via C-level pmin.int instead of apply (one R-level call per row):
+    # do.call(pmin.int, as.data.frame(X)) passes each column as a separate argument,
+    # and pmin.int(col1, col2, ...) returns the element-wise min across columns.
+    minllsr <- do.call(pmin.int, as.data.frame(tmpL))
     expllsr <- exp(pmin(tmpL - minllsr, 700))
     clsmemb <- round(expllsr / rowSums(expllsr), 1e8)
 
@@ -179,10 +193,11 @@ Biclustering.ordinal <- function(U,
     ## Mjf <- Pi, Msc
     tmpH <- matrix(0, nrow = nitems, ncol = nfld)
     for (q in 1:maxQ) {
-      tmpH <- tmpH + (t(tmp$Z * Uq[, , q]) %*% clsmemb) %*% t(log((BBRM[, , q] - BBRM[, , q + 1]) + const))
+      log_probs <- matrix(log_delta[, , q], nrow = nfld, ncol = ncls)
+      tmpH <- tmpH + (t(ZU[, , q]) %*% clsmemb) %*% t(log_probs)
     }
 
-    minllsr <- apply(tmpH, 1, min)
+    minllsr <- do.call(pmin.int, as.data.frame(tmpH))
     expllsr <- exp(pmin(tmpH - minllsr, 700)) # 700 is approx upper limit for exp()
     fldmemb <- round(expllsr / rowSums(expllsr), 1e8)
 
@@ -191,12 +206,19 @@ Biclustering.ordinal <- function(U,
     Ufcq <- array(0, dim = c(nfld, ncls, maxQ))
     cUfcq <- array(0, dim = c(nfld, ncls, maxQ))
     for (q in 1:maxQ) {
-      Ufcq[, , q] <- (t(fldmemb) %*% t(tmp$Z * Uq[, , q])) %*% clsmemb
+      Ufcq[, , q] <- (t(fldmemb) %*% t(ZU[, , q])) %*% clsmemb
     }
     # Apply Dirichlet prior (alpha parameter)
     Ufcq_prior <- Ufcq + alpha - 1
     Ufcq_prior <- pmax(Ufcq_prior, 1e-10)
-    cUfcq <- aperm(apply(Ufcq_prior, c(1, 2), function(x) rev(cumsum(rev(x)))), c(2, 3, 1))
+    # Reverse cumulative sum along the 3rd axis:
+    # cUfcq[, , q] = sum over k >= q of Ufcq_prior[, , k].
+    # Equivalent to aperm(apply(., c(1,2), function(x) rev(cumsum(rev(x)))), c(2,3,1))
+    # but vectorized: O(maxQ) array additions instead of nfld*ncls R-level calls.
+    cUfcq <- Ufcq_prior
+    for (q in rev(seq_len(maxQ - 1))) {
+      cUfcq[, , q] <- cUfcq[, , q] + cUfcq[, , q + 1]
+    }
 
     for (q in 1:maxQ) {
       BBRM[, , q] <- cUfcq[, , q] / cUfcq[, , 1]
@@ -222,7 +244,7 @@ Biclustering.ordinal <- function(U,
 
     test_log_lik <- 0
     for (q in 1:maxQ) {
-      observed_mask <- (tmp$Z * Uq[, , q]) == 1
+      observed_mask <- ZU[, , q] == 1
       prob_leq_q1 <- t(fldmemb %*% BBRM[, , q] %*% t(clsmemb))
       prob_leq_q2 <- t(fldmemb %*% BBRM[, , q + 1] %*% t(clsmemb))
       prob_exact <- prob_leq_q1 - prob_leq_q2
@@ -248,15 +270,15 @@ Biclustering.ordinal <- function(U,
   }
 
 
-  cls <- apply(clsmemb, 1, which.max)
-  fld <- apply(fldmemb, 1, which.max)
+  cls <- max.col(clsmemb, ties.method = "first")
+  fld <- max.col(fldmemb, ties.method = "first")
 
 
   ### Model Fit
   testell <- 0
   for (q in 1:maxQ) {
     pred_prob <- t(fldmemb %*% BCRM[, , q] %*% t(clsmemb))
-    observed_mask <- (tmp$Z * Uq[, , q]) == 1
+    observed_mask <- ZU[, , q] == 1
     testell <- testell + sum(log(pmax(pred_prob[observed_mask], const)))
   }
 
@@ -278,21 +300,24 @@ Biclustering.ordinal <- function(U,
   BenchFRQ <- array(NA, dim = c(nitems, fullG, maxQ))
   Bfcq <- array(0, dim = c(nitems, fullG, maxQ))
   for (q in 1:maxQ) {
-    Bfcq[, , q] <- (t(tmp$Z * Uq[, , q])) %*% benchmemb
+    Bfcq[, , q] <- t(ZU[, , q]) %*% benchmemb
   }
 
-  BenchFRQ <- Bfcq / array(apply(Bfcq, c(1, 2), sum), dim = dim(BenchFRQ))
+  # rowSums(X, dims=2) sums over the 3rd dim, replacing apply(X, c(1,2), sum)
+  BenchFRQ <- Bfcq / array(rowSums(Bfcq, dims = 2), dim = dim(BenchFRQ))
   BenchFRQ[is.nan(BenchFRQ)] <- const
 
   ell_B <- 0
   for (q in 1:maxQ) {
-    ell_B <- ell_B + sum(t(tmp$Z * Uq[, , q]) %*% benchmemb * log(BenchFRQ[, , q] + const))
+    ell_B <- ell_B + sum(t(ZU[, , q]) %*% benchmemb * log(BenchFRQ[, , q] + const))
   }
   bench_nparam <- nitems * fullG
 
-  Zrep <- replicate(maxQ, tmp$Z)
-  NullFRQ <- apply(Zrep * Uq, c(2, 3), sum) / apply(tmp$Z, 2, sum)
-  ell_N <- sum(apply(Zrep * Uq, c(2, 3), sum) * log(NullFRQ + const))
+  # Zrep * Uq == ZU elementwise; avoid the replicate() allocation by reusing ZU.
+  # colSums(X, dims=1) sums over the 1st dim, replacing apply(X, c(2,3), sum).
+  ZU_col_sums <- colSums(ZU, dims = 1)
+  NullFRQ <- ZU_col_sums / colSums(tmp$Z)
+  ell_N <- sum(ZU_col_sums * log(NullFRQ + const))
   null_nparam <- nitems
 
 
@@ -315,12 +340,12 @@ Biclustering.ordinal <- function(U,
   )
 
   # output ----------------------------------------------------------
-  cls <- apply(clsmemb, 1, which.max)
-  fld <- apply(fldmemb, 1, which.max)
+  cls <- max.col(clsmemb, ties.method = "first")
+  fld <- max.col(fldmemb, ties.method = "first")
   check_empty_fields(fld, nfld)
-  fldmemb01 <- sign(fldmemb - apply(fldmemb, 1, max)) + 1
+  fldmemb01 <- sign(fldmemb - do.call(pmax.int, as.data.frame(fldmemb))) + 1
   flddist <- colSums(fldmemb01)
-  clsmemb01 <- sign(clsmemb - apply(clsmemb, 1, max)) + 1
+  clsmemb01 <- sign(clsmemb - do.call(pmax.int, as.data.frame(clsmemb))) + 1
   clsdist <- colSums(clsmemb01)
   StudentRank <- cbind(clsmemb, Estimate = cls)
   rownames(StudentRank) <- tmp$ID
@@ -330,7 +355,7 @@ Biclustering.ordinal <- function(U,
   weights <- matrix(0, nrow = nfld, ncol = ncls)
 
   for (q in 1:maxQ) {
-    contrib <- (t(fldmemb) %*% t(tmp$Z * Uq[, , q]) %*% clsmemb) * (BCRM[, , q])
+    contrib <- (t(fldmemb) %*% t(ZU[, , q]) %*% clsmemb) * (BCRM[, , q])
     BFRP1 <- BFRP1 + q * contrib
     weights <- weights + contrib
   }

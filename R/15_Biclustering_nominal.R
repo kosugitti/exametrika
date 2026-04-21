@@ -162,8 +162,10 @@ Biclustering.nominal <- function(U,
       Ufcq[, , q] <- (t(fldmemb) %*% t(tmp$Z * Uq[, , q])) %*% clsmemb
     }
 
-    # Apply Dirichlet prior (alpha parameter)
-    BCRM <- (Ufcq + alpha - 1) / array(apply(Ufcq, c(1, 2), sum) + maxQ * alpha - maxQ, dim = dim(BCRM))
+    # Apply Dirichlet prior (alpha parameter).
+    # rowSums(Ufcq, dims=2) sums over the 3rd dim (categories), replacing
+    # apply(Ufcq, c(1,2), sum) at C-level instead of per-cell apply.
+    BCRM <- (Ufcq + alpha - 1) / array(rowSums(Ufcq, dims = 2) + maxQ * alpha - maxQ, dim = dim(BCRM))
 
     test_log_lik <- 0
     for (q in 1:maxQ) {
@@ -213,10 +215,14 @@ Biclustering.nominal <- function(U,
   }
   nparam <- ncls * nfld * (maxQ - 1)
 
-  # Null model
-  Zrep <- replicate(maxQ, tmp$Z)
-  NullFRQ <- apply(Zrep * Uq, c(2, 3), sum) / apply(tmp$Z, 2, sum)
-  ell_N <- sum(apply(Zrep * Uq, c(2, 3), sum) * log(NullFRQ + const))
+  # Null model.
+  # Zrep * Uq = Z * Uq[,,q] elementwise; compute via column-major recycling
+  # (Uq * as.vector(Z)) which avoids the replicate() allocation.
+  # colSums(X, dims=1) sums over the 1st dim, replacing apply(X, c(2,3), sum).
+  ZU <- Uq * as.vector(tmp$Z)
+  ZU_col_sums <- colSums(ZU, dims = 1)
+  NullFRQ <- ZU_col_sums / colSums(tmp$Z)
+  ell_N <- sum(ZU_col_sums * log(NullFRQ + const))
 
   # Fit indices: For nominal data, no meaningful benchmark (saturated) model exists
   # because response patterns are almost always unique with many items and categories.

@@ -14,5 +14,6 @@
 ^_pkgdown\.yml$
 ^pkgdown$
 ^CLAUDE\.md$
+^WORKLOG\.md$
 ^doc$
 ^Meta$

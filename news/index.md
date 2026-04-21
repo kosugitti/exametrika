@@ -50,7 +50,29 @@
   in favor of the `ZU` precomputation. Output is bit-identical to
   1.11.0.
 
+- **Vectorized `Uq` one-hot encoding in
+  [`Biclustering.ordinal()`](https://kosugitti.github.io/exametrika/reference/Biclustering.md)
+  and
+  [`Biclustering.nominal()`](https://kosugitti.github.io/exametrika/reference/Biclustering.md)**:
+  The construction of the one-hot response array
+  `Uq[i, j, tmp$Q[i,j]] = 1` previously used a `nobs * nitems` nested R
+  loop. It now writes all ones in one C-level matrix-index assignment,
+  restricted to non-missing cells (`tmp$Z == 1`). Single-fit wall-clock
+  on the validation matrix improves by 1.2-5.3x over 1.11.0 (up to 5x on
+  small cases where the loop overhead dominated). Output is
+  bit-identical to 1.11.0 at every downstream location (the missing
+  entries of the old `Uq` were never read because every consumer applies
+  the `tmp$Z` mask).
+
 ### Bug Fixes
+
+- **[`Biclustering.ordinal()`](https://kosugitti.github.io/exametrika/reference/Biclustering.md)
+  now honors the `maxiter` argument**: The inner EM iteration cap was
+  hardcoded to 100 (`maxemt <- 100`) and ignored the user-supplied
+  `maxiter`. This mirrors the bug that was fixed for
+  [`Biclustering.nominal()`](https://kosugitti.github.io/exametrika/reference/Biclustering.md)
+  in 1.11.0. Callers that pass a larger `maxiter` (e.g. `2000` in Monte
+  Carlo studies) now actually use that ceiling.
 
 - **[`GridSearch()`](https://kosugitti.github.io/exametrika/reference/GridSearch.md)
   now tolerates per-cell fit errors**: Previously, a single

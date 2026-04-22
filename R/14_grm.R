@@ -354,8 +354,19 @@ GRM <- function(U, na = NULL, Z = NULL, w = NULL, verbose = TRUE) {
 
   chi_A <- 2 * (ell_B - ell_A)
   chi_B <- 2 * (ell_B - ell_N)
-  df_B <- n_pattern * (ncat - 1)
-  df_A <- df_B + 1
+  # Free-parameter counts per item (matches exametrika convention in
+  # Biclustering.ordinal: df = bench_nparam - restricted_nparam):
+  #   bench: per raw-score group a multinomial over ncat categories
+  #          -> n_pattern * (ncat - 1)
+  #   null:  single multinomial across all examinees
+  #          -> (ncat - 1)
+  #   GRM:   one slope plus (ncat - 1) thresholds
+  #          -> ncat
+  bench_nparam <- n_pattern * (ncat - 1)
+  null_nparam <- ncat - 1
+  model_nparam <- ncat
+  df_A <- bench_nparam - model_nparam
+  df_B <- bench_nparam - null_nparam
   ItemFitIndices <- structure(
     c(list(
       model_log_like = ell_A,

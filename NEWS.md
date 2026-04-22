@@ -71,6 +71,20 @@
   BIC). The benchmark and null loops now skip zero-count categories
   explicitly, removing the need for an additive epsilon.
 
+- **`GRM()` degrees of freedom were computed incorrectly**: The model
+  df was set to `n_pattern * (ncat - 1) + 1` and the null df to
+  `n_pattern * (ncat - 1)`, which is neither `(# bench params) - (#
+  model params)` nor `(# bench params) - (# null params)`. The inflated
+  df then clamped `CFI`, `TLI`, `IFI`, and `RMSEA` to zero whenever
+  `chi^2 < df` (and the previous `df_A > df_B` inequality was the wrong
+  direction to begin with). The convention now matches
+  `Biclustering.ordinal()`:
+  - `bench_nparam_j = n_pattern * (ncat_j - 1)`
+  - `null_nparam_j  = ncat_j - 1`
+  - `model_nparam_j = ncat_j`  (one slope plus `ncat_j - 1` thresholds)
+  - `df_A_j = bench_nparam_j - model_nparam_j`
+  - `df_B_j = bench_nparam_j - null_nparam_j`
+
 - **`GRM()` now accepts any integer-coded ordinal responses, not just
   1..K**: Category counts were derived from `apply(dat, 2, max)`, which
   assumes responses are already 1-indexed. Data coded from 0 (e.g.

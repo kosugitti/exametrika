@@ -207,7 +207,17 @@ GRM <- function(U, na = NULL, Z = NULL, w = NULL, verbose = TRUE) {
   dat <- tmp$Q
   nitems <- NCOL(tmp$Z)
   nobs <- NROW(tmp$Z)
-  ncat <- apply(dat, 2, function(x) max(x, na.rm = TRUE))
+
+  # GRM internals (R and C++) index categories from 1..K, so remap each item's
+  # responses to contiguous 1-based codes. Handles 0-based coding (e.g., 0..3)
+  # and gaps (e.g., 1,2,4). ncat becomes the count of distinct valid responses.
+  cat_levels <- lapply(seq_len(nitems), function(j) {
+    sort(unique(dat[!is.na(dat[, j]), j]))
+  })
+  ncat <- vapply(cat_levels, length, integer(1))
+  for (j in seq_len(nitems)) {
+    dat[, j] <- match(dat[, j], cat_levels[[j]])
+  }
   n_quad_points <- 51
 
   start_vals <- generate_start_values(dat)
@@ -303,15 +313,20 @@ GRM <- function(U, na = NULL, Z = NULL, w = NULL, verbose = TRUE) {
     }
   }
   ### Null model
-  response_list <- lapply(seq_len(nitems), function(j) table(tmp$Q[, j]))
+  response_list <- lapply(seq_len(nitems), function(j) {
+    table(factor(dat[, j], levels = seq_len(ncat[j])))
+  })
   valid_response <- apply(tmp$Z, 2, sum)
   ell_N <- rep(0, nitems)
   for (j in 1:nitems) {
     cat_probs <- response_list[[j]] / valid_response[j]
-    ell_N[j] <- sum(response_list[[j]] * log(cat_probs + const))
+    nz <- response_list[[j]] > 0
+    if (any(nz)) {
+      ell_N[j] <- sum(response_list[[j]][nz] * log(cat_probs[nz]))
+    }
   }
   ### Bench model
-  patterns <- rowSums(tmp$Q * tmp$Z, na.rm = TRUE)
+  patterns <- rowSums(dat, na.rm = TRUE)
   unique_ptn <- unique(patterns)
   n_pattern <- length(unique_ptn)
   pattern_groups <- match(patterns, unique_ptn)
@@ -322,15 +337,17 @@ GRM <- function(U, na = NULL, Z = NULL, w = NULL, verbose = TRUE) {
   }
   group_size <- colSums(MsG)
   ell_B <- rep(0, nitems)
-  const <- exp(-nitems * 100)
   for (j in 1:nitems) {
     for (g in 1:n_pattern) {
       group_memb <- which(pattern_groups == g)
       valid_memb <- group_memb[tmp$Z[group_memb, j] == 1]
       if (length(valid_memb) > 0) {
-        cat_counts <- table(factor(tmp$Q[valid_memb, j], levels = 0:ncat[j]))
+        cat_counts <- table(factor(dat[valid_memb, j], levels = seq_len(ncat[j])))
         cat_probs <- cat_counts / sum(cat_counts)
-        ell_B[j] <- ell_B[j] + sum(cat_counts * log(cat_probs + const))
+        nz <- cat_counts > 0
+        if (any(nz)) {
+          ell_B[j] <- ell_B[j] + sum(cat_counts[nz] * log(cat_probs[nz]))
+        }
       }
     }
   }

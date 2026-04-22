@@ -61,6 +61,29 @@
   larger `maxiter` (e.g. `2000` in Monte Carlo studies) now actually
   use that ceiling.
 
+- **`GRM()` fit indices no longer return `NaN` for moderate or larger
+  item counts**: The benchmark model used
+  `const <- exp(-nitems * 100)` as a log-domain epsilon inside
+  `sum(cat_counts * log(cat_probs + const))`. For about 8 or more items
+  this expression underflows to exactly 0 in IEEE-754 double precision,
+  so `log(0) = -Inf` propagates through `0 * -Inf = NaN` and poisons
+  every downstream index (model_Chi_sq, NFI, CFI, RMSEA, AIC, CAIC,
+  BIC). The benchmark and null loops now skip zero-count categories
+  explicitly, removing the need for an additive epsilon.
+
+- **`GRM()` now accepts any integer-coded ordinal responses, not just
+  1..K**: Category counts were derived from `apply(dat, 2, max)`, which
+  assumes responses are already 1-indexed. Data coded from 0 (e.g.
+  0..3) or with gaps (e.g. 1, 2, 4) undercounted `ncat[j]` by one or
+  more and then indexed `grm_prob()[resp]` / `v[resp]` out of range,
+  producing either an outright `invalid subscript type 'list'` error
+  (on `J15S3810`-style data) or silently truncated threshold columns.
+  Each item's responses are now remapped to contiguous 1..K codes via
+  `match()` against the sorted unique values on entry, with `ncat[j]`
+  derived from the mapped levels; both the R model-fit blocks and the
+  C++ log-likelihood receive 1-based input regardless of the user's
+  coding.
+
 - **`GridSearch()` now tolerates per-cell fit errors**: Previously, a
   single `Biclustering()` (or `LCA()` / `LRA()`) call that raised an
   error at a grid corner (for example, empty-cluster edge cases at

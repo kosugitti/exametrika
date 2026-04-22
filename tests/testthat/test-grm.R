@@ -220,6 +220,56 @@ test_that("GRM works correctly with uniform category counts (apply/table bug reg
   expect_equal(tfi$null_log_like, sum(ifi$null_log_like), tolerance = 1e-10)
 })
 
+test_that("GRM fit indices are finite for moderate item counts (exp(-nitems*100) underflow regression)", {
+  # For nitems >= 8, const <- exp(-nitems * 100) underflowed to 0 and
+  # 0 * log(0) poisoned every item/test fit index with NaN.
+  set.seed(20260422)
+  nitems <- 20
+  nobs <- 250
+  dat <- matrix(sample(1:3, nobs * nitems, replace = TRUE),
+    nrow = nobs, ncol = nitems
+  )
+  fd <- dataFormat(dat, response.type = "ordinal")
+  res <- GRM(fd, verbose = FALSE)
+
+  ifi <- res$ItemFitIndices
+  expect_true(all(is.finite(ifi$bench_log_like)))
+  expect_true(all(is.finite(ifi$model_Chi_sq)))
+  expect_true(all(is.finite(ifi$CFI)))
+  expect_true(all(is.finite(ifi$RMSEA)))
+
+  tfi <- res$TestFitIndices
+  expect_true(is.finite(tfi$bench_log_like))
+  expect_true(is.finite(tfi$RMSEA))
+  expect_true(is.finite(tfi$AIC))
+  expect_true(is.finite(tfi$BIC))
+})
+
+test_that("GRM accepts 0-based ordinal responses (ncat max-value regression)", {
+  # ncat was derived from apply(dat, 2, max), so 0..K-1 coded data and
+  # sparse codings (e.g. 1,2,4) silently dropped the top category.
+  data("J15S3810", package = "exametrika")
+  res <- GRM(J15S3810, verbose = FALSE)
+
+  expect_s3_class(res, c("exametrika", "GRM"))
+  expect_equal(res$testlength, 15)
+  # J15S3810 items have 4 categories each, so 3 thresholds per item.
+  expect_equal(ncol(res$params), 4L)
+  expect_true(all(is.finite(res$params$Slope)))
+  expect_true(all(is.finite(res$TestFitIndices$RMSEA)))
+
+  # A gapped coding (categories 1, 2, 4) must estimate the same number
+  # of thresholds as a contiguous 3-category coding.
+  set.seed(1)
+  gapped <- matrix(sample(c(1, 2, 4), 200 * 5, replace = TRUE),
+    nrow = 200, ncol = 5
+  )
+  fd <- dataFormat(gapped, response.type = "ordinal")
+  res_g <- GRM(fd, verbose = FALSE)
+  expect_equal(ncol(res_g$params), 3L)
+  expect_true(all(is.finite(res_g$TestFitIndices$AIC)))
+})
+
 test_that("GRM error handling works", {
   # Test with inappropriate data
   expect_error(GRM(matrix(letters[1:20], nrow = 5, ncol = 4)))

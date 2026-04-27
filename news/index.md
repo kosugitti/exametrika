@@ -37,6 +37,7 @@
   by re-applying `fldmemb <- conf_mat` immediately after the field-side
   E-step. With this fix `result$FieldEstimated` matches the
   user-supplied assignment exactly.
+
 - **Confirmatory nominal Biclustering: conf argument is now actually
   honored**:
   [`Biclustering.nominal()`](https://kosugitti.github.io/exametrika/reference/Biclustering.md)
@@ -46,10 +47,12 @@
   data.”, making confirmatory nominal Biclustering unreachable since
   v1.10.0. Replaced with `NCOL(U$Q)` (and the matrix-form `NROW(conf)`
   check, plus the `conf_mat` allocation, in the same way).
+
 - **Confirmatory ordinal Biclustering: conf length check actually
   validates input**: same `NCOL(U)` issue as nominal, but in
   [`Biclustering.ordinal()`](https://kosugitti.github.io/exametrika/reference/Biclustering.md).
   Fixed by switching to `NCOL(U$Q)`.
+
 - **Confirmatory binary Biclustering: conf size checks now reference the
   formatted response matrix explicitly**:
   [`Biclustering.binary()`](https://kosugitti.github.io/exametrika/reference/Biclustering.md)
@@ -57,6 +60,7 @@
   conf block, so `NCOL(U)` returned the item count. Switched to
   `NCOL(tmp$U)` for consistency with the ordinal/nominal fixes and to
   make the intent obvious to readers.
+
 - **Confirmatory Biclustering: matrix-form `conf` is no longer silently
   dropped**: when `conf` was supplied as a membership matrix (items x
   fields) instead of a vector, all three implementations (`binary`,
@@ -64,6 +68,73 @@
   `conf_mat`, so the subsequent `nfld <- NCOL(conf_mat)` failed with
   `object 'conf_mat' not found`. Added `conf_mat <- as.matrix(conf)` in
   the matrix branch.
+
+- **[`Biclustering.ordinal()`](https://kosugitti.github.io/exametrika/reference/Biclustering.md)
+  now honors the `maxiter` argument**: The inner EM iteration cap was
+  hardcoded to 100 (`maxemt <- 100`) and ignored the user-supplied
+  `maxiter`. This mirrors the bug that was fixed for
+  [`Biclustering.nominal()`](https://kosugitti.github.io/exametrika/reference/Biclustering.md)
+  in 1.11.0. Callers that pass a larger `maxiter` (e.g. `2000` in Monte
+  Carlo studies) now actually use that ceiling.
+
+- **[`GRM()`](https://kosugitti.github.io/exametrika/reference/GRM.md)
+  fit indices no longer return `NaN` for moderate or larger item
+  counts**: The benchmark model used `const <- exp(-nitems * 100)` as a
+  log-domain epsilon inside `sum(cat_counts * log(cat_probs + const))`.
+  For about 8 or more items this expression underflows to exactly 0 in
+  IEEE-754 double precision, so `log(0) = -Inf` propagates through
+  `0 * -Inf = NaN` and poisons every downstream index (model_Chi_sq,
+  NFI, CFI, RMSEA, AIC, CAIC, BIC). The benchmark and null loops now
+  skip zero-count categories explicitly, removing the need for an
+  additive epsilon.
+
+- **[`GRM()`](https://kosugitti.github.io/exametrika/reference/GRM.md)
+  degrees of freedom were computed incorrectly**: The model df was set
+  to `n_pattern * (ncat - 1) + 1` and the null df to
+  `n_pattern * (ncat - 1)`, which is neither
+  `(# bench params) - (# model params)` nor
+  `(# bench params) - (# null params)`. The inflated df then clamped
+  `CFI`, `TLI`, `IFI`, and `RMSEA` to zero whenever `chi^2 < df` (and
+  the previous `df_A > df_B` inequality was the wrong direction to begin
+  with). The convention now matches
+  [`Biclustering.ordinal()`](https://kosugitti.github.io/exametrika/reference/Biclustering.md):
+
+  - `bench_nparam_j = n_pattern * (ncat_j - 1)`
+  - `null_nparam_j = ncat_j - 1`
+  - `model_nparam_j = ncat_j` (one slope plus `ncat_j - 1` thresholds)
+  - `df_A_j = bench_nparam_j - model_nparam_j`
+  - `df_B_j = bench_nparam_j - null_nparam_j`
+
+- **[`GRM()`](https://kosugitti.github.io/exametrika/reference/GRM.md)
+  now accepts any integer-coded ordinal responses, not just 1..K**:
+  Category counts were derived from `apply(dat, 2, max)`, which assumes
+  responses are already 1-indexed. Data coded from 0 (e.g. 0..3) or with
+  gaps (e.g. 1, 2, 4) undercounted `ncat[j]` by one or more and then
+  indexed `grm_prob()[resp]` / `v[resp]` out of range, producing either
+  an outright `invalid subscript type 'list'` error (on `J15S3810`-style
+  data) or silently truncated threshold columns. Each item’s responses
+  are now remapped to contiguous 1..K codes via
+  [`match()`](https://rdrr.io/r/base/match.html) against the sorted
+  unique values on entry, with `ncat[j]` derived from the mapped levels;
+  both the R model-fit blocks and the C++ log-likelihood receive 1-based
+  input regardless of the user’s coding.
+
+- **[`GridSearch()`](https://kosugitti.github.io/exametrika/reference/GridSearch.md)
+  now tolerates per-cell fit errors**: Previously, a single
+  [`Biclustering()`](https://kosugitti.github.io/exametrika/reference/Biclustering.md)
+  (or [`LCA()`](https://kosugitti.github.io/exametrika/reference/LCA.md)
+  / [`LRA()`](https://kosugitti.github.io/exametrika/reference/LRA.md))
+  call that raised an error at a grid corner (for example, empty-cluster
+  edge cases at large `ncls`/`nfld` with small `nobs`/`nitems`) would
+  propagate out of
+  [`GridSearch()`](https://kosugitti.github.io/exametrika/reference/GridSearch.md)
+  and abort the entire grid. The call to the underlying analysis
+  function is now wrapped in `tryCatch`, and errors are handled the same
+  way as non-convergence: the cell is marked `NA` in the index matrix
+  and the `(ncls, nfld)` pair is recorded in `failed_settings`.
+  [`GridSearch()`](https://kosugitti.github.io/exametrika/reference/GridSearch.md)
+  still raises only when *all* grid cells fail, preserving the existing
+  “all-failed” error.
 
 ### Performance
 
@@ -156,75 +227,6 @@
   entries of the old `Uq` were never read because every consumer applies
   the `tmp$Z` mask).
 
-### Bug Fixes
-
-- **[`Biclustering.ordinal()`](https://kosugitti.github.io/exametrika/reference/Biclustering.md)
-  now honors the `maxiter` argument**: The inner EM iteration cap was
-  hardcoded to 100 (`maxemt <- 100`) and ignored the user-supplied
-  `maxiter`. This mirrors the bug that was fixed for
-  [`Biclustering.nominal()`](https://kosugitti.github.io/exametrika/reference/Biclustering.md)
-  in 1.11.0. Callers that pass a larger `maxiter` (e.g. `2000` in Monte
-  Carlo studies) now actually use that ceiling.
-
-- **[`GRM()`](https://kosugitti.github.io/exametrika/reference/GRM.md)
-  fit indices no longer return `NaN` for moderate or larger item
-  counts**: The benchmark model used `const <- exp(-nitems * 100)` as a
-  log-domain epsilon inside `sum(cat_counts * log(cat_probs + const))`.
-  For about 8 or more items this expression underflows to exactly 0 in
-  IEEE-754 double precision, so `log(0) = -Inf` propagates through
-  `0 * -Inf = NaN` and poisons every downstream index (model_Chi_sq,
-  NFI, CFI, RMSEA, AIC, CAIC, BIC). The benchmark and null loops now
-  skip zero-count categories explicitly, removing the need for an
-  additive epsilon.
-
-- **[`GRM()`](https://kosugitti.github.io/exametrika/reference/GRM.md)
-  degrees of freedom were computed incorrectly**: The model df was set
-  to `n_pattern * (ncat - 1) + 1` and the null df to
-  `n_pattern * (ncat - 1)`, which is neither
-  `(# bench params) - (# model params)` nor
-  `(# bench params) - (# null params)`. The inflated df then clamped
-  `CFI`, `TLI`, `IFI`, and `RMSEA` to zero whenever `chi^2 < df` (and
-  the previous `df_A > df_B` inequality was the wrong direction to begin
-  with). The convention now matches
-  [`Biclustering.ordinal()`](https://kosugitti.github.io/exametrika/reference/Biclustering.md):
-
-  - `bench_nparam_j = n_pattern * (ncat_j - 1)`
-  - `null_nparam_j = ncat_j - 1`
-  - `model_nparam_j = ncat_j` (one slope plus `ncat_j - 1` thresholds)
-  - `df_A_j = bench_nparam_j - model_nparam_j`
-  - `df_B_j = bench_nparam_j - null_nparam_j`
-
-- **[`GRM()`](https://kosugitti.github.io/exametrika/reference/GRM.md)
-  now accepts any integer-coded ordinal responses, not just 1..K**:
-  Category counts were derived from `apply(dat, 2, max)`, which assumes
-  responses are already 1-indexed. Data coded from 0 (e.g. 0..3) or with
-  gaps (e.g. 1, 2, 4) undercounted `ncat[j]` by one or more and then
-  indexed `grm_prob()[resp]` / `v[resp]` out of range, producing either
-  an outright `invalid subscript type 'list'` error (on `J15S3810`-style
-  data) or silently truncated threshold columns. Each item’s responses
-  are now remapped to contiguous 1..K codes via
-  [`match()`](https://rdrr.io/r/base/match.html) against the sorted
-  unique values on entry, with `ncat[j]` derived from the mapped levels;
-  both the R model-fit blocks and the C++ log-likelihood receive 1-based
-  input regardless of the user’s coding.
-
-- **[`GridSearch()`](https://kosugitti.github.io/exametrika/reference/GridSearch.md)
-  now tolerates per-cell fit errors**: Previously, a single
-  [`Biclustering()`](https://kosugitti.github.io/exametrika/reference/Biclustering.md)
-  (or [`LCA()`](https://kosugitti.github.io/exametrika/reference/LCA.md)
-  / [`LRA()`](https://kosugitti.github.io/exametrika/reference/LRA.md))
-  call that raised an error at a grid corner (for example, empty-cluster
-  edge cases at large `ncls`/`nfld` with small `nobs`/`nitems`) would
-  propagate out of
-  [`GridSearch()`](https://kosugitti.github.io/exametrika/reference/GridSearch.md)
-  and abort the entire grid. The call to the underlying analysis
-  function is now wrapped in `tryCatch`, and errors are handled the same
-  way as non-convergence: the cell is marked `NA` in the index matrix
-  and the `(ncls, nfld)` pair is recorded in `failed_settings`.
-  [`GridSearch()`](https://kosugitti.github.io/exametrika/reference/GridSearch.md)
-  still raises only when *all* grid cells fail, preserving the existing
-  “all-failed” error.
-
 ### Output structure
 
 - **[`Biclustering.ordinal()`](https://kosugitti.github.io/exametrika/reference/Biclustering.md)
@@ -249,8 +251,12 @@
 
 ### Notes
 
-- No changes to package `Imports` or `Depends`.
-- No new exported functions. No user-visible API changes.
+- No changes to package `Imports` or `Depends`. The new C++ Gibbs
+  sampler uses Rcpp, which was already declared in `LinkingTo:`.
+- No new exported functions. The new `conf_class` argument on
+  [`Biclustering()`](https://kosugitti.github.io/exametrika/reference/Biclustering.md)
+  is additive and defaults to `NULL`, preserving the previous behavior
+  for all existing callers.
 
 ## exametrika 1.11.0
 

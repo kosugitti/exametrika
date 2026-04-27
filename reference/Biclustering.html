@@ -61,6 +61,7 @@ in the data by creating a matrix with rows and columns arranged to highlight blo
 <span>  nfld <span class="op">=</span> <span class="fl">2</span>,</span>
 <span>  method <span class="op">=</span> <span class="st">"B"</span>,</span>
 <span>  conf <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  conf_class <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  mic <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  maxiter <span class="op">=</span> <span class="fl">100</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">TRUE</span>,</span>
@@ -75,6 +76,7 @@ in the data by creating a matrix with rows and columns arranged to highlight blo
 <span>  ncls <span class="op">=</span> <span class="fl">2</span>,</span>
 <span>  nfld <span class="op">=</span> <span class="fl">2</span>,</span>
 <span>  conf <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  conf_class <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  mic <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  maxiter <span class="op">=</span> <span class="fl">100</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">TRUE</span>,</span>
@@ -89,6 +91,7 @@ in the data by creating a matrix with rows and columns arranged to highlight blo
 <span>  nfld <span class="op">=</span> <span class="fl">2</span>,</span>
 <span>  method <span class="op">=</span> <span class="st">"B"</span>,</span>
 <span>  conf <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  conf_class <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  mic <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  maxiter <span class="op">=</span> <span class="fl">100</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">TRUE</span>,</span>
@@ -154,6 +157,17 @@ observed responses, while 0 indicates missing data.</p></dd>
 <dd><p>Confirmatory parameter for pre-specified field assignments. Can be either:</p><ul><li><p>A vector with items and corresponding fields in sequence</p></li>
 <li><p>A field membership profile matrix (items x fields) with 0/1 values</p></li>
 <li><p>NULL (default) for exploratory analysis where field memberships are estimated</p></li>
+</ul></dd>
+
+
+<dt id="arg-conf-class">conf_class<a class="anchor" aria-label="anchor" href="#arg-conf-class"></a></dt>
+<dd><p>Confirmatory parameter for pre-specified class assignments
+on the respondent side. Mirrors <code>conf</code> but operates on classes. Can be:</p><ul><li><p>A vector with respondents and corresponding class indices</p></li>
+<li><p>A class membership profile matrix (respondents × classes) with 0/1 values</p></li>
+<li><p>NULL (default) for exploratory class estimation
+When supplied, class memberships are held fixed during EM. For Ranklustering
+(<code>method = "R"</code>), the neighbour-smoothing step is skipped because smoothing
+pre-specified labels would defeat the purpose of fixing them.</p></li>
 </ul></dd>
 
 

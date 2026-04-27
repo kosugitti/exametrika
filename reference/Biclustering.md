@@ -22,6 +22,7 @@ Biclustering(
   nfld = 2,
   method = "B",
   conf = NULL,
+  conf_class = NULL,
   mic = FALSE,
   maxiter = 100,
   verbose = TRUE,
@@ -36,6 +37,7 @@ Biclustering(
   ncls = 2,
   nfld = 2,
   conf = NULL,
+  conf_class = NULL,
   mic = FALSE,
   maxiter = 100,
   verbose = TRUE,
@@ -50,6 +52,7 @@ Biclustering(
   nfld = 2,
   method = "B",
   conf = NULL,
+  conf_class = NULL,
   mic = FALSE,
   maxiter = 100,
   verbose = TRUE,
@@ -124,6 +127,22 @@ Biclustering(
 
   - NULL (default) for exploratory analysis where field memberships are
     estimated
+
+- conf_class:
+
+  Confirmatory parameter for pre-specified class assignments on the
+  respondent side. Mirrors `conf` but operates on classes. Can be:
+
+  - A vector with respondents and corresponding class indices
+
+  - A class membership profile matrix (respondents × classes) with 0/1
+    values
+
+  - NULL (default) for exploratory class estimation When supplied, class
+    memberships are held fixed during EM. For Ranklustering
+    (`method = "R"`), the neighbour-smoothing step is skipped because
+    smoothing pre-specified labels would defeat the purpose of fixing
+    them.
 
 - mic:
 

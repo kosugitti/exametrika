@@ -37,6 +37,69 @@
 
 <p>Detailed development log. User-facing changes go in <code>NEWS.md</code>; this file captures the per-session internal narrative (why a change was made, what was investigated, what was ruled out). Entries are newest-first.</p>
 <div class="section level2">
+<h2 id="id_2026-04-27--v1120-c-gibbs-sampler-conf_class-cran-prep">2026-04-27 — v1.12.0: C++ Gibbs sampler, conf_class, CRAN prep<a class="anchor" aria-label="anchor" href="#id_2026-04-27--v1120-c-gibbs-sampler-conf_class-cran-prep"></a></h2>
+<div class="section level3">
+<h3 id="confirmatory-biclustering-bug-audit">Confirmatory Biclustering bug audit<a class="anchor" aria-label="anchor" href="#confirmatory-biclustering-bug-audit"></a></h3>
+<p>Started from a known issue: <code>.claude/CLAUDE.md</code> flagged that <code>R/07_Biclustering.R</code> (binary) and <code>R/15_Biclustering_nominal.R</code> (nominal) had the same <code>NCOL(U)</code> length-check pattern that was fixed for ordinal in the v1.12.x prep work, but with the qualifier “not catastrophic because of the in-loop guard”. Empirical check on <code>J20S600</code> with <code>length(conf) = 20</code> showed:</p>
+<ul><li>Binary: works at runtime. <code><a href="reference/Biclustering.html">Biclustering.binary()</a></code> rebinds <code>U &lt;- tmp$U * tmp$Z</code> in line 169 <em>before</em> the conf block, so <code>NCOL(U)</code> returns the item count. Cosmetic-only fix to <code>NCOL(tmp$U)</code> for readability.</li>
+<li>Nominal: <strong>broken since v1.10.0</strong>. <code><a href="reference/Biclustering.html">Biclustering.nominal()</a></code> does not rebind <code>U</code>, so <code>NCOL(U) == 1</code> (it is an <code>exametrika</code> list), and every well-formed <code>conf</code> vector hits the “size does NOT match” stop. The in-loop guard never runs because the conf block aborts the call up front. Fixed to <code>NCOL(U$Q)</code>.</li>
+<li>New bug found while writing matrix-form regression tests: the <code>is.matrix(conf) | is.data.frame(conf)</code> branch validated the matrix but never assigned it to <code>conf_mat</code>. The next line, <code>nfld &lt;- NCOL(conf_mat)</code>, then died with “object ‘conf_mat’ not found”. Same omission in all three implementations (binary, ordinal, nominal). Fixed by adding <code>conf_mat &lt;- as.matrix(conf)</code> in each matrix branch.</li>
+</ul><p>Tests: 10 new test_that blocks across <code>test-biclustering.R</code> and <code>test-polytomous-biclustering.R</code> covering vector accept, wrong-length reject, matrix accept, and wrong-rows reject for each of the three data types. Full suite: PASS 4775 -&gt; 4790.</p>
+<p>Committed as <code>60bace9: fix: confirmatory Biclustering bugs across binary/ordinal/nominal</code>.</p>
+</div>
+<div class="section level3">
+<h3 id="class-side-confirmatory-clustering-conf_class">Class-side confirmatory clustering (<code>conf_class</code>)<a class="anchor" aria-label="anchor" href="#class-side-confirmatory-clustering-conf_class"></a></h3>
+<p>User asked to add the symmetric counterpart to <code>conf</code> that fixes respondents to classes (instead of items to fields). Design (per the TODO note in <code>.claude/CLAUDE.md</code>):</p>
+<ul><li>Reuse the existing <code>conf</code> argument; add a new <code>conf_class</code> argument. Fully additive, no breaking changes.</li>
+<li>Mirror the conf type-check block: vector or 0/1 matrix, length check against <code>nobs</code>, build <code>conf_class_mat</code>, override <code>ncls</code> from <code>NCOL(conf_class_mat)</code>. ncls/nfld mismatch with the supplied conf is silently overridden (intentional, matches existing conf semantics).</li>
+<li>In the EM loop, after <code>clsmemb</code> is updated by softmax/normalisation, if <code>conf_class_mat</code> is non-null, force <code>clsmemb &lt;- conf_class_mat</code>. For Ranklustering (<code>method = "R"</code>), also set <code>smoothed_memb &lt;- clsmemb</code> because the neighbour-smoothing filter would otherwise re-spread mass off the fixed labels.</li>
+<li>
+<code>nparam</code> is not adjusted: only PiFR / BCRM cell probabilities are parameters in this code, and membership matrices are latent posteriors, not parameters. Recorded the rationale in NEWS.md.</li>
+<li>For rated data the dispatch is via <code><a href="reference/Biclustering.html">Biclustering.rated()</a></code> which passes <code>...</code> to <code><a href="reference/Biclustering.html">Biclustering.nominal()</a></code> internally, then re-orders output classes by correct rate. So <code>conf_class</code> works through rated but the output class labels are a permutation of the input labels (the individual-to-class mapping is preserved). Test verifies the bijective invariant rather than equality.</li>
+</ul><p>Tests: 13 new test_that blocks across the same two files plus a combined <code>conf + conf_class</code> test on ordinal data.</p>
+</div>
+<div class="section level3">
+<h3 id="irm-gibbs-sampler-in-c-the-headline-change">IRM Gibbs sampler in C++ (the headline change)<a class="anchor" aria-label="anchor" href="#irm-gibbs-sampler-in-c-the-headline-change"></a></h3>
+<p>Profiled the R Gibbs core at 66-99 ms/iter on J20S600 and 71 ms/iter on J35S500. Hotspots (<code>Rprof</code>, line-level): <code>irm_lmvbeta()</code> 20.6%, 3-D <code>U_fcq[f, c, ]</code> slicing and <code>nume &lt;- ... + alpha_vec</code> arithmetic 13-16% each, <code>t(fld01) %*% (Z[target, ] * Uq[target, , q])</code> row matmul 13%. Inner CRP loop dominates total time.</p>
+<p>Wrote <code>src/irm_gibbs_core.cpp</code> as a direct, line-by-line translation of <code>irm_gibbs_core()</code>. State held in flat <code>std::vector&lt;double&gt;</code> / <code>std::vector&lt;int&gt;</code> to avoid an <code>RcppArmadillo</code> dependency. No algorithmic changes: same loop nest, same accumulation order.</p>
+<p>The RNG-compatibility journey was the most time-consuming part:</p>
+<ol style="list-style-type: decimal"><li>First pass used <code>Rcpp::sample(n, n, false)</code>. Output diverged from R immediately. Direct check: <code>set.seed(42); sample(1:10, 10)</code> != <code>Rcpp::sample(10, 10, false)</code>. Confirmed <code>Rcpp::sample</code> does not share the same RNG-consumption order as base R.</li>
+<li>Switched the perm to <code>Function f("sample.int"); f(n)</code>. With this alone, the class-side Gibbs loop produced bit-identical Nc and cls to the R reference (verified on <code>J20S600</code>, max_iter = 1).</li>
+<li>Field-side loop still diverged. After auditing the implementation line by line and finding no algorithmic difference, added a class-only debug build (<code>#if 0</code> around the field-side loop) and confirmed the post-class-loop RNG state matched: <code>runif(3)</code> in R and in C++ returned the same three values.</li>
+<li>Despite same RNG state, full-run jRand still differed from the R reference. The remaining suspect was <code>R::rmultinom</code> (the C-level entry). Replaced it with <code>Function r_rmultinom("rmultinom"); m =    r_rmultinom(1, 1, p)</code>. Bit-identical match for max_iter = 1, 5, 10, 50.</li>
+</ol><p>Hypothesis for why <code>R::rmultinom</code> desynchronises while <code>R::sample</code> (well, <code>Rcpp::sample</code>) was at least RNG-consistent internally is that <code>do_rmultinom</code> runs <code>FixupProb</code> and possibly other validation/normalisation steps that <code>R::rmultinom</code> (the C-level form) skips. We tried explicit normalisation (<code>p[k] /= sum(p)</code>) before <code>R::rmultinom</code> and it still desynchronised, so there is more going on than just the FixupProb division. Did not investigate further; the R-level path is fast enough.</p>
+<p>Performance after the switch:</p>
+<ul><li>nominal J20S600: 82 -&gt; 20 ms/iter (4.0x)</li>
+<li>ordinal J35S500: 76 -&gt; 19 ms/iter (4.1x)</li>
+</ul><p>End-to-end <code>Biclustering_IRM(J20S600, max_iter = 100)</code> drops from a few seconds to ~0.3 s. Numerical equivalence verified by 6 unit tests in <code>test-irm-gibbs-cpp.R</code> covering several seeds and iteration counts (cls, fld, Nc, Nf, cls01, fld01, U_fcq all bit-identical).</p>
+<p>R integration: added <code>use_cpp = TRUE</code> argument to <code>irm_gibbs_core()</code>. Default dispatches to <code>irm_gibbs_core_cpp()</code>; <code>use_cpp = FALSE</code> preserves the R reference for cross-checking. The two callers (<code><a href="reference/Biclustering_IRM.html">Biclustering_IRM.nominal()</a></code> and <code><a href="reference/Biclustering_IRM.html">Biclustering_IRM.ordinal()</a></code>) need no changes; rated dispatch flows through nominal automatically.</p>
+<p>Committed (with conf_class and bg-agent work bundled) as <code>d485a18: feat: C++ IRM Gibbs sampler + class-side confirmatory + vignette/test polish</code>. Pushed to origin/main.</p>
+</div>
+<div class="section level3">
+<h3 id="cran-submission-prep">CRAN submission prep<a class="anchor" aria-label="anchor" href="#cran-submission-prep"></a></h3>
+<p>Pending A3 Phase3 simulation completion (per <code>.claude/CLAUDE.md</code> policy), but staged the docs-only prep work so the submission can go out as soon as Phase3 lands:</p>
+<ul><li>
+<code>.Rbuildignore</code> += <code>^figure$</code> (knitr vignette artefact, was being picked up as untracked).</li>
+<li>
+<code>roxygen2::roxygenise()</code> to regenerate <code>man/Biclustering.Rd</code> with the new <code>conf_class</code> argument; added a proper <code>@param conf_class</code> block in <code>R/07_Biclustering.R</code> so the description body is non-empty.</li>
+<li>
+<code>NEWS.md</code>: consolidated the duplicate “## Bug Fixes” subsection into the single “## Bug fixes” block, and corrected the “## Notes” entry which had previously claimed “no API changes” (conf_class is an additive API change).</li>
+<li>
+<code>cran-comments.md</code>: rewrote for v1.12.0 (was still v1.11.0 text).</li>
+</ul><p>Committed as <code>86e7b6b: docs: prep CRAN submission for v1.12.0</code>.</p>
+</div>
+<div class="section level3">
+<h3 id="outstanding-before-cran-submission">Outstanding before CRAN submission<a class="anchor" aria-label="anchor" href="#outstanding-before-cran-submission"></a></h3>
+<ul><li>A3 Phase3 simulation must finish (Al-Khwarizmi, expected ~4/25 evening, slipped). Notify on completion.</li>
+<li>GitHub Actions: confirm <code>R-CMD-check.yaml</code>, <code>rhub.yaml</code>, and <code>pkgdown.yaml</code> all pass on <code>main</code> after the two recent pushes.</li>
+<li>
+<code>R CMD check --as-cran</code> locally on macOS arm64 (R 4.5.3).</li>
+<li>
+<code>rhub::check_for_cran()</code> and <code>devtools::check_win_devel()</code>.</li>
+<li>Then submit; existing CRAN-SUBMISSION points to v1.11.0 and will be refreshed by the submission tooling.</li>
+</ul></div>
+</div>
+<div class="section level2">
 <h2 id="id_2026-04-21--v1120-planning-vectorize-biclusteringordinal-em">2026-04-21 — v1.12.0 planning: vectorize Biclustering.ordinal EM<a class="anchor" aria-label="anchor" href="#id_2026-04-21--v1120-planning-vectorize-biclusteringordinal-em"></a></h2>
 <div class="section level3">
 <h3 id="motivation">Motivation<a class="anchor" aria-label="anchor" href="#motivation"></a></h3>

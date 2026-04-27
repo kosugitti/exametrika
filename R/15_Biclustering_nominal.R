@@ -50,15 +50,15 @@ Biclustering.nominal <- function(U,
     }
     if (is.vector(conf)) {
       # check size
-      if (length(conf) != NCOL(U)) {
+      if (length(conf) != NCOL(U$Q)) {
         stop("conf vector size does NOT match with data.")
       }
-      conf_mat <- matrix(0, nrow = NCOL(U), ncol = max(conf))
+      conf_mat <- matrix(0, nrow = NCOL(U$Q), ncol = max(conf))
       for (i in 1:NROW(conf_mat)) {
         conf_mat[i, conf[i]] <- 1
       }
     } else if (is.matrix(conf) | is.data.frame(conf)) {
-      if (NROW(conf) != NCOL(U)) {
+      if (NROW(conf) != NCOL(U$Q)) {
         stop("conf matrix size does NOT match with data.")
       }
       if (any(!conf %in% c(0, 1))) {
@@ -67,6 +67,7 @@ Biclustering.nominal <- function(U,
       if (any(rowSums(conf) > 1)) {
         stop("The row sums of the conf matrix must be equal to 1.")
       }
+      conf_mat <- as.matrix(conf)
     } else {
       stop("conf matrix is not set properly.")
     }

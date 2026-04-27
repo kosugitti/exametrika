@@ -1,5 +1,39 @@
 # exametrika 1.12.0
 
+## Bug fixes
+
+- **Confirmatory ordinal Biclustering: field membership now stays fixed
+  during EM**: `Biclustering.ordinal()` was overwriting `fldmemb` with the
+  E-step estimate every iteration, so the `conf`/`conf_mat` argument only
+  affected the initial value. Aligned the implementation with
+  `Biclustering.binary()` by re-applying `fldmemb <- conf_mat` immediately
+  after the field-side E-step. With this fix `result$FieldEstimated`
+  matches the user-supplied assignment exactly.
+- **Confirmatory nominal Biclustering: conf argument is now actually
+  honored**: `Biclustering.nominal()` validated `length(conf)` against
+  `NCOL(U)`, but `U` is an `exametrika` list object so `NCOL(U)` always
+  returned 1. The check rejected every well-formed `conf` vector with
+  "conf vector size does NOT match with data.", making confirmatory
+  nominal Biclustering unreachable since v1.10.0. Replaced with
+  `NCOL(U$Q)` (and the matrix-form `NROW(conf)` check, plus the
+  `conf_mat` allocation, in the same way).
+- **Confirmatory ordinal Biclustering: conf length check actually
+  validates input**: same `NCOL(U)` issue as nominal, but in
+  `Biclustering.ordinal()`. Fixed by switching to `NCOL(U$Q)`.
+- **Confirmatory binary Biclustering: conf size checks now reference the
+  formatted response matrix explicitly**: `Biclustering.binary()` happened
+  to work because `U` is rebound to `tmp$U * tmp$Z` before the conf block,
+  so `NCOL(U)` returned the item count. Switched to `NCOL(tmp$U)` for
+  consistency with the ordinal/nominal fixes and to make the intent
+  obvious to readers.
+- **Confirmatory Biclustering: matrix-form `conf` is no longer silently
+  dropped**: when `conf` was supplied as a membership matrix
+  (items x fields) instead of a vector, all three implementations
+  (`binary`, `ordinal`, `nominal`) validated the matrix but never copied
+  it into `conf_mat`, so the subsequent `nfld <- NCOL(conf_mat)` failed
+  with `object 'conf_mat' not found`. Added `conf_mat <- as.matrix(conf)`
+  in the matrix branch.
+
 ## Performance
 
 - **Vectorized EM hot path in `Biclustering.ordinal()`**: The per-iteration

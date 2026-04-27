@@ -216,3 +216,38 @@ test_that("Ranklustering Students", {
     as.numeric()
   expect_equal(result, expect, tolerance = 1e-4)
 })
+
+
+### Confirmatory Biclustering (binary)
+conf_b <- c(rep(1, 7), rep(2, 7), rep(3, 7), rep(4, 7), rep(5, 7))
+Bic_conf <- Biclustering(J35S515, ncls = 5, nfld = 5, method = "B", conf = conf_b, verbose = FALSE)
+
+test_that("binary confirmatory respects field assignments", {
+  expect_equal(as.numeric(Bic_conf$FieldEstimated), conf_b)
+})
+
+test_that("binary confirmatory rejects wrong-length conf vector", {
+  expect_error(
+    Biclustering(J35S515, ncls = 5, nfld = 5, method = "B",
+                 conf = rep(1:5, each = 6), verbose = FALSE),
+    "conf vector size does NOT match"
+  )
+})
+
+test_that("binary confirmatory accepts membership matrix", {
+  conf_mat <- matrix(0, nrow = 35, ncol = 5)
+  for (i in seq_len(35)) conf_mat[i, conf_b[i]] <- 1
+  res <- Biclustering(J35S515, ncls = 5, nfld = 5, method = "B",
+                      conf = conf_mat, verbose = FALSE)
+  expect_equal(as.numeric(res$FieldEstimated), conf_b)
+})
+
+test_that("binary confirmatory rejects wrong-row matrix", {
+  bad <- matrix(0, nrow = 30, ncol = 5)
+  bad[cbind(seq_len(30), rep(1:5, each = 6))] <- 1
+  expect_error(
+    Biclustering(J35S515, ncls = 5, nfld = 5, method = "B",
+                 conf = bad, verbose = FALSE),
+    "conf matrix size does NOT match"
+  )
+})

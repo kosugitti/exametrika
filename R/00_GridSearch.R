@@ -132,9 +132,10 @@ GridSearch <- function(
         # empty-cluster edge cases at grid corners) should not abort the
         # entire grid search. Treat errors the same as non-convergence.
         result <- tryCatch(do.call(fun, args_list),
-                           error = function(e) NULL)
+          error = function(e) NULL
+        )
         if (is.null(result) ||
-            (!is.null(result$converge) && isFALSE(result$converge))) {
+          (!is.null(result$converge) && isFALSE(result$converge))) {
           ret[ncls - 1, nfld - 1] <- NA
           failed_settings <- append(
             failed_settings,
@@ -227,9 +228,10 @@ GridSearch <- function(
       ), extra_args)
       # Tolerate per-cell errors (see Biclustering branch above for rationale).
       result <- tryCatch(do.call(fun, args_list),
-                         error = function(e) NULL)
+        error = function(e) NULL
+      )
       if (is.null(result) ||
-          (!is.null(result$converge) && isFALSE(result$converge))) {
+        (!is.null(result$converge) && isFALSE(result$converge))) {
         ret[i] <- NA
         failed_settings <- append(
           failed_settings,

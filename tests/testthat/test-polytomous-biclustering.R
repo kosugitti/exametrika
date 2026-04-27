@@ -356,3 +356,60 @@ test_that("rated Biclustering backward compatibility fields", {
 test_that("rated Biclustering print works", {
   expect_no_error(capture.output(print(result_rated)))
 })
+
+
+# ================================================================
+# Confirmatory Biclustering (nominal / ordinal)
+# ================================================================
+
+# nominal: J20S600 = 20項目 → 4フィールド × 5項目
+conf_nom <- rep(1:4, each = 5)
+result_nom_conf <- Biclustering(J20S600, ncls = 5, nfld = 4,
+                                 conf = conf_nom, verbose = FALSE)
+
+test_that("nominal confirmatory respects field assignments", {
+  expect_equal(as.numeric(result_nom_conf$FieldEstimated), conf_nom)
+})
+
+test_that("nominal confirmatory rejects wrong-length conf vector", {
+  expect_error(
+    Biclustering(J20S600, ncls = 5, nfld = 4,
+                 conf = rep(1:4, each = 4), verbose = FALSE),
+    "conf vector size does NOT match"
+  )
+})
+
+test_that("nominal confirmatory accepts membership matrix", {
+  conf_mat <- matrix(0, nrow = 20, ncol = 4)
+  for (i in seq_len(20)) conf_mat[i, conf_nom[i]] <- 1
+  res <- Biclustering(J20S600, ncls = 5, nfld = 4,
+                      conf = conf_mat, verbose = FALSE)
+  expect_equal(as.numeric(res$FieldEstimated), conf_nom)
+})
+
+test_that("nominal confirmatory rejects wrong-row matrix", {
+  bad <- matrix(0, nrow = 18, ncol = 4)
+  bad[cbind(seq_len(18), rep(1:4, length.out = 18))] <- 1
+  expect_error(
+    Biclustering(J20S600, ncls = 5, nfld = 4,
+                 conf = bad, verbose = FALSE),
+    "conf matrix size does NOT match"
+  )
+})
+
+# ordinal: J35S500 = 35項目 → 5フィールド × 7項目
+conf_ord <- c(rep(1, 7), rep(2, 7), rep(3, 7), rep(4, 7), rep(5, 7))
+result_ord_conf <- Biclustering(J35S500, ncls = 5, nfld = 5, method = "R",
+                                 conf = conf_ord, verbose = FALSE)
+
+test_that("ordinal confirmatory respects field assignments", {
+  expect_equal(as.numeric(result_ord_conf$FieldEstimated), conf_ord)
+})
+
+test_that("ordinal confirmatory rejects wrong-length conf vector", {
+  expect_error(
+    Biclustering(J35S500, ncls = 5, nfld = 5, method = "R",
+                 conf = rep(1:5, each = 6), verbose = FALSE),
+    "conf vector size does NOT match"
+  )
+})

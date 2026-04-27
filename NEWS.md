@@ -1,5 +1,26 @@
 # exametrika 1.12.0
 
+## New features
+
+- **Class-side Confirmatory Biclustering**: `Biclustering()` now accepts
+  a `conf_class` argument that fixes class memberships during EM. Like
+  `conf` (which fixes field memberships), `conf_class` accepts either a
+  vector of class labels (one per respondent) or a 0/1 membership matrix
+  (respondents x classes). When supplied, the class-side E-step is
+  overridden every iteration. For Ranklustering (`method = "R"`), the
+  neighbour-smoothing step is skipped (`smoothed_memb <- clsmemb`) since
+  smoothing pre-fixed labels would defeat the purpose of fixing them.
+  Available for `binary`, `ordinal`, `nominal`, and `rated` data; can be
+  combined with `conf` to fix both fields and classes simultaneously.
+  Note: `rated` re-orders classes by correct rate after estimation, so
+  the output class labels may not match the input labels (the
+  individual-to-class mapping is preserved up to relabeling).
+
+  Number of model parameters (`nparam`) is intentionally not adjusted
+  when `conf` or `conf_class` is in effect: only PiFR / BCRM cell
+  probabilities count as parameters in this implementation, and
+  membership matrices are latent posteriors, not parameters.
+
 ## Bug fixes
 
 - **Confirmatory ordinal Biclustering: field membership now stays fixed
@@ -35,6 +56,28 @@
   in the matrix branch.
 
 ## Performance
+
+- **C++ implementation of the IRM Gibbs sampler core**: The collapsed
+  Gibbs sampler shared by `Biclustering_IRM.nominal()`,
+  `Biclustering_IRM.ordinal()`, and `Biclustering_IRM.rated()` is now
+  implemented in C++ via Rcpp (`src/irm_gibbs_core.cpp`). The R
+  reference implementation in `R/00_IRM_Gibbs_CORE.R` is preserved
+  behind `irm_gibbs_core(..., use_cpp = FALSE)` for cross-checking.
+
+  - **Numerical reproducibility**: With the same `set.seed()`, the C++
+    path produces output bit-identical to the R reference. RNG calls
+    are routed through R-level `sample.int()` and `rmultinom()` (via
+    `Rcpp::Function`) so the `unif_rand()` consumption order matches
+    base R exactly. The C-level entry points (`Rcpp::sample`,
+    `R::rmultinom`) consume RNG differently from base R and were
+    explicitly avoided.
+  - **Wall-clock**: roughly 4x speedup on the inner Gibbs loop on the
+    bundled test datasets (J20S600 nominal: 82 to 20 ms/iter;
+    J35S500 ordinal: 76 to 19 ms/iter). The end-to-end
+    `Biclustering_IRM()` call also benefits proportionally on larger
+    iteration counts (e.g. simulation runs).
+  - **No new dependencies**: Rcpp is already in `LinkingTo:`; the
+    implementation uses only `Rcpp::Function` and `<vector>`/`<cmath>`.
 
 - **Vectorized EM hot path in `Biclustering.ordinal()`**: The per-iteration
   cost of the ordinal EM loop has been reduced by rewriting five hot spots
@@ -143,6 +186,25 @@
   recorded in `failed_settings`. `GridSearch()` still raises only
   when *all* grid cells fail, preserving the existing "all-failed"
   error.
+
+## Output structure
+
+- **`Biclustering.ordinal()` now returns `SmoothedMembership`**: The
+  smoothed (Ranklustering-filtered) class membership matrix is now part
+  of the return value, mirroring `Biclustering.binary()`. This fills a
+  long-standing gap (only the binary form previously exposed it) and
+  makes Ranklustering with `conf_class` introspectable: callers can
+  verify that the smoothing step is correctly skipped when class labels
+  are pre-fixed (`SmoothedMembership` equals `ClassMembership` in that
+  case).
+
+## Tests
+
+- Added a `print()` smoke test for `Biclustering_IRM.rated()` results
+  (`test-irm-rated.R`).
+- Added an `nrank = 4` `LRA.rated` regression test for
+  `DistractorAnalysis()` to cover varying rank counts
+  (`test-distractor.R`).
 
 ## Notes
 

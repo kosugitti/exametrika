@@ -25,6 +25,10 @@ compare_gradients_grm <- function(target, dat, n_quad_points = 51L) {
     .Call(`_exametrika_compare_gradients_grm`, target, dat, n_quad_points)
 }
 
+irm_gibbs_core_cpp <- function(Uq_vec, Uq_dim, Z, cls01_init, fld01_init, gamma_c, gamma_f, alpha_vec_R, max_iter, stable_limit, verbose) {
+    .Call(`_exametrika_irm_gibbs_core_cpp`, Uq_vec, Uq_dim, Z, cls01_init, fld01_init, gamma_c, gamma_f, alpha_vec_R, max_iter, stable_limit, verbose)
+}
+
 qBiNormal_cpp <- function(a, b, rho) {
     .Call(`_exametrika_qBiNormal_cpp`, a, b, rho)
 }

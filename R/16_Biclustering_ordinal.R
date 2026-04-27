@@ -23,6 +23,7 @@ Biclustering.ordinal <- function(U,
                                  ncls = 2, nfld = 2,
                                  method = "B",
                                  conf = NULL,
+                                 conf_class = NULL,
                                  mic = FALSE,
                                  maxiter = 100,
                                  verbose = TRUE,
@@ -95,6 +96,38 @@ Biclustering.ordinal <- function(U,
     conf_mat <- NULL
   }
 
+  # set conf_class_mat for class-side confirmatory clustering
+  if (!is.null(conf_class)) {
+    if (verbose) {
+      message("Class-side Confirmatory Clustering is chosen.")
+    }
+    if (is.vector(conf_class)) {
+      if (length(conf_class) != nobs) {
+        stop("conf_class vector size does NOT match with the number of respondents.")
+      }
+      conf_class_mat <- matrix(0, nrow = nobs, ncol = max(conf_class))
+      for (i in 1:NROW(conf_class_mat)) {
+        conf_class_mat[i, conf_class[i]] <- 1
+      }
+    } else if (is.matrix(conf_class) | is.data.frame(conf_class)) {
+      if (NROW(conf_class) != nobs) {
+        stop("conf_class matrix size does NOT match with the number of respondents.")
+      }
+      if (any(!conf_class %in% c(0, 1))) {
+        stop("The conf_class matrix should only contain 0s and 1s.")
+      }
+      if (any(rowSums(conf_class) > 1)) {
+        stop("The row sums of the conf_class matrix must be equal to 1.")
+      }
+      conf_class_mat <- as.matrix(conf_class)
+    } else {
+      stop("conf_class is not set properly.")
+    }
+    ncls <- NCOL(conf_class_mat)
+  } else {
+    conf_class_mat <- NULL
+  }
+
   if (ncls < 2 | ncls > 20) {
     stop("Please set the number of classes to a number between 2 and less than 20.")
   }
@@ -154,6 +187,9 @@ Biclustering.ordinal <- function(U,
   } else {
     Fil <- create_filter_matrix(ncls)
   }
+  # Initialize smoothed_memb so that it is defined even when the EM loop
+  # exits before reaching the smoothing step (e.g. immediate convergence).
+  smoothed_memb <- matrix(0, nrow = nobs, ncol = ncls)
   # iteration start ---------------------------------------------------------
   converge <- TRUE
   FLG <- TRUE
@@ -192,8 +228,13 @@ Biclustering.ordinal <- function(U,
     expllsr <- exp(pmin(tmpL - minllsr, 700))
     clsmemb <- round(expllsr / rowSums(expllsr), 1e8)
 
-    # For Ranklustering
-    smoothed_memb <- clsmemb %*% Fil
+    if (!is.null(conf_class_mat)) {
+      clsmemb <- conf_class_mat
+      smoothed_memb <- clsmemb
+    } else {
+      # For Ranklustering
+      smoothed_memb <- clsmemb %*% Fil
+    }
 
     ## Mjf <- Pi, Msc
     tmpH <- matrix(0, nrow = nitems, ncol = nfld)
@@ -433,6 +474,7 @@ Biclustering.ordinal <- function(U,
     RMD = colSums(clsmemb),
     FieldMembership = fldmemb,
     ClassMembership = clsmemb,
+    SmoothedMembership = smoothed_memb,
     FieldEstimated = fld,
     ClassEstimated = cls,
     Students = StudentRank,

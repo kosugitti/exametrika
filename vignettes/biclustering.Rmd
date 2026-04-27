@@ -132,7 +132,7 @@ plot(result.B.nom, type = "RRV")
 
 Rated data has both multiple response categories and correct answers. `Biclustering.rated()` internally runs nominal Biclustering, then sorts classes by correct response rate:
 
-```{r bic-rated, eval=FALSE}
+```{r bic-rated, message=FALSE, warning=FALSE}
 result.B.rated <- Biclustering(J21S300, ncls = 5, nfld = 3, method = "R", maxiter = 300)
 result.B.rated
 plot(result.B.rated, type = "Array")
@@ -145,8 +145,8 @@ Two layers of fit indices are reported: binary (with CFI/RMSEA) and nominal (AIC
 
 The IRM also supports rated data:
 
-```{r irm-rated, eval=FALSE}
-result.IRM.rated <- Biclustering_IRM(J21S300, gamma_c = 1, gamma_f = 1, verbose = TRUE)
+```{r irm-rated, message=FALSE, warning=FALSE}
+result.IRM.rated <- Biclustering_IRM(J21S300, gamma_c = 1, gamma_f = 1, verbose = FALSE)
 plot(result.IRM.rated, type = "Array")
 plot(result.IRM.rated, type = "FRP", nc = 3, nr = 1)
 ```

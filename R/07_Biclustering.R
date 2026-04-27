@@ -160,6 +160,7 @@ Biclustering.binary <- function(U,
                                 ncls = 2, nfld = 2,
                                 method = "B",
                                 conf = NULL,
+                                conf_class = NULL,
                                 mic = FALSE,
                                 maxiter = 100,
                                 verbose = TRUE,
@@ -223,6 +224,38 @@ Biclustering.binary <- function(U,
     nfld <- NCOL(conf_mat)
   } else {
     conf_mat <- NULL
+  }
+
+  # set conf_class_mat for class-side confirmatory clustering
+  if (!is.null(conf_class)) {
+    if (verbose) {
+      message("Class-side Confirmatory Clustering is chosen.")
+    }
+    if (is.vector(conf_class)) {
+      if (length(conf_class) != nobs) {
+        stop("conf_class vector size does NOT match with the number of respondents.")
+      }
+      conf_class_mat <- matrix(0, nrow = nobs, ncol = max(conf_class))
+      for (i in 1:NROW(conf_class_mat)) {
+        conf_class_mat[i, conf_class[i]] <- 1
+      }
+    } else if (is.matrix(conf_class) | is.data.frame(conf_class)) {
+      if (NROW(conf_class) != nobs) {
+        stop("conf_class matrix size does NOT match with the number of respondents.")
+      }
+      if (any(!conf_class %in% c(0, 1))) {
+        stop("The conf_class matrix should only contain 0s and 1s.")
+      }
+      if (any(rowSums(conf_class) > 1)) {
+        stop("The row sums of the conf_class matrix must be equal to 1.")
+      }
+      conf_class_mat <- as.matrix(conf_class)
+    } else {
+      stop("conf_class is not set properly.")
+    }
+    ncls <- NCOL(conf_class_mat)
+  } else {
+    conf_class_mat <- NULL
   }
 
   if (ncls < 2 | ncls > 20) {
@@ -311,7 +344,12 @@ Biclustering.binary <- function(U,
     # clsmemb <- round(expllsr / rowSums(expllsr), 1e8)
     clsmemb <- t(apply(llsr, 1, softmax))
 
-    smoothed_memb <- clsmemb %*% Fil
+    if (!is.null(conf_class_mat)) {
+      clsmemb <- conf_class_mat
+      smoothed_memb <- clsmemb
+    } else {
+      smoothed_memb <- clsmemb %*% Fil
+    }
 
     cjr <- t(tmp$Z * tmp$U) %*% smoothed_memb
     fjr <- t(tmp$Z * (1 - tmp$U)) %*% smoothed_memb

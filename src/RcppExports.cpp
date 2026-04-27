@@ -86,6 +86,27 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// irm_gibbs_core_cpp
+List irm_gibbs_core_cpp(NumericVector Uq_vec, IntegerVector Uq_dim, NumericMatrix Z, NumericMatrix cls01_init, NumericMatrix fld01_init, double gamma_c, double gamma_f, NumericVector alpha_vec_R, int max_iter, int stable_limit, bool verbose);
+RcppExport SEXP _exametrika_irm_gibbs_core_cpp(SEXP Uq_vecSEXP, SEXP Uq_dimSEXP, SEXP ZSEXP, SEXP cls01_initSEXP, SEXP fld01_initSEXP, SEXP gamma_cSEXP, SEXP gamma_fSEXP, SEXP alpha_vec_RSEXP, SEXP max_iterSEXP, SEXP stable_limitSEXP, SEXP verboseSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericVector >::type Uq_vec(Uq_vecSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type Uq_dim(Uq_dimSEXP);
+    Rcpp::traits::input_parameter< NumericMatrix >::type Z(ZSEXP);
+    Rcpp::traits::input_parameter< NumericMatrix >::type cls01_init(cls01_initSEXP);
+    Rcpp::traits::input_parameter< NumericMatrix >::type fld01_init(fld01_initSEXP);
+    Rcpp::traits::input_parameter< double >::type gamma_c(gamma_cSEXP);
+    Rcpp::traits::input_parameter< double >::type gamma_f(gamma_fSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type alpha_vec_R(alpha_vec_RSEXP);
+    Rcpp::traits::input_parameter< int >::type max_iter(max_iterSEXP);
+    Rcpp::traits::input_parameter< int >::type stable_limit(stable_limitSEXP);
+    Rcpp::traits::input_parameter< bool >::type verbose(verboseSEXP);
+    rcpp_result_gen = Rcpp::wrap(irm_gibbs_core_cpp(Uq_vec, Uq_dim, Z, cls01_init, fld01_init, gamma_c, gamma_f, alpha_vec_R, max_iter, stable_limit, verbose));
+    return rcpp_result_gen;
+END_RCPP
+}
 // qBiNormal_cpp
 double qBiNormal_cpp(double a, double b, double rho);
 RcppExport SEXP _exametrika_qBiNormal_cpp(SEXP aSEXP, SEXP bSEXP, SEXP rhoSEXP) {
@@ -142,6 +163,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_exametrika_score_function_analytical_grm", (DL_FUNC) &_exametrika_score_function_analytical_grm, 3},
     {"_exametrika_score_function_numerical_grm", (DL_FUNC) &_exametrika_score_function_numerical_grm, 3},
     {"_exametrika_compare_gradients_grm", (DL_FUNC) &_exametrika_compare_gradients_grm, 3},
+    {"_exametrika_irm_gibbs_core_cpp", (DL_FUNC) &_exametrika_irm_gibbs_core_cpp, 11},
     {"_exametrika_qBiNormal_cpp", (DL_FUNC) &_exametrika_qBiNormal_cpp, 3},
     {"_exametrika_polychoric_likelihood_cpp", (DL_FUNC) &_exametrika_polychoric_likelihood_cpp, 2},
     {"_exametrika_polychoric_cpp", (DL_FUNC) &_exametrika_polychoric_cpp, 2},

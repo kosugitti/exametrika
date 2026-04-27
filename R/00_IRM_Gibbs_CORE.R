@@ -89,6 +89,10 @@ irm_bic_calc <- function(Uq, Z, fld01, cls01, BCRM, maxQ, const) {
 #' @param max_iter Maximum number of Gibbs iterations.
 #' @param stable_limit Number of consecutive stable iterations for convergence.
 #' @param verbose If TRUE, display progress messages.
+#' @param use_cpp If TRUE (default), dispatch to the Rcpp implementation
+#'   `irm_gibbs_core_cpp()`. With the same `set.seed()` it produces
+#'   bit-identical output to the R reference implementation but runs
+#'   roughly 4-5x faster. Set FALSE only for cross-checking.
 #' @return A list with:
 #'   \describe{
 #'     \item{cls01}{Final class membership matrix (nobs x ncls).}
@@ -105,7 +109,28 @@ irm_bic_calc <- function(Uq, Z, fld01, cls01, BCRM, maxQ, const) {
 #' @noRd
 irm_gibbs_core <- function(Uq, Z, cls01, fld01,
                            gamma_c, gamma_f, alpha_vec,
-                           max_iter, stable_limit, verbose) {
+                           max_iter, stable_limit, verbose,
+                           use_cpp = TRUE) {
+  if (isTRUE(use_cpp)) {
+    out <- irm_gibbs_core_cpp(
+      Uq_vec = as.numeric(Uq),
+      Uq_dim = as.integer(dim(Uq)),
+      Z = Z,
+      cls01_init = cls01,
+      fld01_init = fld01,
+      gamma_c = gamma_c,
+      gamma_f = gamma_f,
+      alpha_vec_R = alpha_vec,
+      max_iter = max_iter,
+      stable_limit = stable_limit,
+      verbose = verbose
+    )
+    rownames(out$cls01) <- rownames(cls01)
+    colnames(out$cls01) <- paste("Rank", seq_len(out$ncls))
+    colnames(out$fld01) <- paste("Field", seq_len(out$nfld))
+    return(out)
+  }
+
   nobs <- nrow(cls01)
   nitems <- nrow(fld01)
   ncls <- ncol(cls01)

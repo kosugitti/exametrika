@@ -413,3 +413,83 @@ test_that("ordinal confirmatory rejects wrong-length conf vector", {
     "conf vector size does NOT match"
   )
 })
+
+
+# ================================================================
+# Class-side Confirmatory Biclustering (conf_class)
+# ================================================================
+
+# nominal: J20S600, 600 respondents -> 5 classes
+nobs_nom <- NROW(dataFormat(J20S600)$Q)
+conf_class_nom <- ((seq_len(nobs_nom) - 1) %% 5) + 1
+result_nom_cc <- Biclustering(J20S600, ncls = 5, nfld = 4,
+                               conf_class = conf_class_nom, verbose = FALSE)
+
+test_that("nominal class-side confirmatory respects class assignments", {
+  est <- apply(result_nom_cc$ClassMembership, 1, which.max)
+  expect_equal(as.numeric(est), conf_class_nom)
+})
+
+test_that("nominal class-side confirmatory rejects wrong-length conf_class", {
+  expect_error(
+    Biclustering(J20S600, ncls = 5, nfld = 4,
+                 conf_class = 1:10, verbose = FALSE),
+    "conf_class vector size does NOT match"
+  )
+})
+
+test_that("nominal class-side confirmatory accepts membership matrix", {
+  cm <- matrix(0, nrow = nobs_nom, ncol = 5)
+  for (i in seq_len(nobs_nom)) cm[i, conf_class_nom[i]] <- 1
+  res <- Biclustering(J20S600, ncls = 5, nfld = 4,
+                      conf_class = cm, verbose = FALSE)
+  est <- apply(res$ClassMembership, 1, which.max)
+  expect_equal(as.numeric(est), conf_class_nom)
+})
+
+# ordinal: J35S500, 500 respondents -> 5 classes
+nobs_ord <- NROW(dataFormat(J35S500)$Q)
+conf_class_ord <- ((seq_len(nobs_ord) - 1) %% 5) + 1
+result_ord_cc <- Biclustering(J35S500, ncls = 5, nfld = 5, method = "R",
+                               conf_class = conf_class_ord, verbose = FALSE)
+
+test_that("ordinal class-side confirmatory respects class assignments", {
+  est <- apply(result_ord_cc$ClassMembership, 1, which.max)
+  expect_equal(as.numeric(est), conf_class_ord)
+})
+
+test_that("ordinal Ranklustering with conf_class skips smoothing", {
+  # When conf_class fixes the class memberships, smoothed_memb should equal
+  # clsmemb (no neighbour averaging applied).
+  expect_equal(as.numeric(result_ord_cc$SmoothedMembership),
+               as.numeric(result_ord_cc$ClassMembership))
+})
+
+# rated: J21S300, 300 respondents -> 4 classes (post-processing reorders classes)
+nobs_rat <- NROW(dataFormat(J21S300)$Q)
+conf_class_rat <- ((seq_len(nobs_rat) - 1) %% 4) + 1
+result_rat_cc <- Biclustering(J21S300, ncls = 4, nfld = 3,
+                               conf_class = conf_class_rat, verbose = FALSE)
+
+test_that("rated class-side confirmatory keeps individuals in a single class (up to relabeling)", {
+  # rated reorders classes by correct rate after estimation, so the input
+  # labels do not necessarily match output labels. The invariant we test is
+  # that each input class maps bijectively to one output class.
+  est <- apply(result_rat_cc$ClassMembership, 1, which.max)
+  cross <- table(conf_class_rat, est)
+  # Every input class should land in exactly one output class.
+  expect_true(all(rowSums(cross > 0) == 1))
+  # And every output class should come from exactly one input class.
+  expect_true(all(colSums(cross > 0) == 1))
+})
+
+# combined: conf + conf_class together (binary-style on ordinal data)
+test_that("conf and conf_class can be combined (ordinal)", {
+  conf_field_ord <- c(rep(1, 7), rep(2, 7), rep(3, 7), rep(4, 7), rep(5, 7))
+  res <- Biclustering(J35S500, ncls = 5, nfld = 5, method = "R",
+                      conf = conf_field_ord,
+                      conf_class = conf_class_ord, verbose = FALSE)
+  est <- apply(res$ClassMembership, 1, which.max)
+  expect_equal(as.numeric(res$FieldEstimated), conf_field_ord)
+  expect_equal(as.numeric(est), conf_class_ord)
+})

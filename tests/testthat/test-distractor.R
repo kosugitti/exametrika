@@ -220,3 +220,17 @@ test_that("DistractorAnalysis works with Biclustering_IRM.rated", {
   expect_equal(da_irm$maxQ, 4)
   expect_equal(length(da_irm$CA), 21)
 })
+
+# === LRA.rated with different nrank ======================================
+
+test_that("DistractorAnalysis adapts to nrank=4 LRA results", {
+  result_lra4 <- LRA(J21S300, nrank = 4, mic = TRUE, verbose = FALSE)
+  da4 <- DistractorAnalysis(result_lra4)
+  expect_equal(da4$n_rank, 4)
+  expect_equal(dim(da4$chisq_table), c(21, 4))
+  expect_equal(dim(da4$pvalue_table), c(21, 4))
+  expect_equal(dim(da4$cramersv_table), c(21, 4))
+  for (j in 1:da4$nitems) {
+    expect_equal(dim(da4$freq_table[[j]]), c(4, 4))
+  }
+})

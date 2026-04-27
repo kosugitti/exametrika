@@ -291,3 +291,7 @@ test_that("Rated IRM FieldAnalysis Structure", {
   expect_true(all(fa[, "LFE"] >= 1))
   expect_true(all(fa[, "LFE"] <= nfld))
 })
+
+test_that("Rated IRM print method runs without error", {
+  expect_no_error(capture.output(print(result_rirm)))
+})

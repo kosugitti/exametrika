@@ -55,6 +55,62 @@
   with `object 'conf_mat' not found`. Added `conf_mat <- as.matrix(conf)`
   in the matrix branch.
 
+- **`Biclustering.ordinal()` now honors the `maxiter` argument**: The
+  inner EM iteration cap was hardcoded to 100 (`maxemt <- 100`) and
+  ignored the user-supplied `maxiter`. This mirrors the bug that was
+  fixed for `Biclustering.nominal()` in 1.11.0. Callers that pass a
+  larger `maxiter` (e.g. `2000` in Monte Carlo studies) now actually
+  use that ceiling.
+
+- **`GRM()` fit indices no longer return `NaN` for moderate or larger
+  item counts**: The benchmark model used
+  `const <- exp(-nitems * 100)` as a log-domain epsilon inside
+  `sum(cat_counts * log(cat_probs + const))`. For about 8 or more items
+  this expression underflows to exactly 0 in IEEE-754 double precision,
+  so `log(0) = -Inf` propagates through `0 * -Inf = NaN` and poisons
+  every downstream index (model_Chi_sq, NFI, CFI, RMSEA, AIC, CAIC,
+  BIC). The benchmark and null loops now skip zero-count categories
+  explicitly, removing the need for an additive epsilon.
+
+- **`GRM()` degrees of freedom were computed incorrectly**: The model
+  df was set to `n_pattern * (ncat - 1) + 1` and the null df to
+  `n_pattern * (ncat - 1)`, which is neither `(# bench params) - (#
+  model params)` nor `(# bench params) - (# null params)`. The inflated
+  df then clamped `CFI`, `TLI`, `IFI`, and `RMSEA` to zero whenever
+  `chi^2 < df` (and the previous `df_A > df_B` inequality was the wrong
+  direction to begin with). The convention now matches
+  `Biclustering.ordinal()`:
+  - `bench_nparam_j = n_pattern * (ncat_j - 1)`
+  - `null_nparam_j  = ncat_j - 1`
+  - `model_nparam_j = ncat_j`  (one slope plus `ncat_j - 1` thresholds)
+  - `df_A_j = bench_nparam_j - model_nparam_j`
+  - `df_B_j = bench_nparam_j - null_nparam_j`
+
+- **`GRM()` now accepts any integer-coded ordinal responses, not just
+  1..K**: Category counts were derived from `apply(dat, 2, max)`, which
+  assumes responses are already 1-indexed. Data coded from 0 (e.g.
+  0..3) or with gaps (e.g. 1, 2, 4) undercounted `ncat[j]` by one or
+  more and then indexed `grm_prob()[resp]` / `v[resp]` out of range,
+  producing either an outright `invalid subscript type 'list'` error
+  (on `J15S3810`-style data) or silently truncated threshold columns.
+  Each item's responses are now remapped to contiguous 1..K codes via
+  `match()` against the sorted unique values on entry, with `ncat[j]`
+  derived from the mapped levels; both the R model-fit blocks and the
+  C++ log-likelihood receive 1-based input regardless of the user's
+  coding.
+
+- **`GridSearch()` now tolerates per-cell fit errors**: Previously, a
+  single `Biclustering()` (or `LCA()` / `LRA()`) call that raised an
+  error at a grid corner (for example, empty-cluster edge cases at
+  large `ncls`/`nfld` with small `nobs`/`nitems`) would propagate out
+  of `GridSearch()` and abort the entire grid. The call to the
+  underlying analysis function is now wrapped in `tryCatch`, and
+  errors are handled the same way as non-convergence: the cell is
+  marked `NA` in the index matrix and the `(ncls, nfld)` pair is
+  recorded in `failed_settings`. `GridSearch()` still raises only
+  when *all* grid cells fail, preserving the existing "all-failed"
+  error.
+
 ## Performance
 
 - **C++ implementation of the IRM Gibbs sampler core**: The collapsed
@@ -129,64 +185,6 @@
   entries of the old `Uq` were never read because every consumer
   applies the `tmp$Z` mask).
 
-## Bug Fixes
-
-- **`Biclustering.ordinal()` now honors the `maxiter` argument**: The
-  inner EM iteration cap was hardcoded to 100 (`maxemt <- 100`) and
-  ignored the user-supplied `maxiter`. This mirrors the bug that was
-  fixed for `Biclustering.nominal()` in 1.11.0. Callers that pass a
-  larger `maxiter` (e.g. `2000` in Monte Carlo studies) now actually
-  use that ceiling.
-
-- **`GRM()` fit indices no longer return `NaN` for moderate or larger
-  item counts**: The benchmark model used
-  `const <- exp(-nitems * 100)` as a log-domain epsilon inside
-  `sum(cat_counts * log(cat_probs + const))`. For about 8 or more items
-  this expression underflows to exactly 0 in IEEE-754 double precision,
-  so `log(0) = -Inf` propagates through `0 * -Inf = NaN` and poisons
-  every downstream index (model_Chi_sq, NFI, CFI, RMSEA, AIC, CAIC,
-  BIC). The benchmark and null loops now skip zero-count categories
-  explicitly, removing the need for an additive epsilon.
-
-- **`GRM()` degrees of freedom were computed incorrectly**: The model
-  df was set to `n_pattern * (ncat - 1) + 1` and the null df to
-  `n_pattern * (ncat - 1)`, which is neither `(# bench params) - (#
-  model params)` nor `(# bench params) - (# null params)`. The inflated
-  df then clamped `CFI`, `TLI`, `IFI`, and `RMSEA` to zero whenever
-  `chi^2 < df` (and the previous `df_A > df_B` inequality was the wrong
-  direction to begin with). The convention now matches
-  `Biclustering.ordinal()`:
-  - `bench_nparam_j = n_pattern * (ncat_j - 1)`
-  - `null_nparam_j  = ncat_j - 1`
-  - `model_nparam_j = ncat_j`  (one slope plus `ncat_j - 1` thresholds)
-  - `df_A_j = bench_nparam_j - model_nparam_j`
-  - `df_B_j = bench_nparam_j - null_nparam_j`
-
-- **`GRM()` now accepts any integer-coded ordinal responses, not just
-  1..K**: Category counts were derived from `apply(dat, 2, max)`, which
-  assumes responses are already 1-indexed. Data coded from 0 (e.g.
-  0..3) or with gaps (e.g. 1, 2, 4) undercounted `ncat[j]` by one or
-  more and then indexed `grm_prob()[resp]` / `v[resp]` out of range,
-  producing either an outright `invalid subscript type 'list'` error
-  (on `J15S3810`-style data) or silently truncated threshold columns.
-  Each item's responses are now remapped to contiguous 1..K codes via
-  `match()` against the sorted unique values on entry, with `ncat[j]`
-  derived from the mapped levels; both the R model-fit blocks and the
-  C++ log-likelihood receive 1-based input regardless of the user's
-  coding.
-
-- **`GridSearch()` now tolerates per-cell fit errors**: Previously, a
-  single `Biclustering()` (or `LCA()` / `LRA()`) call that raised an
-  error at a grid corner (for example, empty-cluster edge cases at
-  large `ncls`/`nfld` with small `nobs`/`nitems`) would propagate out
-  of `GridSearch()` and abort the entire grid. The call to the
-  underlying analysis function is now wrapped in `tryCatch`, and
-  errors are handled the same way as non-convergence: the cell is
-  marked `NA` in the index matrix and the `(ncls, nfld)` pair is
-  recorded in `failed_settings`. `GridSearch()` still raises only
-  when *all* grid cells fail, preserving the existing "all-failed"
-  error.
-
 ## Output structure
 
 - **`Biclustering.ordinal()` now returns `SmoothedMembership`**: The
@@ -208,8 +206,11 @@
 
 ## Notes
 
-- No changes to package `Imports` or `Depends`.
-- No new exported functions. No user-visible API changes.
+- No changes to package `Imports` or `Depends`. The new C++ Gibbs
+  sampler uses Rcpp, which was already declared in `LinkingTo:`.
+- No new exported functions. The new `conf_class` argument on
+  `Biclustering()` is additive and defaults to `NULL`, preserving the
+  previous behavior for all existing callers.
 
 # exametrika 1.11.0
 

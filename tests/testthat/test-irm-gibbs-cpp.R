@@ -27,8 +27,10 @@ setup_state <- function(dat) {
   cls01 <- matrix(0, nobs, ncls0)
   for (i in seq_len(nobs)) cls01[i, mode_cat[i]] <- 1
   fld01 <- diag(nitems)
-  list(Uq = Uq, Z = dat$Z, cls01 = cls01, fld01 = fld01,
-       maxQ = maxQ, nobs = nobs, nitems = nitems)
+  list(
+    Uq = Uq, Z = dat$Z, cls01 = cls01, fld01 = fld01,
+    maxQ = maxQ, nobs = nobs, nitems = nitems
+  )
 }
 
 run_R <- function(s, max_iter, seed = 42) {
@@ -107,11 +109,15 @@ test_that("ordinal IRM Gibbs: C++ matches R after 5 iterations", {
 
 test_that("Biclustering_IRM nominal end-to-end (C++ default) is reproducible", {
   set.seed(42)
-  r1 <- Biclustering_IRM(J20S600, gamma_c = 1, gamma_f = 1,
-                         max_iter = 30, verbose = FALSE)
+  r1 <- Biclustering_IRM(J20S600,
+    gamma_c = 1, gamma_f = 1,
+    max_iter = 30, verbose = FALSE
+  )
   set.seed(42)
-  r2 <- Biclustering_IRM(J20S600, gamma_c = 1, gamma_f = 1,
-                         max_iter = 30, verbose = FALSE)
+  r2 <- Biclustering_IRM(J20S600,
+    gamma_c = 1, gamma_f = 1,
+    max_iter = 30, verbose = FALSE
+  )
   expect_equal(r1$n_class, r2$n_class)
   expect_equal(r1$n_field, r2$n_field)
   expect_equal(as.numeric(r1$ClassMembership), as.numeric(r2$ClassMembership))

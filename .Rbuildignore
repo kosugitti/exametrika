@@ -18,3 +18,5 @@
 ^doc$
 ^Meta$
 ^figure$
+^\.positai$
+^\.claude$

@@ -148,9 +148,11 @@ Biclustering.nominal <- function(U,
   # Uq is masked by tmp$Z so the missing-cell values are never read.
   Uq <- array(0, dim = c(nobs, nitems, maxQ))
   valid <- as.vector(tmp$Z) == 1
-  Uq[cbind(rep(seq_len(nobs), times = nitems)[valid],
-           rep(seq_len(nitems), each  = nobs)[valid],
-           as.vector(tmp$Q)[valid])] <- 1
+  Uq[cbind(
+    rep(seq_len(nobs), times = nitems)[valid],
+    rep(seq_len(nitems), each = nobs)[valid],
+    as.vector(tmp$Q)[valid]
+  )] <- 1
 
   # iteration -------------------------------------------------------
   converge <- TRUE

@@ -171,9 +171,11 @@ Biclustering.ordinal <- function(U,
   # missing-cell values are never read.
   Uq <- array(0, dim = c(nobs, nitems, maxQ))
   valid <- as.vector(tmp$Z) == 1
-  Uq[cbind(rep(seq_len(nobs), times = nitems)[valid],
-           rep(seq_len(nitems), each  = nobs)[valid],
-           as.vector(tmp$Q)[valid])] <- 1
+  Uq[cbind(
+    rep(seq_len(nobs), times = nitems)[valid],
+    rep(seq_len(nitems), each = nobs)[valid],
+    as.vector(tmp$Q)[valid]
+  )] <- 1
 
   # Precompute Z * Uq[,,q] once; neither Z nor Uq changes after this point.
   # Uq is stored column-major with dim1 (nobs) varying fastest, so multiplying
@@ -212,8 +214,8 @@ Biclustering.ordinal <- function(U,
     # Both E-steps (class and field) use the same values across all q; the old
     # code recomputed this 2*maxQ times per iteration. Using drop=FALSE on
     # array slicing keeps the 3D shape even when nfld == 1.
-    log_delta <- log(BBRM[, , seq_len(maxQ),     drop = FALSE] -
-                     BBRM[, , seq_len(maxQ) + 1, drop = FALSE] + const)
+    log_delta <- log(BBRM[, , seq_len(maxQ), drop = FALSE] -
+      BBRM[, , seq_len(maxQ) + 1, drop = FALSE] + const)
 
     ## Msc <- Pi, Mjf
     tmpL <- matrix(0, nrow = nobs, ncol = ncls)

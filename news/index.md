@@ -2,7 +2,99 @@
 
 ## exametrika 1.12.0
 
+### New features
+
+- **Class-side Confirmatory Biclustering**:
+  [`Biclustering()`](https://kosugitti.github.io/exametrika/reference/Biclustering.md)
+  now accepts a `conf_class` argument that fixes class memberships
+  during EM. Like `conf` (which fixes field memberships), `conf_class`
+  accepts either a vector of class labels (one per respondent) or a 0/1
+  membership matrix (respondents x classes). When supplied, the
+  class-side E-step is overridden every iteration. For Ranklustering
+  (`method = "R"`), the neighbour-smoothing step is skipped
+  (`smoothed_memb <- clsmemb`) since smoothing pre-fixed labels would
+  defeat the purpose of fixing them. Available for `binary`, `ordinal`,
+  `nominal`, and `rated` data; can be combined with `conf` to fix both
+  fields and classes simultaneously. Note: `rated` re-orders classes by
+  correct rate after estimation, so the output class labels may not
+  match the input labels (the individual-to-class mapping is preserved
+  up to relabeling).
+
+  Number of model parameters (`nparam`) is intentionally not adjusted
+  when `conf` or `conf_class` is in effect: only PiFR / BCRM cell
+  probabilities count as parameters in this implementation, and
+  membership matrices are latent posteriors, not parameters.
+
+### Bug fixes
+
+- **Confirmatory ordinal Biclustering: field membership now stays fixed
+  during EM**:
+  [`Biclustering.ordinal()`](https://kosugitti.github.io/exametrika/reference/Biclustering.md)
+  was overwriting `fldmemb` with the E-step estimate every iteration, so
+  the `conf`/`conf_mat` argument only affected the initial value.
+  Aligned the implementation with
+  [`Biclustering.binary()`](https://kosugitti.github.io/exametrika/reference/Biclustering.md)
+  by re-applying `fldmemb <- conf_mat` immediately after the field-side
+  E-step. With this fix `result$FieldEstimated` matches the
+  user-supplied assignment exactly.
+- **Confirmatory nominal Biclustering: conf argument is now actually
+  honored**:
+  [`Biclustering.nominal()`](https://kosugitti.github.io/exametrika/reference/Biclustering.md)
+  validated `length(conf)` against `NCOL(U)`, but `U` is an `exametrika`
+  list object so `NCOL(U)` always returned 1. The check rejected every
+  well-formed `conf` vector with “conf vector size does NOT match with
+  data.”, making confirmatory nominal Biclustering unreachable since
+  v1.10.0. Replaced with `NCOL(U$Q)` (and the matrix-form `NROW(conf)`
+  check, plus the `conf_mat` allocation, in the same way).
+- **Confirmatory ordinal Biclustering: conf length check actually
+  validates input**: same `NCOL(U)` issue as nominal, but in
+  [`Biclustering.ordinal()`](https://kosugitti.github.io/exametrika/reference/Biclustering.md).
+  Fixed by switching to `NCOL(U$Q)`.
+- **Confirmatory binary Biclustering: conf size checks now reference the
+  formatted response matrix explicitly**:
+  [`Biclustering.binary()`](https://kosugitti.github.io/exametrika/reference/Biclustering.md)
+  happened to work because `U` is rebound to `tmp$U * tmp$Z` before the
+  conf block, so `NCOL(U)` returned the item count. Switched to
+  `NCOL(tmp$U)` for consistency with the ordinal/nominal fixes and to
+  make the intent obvious to readers.
+- **Confirmatory Biclustering: matrix-form `conf` is no longer silently
+  dropped**: when `conf` was supplied as a membership matrix (items x
+  fields) instead of a vector, all three implementations (`binary`,
+  `ordinal`, `nominal`) validated the matrix but never copied it into
+  `conf_mat`, so the subsequent `nfld <- NCOL(conf_mat)` failed with
+  `object 'conf_mat' not found`. Added `conf_mat <- as.matrix(conf)` in
+  the matrix branch.
+
 ### Performance
+
+- **C++ implementation of the IRM Gibbs sampler core**: The collapsed
+  Gibbs sampler shared by
+  [`Biclustering_IRM.nominal()`](https://kosugitti.github.io/exametrika/reference/Biclustering_IRM.md),
+  [`Biclustering_IRM.ordinal()`](https://kosugitti.github.io/exametrika/reference/Biclustering_IRM.md),
+  and
+  [`Biclustering_IRM.rated()`](https://kosugitti.github.io/exametrika/reference/Biclustering_IRM.md)
+  is now implemented in C++ via Rcpp (`src/irm_gibbs_core.cpp`). The R
+  reference implementation in `R/00_IRM_Gibbs_CORE.R` is preserved
+  behind `irm_gibbs_core(..., use_cpp = FALSE)` for cross-checking.
+
+  - **Numerical reproducibility**: With the same
+    [`set.seed()`](https://rdrr.io/r/base/Random.html), the C++ path
+    produces output bit-identical to the R reference. RNG calls are
+    routed through R-level
+    [`sample.int()`](https://rdrr.io/r/base/sample.html) and
+    [`rmultinom()`](https://rdrr.io/r/stats/Multinom.html) (via
+    `Rcpp::Function`) so the `unif_rand()` consumption order matches
+    base R exactly. The C-level entry points (`Rcpp::sample`,
+    `R::rmultinom`) consume RNG differently from base R and were
+    explicitly avoided.
+  - **Wall-clock**: roughly 4x speedup on the inner Gibbs loop on the
+    bundled test datasets (J20S600 nominal: 82 to 20 ms/iter; J35S500
+    ordinal: 76 to 19 ms/iter). The end-to-end
+    [`Biclustering_IRM()`](https://kosugitti.github.io/exametrika/reference/Biclustering_IRM.md)
+    call also benefits proportionally on larger iteration counts
+    (e.g. simulation runs).
+  - **No new dependencies**: Rcpp is already in `LinkingTo:`; the
+    implementation uses only `Rcpp::Function` and `<vector>`/`<cmath>`.
 
 - **Vectorized EM hot path in
   [`Biclustering.ordinal()`](https://kosugitti.github.io/exametrika/reference/Biclustering.md)**:
@@ -132,6 +224,28 @@
   [`GridSearch()`](https://kosugitti.github.io/exametrika/reference/GridSearch.md)
   still raises only when *all* grid cells fail, preserving the existing
   “all-failed” error.
+
+### Output structure
+
+- **[`Biclustering.ordinal()`](https://kosugitti.github.io/exametrika/reference/Biclustering.md)
+  now returns `SmoothedMembership`**: The smoothed
+  (Ranklustering-filtered) class membership matrix is now part of the
+  return value, mirroring
+  [`Biclustering.binary()`](https://kosugitti.github.io/exametrika/reference/Biclustering.md).
+  This fills a long-standing gap (only the binary form previously
+  exposed it) and makes Ranklustering with `conf_class` introspectable:
+  callers can verify that the smoothing step is correctly skipped when
+  class labels are pre-fixed (`SmoothedMembership` equals
+  `ClassMembership` in that case).
+
+### Tests
+
+- Added a [`print()`](https://rdrr.io/r/base/print.html) smoke test for
+  [`Biclustering_IRM.rated()`](https://kosugitti.github.io/exametrika/reference/Biclustering_IRM.md)
+  results (`test-irm-rated.R`).
+- Added an `nrank = 4` `LRA.rated` regression test for
+  [`DistractorAnalysis()`](https://kosugitti.github.io/exametrika/reference/DistractorAnalysis.md)
+  to cover varying rank counts (`test-distractor.R`).
 
 ### Notes
 

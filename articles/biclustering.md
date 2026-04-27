@@ -241,9 +241,113 @@ response rate:
 ``` r
 result.B.rated <- Biclustering(J21S300, ncls = 5, nfld = 3, method = "R", maxiter = 300)
 result.B.rated
+#> Ranklustering Analysis (Rated) [MIC]
+#> 
+#> Ranklustering Reference Matrix Profile (Nominal)
+#> For category 1 
+#>         Rank 1 Rank 2 Rank 3 Rank 4 Rank 5
+#> Field 1  0.106  0.350 0.2827 0.6621 0.7081
+#> Field 2  0.257  0.242 0.1836 0.0714 0.0754
+#> Field 3  0.267  0.221 0.0967 0.1615 0.0041
+#> For category 2 
+#>         Rank 1 Rank 2 Rank 3 Rank 4 Rank 5
+#> Field 1  0.283  0.257  0.228 0.1220 0.0974
+#> Field 2  0.118  0.291  0.415 0.7994 0.7760
+#> Field 3  0.308  0.216  0.129 0.0691 0.0602
+#> For category 3 
+#>         Rank 1 Rank 2 Rank 3 Rank 4 Rank 5
+#> Field 1  0.314  0.182  0.237 0.1165 0.1030
+#> Field 2  0.300  0.257  0.191 0.0665 0.0777
+#> Field 3  0.121  0.411  0.555 0.7038 0.8299
+#> For category 4 
+#>         Rank 1 Rank 2 Rank 3 Rank 4 Rank 5
+#> Field 1  0.297  0.211  0.252 0.0994 0.0915
+#> Field 2  0.325  0.210  0.211 0.0627 0.0709
+#> Field 3  0.304  0.153  0.219 0.0657 0.1059
+#> 
+#> Field Reference Profile (Binary)
+#>         Rank 1 Rank 2 Rank 3 Rank 4 Rank 5
+#> Field 1  0.102  0.390  0.252  0.660  0.702
+#> Field 2  0.115  0.280  0.424  0.803  0.775
+#> Field 3  0.121  0.393  0.574  0.657  0.835
+#> 
+#> Field Reference Profile Indices
+#>        Alpha     A Beta     B Gamma       C
+#> Field1     3 0.409    2 0.390  0.25 -0.1383
+#> Field2     3 0.379    3 0.424  0.25 -0.0285
+#> Field3     1 0.272    3 0.574  0.00  0.0000
+#> 
+#>                              Rank 1 Rank 2 Rank 3 Rank 4 Rank 5
+#> Test Reference Profile        2.370  7.442  8.746 14.844 16.183
+#> Latent Rank Ditribution      73.000 52.000 59.000 45.000 71.000
+#> Rank Membership Distribution 69.457 57.704 59.047 57.877 55.914
+#> 
+#> Field Membership Profile
+#>          CRR LFE Field1 Field2 Field3
+#> Item01 0.440   1  1.000  0.000  0.000
+#> Item02 0.430   1  1.000  0.000  0.000
+#> Item07 0.417   1  1.000  0.000  0.000
+#> Item06 0.407   1  1.000  0.000  0.000
+#> Item03 0.400   1  1.000  0.000  0.000
+#> Item04 0.380   1  1.000  0.000  0.000
+#> Item05 0.377   1  1.000  0.000  0.000
+#> Item09 0.510   2  0.000  1.000  0.000
+#> Item13 0.473   2  0.000  1.000  0.000
+#> Item12 0.470   2  0.000  1.000  0.000
+#> Item14 0.463   2  0.000  1.000  0.000
+#> Item11 0.460   2  0.000  1.000  0.000
+#> Item08 0.450   2  0.000  1.000  0.000
+#> Item10 0.420   2  0.000  1.000  0.000
+#> Item18 0.530   3  0.000  0.000  1.000
+#> Item21 0.527   3  0.000  0.000  1.000
+#> Item16 0.520   3  0.000  0.000  1.000
+#> Item15 0.510   3  0.000  0.000  1.000
+#> Item19 0.500   3  0.000  0.000  1.000
+#> Item20 0.497   3  0.000  0.000  1.000
+#> Item17 0.463   3  0.000  0.000  1.000
+#> Latent Field Distribution
+#>            Field 1 Field 2 Field 3
+#> N of Items       7       7       7
+#> 
+#> Model Fit Indices (Binary)
+#> Number of Latent Rank : 5
+#> Number of Latent Field: 3
+#> Number of EM cycle: 296 
+#>                    value
+#> model_log_like -3293.331
+#> bench_log_like -3079.142
+#> null_log_like  -4318.046
+#> model_Chi_sq     428.376
+#> null_Chi_sq     2477.806
+#> model_df         336.000
+#> null_df          420.000
+#> NFI                0.827
+#> RFI                0.784
+#> IFI                0.957
+#> TLI                0.944
+#> CFI                0.955
+#> RMSEA              0.030
+#> AIC             -243.624
+#> CAIC           -1824.094
+#> BIC            -1488.094
+#> 
+#> Model Fit Indices (Nominal)
+#>                    value
+#> model_log_like -7013.548
+#> AIC            14117.095
+#> CAIC           14328.766
+#> BIC            14283.766
+#> Weakly Ordinal Alignment Condition is Satisfied.
 plot(result.B.rated, type = "Array")
+```
+
+![](biclustering_files/figure-html/bic-rated-1.png)
+
+``` r
 plot(result.B.rated, type = "FRP", nc = 3, nr = 1)
 ```
+
+![](biclustering_files/figure-html/bic-rated-2.png)
 
 Two layers of fit indices are reported: binary (with CFI/RMSEA) and
 nominal (AIC/BIC/CAIC only). Access them via `result$TestFitIndices` and
@@ -254,10 +358,17 @@ nominal (AIC/BIC/CAIC only). Access them via `result$TestFitIndices` and
 The IRM also supports rated data:
 
 ``` r
-result.IRM.rated <- Biclustering_IRM(J21S300, gamma_c = 1, gamma_f = 1, verbose = TRUE)
+result.IRM.rated <- Biclustering_IRM(J21S300, gamma_c = 1, gamma_f = 1, verbose = FALSE)
 plot(result.IRM.rated, type = "Array")
+```
+
+![](biclustering_files/figure-html/irm-rated-1.png)
+
+``` r
 plot(result.IRM.rated, type = "FRP", nc = 3, nr = 1)
 ```
+
+![](biclustering_files/figure-html/irm-rated-2.png)
 
 ## Distractor Analysis
 

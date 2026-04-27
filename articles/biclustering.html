@@ -274,8 +274,108 @@ then sorts classes by correct response rate:</p>
 <div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">result.B.rated</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/Biclustering.html">Biclustering</a></span><span class="op">(</span><span class="va">J21S300</span>, ncls <span class="op">=</span> <span class="fl">5</span>, nfld <span class="op">=</span> <span class="fl">3</span>, method <span class="op">=</span> <span class="st">"R"</span>, maxiter <span class="op">=</span> <span class="fl">300</span><span class="op">)</span></span>
 <span><span class="va">result.B.rated</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">result.B.rated</span>, type <span class="op">=</span> <span class="st">"Array"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">result.B.rated</span>, type <span class="op">=</span> <span class="st">"FRP"</span>, nc <span class="op">=</span> <span class="fl">3</span>, nr <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></code></pre></div>
+<span><span class="co">#&gt; Ranklustering Analysis (Rated) [MIC]</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Ranklustering Reference Matrix Profile (Nominal)</span></span>
+<span><span class="co">#&gt; For category 1 </span></span>
+<span><span class="co">#&gt;         Rank 1 Rank 2 Rank 3 Rank 4 Rank 5</span></span>
+<span><span class="co">#&gt; Field 1  0.106  0.350 0.2827 0.6621 0.7081</span></span>
+<span><span class="co">#&gt; Field 2  0.257  0.242 0.1836 0.0714 0.0754</span></span>
+<span><span class="co">#&gt; Field 3  0.267  0.221 0.0967 0.1615 0.0041</span></span>
+<span><span class="co">#&gt; For category 2 </span></span>
+<span><span class="co">#&gt;         Rank 1 Rank 2 Rank 3 Rank 4 Rank 5</span></span>
+<span><span class="co">#&gt; Field 1  0.283  0.257  0.228 0.1220 0.0974</span></span>
+<span><span class="co">#&gt; Field 2  0.118  0.291  0.415 0.7994 0.7760</span></span>
+<span><span class="co">#&gt; Field 3  0.308  0.216  0.129 0.0691 0.0602</span></span>
+<span><span class="co">#&gt; For category 3 </span></span>
+<span><span class="co">#&gt;         Rank 1 Rank 2 Rank 3 Rank 4 Rank 5</span></span>
+<span><span class="co">#&gt; Field 1  0.314  0.182  0.237 0.1165 0.1030</span></span>
+<span><span class="co">#&gt; Field 2  0.300  0.257  0.191 0.0665 0.0777</span></span>
+<span><span class="co">#&gt; Field 3  0.121  0.411  0.555 0.7038 0.8299</span></span>
+<span><span class="co">#&gt; For category 4 </span></span>
+<span><span class="co">#&gt;         Rank 1 Rank 2 Rank 3 Rank 4 Rank 5</span></span>
+<span><span class="co">#&gt; Field 1  0.297  0.211  0.252 0.0994 0.0915</span></span>
+<span><span class="co">#&gt; Field 2  0.325  0.210  0.211 0.0627 0.0709</span></span>
+<span><span class="co">#&gt; Field 3  0.304  0.153  0.219 0.0657 0.1059</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Field Reference Profile (Binary)</span></span>
+<span><span class="co">#&gt;         Rank 1 Rank 2 Rank 3 Rank 4 Rank 5</span></span>
+<span><span class="co">#&gt; Field 1  0.102  0.390  0.252  0.660  0.702</span></span>
+<span><span class="co">#&gt; Field 2  0.115  0.280  0.424  0.803  0.775</span></span>
+<span><span class="co">#&gt; Field 3  0.121  0.393  0.574  0.657  0.835</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Field Reference Profile Indices</span></span>
+<span><span class="co">#&gt;        Alpha     A Beta     B Gamma       C</span></span>
+<span><span class="co">#&gt; Field1     3 0.409    2 0.390  0.25 -0.1383</span></span>
+<span><span class="co">#&gt; Field2     3 0.379    3 0.424  0.25 -0.0285</span></span>
+<span><span class="co">#&gt; Field3     1 0.272    3 0.574  0.00  0.0000</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;                              Rank 1 Rank 2 Rank 3 Rank 4 Rank 5</span></span>
+<span><span class="co">#&gt; Test Reference Profile        2.370  7.442  8.746 14.844 16.183</span></span>
+<span><span class="co">#&gt; Latent Rank Ditribution      73.000 52.000 59.000 45.000 71.000</span></span>
+<span><span class="co">#&gt; Rank Membership Distribution 69.457 57.704 59.047 57.877 55.914</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Field Membership Profile</span></span>
+<span><span class="co">#&gt;          CRR LFE Field1 Field2 Field3</span></span>
+<span><span class="co">#&gt; Item01 0.440   1  1.000  0.000  0.000</span></span>
+<span><span class="co">#&gt; Item02 0.430   1  1.000  0.000  0.000</span></span>
+<span><span class="co">#&gt; Item07 0.417   1  1.000  0.000  0.000</span></span>
+<span><span class="co">#&gt; Item06 0.407   1  1.000  0.000  0.000</span></span>
+<span><span class="co">#&gt; Item03 0.400   1  1.000  0.000  0.000</span></span>
+<span><span class="co">#&gt; Item04 0.380   1  1.000  0.000  0.000</span></span>
+<span><span class="co">#&gt; Item05 0.377   1  1.000  0.000  0.000</span></span>
+<span><span class="co">#&gt; Item09 0.510   2  0.000  1.000  0.000</span></span>
+<span><span class="co">#&gt; Item13 0.473   2  0.000  1.000  0.000</span></span>
+<span><span class="co">#&gt; Item12 0.470   2  0.000  1.000  0.000</span></span>
+<span><span class="co">#&gt; Item14 0.463   2  0.000  1.000  0.000</span></span>
+<span><span class="co">#&gt; Item11 0.460   2  0.000  1.000  0.000</span></span>
+<span><span class="co">#&gt; Item08 0.450   2  0.000  1.000  0.000</span></span>
+<span><span class="co">#&gt; Item10 0.420   2  0.000  1.000  0.000</span></span>
+<span><span class="co">#&gt; Item18 0.530   3  0.000  0.000  1.000</span></span>
+<span><span class="co">#&gt; Item21 0.527   3  0.000  0.000  1.000</span></span>
+<span><span class="co">#&gt; Item16 0.520   3  0.000  0.000  1.000</span></span>
+<span><span class="co">#&gt; Item15 0.510   3  0.000  0.000  1.000</span></span>
+<span><span class="co">#&gt; Item19 0.500   3  0.000  0.000  1.000</span></span>
+<span><span class="co">#&gt; Item20 0.497   3  0.000  0.000  1.000</span></span>
+<span><span class="co">#&gt; Item17 0.463   3  0.000  0.000  1.000</span></span>
+<span><span class="co">#&gt; Latent Field Distribution</span></span>
+<span><span class="co">#&gt;            Field 1 Field 2 Field 3</span></span>
+<span><span class="co">#&gt; N of Items       7       7       7</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Model Fit Indices (Binary)</span></span>
+<span><span class="co">#&gt; Number of Latent Rank : 5</span></span>
+<span><span class="co">#&gt; Number of Latent Field: 3</span></span>
+<span><span class="co">#&gt; Number of EM cycle: 296 </span></span>
+<span><span class="co">#&gt;                    value</span></span>
+<span><span class="co">#&gt; model_log_like -3293.331</span></span>
+<span><span class="co">#&gt; bench_log_like -3079.142</span></span>
+<span><span class="co">#&gt; null_log_like  -4318.046</span></span>
+<span><span class="co">#&gt; model_Chi_sq     428.376</span></span>
+<span><span class="co">#&gt; null_Chi_sq     2477.806</span></span>
+<span><span class="co">#&gt; model_df         336.000</span></span>
+<span><span class="co">#&gt; null_df          420.000</span></span>
+<span><span class="co">#&gt; NFI                0.827</span></span>
+<span><span class="co">#&gt; RFI                0.784</span></span>
+<span><span class="co">#&gt; IFI                0.957</span></span>
+<span><span class="co">#&gt; TLI                0.944</span></span>
+<span><span class="co">#&gt; CFI                0.955</span></span>
+<span><span class="co">#&gt; RMSEA              0.030</span></span>
+<span><span class="co">#&gt; AIC             -243.624</span></span>
+<span><span class="co">#&gt; CAIC           -1824.094</span></span>
+<span><span class="co">#&gt; BIC            -1488.094</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Model Fit Indices (Nominal)</span></span>
+<span><span class="co">#&gt;                    value</span></span>
+<span><span class="co">#&gt; model_log_like -7013.548</span></span>
+<span><span class="co">#&gt; AIC            14117.095</span></span>
+<span><span class="co">#&gt; CAIC           14328.766</span></span>
+<span><span class="co">#&gt; BIC            14283.766</span></span>
+<span><span class="co">#&gt; Weakly Ordinal Alignment Condition is Satisfied.</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">result.B.rated</span>, type <span class="op">=</span> <span class="st">"Array"</span><span class="op">)</span></span></code></pre></div>
+<p><img src="biclustering_files/figure-html/bic-rated-1.png" class="r-plt" alt="" width="100%"></p>
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">result.B.rated</span>, type <span class="op">=</span> <span class="st">"FRP"</span>, nc <span class="op">=</span> <span class="fl">3</span>, nr <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></code></pre></div>
+<p><img src="biclustering_files/figure-html/bic-rated-2.png" class="r-plt" alt="" width="100%"></p>
 <p>Two layers of fit indices are reported: binary (with CFI/RMSEA) and
 nominal (AIC/BIC/CAIC only). Access them via
 <code>result$TestFitIndices</code> and
@@ -285,10 +385,13 @@ nominal (AIC/BIC/CAIC only). Access them via
 <h3 id="rated-irm">Rated IRM<a class="anchor" aria-label="anchor" href="#rated-irm"></a>
 </h3>
 <p>The IRM also supports rated data:</p>
-<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">result.IRM.rated</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/Biclustering_IRM.html">Biclustering_IRM</a></span><span class="op">(</span><span class="va">J21S300</span>, gamma_c <span class="op">=</span> <span class="fl">1</span>, gamma_f <span class="op">=</span> <span class="fl">1</span>, verbose <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">result.IRM.rated</span>, type <span class="op">=</span> <span class="st">"Array"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">result.IRM.rated</span>, type <span class="op">=</span> <span class="st">"FRP"</span>, nc <span class="op">=</span> <span class="fl">3</span>, nr <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></code></pre></div>
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">result.IRM.rated</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/Biclustering_IRM.html">Biclustering_IRM</a></span><span class="op">(</span><span class="va">J21S300</span>, gamma_c <span class="op">=</span> <span class="fl">1</span>, gamma_f <span class="op">=</span> <span class="fl">1</span>, verbose <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">result.IRM.rated</span>, type <span class="op">=</span> <span class="st">"Array"</span><span class="op">)</span></span></code></pre></div>
+<p><img src="biclustering_files/figure-html/irm-rated-1.png" class="r-plt" alt="" width="100%"></p>
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">result.IRM.rated</span>, type <span class="op">=</span> <span class="st">"FRP"</span>, nc <span class="op">=</span> <span class="fl">3</span>, nr <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></code></pre></div>
+<p><img src="biclustering_files/figure-html/irm-rated-2.png" class="r-plt" alt="" width="100%"></p>
 </div>
 </div>
 <div class="section level2">
@@ -298,7 +401,7 @@ nominal (AIC/BIC/CAIC only). Access them via
 rank/class respond to each item’s categories. It computes observed
 frequencies, proportions, chi-square statistics, p-values, and Cramer’s
 V (effect size) for each item-by-rank cell.</p>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">result.B.rated</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/Biclustering.html">Biclustering</a></span><span class="op">(</span><span class="va">J21S300</span>, ncls <span class="op">=</span> <span class="fl">5</span>, nfld <span class="op">=</span> <span class="fl">3</span>, method <span class="op">=</span> <span class="st">"R"</span>, maxiter <span class="op">=</span> <span class="fl">300</span><span class="op">)</span></span>
 <span><span class="va">da</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/DistractorAnalysis.html">DistractorAnalysis</a></span><span class="op">(</span><span class="va">result.B.rated</span><span class="op">)</span></span>
 <span></span>
@@ -312,7 +415,7 @@ V (effect size) for each item-by-rank cell.</p>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">da</span>, items <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">6</span>, nc <span class="op">=</span> <span class="fl">3</span>, nr <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span></code></pre></div>
 <p><code><a href="../reference/DistractorAnalysis.html">DistractorAnalysis()</a></code> also works with <code><a href="../reference/LRA.html">LRA()</a></code>
 results for rated data:</p>
-<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">result.LRA.rated</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/LRA.html">LRA</a></span><span class="op">(</span><span class="va">J21S300</span>, nrank <span class="op">=</span> <span class="fl">5</span>, mic <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="va">da_lra</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/DistractorAnalysis.html">DistractorAnalysis</a></span><span class="op">(</span><span class="va">result.LRA.rated</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">da_lra</span>, items <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">3</span><span class="op">)</span></span>

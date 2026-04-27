@@ -533,13 +533,13 @@ the slope parameters A and Alpha, and the monotonicity indices C and Gamma.</p><
 <span class="r-in"><span><span class="co"># \donttest{</span></span></span>
 <span class="r-in"><span><span class="co"># Fit a nominal Biclustering IRM model</span></span></span>
 <span class="r-in"><span><span class="va">result</span> <span class="op">&lt;-</span> <span class="fu">Biclustering_IRM</span><span class="op">(</span><span class="va">J20S600</span>, gamma_c <span class="op">=</span> <span class="fl">1</span>, gamma_f <span class="op">=</span> <span class="fl">1</span>, verbose <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 1: match=0 nfld=6 ncls=6</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 2: match=0 nfld=4 ncls=6</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 3: match=1 nfld=4 ncls=7</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 4: match=2 nfld=4 ncls=7</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 5: match=3 nfld=4 ncls=5</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 6: match=4 nfld=4 ncls=6</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 7: match=5 nfld=4 ncls=6</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> iter 1: match=0 nfld=6 ncls=6</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> iter 2: match=0 nfld=4 ncls=6</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> iter 3: match=1 nfld=4 ncls=7</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> iter 4: match=2 nfld=4 ncls=7</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> iter 5: match=3 nfld=4 ncls=5</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> iter 6: match=4 nfld=4 ncls=6</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> iter 7: match=5 nfld=4 ncls=6</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Adjusting classes: BIC=28686.8 ncls=6 (min size &lt; 20)</span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">result</span>, type <span class="op">=</span> <span class="st">"Array"</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="Biclustering_IRM-7.png" alt="" width="700" height="433"></span>
@@ -547,16 +547,16 @@ the slope parameters A and Alpha, and the monotonicity indices C and Gamma.</p><
 <span class="r-in"><span><span class="co"># \donttest{</span></span></span>
 <span class="r-in"><span><span class="co"># Fit an ordinal Biclustering IRM model</span></span></span>
 <span class="r-in"><span><span class="va">result</span> <span class="op">&lt;-</span> <span class="fu">Biclustering_IRM</span><span class="op">(</span><span class="va">J35S500</span>, gamma_c <span class="op">=</span> <span class="fl">1</span>, gamma_f <span class="op">=</span> <span class="fl">1</span>, verbose <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 1: match=0 nfld=13 ncls=46</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 2: match=0 nfld=8 ncls=30</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 3: match=0 nfld=6 ncls=18</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 4: match=1 nfld=6 ncls=11</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 5: match=0 nfld=5 ncls=10</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 6: match=1 nfld=5 ncls=10</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 7: match=2 nfld=5 ncls=9</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 8: match=3 nfld=5 ncls=7</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 9: match=4 nfld=5 ncls=6</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 10: match=5 nfld=5 ncls=6</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> iter 1: match=0 nfld=13 ncls=46</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> iter 2: match=0 nfld=8 ncls=30</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> iter 3: match=0 nfld=6 ncls=18</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> iter 4: match=1 nfld=6 ncls=11</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> iter 5: match=0 nfld=5 ncls=10</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> iter 6: match=1 nfld=5 ncls=10</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> iter 7: match=2 nfld=5 ncls=9</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> iter 8: match=3 nfld=5 ncls=7</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> iter 9: match=4 nfld=5 ncls=6</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> iter 10: match=5 nfld=5 ncls=6</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Weakly ordinal alignment condition was satisfied.</span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">result</span>, type <span class="op">=</span> <span class="st">"Array"</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="Biclustering_IRM-8.png" alt="" width="700" height="433"></span>
@@ -564,13 +564,13 @@ the slope parameters A and Alpha, and the monotonicity indices C and Gamma.</p><
 <span class="r-in"><span><span class="co"># \donttest{</span></span></span>
 <span class="r-in"><span><span class="co"># Fit a rated Biclustering IRM model</span></span></span>
 <span class="r-in"><span><span class="va">result</span> <span class="op">&lt;-</span> <span class="fu">Biclustering_IRM</span><span class="op">(</span><span class="va">J21S300</span>, gamma_c <span class="op">=</span> <span class="fl">1</span>, gamma_f <span class="op">=</span> <span class="fl">1</span>, verbose <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 1: match=0 nfld=5 ncls=4</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 2: match=0 nfld=3 ncls=6</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 3: match=1 nfld=3 ncls=7</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 4: match=2 nfld=3 ncls=6</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 5: match=3 nfld=3 ncls=7</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 6: match=4 nfld=3 ncls=5</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 7: match=5 nfld=3 ncls=6</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> iter 1: match=0 nfld=5 ncls=4</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> iter 2: match=0 nfld=3 ncls=6</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> iter 3: match=1 nfld=3 ncls=7</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> iter 4: match=2 nfld=3 ncls=6</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> iter 5: match=3 nfld=3 ncls=7</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> iter 6: match=4 nfld=3 ncls=5</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> iter 7: match=5 nfld=3 ncls=6</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Adjusting classes: BIC=14584.5 ncls=6 (min size &lt; 20)</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Weakly ordinal alignment condition was satisfied.</span>

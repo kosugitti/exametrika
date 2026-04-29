@@ -755,6 +755,14 @@ print.exametrika <- function(x, digits = 3, ...) {
       tmp <- data.frame(unclass(x))
       print(tmp)
     },
+    Glasso = {
+      cat("Graphical Lasso\n")
+      cat(sprintf("Optimal lambda: %.4f\n", x$lambda_opt))
+      cat(sprintf("EBIC (gamma = %.2f): %.2f\n", x$gamma, x$ebic_opt))
+      cat(sprintf("Number of edges: %d\n", x$n_edge))
+      cat("\nPrecision matrix:\n")
+      print(round(x$theta, digits))
+    },
     matrix = {
       class(x) <- "matrix"
       print(x, digits = digits)

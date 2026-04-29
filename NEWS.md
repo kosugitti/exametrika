@@ -1,3 +1,40 @@
+# exametrika 1.13.0
+
+## New features
+
+- **Graphical Lasso (`Glasso`)**: New function for sparse precision matrix
+  estimation from ordinal item response data. The polychoric correlation
+  matrix is computed internally and the optimal regularization parameter
+  is selected by Extended Bayesian Information Criterion (EBIC; Foygel
+  and Drton 2010). Implements block coordinate descent (Friedman, Hastie,
+  Tibshirani 2008; Algorithm 17.2 of Hastie, Tibshirani, Friedman 2009)
+  with cyclical coordinate descent for the inner lasso step. Warm-starting
+  across the lambda grid accelerates the search.
+
+  Internal helpers `glasso_one()` (single-lambda solver) and
+  `compute_EBIC_glasso()` (EBIC computation) are available but not
+  exported.
+
+  Returns a list with `theta` (selected precision matrix), `lambda_opt`
+  (selected lambda), `ebic_opt`, `n_edge`, and `path` (data frame of
+  lambda, ebic, n_edge over the search grid).
+
+- **`print.exametrika` Glasso method**: Added a Glasso branch to the
+  shared `print.exametrika()` dispatcher to summarize the estimated
+  model (optimal lambda, EBIC value, edge count, precision matrix).
+
+- **Chatterjee's xi correlation (`chatterjee_xi`, `xi_stable`,
+  `chatterjee_matrix`)**: New family of functions implementing
+  Chatterjee's (2021) rank-based correlation coefficient.
+  `chatterjee_xi()` computes the single-shot value with random
+  tie-breaking. `xi_stable()` averages B replications (default
+  B = 1000) to stabilize against tie-induced variability and returns
+  a list with the mean, standard deviation, standard error, and B.
+  `chatterjee_matrix()` produces the p x p asymmetric pairwise xi
+  matrix from ordinal data with pairwise-complete handling of
+  missing values; the asymmetry between xi(j, k) and xi(k, j)
+  enables direction detection in graphical-model construction.
+
 # exametrika 1.12.0
 
 ## New features

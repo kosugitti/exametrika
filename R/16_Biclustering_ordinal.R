@@ -196,7 +196,9 @@ Biclustering.ordinal <- function(U,
   converge <- TRUE
   FLG <- TRUE
   while (FLG) {
-    if (test_log_lik - old_test_log_lik < 1e-8 * abs(old_test_log_lik)) {
+    if (!is.finite(test_log_lik) ||
+        test_log_lik - old_test_log_lik < 1e-8 * abs(old_test_log_lik)) {
+      if (!is.finite(test_log_lik)) converge <- FALSE
       FLG <- FALSE
       break
     }
@@ -315,8 +317,9 @@ Biclustering.ordinal <- function(U,
       )
     }
 
-    if (test_log_lik - old_test_log_lik <= 0) {
+    if (!is.finite(test_log_lik) || test_log_lik - old_test_log_lik <= 0) {
       BCRM <- oldBCRM
+      if (!is.finite(test_log_lik)) converge <- FALSE
       break
     }
   }

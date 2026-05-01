@@ -35,6 +35,23 @@
   missing values; the asymmetry between xi(j, k) and xi(k, j)
   enables direction detection in graphical-model construction.
 
+# exametrika 1.12.1
+
+## Bug fixes
+
+- **Biclustering EM stability for empty fields/classes**: Both
+  `Biclustering.nominal()` and `Biclustering.ordinal()` no longer abort
+  with `"missing value where TRUE/FALSE needed"` when extreme grid
+  configurations (e.g., very small `ncls` combined with very large
+  `nfld`) leave fields or classes empty during EM. The two
+  log-likelihood checks inside the EM loop — the relative convergence
+  test and the monotonicity guard — now treat a non-finite
+  `test_log_lik` as a non-converged exit instead of throwing. Affected
+  cells are returned with `converge = FALSE` so that `GridSearch()`
+  skips them automatically when comparing criteria. This also resolves
+  the same crash in `Biclustering.rated()`, which calls
+  `Biclustering.nominal()` internally.
+
 # exametrika 1.12.0
 
 ## New features

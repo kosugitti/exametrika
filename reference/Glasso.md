@@ -50,7 +50,7 @@ Glasso(
 
 - gamma:
 
-  EBIC tuning parameter in 0, 1. Default is 0.5.
+  EBIC tuning parameter in `[0, 1]`. Default is 0.5.
 
 - n_lambda:
 
@@ -82,6 +82,11 @@ Glasso(
 - verbose:
 
   Logical. If TRUE, progress messages are displayed.
+
+- ...:
+
+  Additional arguments (currently unused; reserved for future
+  extensions).
 
 ## Value
 

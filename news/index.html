@@ -45,6 +45,15 @@
 <li><p><strong><code>print.exametrika</code> Glasso method</strong>: Added a Glasso branch to the shared <code><a href="../reference/print.exametrika.html">print.exametrika()</a></code> dispatcher to summarize the estimated model (optimal lambda, EBIC value, edge count, precision matrix).</p></li>
 <li><p><strong>Chatterjee’s xi correlation (<code>chatterjee_xi</code>, <code>xi_stable</code>, <code>chatterjee_matrix</code>)</strong>: New family of functions implementing Chatterjee’s (2021) rank-based correlation coefficient. <code><a href="../reference/chatterjee_xi.html">chatterjee_xi()</a></code> computes the single-shot value with random tie-breaking. <code><a href="../reference/xi_stable.html">xi_stable()</a></code> averages B replications (default B = 1000) to stabilize against tie-induced variability and returns a list with the mean, standard deviation, standard error, and B. <code><a href="../reference/chatterjee_matrix.html">chatterjee_matrix()</a></code> produces the p x p asymmetric pairwise xi matrix from ordinal data with pairwise-complete handling of missing values; the asymmetry between xi(j, k) and xi(k, j) enables direction detection in graphical-model construction.</p></li>
 </ul></div>
+<div class="section level3">
+<h3 id="documentation-and-cran-check-cleanup-1-13-0">Documentation and CRAN check cleanup<a class="anchor" aria-label="anchor" href="#documentation-and-cran-check-cleanup-1-13-0"></a></h3>
+<ul><li>
+<strong>Roxygen Markdown bracket escapes</strong>: Wrapped bracketed expressions inside roxygen blocks of <code><a href="../reference/Glasso.html">Glasso()</a></code> and <code><a href="../reference/chatterjee_matrix.html">chatterjee_matrix()</a></code> in backticks (e.g., <code>`[0, 1]`</code>, <code>`[j, k]`</code>, <code>`Q[i, j]`</code>) so that roxygen2 no longer rewrites them as <code>\link{}</code> cross-references. Resolves R CMD check WARNINGs about missing link targets.</li>
+<li>
+<strong><code><a href="../reference/Glasso.html">Glasso()</a></code> <code>...</code> documented</strong>: Added <code>@param ...</code> to <code><a href="../reference/Glasso.html">Glasso()</a></code> so that R CMD check’s “Undocumented arguments” WARNING is cleared.</li>
+<li>
+<strong><code>compute_EBIC_glasso()</code> partial-match fix</strong>: Replaced <code>determinant(Theta, log = TRUE)</code> with the full argument name <code>logarithm = TRUE</code>, removing the partial-argument-match NOTE.</li>
+</ul></div>
 </div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.12.1" id="exametrika-1121">exametrika 1.12.1<a class="anchor" aria-label="anchor" href="#exametrika-1121"></a></h2>

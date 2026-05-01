@@ -43,6 +43,25 @@
   between xi(j, k) and xi(k, j) enables direction detection in
   graphical-model construction.
 
+### Documentation and CRAN check cleanup
+
+- **Roxygen Markdown bracket escapes**: Wrapped bracketed expressions
+  inside roxygen blocks of
+  [`Glasso()`](https://kosugitti.github.io/exametrika/reference/Glasso.md)
+  and
+  [`chatterjee_matrix()`](https://kosugitti.github.io/exametrika/reference/chatterjee_matrix.md)
+  in backticks (e.g., `` `[0, 1]` ``, `` `[j, k]` ``, `` `Q[i, j]` ``)
+  so that roxygen2 no longer rewrites them as `\link{}`
+  cross-references. Resolves R CMD check WARNINGs about missing link
+  targets.
+- **[`Glasso()`](https://kosugitti.github.io/exametrika/reference/Glasso.md)
+  `...` documented**: Added `@param ...` to
+  [`Glasso()`](https://kosugitti.github.io/exametrika/reference/Glasso.md)
+  so that R CMD check’s “Undocumented arguments” WARNING is cleared.
+- **`compute_EBIC_glasso()` partial-match fix**: Replaced
+  `determinant(Theta, log = TRUE)` with the full argument name
+  `logarithm = TRUE`, removing the partial-argument-match NOTE.
+
 ## exametrika 1.12.1
 
 ### Bug fixes

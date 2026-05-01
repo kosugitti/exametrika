@@ -35,7 +35,7 @@ The diagonal is 1; off-diagonal entries are asymmetric.
 }
 \description{
 Computes the p x p asymmetric matrix of Chatterjee's xi correlations
-between all item pairs. Entry \link{j, k} is xi(item_j, item_k), which in
+between all item pairs. Entry \verb{[j, k]} is xi(item_j, item_k), which in
 general differs from xi(item_k, item_j); this asymmetry is what
 enables direction detection in subsequent graph-construction steps.
 Each off-diagonal entry is computed by \code{xi_stable()} to average
@@ -43,7 +43,7 @@ over tie-breaking.
 }
 \details{
 Pairs are computed with pairwise-complete observations: for each
-pair (j, k), rows where either Q\link{i, j} or Q\link{i, k} is missing are
+pair (j, k), rows where either \code{Q[i, j]} or \code{Q[i, k]} is missing are
 excluded. The diagonal is set to 1.
 }
 \examples{

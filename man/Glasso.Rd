@@ -30,7 +30,7 @@ it is converted to the exametrika class with the \link{dataFormat} function.}
 
 \item{w}{w is item weight vector}
 
-\item{gamma}{EBIC tuning parameter in \link{0, 1}. Default is 0.5.}
+\item{gamma}{EBIC tuning parameter in \verb{[0, 1]}. Default is 0.5.}
 
 \item{n_lambda}{Number of lambda values in the search grid. Default is 50.}
 
@@ -48,6 +48,8 @@ coordinate descent algorithm. Default is 100.}
 considered zero (no edge). Default is 1e-8.}
 
 \item{verbose}{Logical. If TRUE, progress messages are displayed.}
+
+\item{...}{Additional arguments (currently unused; reserved for future extensions).}
 }
 \value{
 \describe{

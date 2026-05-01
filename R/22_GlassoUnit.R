@@ -110,7 +110,7 @@ glasso_one <- function(S, lambda, W_init = NULL, Beta_init = NULL, eps = 1e-6, m
 #' @noRd
 
 compute_EBIC_glasso <- function(S, Theta, n, p, gamma = 0.5) {
-  term1 <- n * sum(S * Theta) - n * as.numeric(determinant(Theta, log = TRUE)$modulus)
+  term1 <- n * sum(S * Theta) - n * as.numeric(determinant(Theta, logarithm = TRUE)$modulus)
   E <- sum(abs(Theta[upper.tri(Theta)]) > 1e-6)
   term2 <- E * log(n)
   term3 <- 4 * gamma * E * log(p)
@@ -146,7 +146,7 @@ compute_EBIC_glasso <- function(S, Theta, n, p, gamma = 0.5) {
 #' @param na na argument specifies the numbers or characters to be treated as missing values.
 #' @param Z Z is a missing indicator matrix of the type matrix or data.frame
 #' @param w w is item weight vector
-#' @param gamma EBIC tuning parameter in [0, 1]. Default is 0.5.
+#' @param gamma EBIC tuning parameter in `[0, 1]`. Default is 0.5.
 #' @param n_lambda Number of lambda values in the search grid. Default is 50.
 #' @param lambda_ratio Ratio of lambda_min to lambda_max. Default is 0.01.
 #' @param penalize_diagonal Logical. If TRUE, the L1 penalty is applied to
@@ -157,6 +157,7 @@ compute_EBIC_glasso <- function(S, Theta, n, p, gamma = 0.5) {
 #' @param edge_tol Threshold below which an off-diagonal element of Theta is
 #'   considered zero (no edge). Default is 1e-8.
 #' @param verbose Logical. If TRUE, progress messages are displayed.
+#' @param ... Additional arguments (currently unused; reserved for future extensions).
 #' @return
 #' \describe{
 #'   \item{theta}{Estimated precision matrix at the optimal lambda.}

@@ -85,6 +85,14 @@ reference:
     - tetrachoric
     - polychoric
     - polyserial
+    - chatterjee_xi
+    - xi_stable
+    - chatterjee_matrix
+
+  - title: Graphical Models
+    desc: Sparse precision matrix estimation
+    contents:
+    - Glasso
 
   - title: Item Response Theory
     desc: IRT models for binary and polytomous data

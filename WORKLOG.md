@@ -4,6 +4,91 @@ Detailed development log. User-facing changes go in `NEWS.md`; this file
 captures the per-session internal narrative (why a change was made, what
 was investigated, what was ruled out). Entries are newest-first.
 
+## 2026-04-29/30 — v1.13.0: Graphical Lasso + Chatterjee's ξ 実装と DAG 試作
+
+v1.13.0 のメインフィーチャ2系統を実装し，両者を接続する DAG 構築の
+試作まで進めた。コミット 7bf5ce9 で R/22_GlassoUnit.R, R/23_Chatterjee.R,
+print.exametrika の Glasso ケース，両者のテストを main に push 済み。
+
+### Graphical Lasso (R/22_GlassoUnit.R)
+
+学習モードでスライド (BoChang 2015) と ESL 17.2 を読みながら段階的に
+組み上げた。最終形は3層構造:
+
+- `soft_thresholding(y, lambda)` — ESL 17.26 の soft-threshold 演算子
+- `glasso_one(S, lambda, W_init, Beta_init, eps, max_iter)` — 単一 λ
+  でブロック座標降下＋内側 lasso 座標降下
+- `compute_EBIC_glasso(S, Theta, n, p, gamma)` — Foygel-Drton 2010
+- `Glasso(U, ...)` — 公開関数。dataFormat 経由で polychoric 計算 →
+  λ グリッド自動構築 → 各 λ で glasso_one を呼び EBIC 比較 → 最適 Θ
+
+設計上踏んだ典型バグ:
+- Jacobi vs Gauss-Seidel: 内側 CD で beta を別配列に書き込んで一括
+  swap する Jacobi にしていたら，bfi のような実データの共分散で発散
+  → in-place 更新 (Gauss-Seidel) に修正
+- 整数オーバーフロー（修正は Chatterjee 側）
+- `n * sum(...)` で R の int max を超え NA 化 → `as.numeric(length(x))`
+- ホットスタート時の対角不整合: 前 λ の W を持ち越すと対角が古い λ で
+  固定され，新 λ で発散する場合あり → diag(W_init) を新 λ で再設定
+- print.exametrika の switch にケース追加が必要（trailing comma で
+  「argument is missing」エラー）→ Glasso ケース追加で解消
+
+EBIC 設計の現実的な観察: J15S3810 (N=3810, p=15) のような N≫p データ
+では γ をどれだけ上げても罰則が尤度に勝てず最小 λ が選ばれる。
+lambda_ratio で探索下限を制御する手が実用的。CLAUDE.md にも v1.13.0
+要素として「manual lambda override の必要性」を残しておく価値あり。
+
+テスト 9件パス，命名・class 順は exametrika 慣習 c("exametrika", X)
+に揃えた（specific→general ではない。これは tail(class(x), 1) で
+ディスパッチするため）。
+
+### Chatterjee's xi (R/23_Chatterjee.R)
+
+3関数を新規実装:
+- `chatterjee_xi(x, y, ties_method)` — 単発計算
+- `xi_stable(x, y, B, seed)` — タイ破りを B 回平均，list(xi, sd, se, B)
+- `chatterjee_matrix(U, B, seed, verbose)` — pairwise 非対称 ξ 行列
+
+B のデフォルトを peas データで実験的に校正: B=1000 で SE ≈ 0.001
+となり構造学習の枝判定には十分との確認。テスト 9件パス。
+
+### DAG 構築の試作 (develop/dag_test_20260429.R)
+
+Glasso + Chatterjee の出力を結合する `direct_edges()` を試作。
+asym_thresh = 0.01 で「絶対値で大きい方が親」ルールを実装。
+
+J15S3810 で実行した結果，Glasso スケルトンが 98 エッジ（15×14/2=105
+中の 98）と密。EBIC は罰則が効かず最小 λ を選び続ける。lambda_ratio
+を 0.3 に上げて 61 エッジ，さらに |theta| > 0.1 の閾値カットで
+10 エッジまで絞り込み。10 エッジのうち 3 が方向確定（V4→V8, V8→V6,
+V4→V11），7 が双方向（ξ 差 < 0.01 で方向不明）。
+
+3パターンの DAG 比較も試作:
+- A: 純平均ベース（low → high） — 必ず DAG
+- B: 純 ξ ベース — 双方向多数で DAG ならず
+- C: ξ 優先・平均 fallback — 一見 DAG ぽいが ξ が mean 順序に
+  逆らうエッジを生むためサイクルが発生（V4→V8→V6→V13→V4）
+
+### 設計上の方向転換: 累積リンクモデル本流
+
+セッション後半で v2.0.0 構造学習の本流が「累積リンクモデル」である
+ことが明確化。Chatterjee ξ は構造学習の入口（XICOR の代替）として
+有用だが，方向決定の本流は累積リンクで X→Y と Y→X の尤度比較を
+する LiNGAM の順序版が筋が良い。先生発案の Q_{XY}(x) = P(Y ≥ x | X = x)
+アプローチは累積リンクの「対角成分」の sub-case として位置づけ，
+補助プロファイル/解釈ツールとして温存する方針。
+
+memory `project_exametrika_future.md` のアイデア5に詳細記録。
+
+### 試作の到達点と未着手
+
+- v1.13.0 commit: 7bf5ce9（push 済み）。Glasso と Chatterjee 群と
+  print method を含む
+- direct_edges() は develop に試作残置。exametrika に組み込みは
+  累積リンク版 (v2.0.0) と並行検討
+- v2.0.0 多値BNM の構造学習は「入口=ξ → スケルトン=Glasso →
+  方向=累積リンク」の三段構成で進める方針
+
 ## 2026-04-28 — v2.0.0 多値BNM準備: Chatterjee's ξ プロトタイプ + ブートストラップ設計
 
 `develop/Chaterjee20260428.R` で Chatterjee (2021) の ξ_n を素のRで再実装し、

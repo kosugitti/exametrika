@@ -6,6 +6,7 @@
 > site](https://kosugitti.github.io/exametrika/articles/network-models.html).
 
 ``` r
+
 library(exametrika)
 library(igraph)
 ```
@@ -19,6 +20,7 @@ format. A Directed Acyclic Graph (DAG) must be provided via
 ### Creating the Graph
 
 ``` r
+
 DAG <- matrix(
   c(
     "Item01", "Item02",
@@ -33,9 +35,9 @@ DAG <- matrix(
 # Graph object
 g <- igraph::graph_from_data_frame(DAG)
 g
-#> IGRAPH 03e30d0 DN-- 5 5 -- 
+#> IGRAPH 0873e76 DN-- 5 5 -- 
 #> + attr: name (v/c)
-#> + edges from 03e30d0 (vertex names):
+#> + edges from 0873e76 (vertex names):
 #> [1] Item01->Item02 Item02->Item03 Item02->Item04 Item03->Item05 Item04->Item05
 
 # Adjacency matrix
@@ -52,6 +54,7 @@ print(adj_mat)
 ### Running BNM
 
 ``` r
+
 result.BNM <- BNM(J5S10, adj_matrix = adj_mat)
 result.BNM
 #> Adjacency Matrix
@@ -115,6 +118,7 @@ result.BNM
 searches for a DAG suitable for the data using a genetic algorithm:
 
 ``` r
+
 BNM_GA(J5S10,
   population = 20, Rs = 0.5, Rm = 0.002, maxParents = 2,
   maxGeneration = 100, crossover = 2, elitism = 2
@@ -124,6 +128,7 @@ BNM_GA(J5S10,
 ### Structure Learning with PBIL
 
 ``` r
+
 BNM_PBIL(J5S10,
   population = 20, Rs = 0.5, Rm = 0.005, maxParents = 2,
   alpha = 0.05, estimate = 4
@@ -141,6 +146,7 @@ Graphs can be provided via CSV file, adjacency matrix list, or igraph
 object list:
 
 ``` r
+
 DAG_dat <- matrix(c(
   "From", "To", "Rank",
   "Item01", "Item02", 1,
@@ -184,11 +190,13 @@ write.csv(DAG_dat, edgeFile, row.names = FALSE, quote = TRUE)
 ### Running LDLRA
 
 ``` r
+
 result.LDLRA <- LDLRA(J12S5000, ncls = 5, adj_file = edgeFile)
 result.LDLRA
 ```
 
 ``` r
+
 plot(result.LDLRA, type = "IRP", nc = 4, nr = 3)
 plot(result.LDLRA, type = "TRP")
 plot(result.LDLRA, type = "LRD")
@@ -200,6 +208,7 @@ plot(result.LDLRA, type = "LRD")
 learns item-interaction graphs for each rank automatically:
 
 ``` r
+
 result.LDLRA.PBIL <- LDLRA_PBIL(J35S515,
   seed = 123, ncls = 5, method = "R",
   elitism = 1, successiveLimit = 15
@@ -213,6 +222,7 @@ LDB combines biclustering with Bayesian network models, analyzing
 relationships between item fields within each rank.
 
 ``` r
+
 conf <- c(
   1, 6, 6, 8, 9, 9, 4, 7, 7, 7, 5, 8, 9, 10, 10,
   9, 9, 10, 10, 10, 2, 2, 3, 3, 5, 5, 6, 9, 9, 10,
@@ -245,11 +255,13 @@ write.csv(edges_data, file = edgeFile, row.names = FALSE)
 ```
 
 ``` r
+
 result.LDB <- LDB(U = J35S515, ncls = 5, conf = conf, adj_file = edgeFile)
 result.LDB
 ```
 
 ``` r
+
 plot(result.LDB, type = "Array")
 plot(result.LDB, type = "TRP")
 plot(result.LDB, type = "LRD")
@@ -260,6 +272,7 @@ plot(result.LDB, type = "FRP", nc = 3, nr = 2)
 FieldPIRP visualizes correct answer counts for each rank and field:
 
 ``` r
+
 plot(result.LDB, type = "FieldPIRP")
 ```
 
@@ -269,6 +282,7 @@ BINET combines biclustering with class-level network analysis. Unlike
 LDB where nodes are fields, in BINET the nodes represent classes.
 
 ``` r
+
 conf <- c(
   1, 5, 5, 5, 9, 9, 6, 6, 6, 6, 2, 7, 7, 11, 11,
   7, 7, 12, 12, 12, 2, 2, 3, 3, 4, 4, 4, 8, 8, 12,
@@ -298,6 +312,7 @@ write.csv(edges_data, file = edgeFile, row.names = FALSE)
 ```
 
 ``` r
+
 result.BINET <- BINET(
   U = J35S515, ncls = 13, nfld = 12,
   conf = conf, adj_file = edgeFile
@@ -306,6 +321,7 @@ print(result.BINET)
 ```
 
 ``` r
+
 plot(result.BINET, type = "Array")
 plot(result.BINET, type = "TRP")
 plot(result.BINET, type = "LRD")
@@ -316,6 +332,7 @@ plot(result.BINET, type = "FRP", nc = 3, nr = 2)
 LDPSR shows Passing Student Rates for locally dependent classes:
 
 ``` r
+
 plot(result.BINET, type = "LDPSR", nc = 3, nr = 2)
 ```
 

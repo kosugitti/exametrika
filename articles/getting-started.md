@@ -16,6 +16,7 @@ practitioners to:
 ## Installation
 
 ``` r
+
 # Install from CRAN
 install.packages("exametrika")
 
@@ -27,6 +28,7 @@ devtools::install_github("kosugitti/exametrika")
 ## Data Format
 
 ``` r
+
 library(exametrika)
 ```
 
@@ -47,6 +49,7 @@ The
 function processes input data before analysis:
 
 ``` r
+
 # Format raw data for analysis
 data <- dataFormat(J15S500)
 str(data)
@@ -92,6 +95,7 @@ convention is `JxxSxxx` where J = number of items and S = sample size.
 ### Test Statistics
 
 ``` r
+
 TestStatistics(J15S500)
 #> Test Statistics
 #>                   value
@@ -123,6 +127,7 @@ TestStatistics(J15S500)
 ### Item Statistics
 
 ``` r
+
 ItemStatistics(J15S500)
 #> Item Statistics
 #>    ItemLabel  NR   CRR  ODDs Threshold Entropy ITCrr
@@ -146,6 +151,7 @@ ItemStatistics(J15S500)
 ### Classical Test Theory
 
 ``` r
+
 CTT(J15S500)
 #> Realiability
 #>                 name value

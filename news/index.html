@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">exametrika</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.12.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.12.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -34,6 +34,27 @@
     </div>
 
     <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.13.0" id="exametrika-1130">exametrika 1.13.0<a class="anchor" aria-label="anchor" href="#exametrika-1130"></a></h2>
+<div class="section level3">
+<h3 id="new-features-1-13-0">New features<a class="anchor" aria-label="anchor" href="#new-features-1-13-0"></a></h3>
+<ul><li>
+<p><strong>Graphical Lasso (<code>Glasso</code>)</strong>: New function for sparse precision matrix estimation from ordinal item response data. The polychoric correlation matrix is computed internally and the optimal regularization parameter is selected by Extended Bayesian Information Criterion (EBIC; Foygel and Drton 2010). Implements block coordinate descent (Friedman, Hastie, Tibshirani 2008; Algorithm 17.2 of Hastie, Tibshirani, Friedman 2009) with cyclical coordinate descent for the inner lasso step. Warm-starting across the lambda grid accelerates the search.</p>
+<p>Internal helpers <code>glasso_one()</code> (single-lambda solver) and <code>compute_EBIC_glasso()</code> (EBIC computation) are available but not exported.</p>
+<p>Returns a list with <code>theta</code> (selected precision matrix), <code>lambda_opt</code> (selected lambda), <code>ebic_opt</code>, <code>n_edge</code>, and <code>path</code> (data frame of lambda, ebic, n_edge over the search grid).</p>
+</li>
+<li><p><strong><code>print.exametrika</code> Glasso method</strong>: Added a Glasso branch to the shared <code><a href="../reference/print.exametrika.html">print.exametrika()</a></code> dispatcher to summarize the estimated model (optimal lambda, EBIC value, edge count, precision matrix).</p></li>
+<li><p><strong>Chatterjee’s xi correlation (<code>chatterjee_xi</code>, <code>xi_stable</code>, <code>chatterjee_matrix</code>)</strong>: New family of functions implementing Chatterjee’s (2021) rank-based correlation coefficient. <code><a href="../reference/chatterjee_xi.html">chatterjee_xi()</a></code> computes the single-shot value with random tie-breaking. <code><a href="../reference/xi_stable.html">xi_stable()</a></code> averages B replications (default B = 1000) to stabilize against tie-induced variability and returns a list with the mean, standard deviation, standard error, and B. <code><a href="../reference/chatterjee_matrix.html">chatterjee_matrix()</a></code> produces the p x p asymmetric pairwise xi matrix from ordinal data with pairwise-complete handling of missing values; the asymmetry between xi(j, k) and xi(k, j) enables direction detection in graphical-model construction.</p></li>
+</ul></div>
+</div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.12.1" id="exametrika-1121">exametrika 1.12.1<a class="anchor" aria-label="anchor" href="#exametrika-1121"></a></h2>
+<div class="section level3">
+<h3 id="bug-fixes-1-12-1">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-1-12-1"></a></h3>
+<ul><li>
+<strong>Biclustering EM stability for empty fields/classes</strong>: Both <code><a href="../reference/Biclustering.html">Biclustering.nominal()</a></code> and <code><a href="../reference/Biclustering.html">Biclustering.ordinal()</a></code> no longer abort with <code>"missing value where TRUE/FALSE needed"</code> when extreme grid configurations (e.g., very small <code>ncls</code> combined with very large <code>nfld</code>) leave fields or classes empty during EM. The two log-likelihood checks inside the EM loop — the relative convergence test and the monotonicity guard — now treat a non-finite <code>test_log_lik</code> as a non-converged exit instead of throwing. Affected cells are returned with <code>converge = FALSE</code> so that <code><a href="../reference/GridSearch.html">GridSearch()</a></code> skips them automatically when comparing criteria. This also resolves the same crash in <code><a href="../reference/Biclustering.html">Biclustering.rated()</a></code>, which calls <code><a href="../reference/Biclustering.html">Biclustering.nominal()</a></code> internally.</li>
+</ul></div>
+</div>
+    <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.12.0" id="exametrika-1120">exametrika 1.12.0<a class="anchor" aria-label="anchor" href="#exametrika-1120"></a></h2>
 <div class="section level3">
 <h3 id="new-features-1-12-0">New features<a class="anchor" aria-label="anchor" href="#new-features-1-12-0"></a></h3>
@@ -52,7 +73,7 @@
 <li><p><strong><code><a href="../reference/Biclustering.html">Biclustering.ordinal()</a></code> now honors the <code>maxiter</code> argument</strong>: The inner EM iteration cap was hardcoded to 100 (<code>maxemt &lt;- 100</code>) and ignored the user-supplied <code>maxiter</code>. This mirrors the bug that was fixed for <code><a href="../reference/Biclustering.html">Biclustering.nominal()</a></code> in 1.11.0. Callers that pass a larger <code>maxiter</code> (e.g. <code>2000</code> in Monte Carlo studies) now actually use that ceiling.</p></li>
 <li><p><strong><code><a href="../reference/GRM.html">GRM()</a></code> fit indices no longer return <code>NaN</code> for moderate or larger item counts</strong>: The benchmark model used <code>const &lt;- exp(-nitems * 100)</code> as a log-domain epsilon inside <code>sum(cat_counts * log(cat_probs + const))</code>. For about 8 or more items this expression underflows to exactly 0 in IEEE-754 double precision, so <code>log(0) = -Inf</code> propagates through <code>0 * -Inf = NaN</code> and poisons every downstream index (model_Chi_sq, NFI, CFI, RMSEA, AIC, CAIC, BIC). The benchmark and null loops now skip zero-count categories explicitly, removing the need for an additive epsilon.</p></li>
 <li>
-<p><strong><code><a href="../reference/GRM.html">GRM()</a></code> degrees of freedom were computed incorrectly</strong>: The model df was set to <code>n_pattern * (ncat - 1) + 1</code> and the null df to <code>n_pattern * (ncat - 1)</code>, which is neither <code>(# bench params) - (#   model params)</code> nor <code>(# bench params) - (# null params)</code>. The inflated df then clamped <code>CFI</code>, <code>TLI</code>, <code>IFI</code>, and <code>RMSEA</code> to zero whenever <code>chi^2 &lt; df</code> (and the previous <code>df_A &gt; df_B</code> inequality was the wrong direction to begin with). The convention now matches <code><a href="../reference/Biclustering.html">Biclustering.ordinal()</a></code>:</p>
+<p><strong><code><a href="../reference/GRM.html">GRM()</a></code> degrees of freedom were computed incorrectly</strong>: The model df was set to <code>n_pattern * (ncat - 1) + 1</code> and the null df to <code>n_pattern * (ncat - 1)</code>, which is neither <code>(# bench params) - (# model params)</code> nor <code>(# bench params) - (# null params)</code>. The inflated df then clamped <code>CFI</code>, <code>TLI</code>, <code>IFI</code>, and <code>RMSEA</code> to zero whenever <code>chi^2 &lt; df</code> (and the previous <code>df_A &gt; df_B</code> inequality was the wrong direction to begin with). The convention now matches <code><a href="../reference/Biclustering.html">Biclustering.ordinal()</a></code>:</p>
 <ul><li><code>bench_nparam_j = n_pattern * (ncat_j - 1)</code></li>
 <li><code>null_nparam_j  = ncat_j - 1</code></li>
 <li>

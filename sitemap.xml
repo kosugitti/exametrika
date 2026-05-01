@@ -30,6 +30,7 @@
 <url><loc>https://kosugitti.github.io/exametrika/reference/Dimensionality.html</loc></url>
 <url><loc>https://kosugitti.github.io/exametrika/reference/DistractorAnalysis.html</loc></url>
 <url><loc>https://kosugitti.github.io/exametrika/reference/GRM.html</loc></url>
+<url><loc>https://kosugitti.github.io/exametrika/reference/Glasso.html</loc></url>
 <url><loc>https://kosugitti.github.io/exametrika/reference/GridSearch.html</loc></url>
 <url><loc>https://kosugitti.github.io/exametrika/reference/IIF2PLM.html</loc></url>
 <url><loc>https://kosugitti.github.io/exametrika/reference/IIF3PLM.html</loc></url>
@@ -89,6 +90,8 @@
 <url><loc>https://kosugitti.github.io/exametrika/reference/TwoPLM.html</loc></url>
 <url><loc>https://kosugitti.github.io/exametrika/reference/asymprior.html</loc></url>
 <url><loc>https://kosugitti.github.io/exametrika/reference/calcFitIndices.html</loc></url>
+<url><loc>https://kosugitti.github.io/exametrika/reference/chatterjee_matrix.html</loc></url>
+<url><loc>https://kosugitti.github.io/exametrika/reference/chatterjee_xi.html</loc></url>
 <url><loc>https://kosugitti.github.io/exametrika/reference/crr.html</loc></url>
 <url><loc>https://kosugitti.github.io/exametrika/reference/dataFormat.html</loc></url>
 <url><loc>https://kosugitti.github.io/exametrika/reference/generate_category_labels.html</loc></url>
@@ -116,5 +119,6 @@
 <url><loc>https://kosugitti.github.io/exametrika/reference/sscore.html</loc></url>
 <url><loc>https://kosugitti.github.io/exametrika/reference/stanine.html</loc></url>
 <url><loc>https://kosugitti.github.io/exametrika/reference/tetrachoric.html</loc></url>
+<url><loc>https://kosugitti.github.io/exametrika/reference/xi_stable.html</loc></url>
 </urlset>
 

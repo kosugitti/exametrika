@@ -102,6 +102,7 @@ installed if (!require(“devtools”)) install.packages(“devtools”)
 
 devtools::install_github(“kosugitti/exametrika”)
 
+
     ### Dependencies
 
     The package requires:
@@ -520,6 +521,7 @@ matrix(c( “From”, “To”, “Rank”, “Item01”, “Item02”, 1, “It
 edgeFile \<- tempfile(fileext = “.csv”) write.csv(DAG_dat, edgeFile,
 row.names = FALSE, quote = TRUE)
 
+
     Here, it is shown an example of specifying with matrix-type and graph objects using the aforementioned CSV file. While only one specification is sufficient, if multiple specifications are provided, they will be prioritized in the order of file, matrix, and graph object.
 
     ```{r setup-graph-conversion, message=FALSE, warning=FALSE}
@@ -590,6 +592,7 @@ Class/Rank 5 ) )
 edgeFile \<- tempfile(fileext = “.csv”) write.csv(edges_data, file =
 edgeFile, row.names = FALSE)
 
+
     ```{r setup-ldb-conf, include=FALSE, message=FALSE, warning=FALSE}
     # Fit Local Dependence Biclustering model
     result.LDB <- LDB(
@@ -649,6 +652,7 @@ c( 1, 2, 2, 3, 4, 4, \# Field locations 5, 5, 5, 5, 5, 7, 8, 8, 9, 9, 12
 
 edgeFile \<- tempfile(fileext = “.csv”) write.csv(edges_data, file =
 edgeFile, row.names = FALSE)
+
 
     The model requires three components:
 
@@ -866,6 +870,19 @@ Correlation and association measures
   : Polychoric Correlation
 - [`polyserial()`](https://kosugitti.github.io/exametrika/reference/polyserial.md)
   : Polyserial Correlation
+- [`chatterjee_xi()`](https://kosugitti.github.io/exametrika/reference/chatterjee_xi.md)
+  : Chatterjee's xi correlation coefficient
+- [`xi_stable()`](https://kosugitti.github.io/exametrika/reference/xi_stable.md)
+  : Bootstrap-averaged Chatterjee's xi
+- [`chatterjee_matrix()`](https://kosugitti.github.io/exametrika/reference/chatterjee_matrix.md)
+  : Pairwise Chatterjee's xi correlation matrix
+
+## Graphical Models
+
+Sparse precision matrix estimation
+
+- [`Glasso()`](https://kosugitti.github.io/exametrika/reference/Glasso.md)
+  : Graphical Lasso for Gaussian Graphical Models
 
 ## Item Response Theory
 

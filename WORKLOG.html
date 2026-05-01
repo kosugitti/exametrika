@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="index.html">exametrika</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.12.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.12.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -36,6 +36,60 @@
 <div id="exametrika-work-log" class="section level1">
 
 <p>Detailed development log. User-facing changes go in <code>NEWS.md</code>; this file captures the per-session internal narrative (why a change was made, what was investigated, what was ruled out). Entries are newest-first.</p>
+<div class="section level2">
+<h2 id="id_2026-04-28--v200-多値bnm準備-chatterjees-ξ-プロトタイプ--ブートストラップ設計">2026-04-28 — v2.0.0 多値BNM準備: Chatterjee’s ξ プロトタイプ + ブートストラップ設計<a class="anchor" aria-label="anchor" href="#id_2026-04-28--v200-%E5%A4%9A%E5%80%A4bnm%E6%BA%96%E5%82%99-chatterjees-%CE%BE-%E3%83%97%E3%83%AD%E3%83%88%E3%82%BF%E3%82%A4%E3%83%97--%E3%83%96%E3%83%BC%E3%83%88%E3%82%B9%E3%83%88%E3%83%A9%E3%83%83%E3%83%97%E8%A8%AD%E8%A8%88"></a></h2>
+<p><code>develop/Chaterjee20260428.R</code> で Chatterjee (2021) の ξ_n を素のRで再実装し、 XICOR との数値一致を取った後、タイ多発データでの安定化方策を実験的に決定した。</p>
+<div class="section level3">
+<h3 id="ξ_n-手計算の検証">ξ_n 手計算の検証<a class="anchor" aria-label="anchor" href="#%CE%BE_n-%E6%89%8B%E8%A8%88%E7%AE%97%E3%81%AE%E6%A4%9C%E8%A8%BC"></a></h3>
+<p>peas データ（n=700, parent のユニーク値 7 個 = 693 タイ）で <code>XICOR::xicor()</code> と完全一致を確認。途中で踏んだ典型バグを記録しておく:</p>
+<ul><li>
+<strong>X のタイ崩し</strong>: <code>order(x)</code> ではなく <code>order(rank(x, ties.method = "random"))</code>。 R の安定ソートは元の出現順を保つが、Chatterjee の定義は一様ランダム順序。</li>
+<li>
+<strong>|r_{i+1} - r_i| の <code>abs</code> 抜け</strong>: <code>sum(diff(r_i))</code> は望遠鏡和で <code>r_n - r_1</code> に潰れる。<code>sum(abs(diff(r_i)))</code> が正しい。</li>
+<li>
+<strong>l_i の対象</strong>: l_i は <strong>Y に対する降順ランク</strong> <code>rank(-sorted.y, "max")</code>。 X のランクではない。</li>
+<li>
+<strong>τ_n² 推定の u_i</strong>: 論文 Theorem 2.2 直後の式で「u_i は R(1),…,R(n) を <strong>昇順並べ替え</strong>したもの」と明記されている (correlation43_ja.tex L325)。 XICOR の <code>qfr = sort(fr)</code> と同じ。<code>y[r_i]</code>（生Yをランクで引く）ではない。</li>
+</ul><p>最終的に xi/sd/pval が XICOR と bit-identical (差 1.78e-15) で一致。</p>
+</div>
+<div class="section level3">
+<h3 id="ブートストラップ-b-数の目安">ブートストラップ B 数の目安<a class="anchor" aria-label="anchor" href="#%E3%83%96%E3%83%BC%E3%83%88%E3%82%B9%E3%83%88%E3%83%A9%E3%83%83%E3%83%97-b-%E6%95%B0%E3%81%AE%E7%9B%AE%E5%AE%89"></a></h3>
+<p>タイの多いデータでは ξ_n がタイ破りごとにブレるので、複数回平均で安定化する。 （行サンプリングではなく、<code><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed()</a></code> を振り直して <code>rank(x, "random")</code> を B 回引き直すだけの軽量版。サンプルサイズが変わらない利点あり。）</p>
+<p>n とタイ密度を変えて sd(ξ_iter) を測定:</p>
+<table class="table"><thead><tr><th>データ</th>
+<th>n</th>
+<th>sd(ξ_iter)</th>
+<th>B=1000 SE</th>
+</tr></thead><tbody><tr><td>peas</td>
+<td>700</td>
+<td>0.024</td>
+<td>0.00075</td>
+</tr><tr><td>peas subsample</td>
+<td>100</td>
+<td>0.060</td>
+<td>0.00191</td>
+</tr><tr><td>Likert 5件</td>
+<td>300</td>
+<td>0.040</td>
+<td>0.00127</td>
+</tr><tr><td>Likert 5件</td>
+<td>100</td>
+<td>0.071</td>
+<td>0.00223</td>
+</tr></tbody></table><p>おおむね sd(ξ_iter) ∝ 1/√n（タイ密度同程度なら）。</p>
+<p><strong>結論</strong>: 5件法 n=100 の最悪ケースでも B=1000 で SE ≒ 0.002、ξ が <strong>小数点以下 2 桁で安定</strong>する。BNM 構造学習の枝符号判定には十分。 v2.0.0 多値 BNM 実装時のデフォルトは <code>B = 1000</code>、論文用の高精度報告は <code>B = 5000</code> を引数で指定可能にする方針。</p>
+<p>設計上の TODO（v2.0.0 多値 BNM 実装時）: - <code>xi_stable(x, y, B = 1000)</code> のラッパー関数を用意 - 「最初に B=200 で sd(ξ) を測って目標精度から B を自動決定」案も検討 - ブートストラップは ξ 推定値だけでなく p 値も同様に平均化 - 累積平均の SE は <code>sd(xi)/sqrt(B)</code>（標本 SD ではない点に注意）</p>
+</div>
+<div class="section level3">
+<h3 id="成果物">成果物<a class="anchor" aria-label="anchor" href="#%E6%88%90%E6%9E%9C%E7%89%A9"></a></h3>
+<ul><li>
+<code>develop/Chaterjee20260428.R</code> — ξ_n 手計算 + B=10000 のブートストラップ実験</li>
+<li>
+<code>develop/Chaterjee_bootstrap_convergence.png</code> — 累積平均 ± SE プロット</li>
+<li>
+<code>develop/Chatterjee2021/correlation43_ja.tex</code> — 日本語訳（既存）の参照箇所 L308-329（定理 2.2 周辺、<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msubsup><mover><mi>τ</mi><mo accent="true">̂</mo></mover><mi>n</mi><mn>2</mn></msubsup><annotation encoding="application/x-tex">\hat{\tau}_n^2</annotation></semantics></math> 推定式）</li>
+</ul></div>
+</div>
 <div class="section level2">
 <h2 id="id_2026-04-27--v1120-c-gibbs-sampler-conf_class-cran-prep">2026-04-27 — v1.12.0: C++ Gibbs sampler, conf_class, CRAN prep<a class="anchor" aria-label="anchor" href="#id_2026-04-27--v1120-c-gibbs-sampler-conf_class-cran-prep"></a></h2>
 <div class="section level3">
@@ -66,7 +120,7 @@
 <ol style="list-style-type: decimal"><li>First pass used <code>Rcpp::sample(n, n, false)</code>. Output diverged from R immediately. Direct check: <code>set.seed(42); sample(1:10, 10)</code> != <code>Rcpp::sample(10, 10, false)</code>. Confirmed <code>Rcpp::sample</code> does not share the same RNG-consumption order as base R.</li>
 <li>Switched the perm to <code>Function f("sample.int"); f(n)</code>. With this alone, the class-side Gibbs loop produced bit-identical Nc and cls to the R reference (verified on <code>J20S600</code>, max_iter = 1).</li>
 <li>Field-side loop still diverged. After auditing the implementation line by line and finding no algorithmic difference, added a class-only debug build (<code>#if 0</code> around the field-side loop) and confirmed the post-class-loop RNG state matched: <code>runif(3)</code> in R and in C++ returned the same three values.</li>
-<li>Despite same RNG state, full-run jRand still differed from the R reference. The remaining suspect was <code>R::rmultinom</code> (the C-level entry). Replaced it with <code>Function r_rmultinom("rmultinom"); m =    r_rmultinom(1, 1, p)</code>. Bit-identical match for max_iter = 1, 5, 10, 50.</li>
+<li>Despite same RNG state, full-run jRand still differed from the R reference. The remaining suspect was <code>R::rmultinom</code> (the C-level entry). Replaced it with <code>Function r_rmultinom("rmultinom"); m = r_rmultinom(1, 1, p)</code>. Bit-identical match for max_iter = 1, 5, 10, 50.</li>
 </ol><p>Hypothesis for why <code>R::rmultinom</code> desynchronises while <code>R::sample</code> (well, <code>Rcpp::sample</code>) was at least RNG-consistent internally is that <code>do_rmultinom</code> runs <code>FixupProb</code> and possibly other validation/normalisation steps that <code>R::rmultinom</code> (the C-level form) skips. We tried explicit normalisation (<code>p[k] /= sum(p)</code>) before <code>R::rmultinom</code> and it still desynchronised, so there is more going on than just the FixupProb division. Did not investigate further; the R-level path is fast enough.</p>
 <p>Performance after the switch:</p>
 <ul><li>nominal J20S600: 82 -&gt; 20 ms/iter (4.0x)</li>

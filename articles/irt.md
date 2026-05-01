@@ -1,6 +1,7 @@
 # Item Response Theory (IRT)
 
 ``` r
+
 library(exametrika)
 ```
 
@@ -11,6 +12,7 @@ function estimates item parameters using logistic models. It supports
 2PL, 3PL, and 4PL models via the `model` option.
 
 ``` r
+
 result.IRT <- IRT(J15S500, model = 3)
 result.IRT
 #> Item Parameters
@@ -105,6 +107,7 @@ The estimated ability parameters for each examinee are included in the
 returned object:
 
 ``` r
+
 head(result.IRT$ability)
 #>           ID         EAP       PSD
 #> 1 Student001 -0.75526633 0.5805696
@@ -128,30 +131,35 @@ Items can be specified using the `items` argument. The layout is
 controlled by `nr` (rows) and `nc` (columns).
 
 ``` r
+
 plot(result.IRT, type = "IRF", items = 1:6, nc = 2, nr = 3)
 ```
 
 ![](irt_files/figure-html/plot-irt-irf-1.png)
 
 ``` r
+
 plot(result.IRT, type = "IRF", overlay = TRUE)
 ```
 
 ![](irt_files/figure-html/plot-irt-overlay-1.png)
 
 ``` r
+
 plot(result.IRT, type = "IIC", items = 1:6, nc = 2, nr = 3)
 ```
 
 ![](irt_files/figure-html/plot-irt-iic-1.png)
 
 ``` r
+
 plot(result.IRT, type = "TRF")
 ```
 
 ![](irt_files/figure-html/plot-irt-trf-1.png)
 
 ``` r
+
 plot(result.IRT, type = "TIC")
 ```
 
@@ -165,6 +173,7 @@ response data. It can be applied using the
 function.
 
 ``` r
+
 result.GRM <- GRM(J5S1000)
 #> Parameters: 18 | Initial LL: -6252.352 
 #> initial  value 6252.351598 
@@ -218,18 +227,21 @@ result.GRM
 GRM supports similar plot types as IRT:
 
 ``` r
+
 plot(result.GRM, type = "IRF", nc = 2)
 ```
 
 ![](irt_files/figure-html/grm-irf-1.png)
 
 ``` r
+
 plot(result.GRM, type = "IIF", nc = 2)
 ```
 
 ![](irt_files/figure-html/grm-iif-1.png)![](irt_files/figure-html/grm-iif-2.png)![](irt_files/figure-html/grm-iif-3.png)
 
 ``` r
+
 plot(result.GRM, type = "TIF")
 ```
 

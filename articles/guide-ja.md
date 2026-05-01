@@ -69,15 +69,16 @@
 
 ### モデル選択ガイド
 
-| モデル | 主な焦点               | 適用場面                                       |
-|--------|------------------------|------------------------------------------------|
-| LDLRA  | 項目レベルの依存関係   | 項目関係が習熟度によって変化する場合           |
-| LDB    | フィールドレベルの構造 | 項目が自然なグループを形成し依存関係を持つ場合 |
-| BINET  | クラス進行             | フィールド内に複雑な学習パターンが存在する場合 |
+| モデル | 主な焦点 | 適用場面 |
+|----|----|----|
+| LDLRA | 項目レベルの依存関係 | 項目関係が習熟度によって変化する場合 |
+| LDB | フィールドレベルの構造 | 項目が自然なグループを形成し依存関係を持つ場合 |
+| BINET | クラス進行 | フィールド内に複雑な学習パターンが存在する場合 |
 
 ## インストール
 
 ``` r
+
 # CRANからインストール
 install.packages("exametrika")
 
@@ -99,6 +100,7 @@ devtools::install_github("kosugitti/exametrika")
 ### 基本的な使用方法
 
 ``` r
+
 library(exametrika)
 ```
 
@@ -121,6 +123,7 @@ Exametrikaは2値データと多値データの両方に対応しています：
 `dataFormat`関数は分析用の入力データを前処理します：
 
 ``` r
+
 data <- dataFormat(J15S500)
 str(data)
 #> List of 7
@@ -165,6 +168,7 @@ str(data)
 ### テスト統計量
 
 ``` r
+
 TestStatistics(J15S500)
 #> Test Statistics
 #>                   value
@@ -196,6 +200,7 @@ TestStatistics(J15S500)
 ### 項目統計量
 
 ``` r
+
 ItemStatistics(J15S500)
 #> Item Statistics
 #>    ItemLabel  NR   CRR  ODDs Threshold Entropy ITCrr
@@ -219,6 +224,7 @@ ItemStatistics(J15S500)
 ### CTT
 
 ``` r
+
 CTT(J15S500)
 #> Realiability
 #>                 name value
@@ -253,15 +259,18 @@ CTT(J15S500)
 IRT関数は、ロジスティックモデルを用いてパラメータを推定します。`model`オプションで指定でき、2PL、3PL、4PLモデルに対応しています。
 
 ``` r
+
 result.IRT <- IRT(J15S500, model = 3)
 result.IRT
 ```
 
 ``` r
+
 head(result.IRT$ability)
 ```
 
 ``` r
+
 plot(result.IRT, type = "IRF", items = 1:6, nc = 2, nr = 3)
 plot(result.IRT, type = "IRF", overlay = TRUE)
 plot(result.IRT, type = "IIC", items = 1:6, nc = 2, nr = 3)
@@ -275,11 +284,13 @@ Graded Response
 Model（Samejima,1969）はIRTを多値反応モデルに展開したものです。
 
 ``` r
+
 result.GRM <- GRM(J5S1000)
 result.GRM
 ```
 
 ``` r
+
 plot(result.GRM, type = "IRF", nc = 2)
 plot(result.GRM, type = "IIF", nc = 2)
 plot(result.GRM, type = "TIF")
@@ -290,11 +301,13 @@ plot(result.GRM, type = "TIF")
 潜在クラス分析では、データセットとクラス数の指定が必要です。
 
 ``` r
+
 result.LCA <- LCA(J15S500, ncls = 5)
 head(result.LCA$Students)
 ```
 
 ``` r
+
 plot(result.LCA, type = "IRP", items = 1:6, nc = 2, nr = 3)
 plot(result.LCA, type = "CMP", students = 1:9, nc = 3, nr = 3)
 plot(result.LCA, type = "TRP")
@@ -306,11 +319,13 @@ plot(result.LCA, type = "LCD")
 潜在ランク分析では、データセットとランク数の指定が必要です。
 
 ``` r
+
 result.LRA <- LRA(J15S500, nrank = 6)
 head(result.LRA$Students)
 ```
 
 ``` r
+
 plot(result.LRA, type = "IRP", items = 1:6, nc = 2, nr = 3)
 plot(result.LRA, type = "RMP", students = 1:9, nc = 3, nr = 3)
 plot(result.LRA, type = "TRP")
@@ -320,30 +335,36 @@ plot(result.LRA, type = "LRD")
 ### LRA 順序尺度データへの適用
 
 ``` r
+
 result.LRAord <- LRA(J15S3810, nrank = 3, mic = TRUE)
 ```
 
 ``` r
+
 plot(result.LRAord, type = "ScoreFreq")
 plot(result.LRAord, type = "ScoreRank")
 ```
 
 ``` r
+
 plot(result.LRAord, type = "ICBR", items = 1:4, nc = 2, nr = 2)
 plot(result.LRAord, type = "ICRP", items = 1:4, nc = 2, nr = 2)
 ```
 
 ``` r
+
 plot(result.LRAord, type = "RMP", students = 1:9, nc = 3, nr = 3)
 ```
 
 ### LRA 名義尺度データへの適用
 
 ``` r
+
 result.LRArated <- LRA(J35S5000, nrank = 10, mic = TRUE)
 ```
 
 ``` r
+
 plot(result.LRArated, type = "ScoreFreq")
 plot(result.LRArated, type = "ScoreRank")
 plot(result.LRArated, type = "ICRP", items = 1:4, nc = 2, nr = 2)
@@ -352,10 +373,12 @@ plot(result.LRArated, type = "ICRP", items = 1:4, nc = 2, nr = 2)
 ### バイクラスタリング
 
 ``` r
+
 Biclustering(J35S515, nfld = 5, ncls = 6, method = "B")
 ```
 
 ``` r
+
 result.Ranklustering <- Biclustering(J35S515, nfld = 5, ncls = 6, method = "R")
 plot(result.Ranklustering, type = "Array")
 plot(result.Ranklustering, type = "FRP", nc = 2, nr = 3)
@@ -367,6 +390,7 @@ plot(result.Ranklustering, type = "LRD")
 ### グリッドサーチ
 
 ``` r
+
 result <- GridSearch(J35S515, method = "R", max_ncls = 10, max_nfld = 10, index = "BIC")
 result$optimal_ncls
 result$optimal_nfld
@@ -376,6 +400,7 @@ plot(result$optimal_result, type = "Array")
 ### 無限関係モデル
 
 ``` r
+
 result.IRM <- Biclustering_IRM(J35S515, gamma_c = 1, gamma_f = 1, verbose = TRUE)
 plot(result.IRM, type = "Array")
 plot(result.IRM, type = "FRP", nc = 3)
@@ -387,6 +412,7 @@ plot(result.IRM, type = "TRP")
 #### 順序尺度データ
 
 ``` r
+
 result.B.ord <- Biclustering(J35S500, ncls = 5, nfld = 5, method = "R")
 result.B.ord
 plot(result.B.ord, type = "Array")
@@ -401,6 +427,7 @@ plot(result.B.ord, type = "RRV")
 #### 名義尺度データ
 
 ``` r
+
 result.B.nom <- Biclustering(J20S600, ncls = 5, nfld = 4)
 result.B.nom
 plot(result.B.nom, type = "Array")
@@ -414,6 +441,7 @@ plot(result.B.nom, type = "RRV")
 ### ベイジアンネットワークモデル
 
 ``` r
+
 library(igraph)
 DAG <- matrix(
   c(
@@ -427,6 +455,7 @@ adj_mat <- as.matrix(igraph::get.adjacency(g))
 ```
 
 ``` r
+
 result.BNM <- BNM(J5S10, adj_matrix = adj_mat)
 result.BNM
 ```
@@ -434,6 +463,7 @@ result.BNM
 #### 遺伝的アルゴリズムによる構造学習
 
 ``` r
+
 BNM_GA(J5S10,
   population = 20, Rs = 0.5, Rm = 0.002, maxParents = 2,
   maxGeneration = 100, crossover = 2, elitism = 2
@@ -443,6 +473,7 @@ BNM_GA(J5S10,
 #### PBILによる構造学習
 
 ``` r
+
 BNM_PBIL(J5S10,
   population = 20, Rs = 0.5, Rm = 0.005, maxParents = 2,
   alpha = 0.05, estimate = 4
@@ -452,6 +483,7 @@ BNM_PBIL(J5S10,
 ### 局所依存潜在ランク分析
 
 ``` r
+
 DAG_dat <- matrix(c(
   "From", "To", "Rank",
   "Item01", "Item02", 1, "Item04", "Item05", 1,
@@ -476,11 +508,13 @@ write.csv(DAG_dat, edgeFile, row.names = FALSE, quote = TRUE)
 ```
 
 ``` r
+
 result.LDLRA <- LDLRA(J12S5000, ncls = 5, adj_file = edgeFile)
 result.LDLRA
 ```
 
 ``` r
+
 plot(result.LDLRA, type = "IRP", nc = 4, nr = 3)
 plot(result.LDLRA, type = "TRP")
 plot(result.LDLRA, type = "LRD")
@@ -489,6 +523,7 @@ plot(result.LDLRA, type = "LRD")
 ### 局所依存バイクラスタリング
 
 ``` r
+
 conf <- c(
   1, 6, 6, 8, 9, 9, 4, 7, 7, 7, 5, 8, 9, 10, 10,
   9, 9, 10, 10, 10, 2, 2, 3, 3, 5, 5, 6, 9, 9, 10,
@@ -506,11 +541,13 @@ write.csv(edges_data, file = edgeFile, row.names = FALSE)
 ```
 
 ``` r
+
 result.LDB <- LDB(U = J35S515, ncls = 5, conf = conf, adj_file = edgeFile)
 result.LDB
 ```
 
 ``` r
+
 plot(result.LDB, type = "Array")
 plot(result.LDB, type = "TRP")
 plot(result.LDB, type = "LRD")
@@ -522,6 +559,7 @@ plot(result.LDB, type = "FieldPIRP")
 ### バイクラスターネットワークモデル
 
 ``` r
+
 conf <- c(
   1, 5, 5, 5, 9, 9, 6, 6, 6, 6, 2, 7, 7, 11, 11,
   7, 7, 12, 12, 12, 2, 2, 3, 3, 4, 4, 4, 8, 8, 12,
@@ -539,6 +577,7 @@ write.csv(edges_data, file = edgeFile, row.names = FALSE)
 ```
 
 ``` r
+
 result.BINET <- BINET(
   U = J35S515, ncls = 13, nfld = 12,
   conf = conf, adj_file = edgeFile
@@ -547,6 +586,7 @@ print(result.BINET)
 ```
 
 ``` r
+
 plot(result.BINET, type = "Array")
 plot(result.BINET, type = "TRP")
 plot(result.BINET, type = "LRD")

@@ -6,6 +6,7 @@
 > site](https://kosugitti.github.io/exametrika/articles/biclustering.html).
 
 ``` r
+
 library(exametrika)
 ```
 
@@ -22,6 +23,7 @@ and examinees into classes/ranks. The difference is specified via the
 ### Biclustering
 
 ``` r
+
 Biclustering(J35S515, nfld = 5, ncls = 6, method = "B")
 #> Biclustering Analysis
 #> 
@@ -113,34 +115,40 @@ Biclustering(J35S515, nfld = 5, ncls = 6, method = "B")
 ### Ranklustering
 
 ``` r
+
 result.Ranklustering <- Biclustering(J35S515, nfld = 5, ncls = 6, method = "R")
 ```
 
 ``` r
+
 plot(result.Ranklustering, type = "Array")
 ```
 
 ![](biclustering_files/figure-html/plot-ranklustering-1.png)
 
 ``` r
+
 plot(result.Ranklustering, type = "FRP", nc = 2, nr = 3)
 ```
 
 ![](biclustering_files/figure-html/plot-ranklustering-2.png)
 
 ``` r
+
 plot(result.Ranklustering, type = "RRV")
 ```
 
 ![](biclustering_files/figure-html/plot-ranklustering-3.png)
 
 ``` r
+
 plot(result.Ranklustering, type = "RMP", students = 1:9, nc = 3, nr = 3)
 ```
 
 ![](biclustering_files/figure-html/plot-ranklustering-4.png)
 
 ``` r
+
 plot(result.Ranklustering, type = "LRD")
 ```
 
@@ -155,6 +163,7 @@ systematically evaluates multiple parameter combinations and selects the
 best-fitting model:
 
 ``` r
+
 result <- GridSearch(J35S515, method = "R", max_ncls = 10, max_nfld = 10, index = "BIC")
 result$optimal_ncls
 result$optimal_nfld
@@ -167,6 +176,7 @@ The IRM uses the Chinese Restaurant Process to automatically determine
 the optimal number of fields and classes:
 
 ``` r
+
 result.IRM <- Biclustering_IRM(J35S515, gamma_c = 1, gamma_f = 1, verbose = TRUE)
 plot(result.IRM, type = "Array")
 plot(result.IRM, type = "FRP", nc = 3)
@@ -178,6 +188,7 @@ plot(result.IRM, type = "TRP")
 ### Ordinal Data
 
 ``` r
+
 result.B.ord <- Biclustering(J35S500, ncls = 5, nfld = 5, method = "R")
 result.B.ord
 plot(result.B.ord, type = "Array")
@@ -187,6 +198,7 @@ FRP (Field Reference Profile) shows the expected score per field across
 latent ranks:
 
 ``` r
+
 plot(result.B.ord, type = "FRP", nc = 3, nr = 2)
 ```
 
@@ -194,6 +206,7 @@ FCRP (Field Category Response Profile) shows category probabilities
 across ranks. The `style` parameter can be `"line"` or `"bar"`:
 
 ``` r
+
 plot(result.B.ord, type = "FCRP", nc = 3, nr = 2)
 plot(result.B.ord, type = "FCRP", style = "bar", nc = 3, nr = 2)
 ```
@@ -202,12 +215,14 @@ FCBR (Field Cumulative Boundary Reference) shows cumulative boundary
 probabilities (ordinal only):
 
 ``` r
+
 plot(result.B.ord, type = "FCBR", nc = 3, nr = 2)
 ```
 
 ScoreField and RRV plots:
 
 ``` r
+
 plot(result.B.ord, type = "ScoreField")
 plot(result.B.ord, type = "RRV")
 ```
@@ -215,6 +230,7 @@ plot(result.B.ord, type = "RRV")
 ### Nominal Data
 
 ``` r
+
 result.B.nom <- Biclustering(J20S600, ncls = 5, nfld = 4)
 result.B.nom
 plot(result.B.nom, type = "Array")
@@ -224,6 +240,7 @@ Nominal Biclustering supports FRP, FCRP, ScoreField, and RRV (but not
 FCBR):
 
 ``` r
+
 plot(result.B.nom, type = "FRP", nc = 2, nr = 2)
 plot(result.B.nom, type = "FCRP", nc = 2, nr = 2)
 plot(result.B.nom, type = "FCRP", style = "bar", nc = 2, nr = 2)
@@ -239,6 +256,7 @@ internally runs nominal Biclustering, then sorts classes by correct
 response rate:
 
 ``` r
+
 result.B.rated <- Biclustering(J21S300, ncls = 5, nfld = 3, method = "R", maxiter = 300)
 result.B.rated
 #> Ranklustering Analysis (Rated) [MIC]
@@ -344,6 +362,7 @@ plot(result.B.rated, type = "Array")
 ![](biclustering_files/figure-html/bic-rated-1.png)
 
 ``` r
+
 plot(result.B.rated, type = "FRP", nc = 3, nr = 1)
 ```
 
@@ -358,6 +377,7 @@ nominal (AIC/BIC/CAIC only). Access them via `result$TestFitIndices` and
 The IRM also supports rated data:
 
 ``` r
+
 result.IRM.rated <- Biclustering_IRM(J21S300, gamma_c = 1, gamma_f = 1, verbose = FALSE)
 plot(result.IRM.rated, type = "Array")
 ```
@@ -365,6 +385,7 @@ plot(result.IRM.rated, type = "Array")
 ![](biclustering_files/figure-html/irm-rated-1.png)
 
 ``` r
+
 plot(result.IRM.rated, type = "FRP", nc = 3, nr = 1)
 ```
 
@@ -379,6 +400,7 @@ statistics, p-values, and Cramer’s V (effect size) for each item-by-rank
 cell.
 
 ``` r
+
 result.B.rated <- Biclustering(J21S300, ncls = 5, nfld = 3, method = "R", maxiter = 300)
 da <- DistractorAnalysis(result.B.rated)
 
@@ -398,6 +420,7 @@ also works with
 results for rated data:
 
 ``` r
+
 result.LRA.rated <- LRA(J21S300, nrank = 5, mic = TRUE)
 da_lra <- DistractorAnalysis(result.LRA.rated)
 print(da_lra, items = 1:3)

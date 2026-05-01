@@ -4,6 +4,71 @@ Detailed development log. User-facing changes go in `NEWS.md`; this file
 captures the per-session internal narrative (why a change was made, what
 was investigated, what was ruled out). Entries are newest-first.
 
+## 2026-04-28 — v2.0.0 多値BNM準備: Chatterjee’s ξ プロトタイプ + ブートストラップ設計
+
+`develop/Chaterjee20260428.R` で Chatterjee (2021) の ξ_n
+を素のRで再実装し、 XICOR
+との数値一致を取った後、タイ多発データでの安定化方策を実験的に決定した。
+
+### ξ_n 手計算の検証
+
+peas データ（n=700, parent のユニーク値 7 個 = 693 タイ）で
+`XICOR::xicor()` と完全一致を確認。途中で踏んだ典型バグを記録しておく:
+
+- **X のタイ崩し**: `order(x)` ではなく
+  `order(rank(x, ties.method = "random"))`。 R
+  の安定ソートは元の出現順を保つが、Chatterjee
+  の定義は一様ランダム順序。
+- **\|r\_{i+1} - r_i\| の `abs` 抜け**: `sum(diff(r_i))` は望遠鏡和で
+  `r_n - r_1` に潰れる。`sum(abs(diff(r_i)))` が正しい。
+- **l_i の対象**: l_i は **Y に対する降順ランク**
+  `rank(-sorted.y, "max")`。 X のランクではない。
+- **τ_n² 推定の u_i**: 論文 Theorem 2.2 直後の式で「u_i は R(1),…,R(n)
+  を **昇順並べ替え**したもの」と明記されている (correlation43_ja.tex
+  L325)。 XICOR の `qfr = sort(fr)`
+  と同じ。`y[r_i]`（生Yをランクで引く）ではない。
+
+最終的に xi/sd/pval が XICOR と bit-identical (差 1.78e-15) で一致。
+
+### ブートストラップ B 数の目安
+
+タイの多いデータでは ξ_n
+がタイ破りごとにブレるので、複数回平均で安定化する。
+（行サンプリングではなく、[`set.seed()`](https://rdrr.io/r/base/Random.html)
+を振り直して `rank(x, "random")` を B
+回引き直すだけの軽量版。サンプルサイズが変わらない利点あり。）
+
+n とタイ密度を変えて sd(ξ_iter) を測定:
+
+| データ         | n   | sd(ξ_iter) | B=1000 SE |
+|----------------|-----|------------|-----------|
+| peas           | 700 | 0.024      | 0.00075   |
+| peas subsample | 100 | 0.060      | 0.00191   |
+| Likert 5件     | 300 | 0.040      | 0.00127   |
+| Likert 5件     | 100 | 0.071      | 0.00223   |
+
+おおむね sd(ξ_iter) ∝ 1/√n（タイ密度同程度なら）。
+
+**結論**: 5件法 n=100 の最悪ケースでも B=1000 で SE ≒ 0.002、ξ が
+**小数点以下 2 桁で安定**する。BNM 構造学習の枝符号判定には十分。 v2.0.0
+多値 BNM 実装時のデフォルトは `B = 1000`、論文用の高精度報告は
+`B = 5000` を引数で指定可能にする方針。
+
+設計上の TODO（v2.0.0 多値 BNM 実装時）: - `xi_stable(x, y, B = 1000)`
+のラッパー関数を用意 - 「最初に B=200 で sd(ξ) を測って目標精度から B
+を自動決定」案も検討 - ブートストラップは ξ 推定値だけでなく p
+値も同様に平均化 - 累積平均の SE は `sd(xi)/sqrt(B)`（標本 SD
+ではない点に注意）
+
+### 成果物
+
+- `develop/Chaterjee20260428.R` — ξ_n 手計算 + B=10000
+  のブートストラップ実験
+- `develop/Chaterjee_bootstrap_convergence.png` — 累積平均 ± SE プロット
+- `develop/Chatterjee2021/correlation43_ja.tex` —
+  日本語訳（既存）の参照箇所 L308-329（定理 2.2 周辺、$`\hat{\tau}_n^2`$
+  推定式）
+
 ## 2026-04-27 — v1.12.0: C++ Gibbs sampler, conf_class, CRAN prep
 
 ### Confirmatory Biclustering bug audit

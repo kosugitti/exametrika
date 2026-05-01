@@ -6,6 +6,7 @@
 > site](https://kosugitti.github.io/exametrika/articles/latent-class-rank.html).
 
 ``` r
+
 library(exametrika)
 ```
 
@@ -15,6 +16,7 @@ LCA classifies examinees into unordered latent classes. Specify the
 dataset and the number of classes.
 
 ``` r
+
 LCA(J15S500, ncls = 5)
 #> 
 #> Item Reference Profile
@@ -117,6 +119,7 @@ The Class Membership Matrix indicates which latent class each examinee
 belongs to:
 
 ``` r
+
 result.LCA <- LCA(J15S500, ncls = 5)
 head(result.LCA$Students)
 #>            Membership 1 Membership 2 Membership 3 Membership 4 Membership 5
@@ -143,24 +146,28 @@ head(result.LCA$Students)
 - **LCD**: Latent Class Distribution
 
 ``` r
+
 plot(result.LCA, type = "IRP", items = 1:6, nc = 2, nr = 3)
 ```
 
 ![](latent-class-rank_files/figure-html/plot-lca-1.png)
 
 ``` r
+
 plot(result.LCA, type = "CMP", students = 1:9, nc = 3, nr = 3)
 ```
 
 ![](latent-class-rank_files/figure-html/plot-lca-2.png)
 
 ``` r
+
 plot(result.LCA, type = "TRP")
 ```
 
 ![](latent-class-rank_files/figure-html/plot-lca-3.png)
 
 ``` r
+
 plot(result.LCA, type = "LCD")
 ```
 
@@ -172,6 +179,7 @@ LRA is similar to LCA but assumes an ordering among the latent classes
 (ranks). Specify the dataset and the number of ranks.
 
 ``` r
+
 LRA(J15S500, nrank = 6)
 #> estimating method is  GTM 
 #> Item Reference Profile
@@ -291,6 +299,7 @@ LRA(J15S500, nrank = 6)
 Rank membership probabilities and rank-up/rank-down odds are calculated:
 
 ``` r
+
 result.LRA <- LRA(J15S500, nrank = 6)
 head(result.LRA$Students)
 #>            Membership 1 Membership 2 Membership 3 Membership 4 Membership 5
@@ -310,24 +319,28 @@ head(result.LRA$Students)
 ```
 
 ``` r
+
 plot(result.LRA, type = "IRP", items = 1:6, nc = 2, nr = 3)
 ```
 
 ![](latent-class-rank_files/figure-html/plot-lra-1.png)
 
 ``` r
+
 plot(result.LRA, type = "RMP", students = 1:9, nc = 3, nr = 3)
 ```
 
 ![](latent-class-rank_files/figure-html/plot-lra-2.png)
 
 ``` r
+
 plot(result.LRA, type = "TRP")
 ```
 
 ![](latent-class-rank_files/figure-html/plot-lra-3.png)
 
 ``` r
+
 plot(result.LRA, type = "LRD")
 ```
 
@@ -339,12 +352,14 @@ LRA can also handle ordinal scale data. The `mic` option enforces
 monotonic increasing constraints.
 
 ``` r
+
 result.LRAord <- LRA(J15S3810, nrank = 3, mic = TRUE)
 ```
 
 Score-rank relationship visualizations:
 
 ``` r
+
 plot(result.LRAord, type = "ScoreFreq")
 plot(result.LRAord, type = "ScoreRank")
 ```
@@ -357,6 +372,7 @@ Item-rank relationship plots:
   response category across ranks
 
 ``` r
+
 plot(result.LRAord, type = "ICBR", items = 1:4, nc = 2, nr = 2)
 plot(result.LRAord, type = "ICRP", items = 1:4, nc = 2, nr = 2)
 ```
@@ -364,6 +380,7 @@ plot(result.LRAord, type = "ICRP", items = 1:4, nc = 2, nr = 2)
 Rank membership profiles for individual examinees:
 
 ``` r
+
 plot(result.LRAord, type = "RMP", students = 1:9, nc = 3, nr = 3)
 ```
 
@@ -373,15 +390,18 @@ For multiple-choice tests (nominal scale), LRA can analyze response
 patterns including distractor choices.
 
 ``` r
+
 result.LRArated <- LRA(J35S5000, nrank = 10, mic = TRUE)
 ```
 
 ``` r
+
 plot(result.LRArated, type = "ScoreFreq")
 plot(result.LRArated, type = "ScoreRank")
 ```
 
 ``` r
+
 plot(result.LRArated, type = "ICRP", items = 1:4, nc = 2, nr = 2)
 ```
 

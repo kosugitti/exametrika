@@ -91,6 +91,19 @@ Correlation and association measures
   : Polychoric Correlation
 - [`polyserial()`](https://kosugitti.github.io/exametrika/reference/polyserial.md)
   : Polyserial Correlation
+- [`chatterjee_xi()`](https://kosugitti.github.io/exametrika/reference/chatterjee_xi.md)
+  : Chatterjee's xi correlation coefficient
+- [`xi_stable()`](https://kosugitti.github.io/exametrika/reference/xi_stable.md)
+  : Bootstrap-averaged Chatterjee's xi
+- [`chatterjee_matrix()`](https://kosugitti.github.io/exametrika/reference/chatterjee_matrix.md)
+  : Pairwise Chatterjee's xi correlation matrix
+
+## Graphical Models
+
+Sparse precision matrix estimation
+
+- [`Glasso()`](https://kosugitti.github.io/exametrika/reference/Glasso.md)
+  : Graphical Lasso for Gaussian Graphical Models
 
 ## Item Response Theory
 

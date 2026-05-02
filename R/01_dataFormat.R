@@ -372,10 +372,16 @@ dataFormat <- function(data, na = NULL, id = NULL, Z = NULL, w = NULL,
       stop("length of CA must match number of items")
     }
 
+    unsupported <- integer(0)
     for (i in 1:length(CA)) {
-      if (!CA[i] %in% unique(response.matrix[, i][response.matrix[, i] != -1])) {
-        stop(paste("CA for item", i, "is not a valid response category"))
-      }
+      resp_cats <- unique(response.matrix[, i][response.matrix[, i] != -1])
+      if (!CA[i] %in% resp_cats) unsupported <- c(unsupported, i)
+    }
+    if (length(unsupported) > 0) {
+      warning(sprintf(
+        "CA for item(s) %s not observed in responses (no correct responders); treated as all-incorrect.",
+        paste(unsupported, collapse = ", ")
+      ))
     }
     U <- matrix(NA, nrow = nrow(response.matrix), ncol = ncol(response.matrix))
     for (i in 1:nrow(response.matrix)) {
@@ -549,13 +555,19 @@ longdataFormat <- function(data, na = NULL,
     if (length(CA) != length(unique(Qid_vec))) {
       stop("Length of CA must match number of items")
     }
-    # Verify each CA is a valid response category
+    # Warn if a CA category is not observed (e.g., no correct responders);
+    # such items are still valid (treated as all-incorrect downstream).
+    unsupported <- integer(0)
     for (i in seq_along(CA)) {
       item_responses <- unique(Resp_vec[Qid_num == i])
       item_responses <- item_responses[!is.na(item_responses)]
-      if (!CA[i] %in% item_responses) {
-        stop(paste("CA for item", i, "is not a valid response category"))
-      }
+      if (!CA[i] %in% item_responses) unsupported <- c(unsupported, i)
+    }
+    if (length(unsupported) > 0) {
+      warning(sprintf(
+        "CA for item(s) %s not observed in responses (no correct responders); treated as all-incorrect.",
+        paste(unsupported, collapse = ", ")
+      ))
     }
   }
 

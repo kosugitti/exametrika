@@ -407,8 +407,12 @@ test_that("dataFormat error handling works correctly", {
   # CA length mismatch
   expect_error(dataFormat(test_data, response.type = "rated", CA = c(1, 2, 3, 4)))
 
-  # Invalid CA values
-  expect_error(dataFormat(test_data, response.type = "rated", CA = c(5)))
+  # CA category not observed → now warns (was error before v1.13.1)
+  test_data10 <- data.frame(id = 1:10, item1 = sample(1:3, 10, replace = TRUE))
+  expect_warning(
+    dataFormat(test_data10, response.type = "rated", CA = c(5)),
+    "not observed in responses"
+  )
 
   # Duplicated IDs (25 rows with duplicates)
   dup_id_data <- data.frame(
@@ -480,3 +484,37 @@ test_that("dataFormat handles Japanese/Unicode labels", {
   expect_s3_class(result, "exametrika")
   expect_true(!is.null(result$CategoryLabel))
 })
+
+test_that("rated dataFormat warns (not errors) when CA category is unobserved", {
+  # 30 obs × 5 items × ncat=5
+  set.seed(42)
+  Q <- matrix(sample(1:5, 30 * 5, replace = TRUE), nrow = 30, ncol = 5)
+  # item 3 を 1〜4 に制限し、CA[3]=5 を未観測にする
+  Q[, 3] <- sample(1:4, 30, replace = TRUE)
+  CA <- c(1, 2, 5, 3, 4)  # CA[3]=5 だが Q[,3] には 5 が無い
+  colnames(Q) <- paste0("Q", 1:5)
+
+  # warning が出るが処理は続行
+  expect_warning(
+    res <- dataFormat(Q, response.type = "rated", CA = CA),
+    "item.*3.*not observed"
+  )
+  expect_s3_class(res, "exametrika")
+  expect_equal(res$response.type, "rated")
+  # item 3 列は全 0（誰も正解していない）
+  expect_equal(sum(res$U[, 3]), 0)
+  # 他の item は通常通り
+  expect_true(any(res$U[, 1] == 1))
+
+  # 複数 item で未観測の場合、まとめて warning
+  Q2 <- Q
+  Q2[, 1] <- sample(1:4, 30, replace = TRUE)  # item 1 も
+  CA2 <- c(5, 2, 5, 3, 4)
+  expect_warning(
+    dataFormat(Q2, response.type = "rated", CA = CA2),
+    "item.*1.*3"
+  )
+})
+
+# Note: longdataFormat 経路も同じ修正 (line 555 周辺) を適用済み。
+# 機構は matrix 経路と同一なので上記テストでカバー。

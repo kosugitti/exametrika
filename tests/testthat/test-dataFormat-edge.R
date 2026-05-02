@@ -164,13 +164,16 @@ test_that("CA length mismatch causes error", {
   expect_error(dataFormat(data, CA = c(1, 2, 3)), "length of CA must match")
 })
 
-test_that("CA value not in data causes error", {
+test_that("CA value not in data warns (was error pre-v1.13.1)", {
   data <- data.frame(
     id = paste0("S", 1:15),
     item1 = sample(1:3, 15, replace = TRUE),
     item2 = sample(1:3, 15, replace = TRUE)
   )
-  expect_error(dataFormat(data, CA = c(5, 1)), "not a valid response category")
+  expect_warning(
+    dataFormat(data, CA = c(5, 1)),
+    "not observed in responses"
+  )
 })
 
 test_that("2-category non-binary (1/2) without response.type causes error", {

@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">exametrika</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.13.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.12.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -34,15 +34,15 @@
     </div>
 
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="1.13.1" id="exametrika-1131">exametrika 1.13.1<a class="anchor" aria-label="anchor" href="#exametrika-1131"></a></h2>
+<h2 class="pkg-version" data-toc-text="1.12.2" id="exametrika-1122">exametrika 1.12.2<a class="anchor" aria-label="anchor" href="#exametrika-1122"></a></h2>
 <div class="section level3">
-<h3 id="bug-fixes-1-13-1">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-1-13-1"></a></h3>
+<h3 id="bug-fixes-1-12-2">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-1-12-2"></a></h3>
 <ul><li>
 <strong><code>dataFormat(response.type = "rated")</code> no longer errors when a CA category is unobserved</strong>: previously, if no respondent chose item <code>j</code>’s correct-answer category (e.g., everyone got it wrong on a hard item, or the sample was small enough that the CA category did not appear by chance), <code><a href="../reference/dataFormat.html">dataFormat()</a></code> aborted with <code>"CA for item j is not a valid response category"</code>. This rejected legitimate test data where an item is uniformly difficult or where the sample size is small. The check has been relaxed to a <code><a href="https://rdrr.io/r/base/warning.html" class="external-link">warning()</a></code>; the affected items are encoded as all-incorrect (<code>U[, j] == 0</code>), which is the correct downstream behavior. This applies to both the matrix-input path (<code>dataFormat</code>) and the long-format path (<code>longdataFormat</code>). Mistyped CAs (e.g., <code>CA[j] = 8</code> when categories are 1–7) still surface as warnings, so the diagnostic value is preserved.</li>
 </ul></div>
 </div>
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="1.13.0" id="exametrika-1130">exametrika 1.13.0<a class="anchor" aria-label="anchor" href="#exametrika-1130"></a></h2>
+<h2 class="pkg-version" data-toc-text="1.13.0" id="exametrika-1130-unreleased--pending-post-simulation-release">exametrika 1.13.0 (Unreleased — pending post-simulation release)<a class="anchor" aria-label="anchor" href="#exametrika-1130-unreleased--pending-post-simulation-release"></a></h2>
 <div class="section level3">
 <h3 id="new-features-1-13-0">New features<a class="anchor" aria-label="anchor" href="#new-features-1-13-0"></a></h3>
 <ul><li>

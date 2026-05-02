@@ -1,4 +1,4 @@
-# exametrika 1.13.1
+# exametrika 1.12.2
 
 ## Bug fixes
 
@@ -17,7 +17,7 @@
   are 1–7) still surface as warnings, so the diagnostic value is
   preserved.
 
-# exametrika 1.13.0
+# exametrika 1.13.0 (Unreleased — pending post-simulation release)
 
 ## New features
 

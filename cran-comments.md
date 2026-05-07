@@ -1,6 +1,6 @@
 ## Test environments
 
-* local macOS (aarch64-apple-darwin25.0.0): R 4.5.3
+* local macOS (aarch64-apple-darwin25.0.0): R 4.6.0
 * R-hub v2: linux (R-release), macos-arm64 (R-release), windows (R-release)
 * win-builder: R-devel
 

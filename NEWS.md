@@ -209,13 +209,34 @@ This release also incorporates the development changes from 1.12.0–1.12.2
   reference implementation in `R/00_IRM_Gibbs_CORE.R` is preserved
   behind `irm_gibbs_core(..., use_cpp = FALSE)` for cross-checking.
 
-  - **Numerical reproducibility**: With the same `set.seed()`, the C++
-    path produces output bit-identical to the R reference. RNG calls
-    are routed through R-level `sample.int()` and `rmultinom()` (via
+  - **Numerical reproducibility (revised 2026-05-07)**: RNG calls are
+    routed through R-level `sample.int()` and `rmultinom()` (via
     `Rcpp::Function`) so the `unif_rand()` consumption order matches
     base R exactly. The C-level entry points (`Rcpp::sample`,
     `R::rmultinom`) consume RNG differently from base R and were
     explicitly avoided.
+
+    The C++ and R reference paths are bit-identical for the first
+    Gibbs iterations on the bundled test datasets and on real
+    polytomous data (verified through iteration 2 on J143S32 ordinal),
+    but **diverge from iteration 3 onward** on real data due to
+    sub-LSB floating-point ordering differences accumulating through
+    the `lmvbeta()` calls in the CRP likelihood. Once the divergence
+    flips a single `rmultinom()` outcome, the two chains follow
+    different sample paths.
+
+    Empirically the two paths still **target the same posterior**:
+    on a 50-seed comparison (M = 66 ordinal items, N = 143), the
+    marginal distributions of `n_field` and `n_class` are
+    statistically indistinguishable between paths (Wilcoxon
+    p = 0.56 / 0.81). Use either path for inference; do not rely
+    on a single seed reproducing the same `(n_field, n_class)`
+    across the two paths.
+
+    The parity tests in `tests/testthat/test-irm-gibbs-cpp.R`
+    cover only short runs (<= 10 iterations) and therefore did not
+    catch this. A longer-iteration test on real-data-like
+    configurations is on the roadmap.
   - **Wall-clock**: roughly 4x speedup on the inner Gibbs loop on the
     bundled test datasets (J20S600 nominal: 82 to 20 ms/iter;
     J35S500 ordinal: 76 to 19 ms/iter). The end-to-end

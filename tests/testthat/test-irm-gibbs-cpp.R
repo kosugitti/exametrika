@@ -5,9 +5,21 @@ library(exametrika)
 # ================================================================
 #
 # The Rcpp implementation `irm_gibbs_core_cpp()` is a direct translation
-# of the R reference `irm_gibbs_core(..., use_cpp = FALSE)`. With the
-# same set.seed() it must produce bit-identical results to the R code,
-# because RNG calls go through R-level sample.int() and rmultinom().
+# of the R reference `irm_gibbs_core(..., use_cpp = FALSE)`. RNG calls
+# go through R-level sample.int() and rmultinom() so the unif_rand()
+# consumption order matches base R.
+#
+# Bit-identical agreement holds for short runs (the cases tested in this
+# file: <= 10 iterations on the bundled J20S600 / J35S500 datasets). On
+# real polytomous data with many iterations, sub-LSB floating-point
+# ordering differences inside `lmvbeta()` accumulate through the CRP
+# likelihood and can flip a single `rmultinom()` outcome, after which
+# the two chains follow different sample paths. The marginal posterior
+# distributions remain statistically indistinguishable between the two
+# paths (verified empirically; see NEWS.md v1.13.0).
+#
+# TODO: add a long-iteration parity test on real-data-like configurations
+# to characterise where (and how reliably) the two paths diverge.
 
 setup_state <- function(dat) {
   nitems <- NCOL(dat$Q)

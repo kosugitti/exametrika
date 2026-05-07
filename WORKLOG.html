@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="index.html">exametrika</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.12.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.13.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -36,6 +36,229 @@
 <div id="exametrika-work-log" class="section level1">
 
 <p>Detailed development log. User-facing changes go in <code>NEWS.md</code>; this file captures the per-session internal narrative (why a change was made, what was investigated, what was ruled out). Entries are newest-first.</p>
+<div class="section level2">
+<h2 id="id_2026-05-01--v1130-cran-check-通過対応--多値-bnm-構造学習の本格議論">2026-05-01 — v1.13.0 CRAN check 通過対応 + 多値 BNM 構造学習の本格議論<a class="anchor" aria-label="anchor" href="#id_2026-05-01--v1130-cran-check-%E9%80%9A%E9%81%8E%E5%AF%BE%E5%BF%9C--%E5%A4%9A%E5%80%A4-bnm-%E6%A7%8B%E9%80%A0%E5%AD%A6%E7%BF%92%E3%81%AE%E6%9C%AC%E6%A0%BC%E8%AD%B0%E8%AB%96"></a></h2>
+<p>このセッションは2部構成。前半は v1.12.1 → v1.13.0 のバージョン上げと GitHub Actions R-CMD-check 失敗の修正。後半は多値 BNM 構造学習の 方針確定に向けた長い議論で，案を複数比較しながら最終的に「3 段構え」 (Glasso スケルトン → Chatterjee ξ で方向 → 単調制約累積リンクで条件付き 分布) を採用する見通しを立てた。本ログは後半の議論を丁寧に残す。</p>
+<div class="section level3">
+<h3 id="a-v1121--v1130-バージョン上げ">A. v1.12.1 → v1.13.0 バージョン上げ<a class="anchor" aria-label="anchor" href="#a-v1121--v1130-%E3%83%90%E3%83%BC%E3%82%B8%E3%83%A7%E3%83%B3%E4%B8%8A%E3%81%92"></a></h3>
+<p>A3 Phase3 シミュレーション中に Biclustering EM ループの非有限 test_log_lik 事故が発覚し，先に v1.12.1 として hotfix (コミット 0ca95e6) を切り出して Phase3 を継続走行させていた。Phase3 が動いている間は DESCRIPTION のバージョンも 1.12.1 のまま据え置いていたが，4/30 に v1.13.0 の主要機能 (Glasso + Chatterjee ξ, コミット 7bf5ce9) が main に 着地した上に pkgdown 登録 (258e208) も済んでいたため，本セッションで DESCRIPTION の Version を 1.13.0 に上げた。NEWS.md には既に 1.13.0 セクションが書かれていたので変更なし。WORKLOG.md には v1.13.0 の 詳細経緯 (Glasso の Jacobi → Gauss-Seidel 修正，整数オーバーフロー 対応，DAG 試作の方向転換等) を追記。コミット 67ec9a1 で push。</p>
+</div>
+<div class="section level3">
+<h3 id="b-r-cmd-check-の連続失敗を解消">B. R-CMD-check の連続失敗を解消<a class="anchor" aria-label="anchor" href="#b-r-cmd-check-%E3%81%AE%E9%80%A3%E7%B6%9A%E5%A4%B1%E6%95%97%E3%82%92%E8%A7%A3%E6%B6%88"></a></h3>
+<p>push 直後に GitHub Actions R-CMD-check が落ちていることが判明。実は v1.12.0 IRM Gibbs C++ コミット d485a18 から 3 連続で failure に なっていた:</p>
+<ul><li>d485a18 (v1.12.0 IRM Gibbs C++) failure</li>
+<li>0ca95e6 (v1.12.1 hotfix) failure</li>
+<li>258e208 (v1.13.0 pkgdown register) failure</li>
+</ul><p>ジョブの Annotation から 2 WARNING + 1 NOTE で <code>--as-cran</code> が exit 1 になっていたことを特定。</p>
+<p><strong>問題 1 (WARNING): roxygen Markdown の角括弧自動リンク化</strong></p>
+<p><code>chatterjee_matrix.Rd</code> で <code>[j, k]</code>, <code>[i, j]</code>, <code>[i, k]</code> が <code>\link{}</code> として 解釈され，<code>Glasso.Rd</code> で <code>[0, 1]</code> が同様に解釈されていた。これは roxygen2 が Markdown モードで <code>[xxx]</code> を自動的に cross-reference に 変換する仕様のため。バックティックで囲んで <code>\verb{}</code> / <code>\code{}</code> 化 されるよう修正:</p>
+<ul><li>
+<code>R/22_GlassoUnit.R</code>: <code>EBIC tuning parameter in [0, 1]</code> → <code>EBIC tuning parameter in `[0, 1]`</code>
+</li>
+<li>
+<code>R/23_Chatterjee.R</code>: <code>Entry [j, k] is xi(item_j, item_k)</code> → <code>Entry `[j, k]` is xi(item_j, item_k)</code>，<code>Q[i, j] or Q[i, k]</code> を <code>`Q[i, j]` or `Q[i, k]`</code> に。</li>
+</ul><p><strong>問題 2 (WARNING): Glasso() の <code>...</code> が undocumented</strong></p>
+<p>関数定義に <code>...</code> があるが <code>@param ...</code> 行がなかった。 <code>@param ... Additional arguments (currently unused; reserved for future extensions).</code> を追加。</p>
+<p><strong>問題 3 (NOTE): partial argument match</strong></p>
+<p><code>R/22_GlassoUnit.R:113</code> で <code>determinant(Theta, log = TRUE)</code> の <code>log</code> が <code>logarithm</code> に部分マッチしていた。<code>logarithm = TRUE</code> に修正。</p>
+<p><code>roxygen2::roxygenise()</code> で man/Glasso.Rd と man/chatterjee_matrix.Rd を 再生成 (<code>\verb{}</code>, <code>\code{}</code> に変わる)。<code>devtools::check_man()</code> で警告 なし確認。NEWS.md の 1.13.0 セクションに「Documentation and CRAN check cleanup」サブセクションを追加。コミット 620c11e で push。</p>
+<p>(なおこのセッションで一度 main 直 push が Claude Code の harness permission に弾かれたが，2 回目以降は通った。1 回目はユーザに <code>!</code> で シェル直叩きしてもらって解消した。)</p>
+</div>
+<div class="section level3">
+<h3 id="c-多値-bnm-構造学習の本格議論">C. 多値 BNM 構造学習の本格議論<a class="anchor" aria-label="anchor" href="#c-%E5%A4%9A%E5%80%A4-bnm-%E6%A7%8B%E9%80%A0%E5%AD%A6%E7%BF%92%E3%81%AE%E6%9C%AC%E6%A0%BC%E8%AD%B0%E8%AB%96"></a></h3>
+<p>ここからが本セッションの主題。4/30 確定とされていた「累積リンクモデル 尤度比較 (LiNGAM 順序版) を方向決定本流にする」方針が本当に妥当か， 順序 BNM の構造学習をどう設計すべきかを長く検討した。最終的に ユーザの整理で「3 段構え」が確定した。経緯を詳しく残す。</p>
+<div class="section level4">
+<h4 id="c1-累積リンク尤度比較の限界発見">C.1 累積リンク尤度比較の限界発見<a class="anchor" aria-label="anchor" href="#c1-%E7%B4%AF%E7%A9%8D%E3%83%AA%E3%83%B3%E3%82%AF%E5%B0%A4%E5%BA%A6%E6%AF%94%E8%BC%83%E3%81%AE%E9%99%90%E7%95%8C%E7%99%BA%E8%A6%8B"></a></h4>
+<p>J35S500 (5 件法 ordinal, N=500, J=35) で <code><a href="https://rdrr.io/pkg/MASS/man/polr.html" class="external-link">MASS::polr</a></code> probit を使った 最小実験を実施。</p>
+<p><strong>実験 1</strong> (<code>develop/20260501.R</code>): Item01-Item02 ペアで双方向 polr。</p>
+<ul><li>factor 渡しだと係数 4 個 (ダミー)</li>
+<li>numeric 渡しだと係数 1 個 (X 連続化)</li>
+<li>ll(Item02 → Item01) = -380.57, ll(Item01 → Item02) = -761.23, Δ = +380.66</li>
+</ul><p>問題提起: Δ が +380 もあるのは怪しい。手計算でエントロピー差を出すと n × (H(Item02) - H(Item01)) = 380.56。実測差 +379.82 と誤差 0.7 で ほぼ一致。これは累積リンクの漸近形</p>
+<p>ℓ(X → Y) ≈ -n · H(Y | X)</p>
+<p>から差を取ると ℓ(X→Y) - ℓ(Y→X) ≈ n · (H(X) - H(Y)) になることに 対応。<strong>生の対数尤度比較は「エントロピー小が下流」ルールしか出して いない</strong>。LiNGAM 順序版にはなっていない。</p>
+<p><strong>実験 2</strong> (<code>develop/20260501b.R</code>): MI 上位 10 ペアで同じ実験を回し， 残差 (delta_ll - delta_pred_ent) の挙動を確認。</p>
+<ul><li>Item01-Item02 (MI ≈ 0.013) では残差 +0.7 (誤差レベル)</li>
+<li>MI 上位ペア (MI ≈ 0.20-0.24) では残差 -26〜+60 (支配的)</li>
+<li>residual / |delta_ll| が 1.66〜4.45</li>
+<li>ll 判定と ent 判定が一致 9/10 (ペア 22-34 のみ符号反転)</li>
+<li>β の絶対値は両方向ほぼ同じ (-0.0007〜-0.0680 / 0.27〜0.56)</li>
+</ul><p>つまり方向情報は β にではなく対数尤度差の残差に存在し，MI が小さい ペアでは残差が消える。「累積リンク尤度差 = エントロピー差」は MI ≈ 0 の極限の話で，MI 大では残差として方向情報が出る可能性がある。 ただし単独で実用するには残差を抽出する別の指標化が必要で， 「方向決定の本流」と呼ぶのは過大評価だった。</p>
+</div>
+<div class="section level4">
+<h4 id="c2-ユーザによる重要な指摘-1-エントロピー誤用">C.2 ユーザによる重要な指摘 1: エントロピー誤用<a class="anchor" aria-label="anchor" href="#c2-%E3%83%A6%E3%83%BC%E3%82%B6%E3%81%AB%E3%82%88%E3%82%8B%E9%87%8D%E8%A6%81%E3%81%AA%E6%8C%87%E6%91%98-1-%E3%82%A8%E3%83%B3%E3%83%88%E3%83%AD%E3%83%94%E3%83%BC%E8%AA%A4%E7%94%A8"></a></h4>
+<p>「項目エントロピー H(j) って何だ。それって順序でもできるのか?」という 指摘。</p>
+<p>確かに <code>H(j) = -Σ P(q) log P(q)</code> は順序を入れ替えても不変で，順序 情報を一切使わない。二値の H(j) = -(p log p + (1-p) log(1-p)) が正答率 p の単調関数だったので，二値 BNM では「H 小 = 正答率極端 = 下流」 が偶然成立していたが，多値ではこの偶然は崩れる。 20260118 アイデアノート 5.3 節「方向は周辺エントロピー差で決まる」は <strong>二値限定の言明として訂正すべき</strong>。</p>
+<p>順序を尊重する情報量指標として:</p>
+<ul><li>累積エントロピー (Rao 2004): H̄(X) = -∫ F(x) log F(x) dx</li>
+<li>累積残存エントロピー (Crescenzo &amp; Longobardi 2002)</li>
+</ul><p>があるが心理計量で標準的でない。素直に項目平均/中央値の方が解釈 しやすい。</p>
+</div>
+<div class="section level4">
+<h4 id="c3-ユーザの発想-1-順序-mds-で項目を空間化">C.3 ユーザの発想 1: 順序 MDS で項目を空間化<a class="anchor" aria-label="anchor" href="#c3-%E3%83%A6%E3%83%BC%E3%82%B6%E3%81%AE%E7%99%BA%E6%83%B3-1-%E9%A0%86%E5%BA%8F-mds-%E3%81%A7%E9%A0%85%E7%9B%AE%E3%82%92%E7%A9%BA%E9%96%93%E5%8C%96"></a></h4>
+<p>「項目間の順序 MDS のような応用ができないか。距離構造を Chatterjee 相関で見て，距離の大小関係を維持する空間に入れる。非対称 MDS で von Mises を使って」とのアイデア。</p>
+<p>これに対し以下を整理して提示:</p>
+<ul><li>Hill-climbing model (Borg &amp; Groenen 2005 章 23): d(j → k) = ||x_j - x_k|| + α (h_k - h_j)</li>
+<li>Slide-Vector model (Zielman &amp; Heiser 1996)</li>
+<li>Drift Vector model + von Mises 角度</li>
+<li>ノンメトリック MDS (Kruskal) の disparity</li>
+</ul><p>Hill-climbing の <code>h_j</code> を何にするかで <code>develop/20260501c.R</code> で実験:</p>
+<ul><li>平均: (Pearson 0.004, Spearman 0.016)</li>
+<li>中央値: (0.031, 0.038)</li>
+<li>-H エントロピー: (-0.014, -0.048)</li>
+<li>drift = ξ 非対称行列の行平均: (-0.497, -0.431)</li>
+</ul><p><strong>重要発見</strong>: 項目の周辺特性 (平均/中央値/-H) は ξ 非対称を<strong>全く 説明しない</strong>。drift だけが説明するが，これは ξ 非対称から定義したので 構成上当然 (循環論)。つまり「ξ が捉えている方向情報は周辺特性と 独立な構造」を示している。ξ 非対称性は項目の中心傾向や不確実性 では再現できない別物。</p>
+</div>
+<div class="section level4">
+<h4 id="c4-荘島先生-amisescal-モデルの読み込み">C.4 荘島先生 AMISESCAL モデルの読み込み<a class="anchor" aria-label="anchor" href="#c4-%E8%8D%98%E5%B3%B6%E5%85%88%E7%94%9F-amisescal-%E3%83%A2%E3%83%87%E3%83%AB%E3%81%AE%E8%AA%AD%E3%81%BF%E8%BE%BC%E3%81%BF"></a></h4>
+<p>ユーザから <a href="https://sh0j1ma.stars.ne.jp/ams/shojimaBSJ11.pdf" class="external-link uri">https://sh0j1ma.stars.ne.jp/ams/shojimaBSJ11.pdf</a> を共有。</p>
+<p><strong>AMISESCAL = Asymmetric von Mises Scaling</strong> (Kojiro Shojima, NCUEE Research Division)</p>
+<ul><li>入力: 非対称 N×N 近接行列 G = {g_ij} (g_ij 小 = i が j を好ましく感じる)</li>
+<li>各点 i に: 座標 x_i ∈ R^p, von Mises 平均方向 μ_i, 集中度 κ_i</li>
+<li>縮尺率: π_ij = f(θ_ij | μ_i, κ_i) (von Mises 密度値)</li>
+<li>モデル距離: ξ_ij = (1 - π_ij) δ_ij where δ_ij = ||x_i - x_j||</li>
+<li>Stress: S(X, μ, κ) = Σ Σ (g_ij - ξ_ij)²</li>
+<li>引用: Chino (1997), Mardia &amp; Jupp (2000), Okada &amp; Imaizumi (1987)</li>
+</ul><p>これは私が独立に提案した「Drift Vector + von Mises」と完全に一致する モデル。荘島先生がすでに発表していた発想を再発見した形。</p>
+</div>
+<div class="section level4">
+<h4 id="c5-abelson-電磁場モデル-小杉-2004-の歴史的位置づけ">C.5 Abelson 電磁場モデル (小杉 2004) の歴史的位置づけ<a class="anchor" aria-label="anchor" href="#c5-abelson-%E9%9B%BB%E7%A3%81%E5%A0%B4%E3%83%A2%E3%83%87%E3%83%AB-%E5%B0%8F%E6%9D%89-2004-%E3%81%AE%E6%AD%B4%E5%8F%B2%E7%9A%84%E4%BD%8D%E7%BD%AE%E3%81%A5%E3%81%91"></a></h4>
+<p>ユーザから <a href="https://www.jstage.jst.go.jp/article/jbhmk/31/1/31_1_17/_pdf" class="external-link uri">https://www.jstage.jst.go.jp/article/jbhmk/31/1/31_1_17/_pdf</a> も 共有。</p>
+<p><strong>小杉考司・藤原武弘 (2004) 等高線マッピングによる態度布置モデル. 行動計量学 31(1) 17-24.</strong></p>
+<p>Abelson (1954-55) Contour Map モデルの応用:</p>
+<p>V(P) = Σ V(j) / (1 + d²_{Pj})</p>
+<p>二次元 MDS 空間 + 高さ次元 = スカラー場。電位アナロジー。論文末尾 で当時のユーザ自身が:</p>
+<blockquote>
+<p>高度という第三の次元に「高いところから低いところへ力が加わる」 といった力学的仮定を付与する十分な理論的背景がないのである。 すなわち，本研究で扱ったモデルは，勾配ベクトル場ではなくスカラー場 としてしか捉えられず，力動的な系として表現できない。</p>
+</blockquote>
+<p>と限界を明記。AMISESCAL がこの限界を方向統計 (von Mises) で解決 した形になっている (22 年越しの発展)。</p>
+</div>
+<div class="section level4">
+<h4 id="c6-ユーザによる重要な指摘-2-方向場と-dag-は別物">C.6 ユーザによる重要な指摘 2: 方向場と DAG は別物<a class="anchor" aria-label="anchor" href="#c6-%E3%83%A6%E3%83%BC%E3%82%B6%E3%81%AB%E3%82%88%E3%82%8B%E9%87%8D%E8%A6%81%E3%81%AA%E6%8C%87%E6%91%98-2-%E6%96%B9%E5%90%91%E5%A0%B4%E3%81%A8-dag-%E3%81%AF%E5%88%A5%E7%89%A9"></a></h4>
+<p>「荘島モデル，Abelson モデル，いずれも DAG を作る話には向いてない。 向きがわかるだけで」というご指摘。</p>
+<p>確かに:</p>
+<ul><li>AMISESCAL は項目空間に方向場 (μ_j, κ_j) を出すが「j の親は具体的に 誰か」を直接答えない。μ_j 方向の最近傍を子と見なす後付けルールが 必要で，それは AMISESCAL 本来のモデル外</li>
+<li>DAG 構築には「ペア局所判定 + DAG 整合性」の二段構成が標準 (PC, GES, LiNGAM, NOTEARS)</li>
+<li>AMISESCAL/Abelson は最終出力の可視化・解釈補助に位置づける のが妥当</li>
+</ul><p>mdspace パッケージ的な空間モデルは BNM の DAG 学習エンジンでは なく，事後の可視化器として理解しておく。</p>
+</div>
+<div class="section level4">
+<h4 id="c7-ユーザによる-3-段構えの提案-確定">C.7 ユーザによる 3 段構えの提案 (確定)<a class="anchor" aria-label="anchor" href="#c7-%E3%83%A6%E3%83%BC%E3%82%B6%E3%81%AB%E3%82%88%E3%82%8B-3-%E6%AE%B5%E6%A7%8B%E3%81%88%E3%81%AE%E6%8F%90%E6%A1%88-%E7%A2%BA%E5%AE%9A"></a></h4>
+<pre><code>段 1  GGM (Glasso) で無向スケルトン           ← エッジ有無
+段 2  Chatterjee ξ の値の大小で方向決定       ← エッジ方向
+段 3  単調制約付き累積リンク等で条件付き分布   ← パス係数</code></pre>
+<p>ξ(j, k) &gt; ξ(k, j) なら j → k (大きいほうが親)。</p>
+<p>各段の役割が綺麗に分離。段 1 (Glasso) と段 2 (chatterjee_matrix) は v1.13.0 で実装済みなので，段 3 が次の主戦場。</p>
+</div>
+<div class="section level4">
+<h4 id="c8-段-3-の検討-案-c-と派生アイデア">C.8 段 3 の検討: 案 C と派生アイデア<a class="anchor" aria-label="anchor" href="#c8-%E6%AE%B5-3-%E3%81%AE%E6%A4%9C%E8%A8%8E-%E6%A1%88-c-%E3%81%A8%E6%B4%BE%E7%94%9F%E3%82%A2%E3%82%A4%E3%83%87%E3%82%A2"></a></h4>
+<p><strong>案 C (単調制約付きカテゴリ係数累積リンク)</strong>:</p>
+<p>P(Y ≤ q | X = x) = Φ(τ_q - μ_x), μ_1 ≤ μ_2 ≤ … ≤ μ_Q</p>
+<ul><li>X カテゴリごとに別の μ_x (X 連続化なし)</li>
+<li>単調制約で順序情報尊重</li>
+<li>パラメータ数 2(Q-1) (Q=5 で 8)</li>
+<li>親複数の加法モデル: τ_q - Σ_k μ_{x_k}^{(k)} で Q×|pa| 線形</li>
+<li>累積リンク (Q 個) と分割表 (Q² 個) の中間</li>
+<li>加法性仮定で交互作用なし</li>
+</ul><p><strong>ユーザの派生アイデア: 「X_k で条件付けた Y_{k+1}」</strong></p>
+<p>D_{X→Y}(k) = P(Y ≥ k+1 | X = k)</p>
+<p>X が k のとき Y が 1 段階上に行く確率を全 k で見る。GRM の閾値 対応のような発想。</p>
+<p>これは案 C の対角隣セル <code>1 - Φ(τ_k - μ_k)</code> で，案 C のサブセット。 新しいモデルではなく案 C の補助プロファイル/可視化として位置づけ られる。「+1 シフト」の恣意性 (なぜ +1, +2 や +0.5 はどうか)， 端点問題 (X = Q で Y_{Q+1} は定義不能)，対角隣だけ見る情報損失， の懸念がある。</p>
+<p><strong>結論</strong>: パス係数は案 C を採用して β = μ_Q - μ_1 で取り，対角プロファ イル D(k) は診断・可視化用に併用する。</p>
+<p>順序 MDS との違いも明確化:</p>
+<ul><li>順序 MDS: 全項目を空間化，stress 最小化，項目に座標が付く</li>
+<li>案 C: ペアの条件付き分布推定，対数尤度最大化，項目に座標は 付かない (Y* は応答スケール内の潜在連続体)</li>
+</ul></div>
+<div class="section level4">
+<h4 id="c9-議論の整理スライド作成">C.9 議論の整理スライド作成<a class="anchor" aria-label="anchor" href="#c9-%E8%AD%B0%E8%AB%96%E3%81%AE%E6%95%B4%E7%90%86%E3%82%B9%E3%83%A9%E3%82%A4%E3%83%89%E4%BD%9C%E6%88%90"></a></h4>
+<p><code>develop/20260501_BNM_3steps.qmd</code> (Quarto reveal.js, 17 枚) を作成 してレンダリング。HTML 版は <code>develop/20260501_BNM_3steps.html</code>。 スライド構成:</p>
+<ol style="list-style-type: decimal"><li>二値 BNM の前提</li>
+<li>多値で何が壊れるか</li>
+<li>全体像 (3 段構えの mermaid 図)</li>
+<li>段 1: GGM (Glasso)</li>
+<li>段 2: Chatterjee ξ</li>
+<li>段 2: 判定ルール</li>
+<li>段 3 の問題提起 (なぜ累積リンクではダメか)</li>
+<li>段 3: 案 C</li>
+<li>案 C の潜在変数イメージ</li>
+<li>パラメータ数比較</li>
+<li>親複数の加法モデル</li>
+<li>パス係数の取り出し方</li>
+<li>3 段の役割マップ (mermaid)</li>
+<li>残された設計判断</li>
+<li>補足: 順序 MDS との違い</li>
+<li>まとめ</li>
+</ol></div>
+</div>
+<div class="section level3">
+<h3 id="d-残された論点-次セッション以降">D. 残された論点 (次セッション以降)<a class="anchor" aria-label="anchor" href="#d-%E6%AE%8B%E3%81%95%E3%82%8C%E3%81%9F%E8%AB%96%E7%82%B9-%E6%AC%A1%E3%82%BB%E3%83%83%E3%82%B7%E3%83%A7%E3%83%B3%E4%BB%A5%E9%99%8D"></a></h3>
+<ul><li>
+<strong>段 2 判定閾値</strong>: 絶対値 / SE 正規化 / 経験的カットオフ。 xi_stable() の SE で正規化が一番ロバストの見立て</li>
+<li>
+<strong>段 2 計算範囲</strong>: スケルトン上のみ (高速) vs 全ペア (安全)</li>
+<li>
+<strong>段 3 単調制約の実装</strong>: 強制最適化 (差分 log 再パラメータ化) vs PAVA 事後投影</li>
+<li>
+<strong>段 3 加法性仮定</strong>: 交互作用なしで OK か実データで検証</li>
+<li>
+<strong>サイクル処理</strong>: 最弱辺削除 vs 反転</li>
+<li>
+<strong>パス係数の表現</strong>: スカラー β / プロファイル D(k) / 両方を返す</li>
+<li>
+<strong>BNM_GA / BNM_PBIL は 3 段構えで不要</strong>: スコア探索が要らない (Glasso + ξ で構造が決まる)。既存の二値 BNM_GA / BNM_PBIL は 二値専用として残すのが自然</li>
+</ul></div>
+<div class="section level3">
+<h3 id="e-ユーザの思いつきメモ-将来役立つ可能性あり">E. ユーザの思いつきメモ (将来役立つ可能性あり)<a class="anchor" aria-label="anchor" href="#e-%E3%83%A6%E3%83%BC%E3%82%B6%E3%81%AE%E6%80%9D%E3%81%84%E3%81%A4%E3%81%8D%E3%83%A1%E3%83%A2-%E5%B0%86%E6%9D%A5%E5%BD%B9%E7%AB%8B%E3%81%A4%E5%8F%AF%E8%83%BD%E6%80%A7%E3%81%82%E3%82%8A"></a></h3>
+<p>このセッションで発生したアイデアを後の参照用にまとめておく:</p>
+<ol style="list-style-type: decimal"><li>
+<strong>項目の順序 MDS + Chatterjee ξ</strong>: 項目を ξ 距離で空間化し， 非対称 MDS (von Mises) で方向場を出す。BNM の DAG 学習器 ではないが，可視化・解釈補助に有効</li>
+<li>
+<strong>AMISESCAL の応用</strong>: 各項目に座標 x_j, 方向角 μ_j, 集中度 κ_j を 割り当て，BNM 完成後に大局的な流れを確認する事後ツールとして</li>
+<li>
+<strong>3 次元 Abelson 電磁場モデル</strong>: ユーザ自身の 2004 年論文の発想 (態度の認知次元 + 感情強度の場)。今回の DAG には不向きだが， 多値 BNM の出力を「態度場」として可視化するアイデアの源泉に なりうる</li>
+<li>
+<strong>GRM 並べでの両側閾値モデル</strong>: X と Y の両方に GRM 風の閾値を 割り当て，β_{X,k} と β_{Y,k+1} の対応で項目間関係を読む。これは 1 次元 IRT の項目困難度プロファイルとして使えるが，BNM の親子 関係とは別軸の話</li>
+<li>
+<strong>「X_k で条件付けた Y_{k+1}」プロファイル</strong>: パス係数の補助 可視化として，ペアごとに k = 1, …, Q-1 の折れ線で「動きやすさ」を 見せる</li>
+<li>
+<strong>対数尤度差の残差</strong> (= delta_ll - n*(H_X - H_Y)): MI 大ペアでは 方向情報を含むかもしれない量。単独使用は不安定だが，ξ 非対称 との組み合わせで補強できる可能性</li>
+</ol></div>
+<div class="section level3">
+<h3 id="f-作成更新ファイル">F. 作成・更新ファイル<a class="anchor" aria-label="anchor" href="#f-%E4%BD%9C%E6%88%90%E6%9B%B4%E6%96%B0%E3%83%95%E3%82%A1%E3%82%A4%E3%83%AB"></a></h3>
+<ul><li>
+<code>DESCRIPTION</code> (1.12.1 → 1.13.0)</li>
+<li>
+<code>NEWS.md</code> (1.13.0 セクションに Documentation and CRAN check cleanup サブセクション追加)</li>
+<li>
+<code>WORKLOG.md</code> (本ログ)</li>
+<li>
+<code>R/22_GlassoUnit.R</code> (logarithm = TRUE, バックティック化, @param …)</li>
+<li>
+<code>R/23_Chatterjee.R</code> (バックティック化)</li>
+<li>
+<code>man/Glasso.Rd</code>, <code>man/chatterjee_matrix.Rd</code> (roxygen 再生成)</li>
+<li>
+<code>develop/20260501.R</code> (新規, 累積リンク基本実験)</li>
+<li>
+<code>develop/20260501b.R</code> (新規, MI 上位ペア比較)</li>
+<li>
+<code>develop/20260501c.R</code> (新規, Hill-climbing h 候補比較)</li>
+<li>
+<code>develop/20260501c_hill_h_candidates.pdf</code> (新規, 散布図)</li>
+<li>
+<code>develop/20260501_BNM_3steps.qmd</code> (新規, スライド)</li>
+<li>
+<code>develop/20260501_BNM_3steps.html</code> (新規, レンダリング結果)</li>
+</ul></div>
+<div class="section level3">
+<h3 id="g-コミット">G. コミット<a class="anchor" aria-label="anchor" href="#g-%E3%82%B3%E3%83%9F%E3%83%83%E3%83%88"></a></h3>
+<ul><li>
+<code>67ec9a1</code> chore: bump DESCRIPTION to 1.13.0 and record v1.13.0 worklog</li>
+<li>
+<code>620c11e</code> fix: clear R CMD check WARNINGs and NOTE introduced by v1.13.0</li>
+</ul><p>両方とも origin/main へ push 済み。620c11e の R-CMD-check 結果は push 後に走行開始 (本ログ作成時点では未確認)。</p>
+</div>
+</div>
 <div class="section level2">
 <h2 id="id_2026-04-2930--v1130-graphical-lasso--chatterjees-ξ-実装と-dag-試作">2026-04-29/30 — v1.13.0: Graphical Lasso + Chatterjee’s ξ 実装と DAG 試作<a class="anchor" aria-label="anchor" href="#id_2026-04-2930--v1130-graphical-lasso--chatterjees-%CE%BE-%E5%AE%9F%E8%A3%85%E3%81%A8-dag-%E8%A9%A6%E4%BD%9C"></a></h2>
 <p>v1.13.0 のメインフィーチャ2系統を実装し，両者を接続する DAG 構築の 試作まで進めた。コミット 7bf5ce9 で R/22_GlassoUnit.R, R/23_Chatterjee.R, print.exametrika の Glasso ケース，両者のテストを main に push 済み。</p>
@@ -245,10 +468,10 @@
 <li>After H1+H2+H3+H4: 0.91x to 1.28x</li>
 <li>After all 5: 1.04x (N1) to 1.33x (O6)</li>
 </ul><p>Larger single-cell benchmark on J35S500 with variable grid cells, against baseline bbafdbe:</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a>ncls<span class="ot">=</span><span class="dv">5</span>  nfld<span class="ot">=</span><span class="dv">5</span>   <span class="sc">:</span> <span class="fl">0.073</span>s <span class="ot">-&gt;</span> <span class="fl">0.059</span><span class="fu">s</span>  (<span class="fl">1.24</span>x)</span>
-<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a>ncls<span class="ot">=</span><span class="dv">10</span> nfld<span class="ot">=</span><span class="dv">10</span>  <span class="sc">:</span> <span class="fl">0.161</span>s <span class="ot">-&gt;</span> <span class="fl">0.127</span><span class="fu">s</span>  (<span class="fl">1.27</span>x)</span>
-<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a>ncls<span class="ot">=</span><span class="dv">15</span> nfld<span class="ot">=</span><span class="dv">10</span>  <span class="sc">:</span> <span class="fl">0.065</span>s <span class="ot">-&gt;</span> <span class="fl">0.051</span><span class="fu">s</span>  (<span class="fl">1.27</span>x)</span>
-<span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a>ncls<span class="ot">=</span><span class="dv">20</span> nfld<span class="ot">=</span><span class="dv">15</span>  <span class="sc">:</span> <span class="fl">0.071</span>s <span class="ot">-&gt;</span> <span class="fl">0.061</span><span class="fu">s</span>  (<span class="fl">1.16</span>x)</span></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a>ncls<span class="ot">=</span><span class="dv">5</span>  nfld<span class="ot">=</span><span class="dv">5</span>   <span class="sc">:</span> <span class="fl">0.073</span>s <span class="ot">-&gt;</span> <span class="fl">0.059</span><span class="fu">s</span>  (<span class="fl">1.24</span>x)</span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a>ncls<span class="ot">=</span><span class="dv">10</span> nfld<span class="ot">=</span><span class="dv">10</span>  <span class="sc">:</span> <span class="fl">0.161</span>s <span class="ot">-&gt;</span> <span class="fl">0.127</span><span class="fu">s</span>  (<span class="fl">1.27</span>x)</span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a>ncls<span class="ot">=</span><span class="dv">15</span> nfld<span class="ot">=</span><span class="dv">10</span>  <span class="sc">:</span> <span class="fl">0.065</span>s <span class="ot">-&gt;</span> <span class="fl">0.051</span><span class="fu">s</span>  (<span class="fl">1.27</span>x)</span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a>ncls<span class="ot">=</span><span class="dv">20</span> nfld<span class="ot">=</span><span class="dv">15</span>  <span class="sc">:</span> <span class="fl">0.071</span>s <span class="ot">-&gt;</span> <span class="fl">0.061</span><span class="fu">s</span>  (<span class="fl">1.16</span>x)</span></code></pre></div>
 <p>log_lik identical to every digit in all four cases.</p>
 <p>testthat: FAIL 0, WARN 0, SKIP 0, PASS 4750 (test count higher than the 3,532 figure in the outdated CLAUDE.md because of rated Biclustering and DistractorAnalysis additions in 1.11.0; all pass).</p>
 </div>
@@ -260,20 +483,20 @@
 <div class="section level3">
 <h3 id="uq-one-hot-vectorization--maxiter-bug-fix-same-day">Uq one-hot vectorization + maxiter bug fix (same day)<a class="anchor" aria-label="anchor" href="#uq-one-hot-vectorization--maxiter-bug-fix-same-day"></a></h3>
 <p>Discovered while preparing simulation deployment that the <code>Uq</code> one-hot encoding in both <code><a href="reference/Biclustering.html">Biclustering.ordinal()</a></code> and <code><a href="reference/Biclustering.html">Biclustering.nominal()</a></code> is still a nobs*nitems nested R loop:</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>nobs) <span class="cf">for</span> (j <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>nitems)</span>
-<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a>  Uq[i, j, tmp<span class="sc">$</span>Q[i, j]] <span class="ot">&lt;-</span> <span class="dv">1</span></span></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>nobs) <span class="cf">for</span> (j <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>nitems)</span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a>  Uq[i, j, tmp<span class="sc">$</span>Q[i, j]] <span class="ot">&lt;-</span> <span class="dv">1</span></span></code></pre></div>
 <p>Replaced with a single matrix-index assignment using masked <code>cbind(i_idx, j_idx, q_idx)</code> restricted to <code>tmp$Z == 1</code>. The old loop also had a silent bug: for missing entries (<code>tmp$Q[i,j] == -1</code> set by <code><a href="reference/dataFormat.html">dataFormat()</a></code>), <code>Uq[i, j, -1] &lt;- 1</code> sets every Uq[i, j, k] for k in 2..maxQ to 1 due to R’s negative-subscript semantics. The values were never read (every consumer applies the <code>tmp$Z</code> mask), but the vectorized version correctly leaves those positions at zero. Downstream outputs (BCRM, ClassMembership, TestFitIndices, log-lik) remain bit-identical to the pre-refactor baseline.</p>
 <p>Wall-clock impact on the 8-configuration validation matrix:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="fu">O1</span> (J35S500,  B, <span class="dv">5</span>,<span class="dv">5</span>)   <span class="fl">0.068</span>s <span class="ot">-&gt;</span> <span class="fl">0.033</span><span class="fu">s</span>  (<span class="fl">2.06</span>x)</span>
-<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a><span class="fu">O2</span> (J35S500,  B, <span class="dv">10</span>,<span class="dv">5</span>)  <span class="fl">0.178</span>s <span class="ot">-&gt;</span> <span class="fl">0.147</span><span class="fu">s</span>  (<span class="fl">1.21</span>x)</span>
-<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a><span class="fu">O3</span> (J35S500,  R, <span class="dv">5</span>,<span class="dv">5</span>)   <span class="fl">0.060</span>s <span class="ot">-&gt;</span> <span class="fl">0.038</span><span class="fu">s</span>  (<span class="fl">1.58</span>x)</span>
-<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a><span class="fu">O4</span> (J35S500,  B, <span class="dv">5</span>,<span class="dv">5</span>, <span class="at">mic=</span><span class="cn">TRUE</span>)</span>
-<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a>                        <span class="fl">0.049</span>s <span class="ot">-&gt;</span> <span class="fl">0.024</span><span class="fu">s</span>  (<span class="fl">2.04</span>x)</span>
-<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a><span class="fu">O5</span> (J15S3810, B, <span class="dv">5</span>,<span class="dv">5</span>)   <span class="fl">0.364</span>s <span class="ot">-&gt;</span> <span class="fl">0.241</span><span class="fu">s</span>  (<span class="fl">1.51</span>x)</span>
-<span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a><span class="fu">O6</span> (J15S3810, R, <span class="dv">8</span>,<span class="dv">4</span>, non<span class="sc">-</span>converge)</span>
-<span id="cb3-8"><a href="#cb3-8" tabindex="-1"></a>                        <span class="fl">0.802</span>s <span class="ot">-&gt;</span> <span class="fl">0.552</span><span class="fu">s</span>  (<span class="fl">1.45</span>x)</span>
-<span id="cb3-9"><a href="#cb3-9" tabindex="-1"></a><span class="fu">N1</span> (J20S600,  <span class="sc">-</span>, <span class="dv">4</span>,<span class="dv">3</span>)   <span class="fl">0.021</span>s <span class="ot">-&gt;</span> <span class="fl">0.004</span><span class="fu">s</span>  (<span class="fl">5.25</span>x)</span>
-<span id="cb3-10"><a href="#cb3-10" tabindex="-1"></a><span class="fu">N2</span> (J20S600,  <span class="sc">-</span>, <span class="dv">6</span>,<span class="dv">4</span>)   <span class="fl">0.058</span>s <span class="ot">-&gt;</span> <span class="fl">0.049</span><span class="fu">s</span>  (<span class="fl">1.18</span>x)</span></code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="fu">O1</span> (J35S500,  B, <span class="dv">5</span>,<span class="dv">5</span>)   <span class="fl">0.068</span>s <span class="ot">-&gt;</span> <span class="fl">0.033</span><span class="fu">s</span>  (<span class="fl">2.06</span>x)</span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a><span class="fu">O2</span> (J35S500,  B, <span class="dv">10</span>,<span class="dv">5</span>)  <span class="fl">0.178</span>s <span class="ot">-&gt;</span> <span class="fl">0.147</span><span class="fu">s</span>  (<span class="fl">1.21</span>x)</span>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a><span class="fu">O3</span> (J35S500,  R, <span class="dv">5</span>,<span class="dv">5</span>)   <span class="fl">0.060</span>s <span class="ot">-&gt;</span> <span class="fl">0.038</span><span class="fu">s</span>  (<span class="fl">1.58</span>x)</span>
+<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a><span class="fu">O4</span> (J35S500,  B, <span class="dv">5</span>,<span class="dv">5</span>, <span class="at">mic=</span><span class="cn">TRUE</span>)</span>
+<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a>                        <span class="fl">0.049</span>s <span class="ot">-&gt;</span> <span class="fl">0.024</span><span class="fu">s</span>  (<span class="fl">2.04</span>x)</span>
+<span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a><span class="fu">O5</span> (J15S3810, B, <span class="dv">5</span>,<span class="dv">5</span>)   <span class="fl">0.364</span>s <span class="ot">-&gt;</span> <span class="fl">0.241</span><span class="fu">s</span>  (<span class="fl">1.51</span>x)</span>
+<span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a><span class="fu">O6</span> (J15S3810, R, <span class="dv">8</span>,<span class="dv">4</span>, non<span class="sc">-</span>converge)</span>
+<span id="cb4-8"><a href="#cb4-8" tabindex="-1"></a>                        <span class="fl">0.802</span>s <span class="ot">-&gt;</span> <span class="fl">0.552</span><span class="fu">s</span>  (<span class="fl">1.45</span>x)</span>
+<span id="cb4-9"><a href="#cb4-9" tabindex="-1"></a><span class="fu">N1</span> (J20S600,  <span class="sc">-</span>, <span class="dv">4</span>,<span class="dv">3</span>)   <span class="fl">0.021</span>s <span class="ot">-&gt;</span> <span class="fl">0.004</span><span class="fu">s</span>  (<span class="fl">5.25</span>x)</span>
+<span id="cb4-10"><a href="#cb4-10" tabindex="-1"></a><span class="fu">N2</span> (J20S600,  <span class="sc">-</span>, <span class="dv">6</span>,<span class="dv">4</span>)   <span class="fl">0.058</span>s <span class="ot">-&gt;</span> <span class="fl">0.049</span><span class="fu">s</span>  (<span class="fl">1.18</span>x)</span></code></pre></div>
 <p>Independent maxiter bug: ordinal also had <code>maxemt &lt;- 100</code> hardcoded at line 39, identical in spirit to the nominal bug fixed in 1.11.0. The user-supplied <code>maxiter</code> argument was being ignored. Fixed in the same commit. testthat passes (4750, FAIL 0).</p>
 </div>
 <div class="section level3">

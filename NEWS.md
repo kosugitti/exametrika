@@ -1,23 +1,7 @@
-# exametrika 1.12.2
+# exametrika 1.13.0
 
-## Bug fixes
-
-- **`dataFormat(response.type = "rated")` no longer errors when a CA
-  category is unobserved**: previously, if no respondent chose item
-  `j`'s correct-answer category (e.g., everyone got it wrong on a hard
-  item, or the sample was small enough that the CA category did not
-  appear by chance), `dataFormat()` aborted with
-  `"CA for item j is not a valid response category"`. This rejected
-  legitimate test data where an item is uniformly difficult or where
-  the sample size is small. The check has been relaxed to a
-  `warning()`; the affected items are encoded as all-incorrect (`U[, j]
-  == 0`), which is the correct downstream behavior. This applies to
-  both the matrix-input path (`dataFormat`) and the long-format path
-  (`longdataFormat`). Mistyped CAs (e.g., `CA[j] = 8` when categories
-  are 1–7) still surface as warnings, so the diagnostic value is
-  preserved.
-
-# exametrika 1.13.0 (Unreleased — pending post-simulation release)
+This release also incorporates the development changes from 1.12.0–1.12.2
+(never published to CRAN). Their entries are retained below for traceability.
 
 ## New features
 
@@ -66,6 +50,25 @@
 - **`compute_EBIC_glasso()` partial-match fix**: Replaced
   `determinant(Theta, log = TRUE)` with the full argument name
   `logarithm = TRUE`, removing the partial-argument-match NOTE.
+
+# exametrika 1.12.2
+
+## Bug fixes
+
+- **`dataFormat(response.type = "rated")` no longer errors when a CA
+  category is unobserved**: previously, if no respondent chose item
+  `j`'s correct-answer category (e.g., everyone got it wrong on a hard
+  item, or the sample was small enough that the CA category did not
+  appear by chance), `dataFormat()` aborted with
+  `"CA for item j is not a valid response category"`. This rejected
+  legitimate test data where an item is uniformly difficult or where
+  the sample size is small. The check has been relaxed to a
+  `warning()`; the affected items are encoded as all-incorrect (`U[, j]
+  == 0`), which is the correct downstream behavior. This applies to
+  both the matrix-input path (`dataFormat`) and the long-format path
+  (`longdataFormat`). Mistyped CAs (e.g., `CA[j] = 8` when categories
+  are 1–7) still surface as warnings, so the diagnostic value is
+  preserved.
 
 # exametrika 1.12.1
 

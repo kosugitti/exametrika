@@ -12,97 +12,122 @@
 
 There are currently no downstream dependencies for this package on CRAN.
 
-## Version 1.12.0
+## Version 1.13.0
 
-This release introduces a C++ implementation of the IRM Gibbs sampler shared by
-`Biclustering_IRM.{nominal,ordinal,rated}` (about 4x faster, bit-identical to the
-R reference under the same `set.seed()`), adds class-side confirmatory clustering
-to `Biclustering()`, and fixes several pre-existing bugs in the confirmatory
-field-clustering branches and in `GRM()`. No breaking changes.
+This release introduces Graphical Lasso (`Glasso`) and Chatterjee's xi
+correlation (`chatterjee_xi`, `xi_stable`, `chatterjee_matrix`) as a
+preparatory step toward polytomous Bayesian network structure learning.
+Because the previous CRAN release was 1.11.0, this submission also rolls
+up the development changes from 1.12.0–1.12.2 that were never published
+to CRAN: a C++ IRM Gibbs sampler (about 4x speedup, bit-identical to the
+R reference under the same `set.seed()`), class-side confirmatory
+clustering (`conf_class`), bug fixes in confirmatory Biclustering and
+`GRM()`, EM stability fixes for empty-field/class corner cases, and a
+relaxation in `dataFormat(response.type = "rated")` so that an
+unobserved correct-answer category produces a warning instead of an
+error. No breaking changes; all deprecated names from previous releases
+continue to work unchanged.
 
-### New Features
+### New Features (1.13.0)
+
+* **Graphical Lasso (`Glasso`)**: sparse precision matrix estimation
+  from ordinal item response data using polychoric correlations and
+  block coordinate descent (Friedman, Hastie, Tibshirani 2008) with
+  EBIC-based lambda selection (Foygel and Drton 2010) and warm-starting
+  across the lambda grid. Returns the selected precision matrix,
+  selected lambda, EBIC, edge count, and the full search path.
+
+* **Chatterjee's xi correlation**: `chatterjee_xi()` (single-shot),
+  `xi_stable()` (B-replication average for tie-stability),
+  `chatterjee_matrix()` (asymmetric pairwise xi matrix with
+  pairwise-complete handling of missing values). The asymmetry of
+  xi(j, k) versus xi(k, j) enables direction detection in
+  graphical-model construction.
+
+* **`print.exametrika` Glasso branch**: summarizes the estimated model
+  (optimal lambda, EBIC, edge count, precision matrix).
+
+### Rolled-up Features from 1.12.x
 
 * **C++ IRM Gibbs sampler**: `irm_gibbs_core_cpp()` (internal, in
-  `src/irm_gibbs_core.cpp`) replaces the R reference loop for production runs.
-  RNG calls are routed through R-level `sample.int()` and `rmultinom()` via
-  `Rcpp::Function`, so output is bit-identical to the R reference under the
-  same `set.seed()`. Roughly 4x speedup on the bundled test datasets
-  (J20S600 nominal: 82 to 20 ms/iter; J35S500 ordinal: 76 to 19 ms/iter).
-  The R reference is preserved behind `irm_gibbs_core(use_cpp = FALSE)` for
-  cross-checking. No new package dependencies (Rcpp was already in
-  `LinkingTo:`).
+  `src/irm_gibbs_core.cpp`) replaces the R reference loop for production
+  runs. RNG calls are routed through R-level `sample.int()` and
+  `rmultinom()` via `Rcpp::Function`, so output is bit-identical to the
+  R reference under the same `set.seed()`. About 4x speedup on the
+  bundled test datasets (J20S600 nominal: 82 to 20 ms/iter; J35S500
+  ordinal: 76 to 19 ms/iter). The R reference is preserved behind
+  `irm_gibbs_core(use_cpp = FALSE)` for cross-checking. No new package
+  dependencies (Rcpp was already in `LinkingTo:`).
 
 * **Class-side confirmatory Biclustering**: New `conf_class` argument on
-  `Biclustering()` (binary, ordinal, nominal, and rated via dispatch). Fixes
-  class memberships during EM the way `conf` fixes field memberships. For
-  Ranklustering (`method = "R"`), the neighbour-smoothing step is skipped
-  when `conf_class` is in effect. The new argument is additive and defaults
-  to `NULL`, preserving the previous behavior for all existing callers.
+  `Biclustering()` (binary, ordinal, nominal, and rated via dispatch).
+  Fixes class memberships during EM the way `conf` fixes field
+  memberships. For Ranklustering (`method = "R"`), the
+  neighbour-smoothing step is skipped when `conf_class` is in effect.
+  The new argument is additive and defaults to `NULL`, preserving the
+  previous behavior for all existing callers.
 
-### Bug Fixes
+### Rolled-up Bug Fixes from 1.12.x
 
-* **Confirmatory ordinal Biclustering**: `Biclustering.ordinal()` was
-  overwriting `fldmemb` with the E-step estimate every iteration, so the
-  `conf` argument only affected the initial value. The implementation now
-  re-applies the supplied membership immediately after the field-side
-  E-step, matching `Biclustering.binary()`.
+* **Confirmatory Biclustering** (ordinal/nominal): the `conf` argument
+  was effectively ignored after the first iteration in
+  `Biclustering.ordinal()`, and rejected every well-formed input due to
+  a `NCOL(U)` length-check bug in `Biclustering.nominal()` /
+  `Biclustering.ordinal()` (which made confirmatory nominal Biclustering
+  unreachable since v1.10.0). Both are fixed; matrix-form `conf`
+  assignment is also fixed across all three implementations.
 
-* **Confirmatory nominal Biclustering**: `Biclustering.nominal()` validated
-  `length(conf)` against `NCOL(U)`, but `U` is an `exametrika` list object
-  so `NCOL(U)` always returned 1. The check rejected every well-formed
-  `conf` vector, making confirmatory nominal Biclustering unreachable
-  since v1.10.0. Replaced with `NCOL(U$Q)`. The same fix was applied to
-  `Biclustering.ordinal()`. `Biclustering.binary()` was unaffected at
-  runtime (because `U` is rebound to `tmp$U * tmp$Z` before the check)
-  but was changed to `NCOL(tmp$U)` for consistency.
+* **`Biclustering.ordinal()` now honors `maxiter`** (the inner EM cap
+  was hardcoded to 100, mirroring the `Biclustering.nominal()` bug
+  fixed in 1.11.0).
 
-* **Matrix-form `conf` in confirmatory Biclustering**: When `conf` was
-  supplied as a 0/1 membership matrix instead of a vector, all three
-  implementations validated the matrix but never assigned it to
-  `conf_mat`, so the subsequent `nfld <- NCOL(conf_mat)` failed with
-  "object 'conf_mat' not found". Fixed by adding the missing assignment.
+* **`GRM()` fit indices**: the benchmark log-domain epsilon
+  `exp(-nitems * 100)` underflowed to 0 for moderate item counts and
+  propagated `NaN` through every fit index; degrees of freedom were
+  also misformed, clamping `CFI`, `TLI`, `IFI`, and `RMSEA` to zero
+  whenever `chi^2 < df`. Both are fixed and the convention now matches
+  `Biclustering.ordinal()`. `GRM()` also now accepts integer-coded
+  ordinal responses with arbitrary coding (not just 1..K).
 
-* **`Biclustering.ordinal()` now honors `maxiter`**: The inner EM cap was
-  hardcoded to 100 and ignored the user-supplied `maxiter`, mirroring the
-  `Biclustering.nominal()` bug fixed in 1.11.0.
+* **`GridSearch()` tolerates per-cell fit errors** instead of aborting
+  the entire grid. Errors at grid corners (e.g. empty-cluster edge
+  cases at extreme `ncls`/`nfld`) are now recorded in `failed_settings`
+  like non-convergence.
 
-* **`GRM()` fit indices no longer return `NaN`**: The benchmark log-domain
-  epsilon `exp(-nitems * 100)` underflowed to 0 for moderate item counts,
-  which propagated `NaN` through every fit index. The benchmark and null
-  loops now skip zero-count categories explicitly.
+* **Biclustering EM stability**: both `Biclustering.nominal()` and
+  `Biclustering.ordinal()` no longer abort with
+  `"missing value where TRUE/FALSE needed"` when extreme grid
+  configurations leave fields or classes empty during EM. The two
+  log-likelihood checks inside the EM loop now treat a non-finite
+  `test_log_lik` as a non-converged exit. This also resolves the same
+  crash in `Biclustering.rated()`, which calls `Biclustering.nominal()`
+  internally.
 
-* **`GRM()` degrees of freedom were computed incorrectly**: Both model and
-  null df were misformed, clamping `CFI`, `TLI`, `IFI`, and `RMSEA` to
-  zero whenever `chi^2 < df`. The convention now matches
-  `Biclustering.ordinal()`.
-
-* **`GRM()` now accepts any integer-coded ordinal responses, not just
-  1..K**: Category counts were derived from `apply(dat, 2, max)`. Data
-  coded from 0 or with gaps undercounted `ncat[j]` and indexed out of
-  range. Each item's responses are now remapped to contiguous 1..K codes
-  on entry.
-
-* **`GridSearch()` now tolerates per-cell fit errors**: Errors at grid
-  corners (e.g. empty-cluster edge cases at extreme `ncls`/`nfld`) used
-  to abort the entire grid. The call is now wrapped in `tryCatch` and
-  errors are recorded in `failed_settings` like non-convergence.
+* **`dataFormat(response.type = "rated")`**: an unobserved
+  correct-answer category (e.g., a hard item where no respondent chose
+  the CA, or small samples where the CA category did not appear by
+  chance) now produces a warning instead of an error. The affected
+  items are encoded as all-incorrect (`U[, j] == 0`), matching the
+  correct downstream behavior. This applies to both the matrix-input
+  path (`dataFormat`) and the long-format path (`longdataFormat`).
+  Mistyped CAs still surface as warnings.
 
 ### Performance (additional, beyond the C++ Gibbs core)
 
-* **Vectorized EM hot path in `Biclustering.ordinal()` and `.nominal()`**:
-  Replaced several `apply()` calls with vectorized base-R primitives
-  (`rowSums`/`colSums` with `dims` on 3D arrays, `pmin.int`/`pmax.int`,
-  `max.col`). Output is bit-identical to 1.11.0 on every tested
-  configuration. About 1.2 to 1.3 times faster per fit, compounding
-  across `GridSearch()` grids.
+* **Vectorized EM hot path** in `Biclustering.ordinal()` and
+  `.nominal()`: replaced several `apply()` calls with vectorized base-R
+  primitives (`rowSums`/`colSums` with `dims` on 3D arrays,
+  `pmin.int`/`pmax.int`, `max.col`). Output is bit-identical to 1.11.0
+  on every tested configuration. About 1.2 to 1.3 times faster per
+  fit, compounding across `GridSearch()` grids.
 
-* **Vectorized `Uq` one-hot encoding**: The per-fit `nobs * nitems`
-  R-level loop was replaced with a single C-level matrix-index assignment.
-  About 1.2 to 5.3 times faster on small to mid datasets.
+* **Vectorized `Uq` one-hot encoding**: the per-fit `nobs * nitems`
+  R-level loop was replaced with a single C-level matrix-index
+  assignment. About 1.2 to 5.3 times faster on small to mid datasets.
 
 ### Output structure changes
 
-* **`Biclustering.ordinal()` now returns `SmoothedMembership`**: The
+* **`Biclustering.ordinal()` now returns `SmoothedMembership`**: the
   smoothed (Ranklustering-filtered) class membership matrix is now part
   of the return value, mirroring `Biclustering.binary()`. This fills a
   long-standing gap and lets callers verify that the smoothing step is
@@ -110,5 +135,5 @@ field-clustering branches and in `GRM()`. No breaking changes.
 
 ### Compatibility
 
-No breaking changes. All deprecated names from previous releases continue
-to work unchanged.
+No breaking changes. All deprecated names from previous releases
+continue to work unchanged.

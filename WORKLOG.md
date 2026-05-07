@@ -4,6 +4,356 @@ Detailed development log. User-facing changes go in `NEWS.md`; this file
 captures the per-session internal narrative (why a change was made, what
 was investigated, what was ruled out). Entries are newest-first.
 
+## 2026-05-01 — v1.13.0 CRAN check 通過対応 + 多値 BNM 構造学習の本格議論
+
+このセッションは2部構成。前半は v1.12.1 → v1.13.0 のバージョン上げと
+GitHub Actions R-CMD-check 失敗の修正。後半は多値 BNM 構造学習の
+方針確定に向けた長い議論で，案を複数比較しながら最終的に「3 段構え」
+(Glasso スケルトン → Chatterjee ξ で方向 → 単調制約累積リンクで条件付き
+分布) を採用する見通しを立てた。本ログは後半の議論を丁寧に残す。
+
+### A. v1.12.1 → v1.13.0 バージョン上げ
+
+A3 Phase3 シミュレーション中に Biclustering EM ループの非有限
+test_log_lik 事故が発覚し，先に v1.12.1 として hotfix (コミット 0ca95e6)
+を切り出して Phase3 を継続走行させていた。Phase3 が動いている間は
+DESCRIPTION のバージョンも 1.12.1 のまま据え置いていたが，4/30 に
+v1.13.0 の主要機能 (Glasso + Chatterjee ξ, コミット 7bf5ce9) が main に
+着地した上に pkgdown 登録 (258e208) も済んでいたため，本セッションで
+DESCRIPTION の Version を 1.13.0 に上げた。NEWS.md には既に 1.13.0
+セクションが書かれていたので変更なし。WORKLOG.md には v1.13.0 の
+詳細経緯 (Glasso の Jacobi → Gauss-Seidel 修正，整数オーバーフロー
+対応，DAG 試作の方向転換等) を追記。コミット 67ec9a1 で push。
+
+### B. R-CMD-check の連続失敗を解消
+
+push 直後に GitHub Actions R-CMD-check が落ちていることが判明。実は
+v1.12.0 IRM Gibbs C++ コミット d485a18 から 3 連続で failure に
+なっていた:
+
+- d485a18 (v1.12.0 IRM Gibbs C++) failure
+- 0ca95e6 (v1.12.1 hotfix) failure
+- 258e208 (v1.13.0 pkgdown register) failure
+
+ジョブの Annotation から 2 WARNING + 1 NOTE で `--as-cran` が
+exit 1 になっていたことを特定。
+
+**問題 1 (WARNING): roxygen Markdown の角括弧自動リンク化**
+
+`chatterjee_matrix.Rd` で `[j, k]`, `[i, j]`, `[i, k]` が `\link{}` として
+解釈され，`Glasso.Rd` で `[0, 1]` が同様に解釈されていた。これは
+roxygen2 が Markdown モードで `[xxx]` を自動的に cross-reference に
+変換する仕様のため。バックティックで囲んで `\verb{}` / `\code{}` 化
+されるよう修正:
+
+- `R/22_GlassoUnit.R`: `EBIC tuning parameter in [0, 1]` →
+  `` EBIC tuning parameter in `[0, 1]` ``
+- `R/23_Chatterjee.R`: `Entry [j, k] is xi(item_j, item_k)` →
+  `` Entry `[j, k]` is xi(item_j, item_k) ``，`Q[i, j] or Q[i, k]` を
+  `` `Q[i, j]` or `Q[i, k]` `` に。
+
+**問題 2 (WARNING): Glasso() の `...` が undocumented**
+
+関数定義に `...` があるが `@param ...` 行がなかった。
+`@param ... Additional arguments (currently unused; reserved for future
+extensions).` を追加。
+
+**問題 3 (NOTE): partial argument match**
+
+`R/22_GlassoUnit.R:113` で `determinant(Theta, log = TRUE)` の
+`log` が `logarithm` に部分マッチしていた。`logarithm = TRUE` に修正。
+
+`roxygen2::roxygenise()` で man/Glasso.Rd と man/chatterjee_matrix.Rd を
+再生成 (`\verb{}`, `\code{}` に変わる)。`devtools::check_man()` で警告
+なし確認。NEWS.md の 1.13.0 セクションに「Documentation and CRAN
+check cleanup」サブセクションを追加。コミット 620c11e で push。
+
+(なおこのセッションで一度 main 直 push が Claude Code の harness
+permission に弾かれたが，2 回目以降は通った。1 回目はユーザに `!` で
+シェル直叩きしてもらって解消した。)
+
+### C. 多値 BNM 構造学習の本格議論
+
+ここからが本セッションの主題。4/30 確定とされていた「累積リンクモデル
+尤度比較 (LiNGAM 順序版) を方向決定本流にする」方針が本当に妥当か，
+順序 BNM の構造学習をどう設計すべきかを長く検討した。最終的に
+ユーザの整理で「3 段構え」が確定した。経緯を詳しく残す。
+
+#### C.1 累積リンク尤度比較の限界発見
+
+J35S500 (5 件法 ordinal, N=500, J=35) で `MASS::polr` probit を使った
+最小実験を実施。
+
+**実験 1** (`develop/20260501.R`): Item01-Item02 ペアで双方向 polr。
+
+- factor 渡しだと係数 4 個 (ダミー)
+- numeric 渡しだと係数 1 個 (X 連続化)
+- ll(Item02 → Item01) = -380.57, ll(Item01 → Item02) = -761.23,
+  Δ = +380.66
+
+問題提起: Δ が +380 もあるのは怪しい。手計算でエントロピー差を出すと
+n × (H(Item02) - H(Item01)) = 380.56。実測差 +379.82 と誤差 0.7 で
+ほぼ一致。これは累積リンクの漸近形
+
+  ℓ(X → Y) ≈ -n · H(Y | X)
+
+から差を取ると ℓ(X→Y) - ℓ(Y→X) ≈ n · (H(X) - H(Y)) になることに
+対応。**生の対数尤度比較は「エントロピー小が下流」ルールしか出して
+いない**。LiNGAM 順序版にはなっていない。
+
+**実験 2** (`develop/20260501b.R`): MI 上位 10 ペアで同じ実験を回し，
+残差 (delta_ll - delta_pred_ent) の挙動を確認。
+
+- Item01-Item02 (MI ≈ 0.013) では残差 +0.7 (誤差レベル)
+- MI 上位ペア (MI ≈ 0.20-0.24) では残差 -26〜+60 (支配的)
+- residual / |delta_ll| が 1.66〜4.45
+- ll 判定と ent 判定が一致 9/10 (ペア 22-34 のみ符号反転)
+- β の絶対値は両方向ほぼ同じ (-0.0007〜-0.0680 / 0.27〜0.56)
+
+つまり方向情報は β にではなく対数尤度差の残差に存在し，MI が小さい
+ペアでは残差が消える。「累積リンク尤度差 = エントロピー差」は MI ≈ 0
+の極限の話で，MI 大では残差として方向情報が出る可能性がある。
+ただし単独で実用するには残差を抽出する別の指標化が必要で，
+「方向決定の本流」と呼ぶのは過大評価だった。
+
+#### C.2 ユーザによる重要な指摘 1: エントロピー誤用
+
+「項目エントロピー H(j) って何だ。それって順序でもできるのか?」という
+指摘。
+
+確かに `H(j) = -Σ P(q) log P(q)` は順序を入れ替えても不変で，順序
+情報を一切使わない。二値の H(j) = -(p log p + (1-p) log(1-p)) が正答率
+p の単調関数だったので，二値 BNM では「H 小 = 正答率極端 = 下流」
+が偶然成立していたが，多値ではこの偶然は崩れる。
+20260118 アイデアノート 5.3 節「方向は周辺エントロピー差で決まる」は
+**二値限定の言明として訂正すべき**。
+
+順序を尊重する情報量指標として:
+
+- 累積エントロピー (Rao 2004): H̄(X) = -∫ F(x) log F(x) dx
+- 累積残存エントロピー (Crescenzo & Longobardi 2002)
+
+があるが心理計量で標準的でない。素直に項目平均/中央値の方が解釈
+しやすい。
+
+#### C.3 ユーザの発想 1: 順序 MDS で項目を空間化
+
+「項目間の順序 MDS のような応用ができないか。距離構造を Chatterjee
+相関で見て，距離の大小関係を維持する空間に入れる。非対称 MDS で
+von Mises を使って」とのアイデア。
+
+これに対し以下を整理して提示:
+
+- Hill-climbing model (Borg & Groenen 2005 章 23):
+  d(j → k) = ||x_j - x_k|| + α (h_k - h_j)
+- Slide-Vector model (Zielman & Heiser 1996)
+- Drift Vector model + von Mises 角度
+- ノンメトリック MDS (Kruskal) の disparity
+
+Hill-climbing の `h_j` を何にするかで `develop/20260501c.R` で実験:
+
+- 平均: (Pearson 0.004, Spearman 0.016)
+- 中央値: (0.031, 0.038)
+- -H エントロピー: (-0.014, -0.048)
+- drift = ξ 非対称行列の行平均: (-0.497, -0.431)
+
+**重要発見**: 項目の周辺特性 (平均/中央値/-H) は ξ 非対称を**全く
+説明しない**。drift だけが説明するが，これは ξ 非対称から定義したので
+構成上当然 (循環論)。つまり「ξ が捉えている方向情報は周辺特性と
+独立な構造」を示している。ξ 非対称性は項目の中心傾向や不確実性
+では再現できない別物。
+
+#### C.4 荘島先生 AMISESCAL モデルの読み込み
+
+ユーザから https://sh0j1ma.stars.ne.jp/ams/shojimaBSJ11.pdf を共有。
+
+**AMISESCAL = Asymmetric von Mises Scaling** (Kojiro Shojima, NCUEE
+Research Division)
+
+- 入力: 非対称 N×N 近接行列 G = {g_ij} (g_ij 小 = i が j を好ましく感じる)
+- 各点 i に: 座標 x_i ∈ R^p, von Mises 平均方向 μ_i, 集中度 κ_i
+- 縮尺率: π_ij = f(θ_ij | μ_i, κ_i) (von Mises 密度値)
+- モデル距離: ξ_ij = (1 - π_ij) δ_ij where δ_ij = ||x_i - x_j||
+- Stress: S(X, μ, κ) = Σ Σ (g_ij - ξ_ij)²
+- 引用: Chino (1997), Mardia & Jupp (2000), Okada & Imaizumi (1987)
+
+これは私が独立に提案した「Drift Vector + von Mises」と完全に一致する
+モデル。荘島先生がすでに発表していた発想を再発見した形。
+
+#### C.5 Abelson 電磁場モデル (小杉 2004) の歴史的位置づけ
+
+ユーザから https://www.jstage.jst.go.jp/article/jbhmk/31/1/31_1_17/_pdf も
+共有。
+
+**小杉考司・藤原武弘 (2004) 等高線マッピングによる態度布置モデル.
+行動計量学 31(1) 17-24.**
+
+Abelson (1954-55) Contour Map モデルの応用:
+
+  V(P) = Σ V(j) / (1 + d²_{Pj})
+
+二次元 MDS 空間 + 高さ次元 = スカラー場。電位アナロジー。論文末尾
+で当時のユーザ自身が:
+
+> 高度という第三の次元に「高いところから低いところへ力が加わる」
+> といった力学的仮定を付与する十分な理論的背景がないのである。
+> すなわち，本研究で扱ったモデルは，勾配ベクトル場ではなくスカラー場
+> としてしか捉えられず，力動的な系として表現できない。
+
+と限界を明記。AMISESCAL がこの限界を方向統計 (von Mises) で解決
+した形になっている (22 年越しの発展)。
+
+#### C.6 ユーザによる重要な指摘 2: 方向場と DAG は別物
+
+「荘島モデル，Abelson モデル，いずれも DAG を作る話には向いてない。
+向きがわかるだけで」というご指摘。
+
+確かに:
+
+- AMISESCAL は項目空間に方向場 (μ_j, κ_j) を出すが「j の親は具体的に
+  誰か」を直接答えない。μ_j 方向の最近傍を子と見なす後付けルールが
+  必要で，それは AMISESCAL 本来のモデル外
+- DAG 構築には「ペア局所判定 + DAG 整合性」の二段構成が標準
+  (PC, GES, LiNGAM, NOTEARS)
+- AMISESCAL/Abelson は最終出力の可視化・解釈補助に位置づける
+  のが妥当
+
+mdspace パッケージ的な空間モデルは BNM の DAG 学習エンジンでは
+なく，事後の可視化器として理解しておく。
+
+#### C.7 ユーザによる 3 段構えの提案 (確定)
+
+```
+段 1  GGM (Glasso) で無向スケルトン           ← エッジ有無
+段 2  Chatterjee ξ の値の大小で方向決定       ← エッジ方向
+段 3  単調制約付き累積リンク等で条件付き分布   ← パス係数
+```
+
+ξ(j, k) > ξ(k, j) なら j → k (大きいほうが親)。
+
+各段の役割が綺麗に分離。段 1 (Glasso) と段 2 (chatterjee_matrix) は
+v1.13.0 で実装済みなので，段 3 が次の主戦場。
+
+#### C.8 段 3 の検討: 案 C と派生アイデア
+
+**案 C (単調制約付きカテゴリ係数累積リンク)**:
+
+  P(Y ≤ q | X = x) = Φ(τ_q - μ_x), μ_1 ≤ μ_2 ≤ … ≤ μ_Q
+
+- X カテゴリごとに別の μ_x (X 連続化なし)
+- 単調制約で順序情報尊重
+- パラメータ数 2(Q-1) (Q=5 で 8)
+- 親複数の加法モデル: τ_q - Σ_k μ_{x_k}^{(k)} で Q×|pa| 線形
+- 累積リンク (Q 個) と分割表 (Q² 個) の中間
+- 加法性仮定で交互作用なし
+
+**ユーザの派生アイデア: 「X_k で条件付けた Y_{k+1}」**
+
+  D_{X→Y}(k) = P(Y ≥ k+1 | X = k)
+
+X が k のとき Y が 1 段階上に行く確率を全 k で見る。GRM の閾値
+対応のような発想。
+
+これは案 C の対角隣セル `1 - Φ(τ_k - μ_k)` で，案 C のサブセット。
+新しいモデルではなく案 C の補助プロファイル/可視化として位置づけ
+られる。「+1 シフト」の恣意性 (なぜ +1, +2 や +0.5 はどうか)，
+端点問題 (X = Q で Y_{Q+1} は定義不能)，対角隣だけ見る情報損失，
+の懸念がある。
+
+**結論**: パス係数は案 C を採用して β = μ_Q - μ_1 で取り，対角プロファ
+イル D(k) は診断・可視化用に併用する。
+
+順序 MDS との違いも明確化:
+
+- 順序 MDS: 全項目を空間化，stress 最小化，項目に座標が付く
+- 案 C: ペアの条件付き分布推定，対数尤度最大化，項目に座標は
+  付かない (Y* は応答スケール内の潜在連続体)
+
+#### C.9 議論の整理スライド作成
+
+`develop/20260501_BNM_3steps.qmd` (Quarto reveal.js, 17 枚) を作成
+してレンダリング。HTML 版は `develop/20260501_BNM_3steps.html`。
+スライド構成:
+
+1. 二値 BNM の前提
+2. 多値で何が壊れるか
+3. 全体像 (3 段構えの mermaid 図)
+4. 段 1: GGM (Glasso)
+5. 段 2: Chatterjee ξ
+6. 段 2: 判定ルール
+7. 段 3 の問題提起 (なぜ累積リンクではダメか)
+8. 段 3: 案 C
+9. 案 C の潜在変数イメージ
+10. パラメータ数比較
+11. 親複数の加法モデル
+12. パス係数の取り出し方
+13. 3 段の役割マップ (mermaid)
+14. 残された設計判断
+15. 補足: 順序 MDS との違い
+16. まとめ
+
+### D. 残された論点 (次セッション以降)
+
+- **段 2 判定閾値**: 絶対値 / SE 正規化 / 経験的カットオフ。
+  xi_stable() の SE で正規化が一番ロバストの見立て
+- **段 2 計算範囲**: スケルトン上のみ (高速) vs 全ペア (安全)
+- **段 3 単調制約の実装**: 強制最適化 (差分 log 再パラメータ化) vs
+  PAVA 事後投影
+- **段 3 加法性仮定**: 交互作用なしで OK か実データで検証
+- **サイクル処理**: 最弱辺削除 vs 反転
+- **パス係数の表現**: スカラー β / プロファイル D(k) / 両方を返す
+- **BNM_GA / BNM_PBIL は 3 段構えで不要**: スコア探索が要らない
+  (Glasso + ξ で構造が決まる)。既存の二値 BNM_GA / BNM_PBIL は
+  二値専用として残すのが自然
+
+### E. ユーザの思いつきメモ (将来役立つ可能性あり)
+
+このセッションで発生したアイデアを後の参照用にまとめておく:
+
+1. **項目の順序 MDS + Chatterjee ξ**: 項目を ξ 距離で空間化し，
+   非対称 MDS (von Mises) で方向場を出す。BNM の DAG 学習器
+   ではないが，可視化・解釈補助に有効
+2. **AMISESCAL の応用**: 各項目に座標 x_j, 方向角 μ_j, 集中度 κ_j を
+   割り当て，BNM 完成後に大局的な流れを確認する事後ツールとして
+3. **3 次元 Abelson 電磁場モデル**: ユーザ自身の 2004 年論文の発想
+   (態度の認知次元 + 感情強度の場)。今回の DAG には不向きだが，
+   多値 BNM の出力を「態度場」として可視化するアイデアの源泉に
+   なりうる
+4. **GRM 並べでの両側閾値モデル**: X と Y の両方に GRM 風の閾値を
+   割り当て，β_{X,k} と β_{Y,k+1} の対応で項目間関係を読む。これは
+   1 次元 IRT の項目困難度プロファイルとして使えるが，BNM の親子
+   関係とは別軸の話
+5. **「X_k で条件付けた Y_{k+1}」プロファイル**: パス係数の補助
+   可視化として，ペアごとに k = 1, …, Q-1 の折れ線で「動きやすさ」を
+   見せる
+6. **対数尤度差の残差** (= delta_ll - n*(H_X - H_Y)): MI 大ペアでは
+   方向情報を含むかもしれない量。単独使用は不安定だが，ξ 非対称
+   との組み合わせで補強できる可能性
+
+### F. 作成・更新ファイル
+
+- `DESCRIPTION` (1.12.1 → 1.13.0)
+- `NEWS.md` (1.13.0 セクションに Documentation and CRAN check
+  cleanup サブセクション追加)
+- `WORKLOG.md` (本ログ)
+- `R/22_GlassoUnit.R` (logarithm = TRUE, バックティック化, @param ...)
+- `R/23_Chatterjee.R` (バックティック化)
+- `man/Glasso.Rd`, `man/chatterjee_matrix.Rd` (roxygen 再生成)
+- `develop/20260501.R` (新規, 累積リンク基本実験)
+- `develop/20260501b.R` (新規, MI 上位ペア比較)
+- `develop/20260501c.R` (新規, Hill-climbing h 候補比較)
+- `develop/20260501c_hill_h_candidates.pdf` (新規, 散布図)
+- `develop/20260501_BNM_3steps.qmd` (新規, スライド)
+- `develop/20260501_BNM_3steps.html` (新規, レンダリング結果)
+
+### G. コミット
+
+- `67ec9a1` chore: bump DESCRIPTION to 1.13.0 and record v1.13.0 worklog
+- `620c11e` fix: clear R CMD check WARNINGs and NOTE introduced by v1.13.0
+
+両方とも origin/main へ push 済み。620c11e の R-CMD-check 結果は
+push 後に走行開始 (本ログ作成時点では未確認)。
+
 ## 2026-04-29/30 — v1.13.0: Graphical Lasso + Chatterjee's ξ 実装と DAG 試作
 
 v1.13.0 のメインフィーチャ2系統を実装し，両者を接続する DAG 構築の

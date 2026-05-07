@@ -159,7 +159,7 @@ Biclustering.nominal <- function(U,
   FLG <- TRUE
   while (FLG) {
     if (!is.finite(test_log_lik) ||
-        test_log_lik - old_test_log_lik < 1e-8 * abs(old_test_log_lik)) {
+      test_log_lik - old_test_log_lik < 1e-8 * abs(old_test_log_lik)) {
       if (!is.finite(test_log_lik)) converge <- FALSE
       FLG <- FALSE
       break

@@ -491,7 +491,7 @@ test_that("rated dataFormat warns (not errors) when CA category is unobserved", 
   Q <- matrix(sample(1:5, 30 * 5, replace = TRUE), nrow = 30, ncol = 5)
   # item 3 を 1〜4 に制限し、CA[3]=5 を未観測にする
   Q[, 3] <- sample(1:4, 30, replace = TRUE)
-  CA <- c(1, 2, 5, 3, 4)  # CA[3]=5 だが Q[,3] には 5 が無い
+  CA <- c(1, 2, 5, 3, 4) # CA[3]=5 だが Q[,3] には 5 が無い
   colnames(Q) <- paste0("Q", 1:5)
 
   # warning が出るが処理は続行
@@ -508,7 +508,7 @@ test_that("rated dataFormat warns (not errors) when CA category is unobserved", 
 
   # 複数 item で未観測の場合、まとめて warning
   Q2 <- Q
-  Q2[, 1] <- sample(1:4, 30, replace = TRUE)  # item 1 も
+  Q2[, 1] <- sample(1:4, 30, replace = TRUE) # item 1 も
   CA2 <- c(5, 2, 5, 3, 4)
   expect_warning(
     dataFormat(Q2, response.type = "rated", CA = CA2),

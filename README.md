@@ -154,6 +154,7 @@ The `dataFormat` function processes input data before analysis:
   - Converts data to appropriate format for analysis
 
 Example:
+
 ```{r example-data-format}
 # Format raw data for analysis
 data <- dataFormat(J15S500) # Using sample dataset
@@ -220,6 +221,7 @@ result.IRT
 ```
 
 The estimated population of subjects is included in the returned object.
+
 ```{r results-irt-ability, message=FALSE, warning=FALSE}
 head(result.IRT$ability)
 ```
@@ -617,6 +619,7 @@ result.LDLRA
 ```
 
 Of course, it also supports various types of plots.
+
 ```{r plot-ldlra, message=FALSE, warning=FALSE}
 plot(result.LDLRA, type = "IRP", nc = 4, nr = 3)
 plot(result.LDLRA, type = "TRP")
@@ -699,6 +702,7 @@ print(result.LDB)
 
 
 Additionally, as mentioned in the text (Shojima, 2022), it is often the case that seeking the network structure exploratively does not yield appropriate results, so it has not been implemented.
+
 ```{r model-ldb}
 result.LDB <- LDB(U = J35S515, ncls = 5, conf = conf, adj_file = edgeFile)
 result.LDB

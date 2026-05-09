@@ -163,6 +163,7 @@ The `dataFormat` function processes input data before analysis:
   - Converts data to appropriate format for analysis
 
 Example:
+
 `{r example-data-format} # Format raw data for analysis data <- dataFormat(J15S500) # Using sample dataset str(data) # View structure of formatted data`
 
 ### Sample Datasets
@@ -222,6 +223,7 @@ model, which can be specified using the `model` option. It supports 2PL,
 `{r model-irt, message=FALSE, warning=FALSE} result.IRT <- IRT(J15S500, model = 3) result.IRT`
 
 The estimated population of subjects is included in the returned object.
+
 `{r results-irt-ability, message=FALSE, warning=FALSE} head(result.IRT$ability)`
 
 The plots offer options for Item Response Function(also known as Item
@@ -547,6 +549,7 @@ like this.
 `{r model-ldlra, message=FALSE, warning=FALSE} result.LDLRA <- LDLRA(J12S5000, ncls = 5, adj_file = edgeFile ) result.LDLRA`
 
 Of course, it also supports various types of plots.
+
 `{r plot-ldlra, message=FALSE, warning=FALSE} plot(result.LDLRA, type = "IRP", nc = 4, nr = 3) plot(result.LDLRA, type = "TRP") plot(result.LDLRA, type = "LRD")`
 
 `{r cleanup-ldlra, include=FALSE} # Clean up temporary file unlink(edgeFile)`
@@ -608,6 +611,7 @@ edgeFile, row.names = FALSE)
 Additionally, as mentioned in the text (Shojima, 2022), it is often the
 case that seeking the network structure exploratively does not yield
 appropriate results, so it has not been implemented.
+
 `{r model-ldb} result.LDB <- LDB(U = J35S515, ncls = 5, conf = conf, adj_file = edgeFile) result.LDB`
 
 `{r cleanup-ldb, include=FALSE} # Clean up temporary file unlink(edgeFile)`

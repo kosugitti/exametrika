@@ -28,6 +28,26 @@ R CMD build . && R CMD check --as-cran exametrika_*.tar.gz
 Rscript -e 'roxygen2::roxygenise()'
 ```
 
+## README workflow
+
+- **README.md is a generated artifact** — do NOT edit it directly. It gets
+  overwritten on the next build.
+- Edit `README.Rmd`, then run `Rscript -e 'devtools::build_readme()'`, then
+  commit BOTH `README.Rmd` and `README.md` together. pkgdown reads `README.md`
+  as input, so it must be in sync with `README.Rmd` in every commit.
+- Default chunk option is `eval = FALSE` (set in the `setup-readme` chunk).
+  README is a static showcase; no evaluated output is embedded. If a future
+  chunk needs to actually run, override per-chunk with `eval = TRUE` and make
+  sure preceding setup chunks (e.g. `library(exametrika)`) also run.
+- `README.Rmd` is listed in `.Rbuildignore`, so it is excluded from the CRAN
+  tarball.
+- Background (2026-05-09, commit 9787904): the old `README.md` hand-wrote
+  ```` ```{r label, ...} ```` chunk headers verbatim. pkgdown's CommonMark
+  renderer did not recognize `{r ...}` as a fence info string, so chunks
+  collapsed into inline `<code>` and the install chunk's leading `#`
+  promoted to an `<h1>` "Install Exametrika". The cc54ab3 blank-line fix
+  was insufficient; converting to a real Rmd source resolved it.
+
 ## Repository Structure
 
 ```

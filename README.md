@@ -1,4 +1,6 @@
 
+<!-- README.md is generated from README.Rmd. Please edit README.Rmd, then run `Rscript -e 'devtools::build_readme()'` and commit both files. Direct edits to README.md will be overwritten. -->
+
 # exametrika <img src="man/figures/logo.png" align="right" height="139" alt="exametrika logo" />
 
 ## Overview

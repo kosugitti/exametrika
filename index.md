@@ -95,28 +95,31 @@ Excel Add-in. For additional information about Exametrika, visit:
 The development version of Exametrika can be installed from
 [GitHub](https://github.com/):
 
-\`\`\`{r install, eval=FALSE} \# Install devtools if not already
-installed if (!require(“devtools”)) install.packages(“devtools”)
+``` r
+
+# Install devtools if not already installed
+if (!require("devtools")) install.packages("devtools")
 
 # Install Exametrika
+devtools::install_github("kosugitti/exametrika")
+```
 
-devtools::install_github(“kosugitti/exametrika”)
+### Dependencies
 
+The package requires:
 
-    ### Dependencies
+- R (\>= 4.1.0)
+- igraph (for network analysis)
+- Other dependencies are automatically installed
 
-    The package requires:
+## Data Format and Usage
 
-    + R (>= 4.1.0)
-    + igraph (for network analysis)
-    + Other dependencies are automatically installed
+### Basic Usage
 
-    ## Data Format and Usage
+``` r
 
-    ### Basic Usage
-
-    ```{r setup-library, message=FALSE, warning=FALSE}
-    library(exametrika)
+library(exametrika)
+```
 
 ### Data Requirements
 
@@ -164,7 +167,12 @@ The `dataFormat` function processes input data before analysis:
 
 Example:
 
-`{r example-data-format} # Format raw data for analysis data <- dataFormat(J15S500) # Using sample dataset str(data) # View structure of formatted data`
+``` r
+
+# Format raw data for analysis
+data <- dataFormat(J15S500) # Using sample dataset
+str(data) # View structure of formatted data
+```
 
 ### Sample Datasets
 
@@ -204,15 +212,24 @@ Available datasets:
 
 ### Test Statistics
 
-`{r results-test-statistics, message=FALSE, warning=FALSE} TestStatistics(J15S500)`
+``` r
+
+TestStatistics(J15S500)
+```
 
 ### ItemStatistics
 
-`{r results-item-statistics, message=FALSE, warning=FALSE} ItemStatistics(J15S500)`
+``` r
+
+ItemStatistics(J15S500)
+```
 
 ### CTT
 
-`{r results-ctt, message=FALSE, warning=FALSE} CTT(J15S500)`
+``` r
+
+CTT(J15S500)
+```
 
 ### IRT
 
@@ -220,11 +237,18 @@ The IRT function estimates the number of parameters using a logistic
 model, which can be specified using the `model` option. It supports 2PL,
 3PL, and 4PL models.
 
-`{r model-irt, message=FALSE, warning=FALSE} result.IRT <- IRT(J15S500, model = 3) result.IRT`
+``` r
+
+result.IRT <- IRT(J15S500, model = 3)
+result.IRT
+```
 
 The estimated population of subjects is included in the returned object.
 
-`{r results-irt-ability, message=FALSE, warning=FALSE} head(result.IRT$ability)`
+``` r
+
+head(result.IRT$ability)
+```
 
 The plots offer options for Item Response Function(also known as Item
 Characteristic Curves (ICC)),Test Response Function, Item Information
@@ -234,7 +258,14 @@ if not specified, plots will be drawn for all items. The number of rows
 and columns for dividing the plotting area can be specified using `nr`
 and `nc`, respectively.
 
-`{r plot-irt-curves, fig.width=7, fig.height=5, message=FALSE, warning=FALSE} plot(result.IRT, type = "IRF", items = 1:6, nc = 2, nr = 3) plot(result.IRT, type = "IRF", overlay = TRUE) plot(result.IRT, type = "IIC", items = 1:6, nc = 2, nr = 3) plot(result.IRT, type = "TRF") plot(result.IRT, type = "TIC")`
+``` r
+
+plot(result.IRT, type = "IRF", items = 1:6, nc = 2, nr = 3)
+plot(result.IRT, type = "IRF", overlay = TRUE)
+plot(result.IRT, type = "IIC", items = 1:6, nc = 2, nr = 3)
+plot(result.IRT, type = "TRF")
+plot(result.IRT, type = "TIC")
+```
 
 ### GRM: IRT for Polytomous Cases
 
@@ -244,45 +275,80 @@ be implemented using the GRM function. However, the estimation accuracy
 is somewhat inferior to packages such as ltm, so it might be better to
 use different packages for more sophisticated analyses.
 
-`{r GRM, message=FALSE,warning = FALSE} result.GRM <- GRM(J5S1000) result.GRM`
+``` r
+
+result.GRM <- GRM(J5S1000)
+result.GRM
+```
 
 Similar output to IRT is also possible.
 
-`{r GRM plot} plot(result.GRM, type = "IRF") plot(result.GRM, type = "IIF") plot(result.GRM, type = "TIF")`
+``` r
+
+plot(result.GRM, type = "IRF")
+plot(result.GRM, type = "IIF")
+plot(result.GRM, type = "TIF")
+```
 
 ### LCA
 
 Latent Class Analysis requires specifying the dataset and the number of
 classes.
 
-`{r model-lca, message=FALSE, warning=FALSE} LCA(J15S500, ncls = 5)`
+``` r
+
+LCA(J15S500, ncls = 5)
+```
 
 The returned object contains the Class Membership Matrix, which
 indicates which latent class each subject belongs to. The Estimate
 includes the one with the highest membership probability.
 
-`{r results-lca-membership, message=FALSE, warning=FALSE} result.LCA <- LCA(J15S500, ncls = 5) head(result.LCA$Students)`
+``` r
+
+result.LCA <- LCA(J15S500, ncls = 5)
+head(result.LCA$Students)
+```
 
 The plots offer options for IRP, CMP, TRP, and LCD. For more details on
 each, please refer to Shojima (2022).
 
-`{r plot-lca, message=FALSE, warning=FALSE} plot(result.LCA, type = "IRP", items = 1:6, nc = 2, nr = 3) plot(result.LCA, type = "CMP", students = 1:9, nc = 3, nr = 3) plot(result.LCA, type = "TRP") plot(result.LCA, type = "LCD")`
+``` r
+
+plot(result.LCA, type = "IRP", items = 1:6, nc = 2, nr = 3)
+plot(result.LCA, type = "CMP", students = 1:9, nc = 3, nr = 3)
+plot(result.LCA, type = "TRP")
+plot(result.LCA, type = "LCD")
+```
 
 ### LRA
 
 Latent Rank Analysis requires specifying the dataset and the number of
 classes.
 
-`{r model-lra, message=FALSE, warning=FALSE} LRA(J15S500, nrank = 6)`
+``` r
+
+LRA(J15S500, nrank = 6)
+```
 
 The estimated subject rank membership probabilities and plots are almost
 the same as those in LCA (Latent Class Analysis). Since a ranking is
 assumed for the latent classes, rank-up odds and rank-down odds are
 calculated.
 
-`{r results-lra-membership, message=FALSE, warning=FALSE} result.LRA <- LRA(J15S500, nrank = 6) head(result.LRA$Students)`
+``` r
 
-`{r plot-lra, message=FALSE, warning=FALSE} plot(result.LRA, type = "IRP", items = 1:6, nc = 2, nr = 3) plot(result.LRA, type = "RMP", students = 1:9, nc = 3, nr = 3) plot(result.LRA, type = "TRP") plot(result.LRA, type = "LRD")`
+result.LRA <- LRA(J15S500, nrank = 6)
+head(result.LRA$Students)
+```
+
+``` r
+
+plot(result.LRA, type = "IRP", items = 1:6, nc = 2, nr = 3)
+plot(result.LRA, type = "RMP", students = 1:9, nc = 3, nr = 3)
+plot(result.LRA, type = "TRP")
+plot(result.LRA, type = "LRD")
+```
 
 ### LRA for ordinal data
 
@@ -291,14 +357,21 @@ J15S3810 contains responses to 15 items on a 4-point scale, which we’ll
 classify into 3 ranks. The mic option enforces monotonic increasing
 constraints.
 
-`{r model-lra-ordinal} result.LRAord <- LRA(J15S3810, nrank = 3, mic = TRUE)`
+``` r
+
+result.LRAord <- LRA(J15S3810, nrank = 3, mic = TRUE)
+```
 
 We can visualize the relationship between total scores from the ordinal
 scale and estimated ranks. ScoreFreq plots a frequency polygon of scores
 with rank thresholds, while ScoreRank shows the relationship between
 scores and rank membership probabilities as a heatmap.
 
-`{r plot-lra-ordinal-score} plot(result.LRAord, type = "ScoreFreq") plot(result.LRAord, type = "ScoreRank")`
+``` r
+
+plot(result.LRAord, type = "ScoreFreq")
+plot(result.LRAord, type = "ScoreRank")
+```
 
 The relationship between items and ranks can be visualized in two
 complementary ways using ICBR and ICRP plots. These visualizations help
@@ -312,7 +385,11 @@ understand how items function across different ranks:
   selecting each response category across ranks. These lines show how
   response patterns change as rank increases.
 
-`{r ICBR/ICRP plot} plot(result.LRAord, type = "ICBR", items = 1:4, nc = 2, nr = 2) plot(result.LRAord, type = "ICRP", items = 1:4, nc = 2, nr = 2)`
+``` r
+
+plot(result.LRAord, type = "ICBR", items = 1:4, nc = 2, nr = 2)
+plot(result.LRAord, type = "ICRP", items = 1:4, nc = 2, nr = 2)
+```
 
 Similar to binary data output, we can examine individual examinee
 characteristics through rank membership probability plots. This
@@ -320,7 +397,10 @@ visualization shows the probability distribution of rank membership for
 each examinee, allowing us to understand the certainty of rank
 classifications. For the first 15 examinees in the dataset:
 
-`{r plot-lra-ordinal-rmp} plot(result.LRAord, type = "RMP", students = 1:9, nc = 3, nr = 3)`
+``` r
+
+plot(result.LRAord, type = "RMP", students = 1:9, nc = 3, nr = 3)
+```
 
 Note: The layout parameters nc = 3 and nr = 5 control the arrangement of
 plots in a 3-column by 5-row grid, making it easier to compare multiple
@@ -332,19 +412,32 @@ If you have data where respondents select the correct answer from
 multiple choices, like in a multiple-choice test (nominal scale level),
 you can analyze it using LRA.
 
-`{r LRArated} result.LRArated <- LRA(J35S5000, nrank = 10, mic = TRUE)`
+``` r
+
+result.LRArated <- LRA(J35S5000, nrank = 10, mic = TRUE)
+```
 
 You can visualize the relationship between scores and ranks, just like
 with ordinal scale data.
 
-`{r LRArated ScoreFreq} plot(result.LRArated, type = "ScoreFreq") plot(result.LRArated, type = "ScoreRank")`
+``` r
+
+plot(result.LRArated, type = "ScoreFreq")
+plot(result.LRArated, type = "ScoreRank")
+```
 
 You can also visualize the relationship between latent ranks and items,
 or the probability of subjects belonging to certain ranks.
 
-`{r LRAratedplot} plot(result.LRArated, type = "ICRP", items = 1:4, nc = 2, nr = 2)`
+``` r
 
-`{r LRAratedplot2 RMP} plot(result.LRAord, type = "RMP", students = 1:9, nc = 3, nr = 3)`
+plot(result.LRArated, type = "ICRP", items = 1:4, nc = 2, nr = 2)
+```
+
+``` r
+
+plot(result.LRAord, type = "RMP", students = 1:9, nc = 3, nr = 3)
+```
 
 ### Biclustering/Ranklustering
 
@@ -354,9 +447,22 @@ is specified using the `method` option in the
 [`Biclustering()`](https://kosugitti.github.io/exametrika/reference/Biclustering.md)
 function. For more details, please refer to the help documentation.
 
-`{r model-biclustering} ## Biclustering Biclustering(J35S515, nfld = 5, ncls = 6, method = "B")`
+``` r
 
-`{r model-ranklustering} ## Ranklustering result.Ranklustering <- Biclustering(J35S515, nfld = 5, ncls = 6, method = "R") plot(result.Ranklustering, type = "Array") plot(result.Ranklustering, type = "FRP", nc = 2, nr = 3) plot(result.Ranklustering, type = "RRV") plot(result.Ranklustering, type = "RMP", students = 1:9, nc = 3, nr = 3) plot(result.Ranklustering, type = "LRD")`
+## Biclustering
+Biclustering(J35S515, nfld = 5, ncls = 6, method = "B")
+```
+
+``` r
+
+## Ranklustering
+result.Ranklustering <- Biclustering(J35S515, nfld = 5, ncls = 6, method = "R")
+plot(result.Ranklustering, type = "Array")
+plot(result.Ranklustering, type = "FRP", nc = 2, nr = 3)
+plot(result.Ranklustering, type = "RRV")
+plot(result.Ranklustering, type = "RMP", students = 1:9, nc = 3, nr = 3)
+plot(result.Ranklustering, type = "LRD")
+```
 
 ### Finding Optimal Number of Classes and Fields
 
@@ -368,7 +474,13 @@ approach evaluates multiple parameter combinations and selects the
 best-fitting model according to specified criteria such as AIC, BIC, or
 other goodness-of-fit measures.
 
-`{r gr} result <- GridSearch(J35S515, method = "R", max_ncls = 10, max_nfld = 10, index = "BIC") result$optimal_ncls result$optimal_nfld result$optimal_result`
+``` r
+
+result <- GridSearch(J35S515, method = "R", max_ncls = 10, max_nfld = 10, index = "BIC")
+result$optimal_ncls
+result$optimal_nfld
+result$optimal_result
+```
 
 #### Infinite Relational Model
 
@@ -381,7 +493,13 @@ of latent structures beforehand.
 large datasets - The model tends to detect larger numbers of classes and
 fields - Use with caution and consider computational resources
 
-`{r model-irm} result.IRM <- Biclustering_IRM(J35S515, gamma_c = 1, gamma_f = 1, verbose = TRUE) plot(result.IRM, type = "Array") plot(result.IRM, type = "FRP", nc = 3) plot(result.IRM, type = "TRP")`
+``` r
+
+result.IRM <- Biclustering_IRM(J35S515, gamma_c = 1, gamma_f = 1, verbose = TRUE)
+plot(result.IRM, type = "Array")
+plot(result.IRM, type = "FRP", nc = 3)
+plot(result.IRM, type = "TRP")
+```
 
 ### Biclustering for Polytomous Data
 
@@ -392,46 +510,79 @@ black in the Array plot. Color palettes can be customized using the
 
 #### Ordinal data
 
-`{r bic_poly_ord} result.B.ord <- Biclustering(J35S500, ncls = 5, nfld = 5, method = "R") result.B.ord plot(result.B.ord, type = "Array")`
+``` r
+
+result.B.ord <- Biclustering(J35S500, ncls = 5, nfld = 5, method = "R")
+result.B.ord
+plot(result.B.ord, type = "Array")
+```
 
 For ordinal polytomous Biclustering, several new plot types are
 available. The FRP (Field Reference Profile) shows the expected score
 per field across latent ranks. The `stat` parameter controls the summary
 statistic: “mean” (default), “median”, or “mode”.
 
-`{r bic_poly_ord_frp, fig.width=7, fig.height=5} plot(result.B.ord, type = "FRP", nc = 3, nr = 2)`
+``` r
+
+plot(result.B.ord, type = "FRP", nc = 3, nr = 2)
+```
 
 The FCRP (Field Category Response Profile) shows the probability of each
 response category across latent ranks. The `style` parameter can be
 “line” (default) or “bar”.
 
-`{r bic_poly_ord_fcrp, fig.width=7, fig.height=5} plot(result.B.ord, type = "FCRP", nc = 3, nr = 2) plot(result.B.ord, type = "FCRP", style = "bar", nc = 3, nr = 2)`
+``` r
+
+plot(result.B.ord, type = "FCRP", nc = 3, nr = 2)
+plot(result.B.ord, type = "FCRP", style = "bar", nc = 3, nr = 2)
+```
 
 The FCBR (Field Cumulative Boundary Reference) shows the cumulative
 boundary probabilities P(Q \>= q) for each field. This plot type is only
 available for ordinal data.
 
-`{r bic_poly_ord_fcbr, fig.width=7, fig.height=5} plot(result.B.ord, type = "FCBR", nc = 3, nr = 2)`
+``` r
+
+plot(result.B.ord, type = "FCBR", nc = 3, nr = 2)
+```
 
 The ScoreField plot displays a heatmap of expected scores across fields
 and latent ranks.
 
-`{r bic_poly_ord_scorefield, fig.width=7, fig.height=5} plot(result.B.ord, type = "ScoreField")`
+``` r
+
+plot(result.B.ord, type = "ScoreField")
+```
 
 The RRV (Rank Reference Vector) is a transposed view of the FRP, with
 fields on the x-axis and latent rank lines overlaid for comparison.
 
-`{r bic_poly_ord_rrv, fig.width=7, fig.height=5} plot(result.B.ord, type = "RRV")`
+``` r
+
+plot(result.B.ord, type = "RRV")
+```
 
 #### Nominal data
 
-`{r bic_poly_nom} result.B.nom <- Biclustering(J20S600, ncls = 5, nfld = 4) result.B.nom plot(result.B.nom, type = "Array")`
+``` r
+
+result.B.nom <- Biclustering(J20S600, ncls = 5, nfld = 4)
+result.B.nom
+plot(result.B.nom, type = "Array")
+```
 
 Nominal polytomous Biclustering also supports FRP, FCRP, ScoreField, and
 RRV plots. Note that FCBR is not available for nominal data because
 boundary probabilities only make sense for ordinal categories.
 
-`{r bic_poly_nom_plots, fig.width=7, fig.height=5} plot(result.B.nom, type = "FRP", nc = 2, nr = 2) plot(result.B.nom, type = "FCRP", nc = 2, nr = 2) plot(result.B.nom, type = "FCRP", style = "bar", nc = 2, nr = 2) plot(result.B.nom, type = "ScoreField") plot(result.B.nom, type = "RRV")`
+``` r
+
+plot(result.B.nom, type = "FRP", nc = 2, nr = 2)
+plot(result.B.nom, type = "FCRP", nc = 2, nr = 2)
+plot(result.B.nom, type = "FCRP", style = "bar", nc = 2, nr = 2)
+plot(result.B.nom, type = "ScoreField")
+plot(result.B.nom, type = "RRV")
+```
 
 ### Bayesian Network Model
 
@@ -450,13 +601,31 @@ the igraph package to the argument g.
 The methods to create the matrix-type adj_matrix and the graph object g
 are as follows:
 
-`{r setup-igraph, message=FALSE, warning=FALSE} library(igraph) DAG <- matrix( c( "Item01", "Item02", "Item02", "Item03", "Item02", "Item04", "Item03", "Item05", "Item04", "Item05" ), ncol = 2, byrow = T ) ## graph object g <- igraph::graph_from_data_frame(DAG) g ## Adjacency matrix adj_mat <- as.matrix(igraph::get.adjacency(g)) print(adj_mat)`
+``` r
+
+library(igraph)
+DAG <-
+  matrix(
+    c(
+      "Item01", "Item02",
+      "Item02", "Item03",
+      "Item02", "Item04",
+      "Item03", "Item05",
+      "Item04", "Item05"
+    ),
+    ncol = 2, byrow = T
+  )
+## graph object
+g <- igraph::graph_from_data_frame(DAG)
+g
+## Adjacency matrix
+adj_mat <- as.matrix(igraph::get.adjacency(g))
+print(adj_mat)
+```
 
 A CSV file with the same information as the graph above in the following
 format. The first line contains column names (headers) and will not be
 read as data.
-
-`{r print-dag, echo=FALSE, message=FALSE, warning=FALSE} cat("From,To\n") for (i in 1:nrow(DAG)) { cat(sprintf("%s,%s\n", DAG[i, 1], DAG[i, 2])) }`
 
 While only one specification is sufficient, if multiple specifications
 are provided, they will be prioritized in the order of file, matrix, and
@@ -465,7 +634,11 @@ graph object.
 An example of executing BNM by providing a graph structure (DAG) is as
 follows:
 
-`{r model-bnm, message=FALSE, warning=FALSE} result.BNM <- BNM(J5S10, adj_matrix = adj_mat) result.BNM`
+``` r
+
+result.BNM <- BNM(J5S10, adj_matrix = adj_mat)
+result.BNM
+```
 
 #### Structure Learning for Bayesian network with GA
 
@@ -482,14 +655,26 @@ Section 8.5 of the text(Shojima,2022).
 Please note that the GA may take a considerable amount of time,
 depending on the number of items and the size of the population.
 
-`{r model-ga-bnm, message=FALSE, warning=FALSE} BNM_GA(J5S10, population = 20, Rs = 0.5, Rm = 0.002, maxParents = 2, maxGeneration = 100, crossover = 2, elitism = 2 )`
+``` r
+
+BNM_GA(J5S10,
+  population = 20, Rs = 0.5, Rm = 0.002, maxParents = 2,
+  maxGeneration = 100, crossover = 2, elitism = 2
+)
+```
 
 The method of Population-Based incremental learning proposed by Fukuda
 (2014) can also be used for learning. This method has several variations
 for estimating the optimal adjacency matrix at the end, which can be
 specified as options. See help or text Section 8.5.2.
 
-`{r model-pbil-bnm, message=FALSE, warning=FALSE} BNM_PBIL(J5S10, population = 20, Rs = 0.5, Rm = 0.005, maxParents = 2, alpha = 0.05, estimate = 4 )`
+``` r
+
+BNM_PBIL(J5S10,
+  population = 20, Rs = 0.5, Rm = 0.005, maxParents = 2,
+  alpha = 0.05, estimate = 4
+)
+```
 
 ### Local Dependence Latent Rank Analysis
 
@@ -504,55 +689,97 @@ list of graph-type objects used in the igraph package to the arguments
 adj_list or g_list, respectively, or you can provide a DAG described in
 a CSV file. The way to specify it in a CSV file is as follows.
 
-\`\`\`{r setup-dag-data, message=FALSE, warning=FALSE} DAG_dat \<-
-matrix(c( “From”, “To”, “Rank”, “Item01”, “Item02”, 1, “Item04”,
-“Item05”, 1, “Item01”, “Item02”, 2, “Item02”, “Item03”, 2, “Item04”,
-“Item05”, 2, “Item08”, “Item09”, 2, “Item08”, “Item10”, 2, “Item09”,
-“Item10”, 2, “Item08”, “Item11”, 2, “Item01”, “Item02”, 3, “Item02”,
-“Item03”, 3, “Item04”, “Item05”, 3, “Item08”, “Item09”, 3, “Item08”,
-“Item10”, 3, “Item09”, “Item10”, 3, “Item08”, “Item11”, 3, “Item02”,
-“Item03”, 4, “Item04”, “Item06”, 4, “Item04”, “Item07”, 4, “Item05”,
-“Item06”, 4, “Item05”, “Item07”, 4, “Item08”, “Item10”, 4, “Item08”,
-“Item11”, 4, “Item09”, “Item11”, 4, “Item02”, “Item03”, 5, “Item04”,
-“Item06”, 5, “Item04”, “Item07”, 5, “Item05”, “Item06”, 5, “Item05”,
-“Item07”, 5, “Item09”, “Item11”, 5, “Item10”, “Item11”, 5, “Item10”,
-“Item12”, 5 ), ncol = 3, byrow = TRUE)
+``` r
+
+DAG_dat <- matrix(c(
+  "From", "To", "Rank",
+  "Item01", "Item02", 1,
+  "Item04", "Item05", 1,
+  "Item01", "Item02", 2,
+  "Item02", "Item03", 2,
+  "Item04", "Item05", 2,
+  "Item08", "Item09", 2,
+  "Item08", "Item10", 2,
+  "Item09", "Item10", 2,
+  "Item08", "Item11", 2,
+  "Item01", "Item02", 3,
+  "Item02", "Item03", 3,
+  "Item04", "Item05", 3,
+  "Item08", "Item09", 3,
+  "Item08", "Item10", 3,
+  "Item09", "Item10", 3,
+  "Item08", "Item11", 3,
+  "Item02", "Item03", 4,
+  "Item04", "Item06", 4,
+  "Item04", "Item07", 4,
+  "Item05", "Item06", 4,
+  "Item05", "Item07", 4,
+  "Item08", "Item10", 4,
+  "Item08", "Item11", 4,
+  "Item09", "Item11", 4,
+  "Item02", "Item03", 5,
+  "Item04", "Item06", 5,
+  "Item04", "Item07", 5,
+  "Item05", "Item06", 5,
+  "Item05", "Item07", 5,
+  "Item09", "Item11", 5,
+  "Item10", "Item11", 5,
+  "Item10", "Item12", 5
+), ncol = 3, byrow = TRUE)
 
 # save csv file
+edgeFile <- tempfile(fileext = ".csv")
+write.csv(DAG_dat, edgeFile, row.names = FALSE, quote = TRUE)
+```
 
-edgeFile \<- tempfile(fileext = “.csv”) write.csv(DAG_dat, edgeFile,
-row.names = FALSE, quote = TRUE)
+Here, it is shown an example of specifying with matrix-type and graph
+objects using the aforementioned CSV file. While only one specification
+is sufficient, if multiple specifications are provided, they will be
+prioritized in the order of file, matrix, and graph object.
 
+``` r
 
-    Here, it is shown an example of specifying with matrix-type and graph objects using the aforementioned CSV file. While only one specification is sufficient, if multiple specifications are provided, they will be prioritized in the order of file, matrix, and graph object.
+g_csv <- read.csv(edgeFile)
+colnames(g_csv) <- c("From", "To", "Rank")
+adj_list <- list()
+g_list <- list()
+for (i in 1:5) {
+  adj_R <- g_csv[g_csv$Rank == i, 1:2]
+  g_tmp <- igraph::graph_from_data_frame(adj_R)
+  adj_tmp <- igraph::get.adjacency(g_tmp)
+  g_list[[i]] <- g_tmp
+  adj_list[[i]] <- adj_tmp
+}
+## Example of graph list
+g_list
+```
 
-    ```{r setup-graph-conversion, message=FALSE, warning=FALSE}
-    g_csv <- read.csv(edgeFile)
-    colnames(g_csv) <- c("From", "To", "Rank")
-    adj_list <- list()
-    g_list <- list()
-    for (i in 1:5) {
-      adj_R <- g_csv[g_csv$Rank == i, 1:2]
-      g_tmp <- igraph::graph_from_data_frame(adj_R)
-      adj_tmp <- igraph::get.adjacency(g_tmp)
-      g_list[[i]] <- g_tmp
-      adj_list[[i]] <- adj_tmp
-    }
-    ## Example of graph list
-    g_list
+``` r
 
-`{r results-adj-list, message=FALSE, warning=FALSE} ### Example of adjacency list adj_list`
+### Example of adjacency list
+adj_list
+```
 
 The example of running the LDLRA function using this CSV file would look
 like this.
 
-`{r model-ldlra, message=FALSE, warning=FALSE} result.LDLRA <- LDLRA(J12S5000, ncls = 5, adj_file = edgeFile ) result.LDLRA`
+``` r
+
+result.LDLRA <- LDLRA(J12S5000,
+  ncls = 5,
+  adj_file = edgeFile
+)
+result.LDLRA
+```
 
 Of course, it also supports various types of plots.
 
-`{r plot-ldlra, message=FALSE, warning=FALSE} plot(result.LDLRA, type = "IRP", nc = 4, nr = 3) plot(result.LDLRA, type = "TRP") plot(result.LDLRA, type = "LRD")`
+``` r
 
-`{r cleanup-ldlra, include=FALSE} # Clean up temporary file unlink(edgeFile)`
+plot(result.LDLRA, type = "IRP", nc = 4, nr = 3)
+plot(result.LDLRA, type = "TRP")
+plot(result.LDLRA, type = "LRD")
+```
 
 #### Structure Learning for LDLRA with GA(PBIL)
 
@@ -562,7 +789,17 @@ a very long computation time. It’s also important to note that the
 result is merely one of the feasible solutions, and it’s not necessarily
 the optimal solution.
 
-`{r model-pbil-ldlra, message=FALSE, warning=FALSE, eval=T} result.LDLRA.PBIL <- LDLRA_PBIL(J35S515, seed = 123, ncls = 5, method = "R", elitism = 1, successiveLimit = 15 ) result.LDLRA.PBIL`
+``` r
+
+result.LDLRA.PBIL <- LDLRA_PBIL(J35S515,
+  seed = 123,
+  ncls = 5,
+  method = "R",
+  elitism = 1,
+  successiveLimit = 15
+)
+result.LDLRA.PBIL
+```
 
 ### Local Dependence Biclustering
 
@@ -575,55 +812,71 @@ models. The model requires three main components:
 
 Here’s an example implementation:
 
-\`\`\`{r setup-ldb} \# Create field configuration vector (assign items
-to fields) conf \<- c(1, 6, 6, 8, 9, 9, 4, 7, 7, 7, 5, 8, 9, 10, 10, 9,
-9, 10, 10, 10, 2, 2, 3, 3, 5, 5, 6, 9, 9, 10, 1, 1, 7, 9, 10)
+``` r
+
+# Create field configuration vector (assign items to fields)
+conf <- c(1, 6, 6, 8, 9, 9, 4, 7, 7, 7, 5, 8, 9, 10, 10, 9, 9, 10, 10, 10, 2, 2, 3, 3, 5, 5, 6, 9, 9, 10, 1, 1, 7, 9, 10)
 
 # Create edge data for network structure between fields
-
-edges_data \<- data.frame( “From Field (Parent) \>\>\>” = c( 6, 4, 5, 1,
-1, 4, \# Class/Rank 2 3, 4, 6, 2, 4, 4, \# Class/Rank 3 3, 6, 4, 1, \#
-Class/Rank 4 7, 9, 6, 7 \# Class/Rank 5 ), “\>\>\> To Field (Child)” =
-c( 8, 7, 8, 7, 2, 5, \# Class/Rank 2 5, 8, 8, 4, 6, 7, \# Class/Rank 3
-5, 8, 5, 8, \# Class/Rank 4 10, 10, 8, 9 \# Class/Rank 5 ), “At
-Class/Rank (Locus)” = c( 2, 2, 2, 2, 2, 2, \# Class/Rank 2 3, 3, 3, 3,
-3, 3, \# Class/Rank 3 4, 4, 4, 4, \# Class/Rank 4 5, 5, 5, 5 \#
-Class/Rank 5 ) )
+edges_data <- data.frame(
+  "From Field (Parent) >>>" = c(
+    6, 4, 5, 1, 1, 4, # Class/Rank 2
+    3, 4, 6, 2, 4, 4, # Class/Rank 3
+    3, 6, 4, 1, # Class/Rank 4
+    7, 9, 6, 7 # Class/Rank 5
+  ),
+  ">>> To Field (Child)" = c(
+    8, 7, 8, 7, 2, 5, # Class/Rank 2
+    5, 8, 8, 4, 6, 7, # Class/Rank 3
+    5, 8, 5, 8, # Class/Rank 4
+    10, 10, 8, 9 # Class/Rank 5
+  ),
+  "At Class/Rank (Locus)" = c(
+    2, 2, 2, 2, 2, 2, # Class/Rank 2
+    3, 3, 3, 3, 3, 3, # Class/Rank 3
+    4, 4, 4, 4, # Class/Rank 4
+    5, 5, 5, 5 # Class/Rank 5
+  )
+)
 
 # Save edge data to temporary file
-
-edgeFile \<- tempfile(fileext = “.csv”) write.csv(edges_data, file =
-edgeFile, row.names = FALSE)
-
-
-    ```{r setup-ldb-conf, include=FALSE, message=FALSE, warning=FALSE}
-    # Fit Local Dependence Biclustering model
-    result.LDB <- LDB(
-      U = J35S515,
-      ncls = 5, # Number of latent classes
-      conf = conf, # Field configuration vector
-      adj_file = edgeFile # Network structure file
-    )
-
-    # Display model results
-    print(result.LDB)
+edgeFile <- tempfile(fileext = ".csv")
+write.csv(edges_data, file = edgeFile, row.names = FALSE)
+```
 
 Additionally, as mentioned in the text (Shojima, 2022), it is often the
 case that seeking the network structure exploratively does not yield
 appropriate results, so it has not been implemented.
 
-`{r model-ldb} result.LDB <- LDB(U = J35S515, ncls = 5, conf = conf, adj_file = edgeFile) result.LDB`
+``` r
 
-`{r cleanup-ldb, include=FALSE} # Clean up temporary file unlink(edgeFile)`
+result.LDB <- LDB(U = J35S515, ncls = 5, conf = conf, adj_file = edgeFile)
+result.LDB
+```
 
 Of course, it also supports various types of plots.
 
-`{r plot-ldb, message=FALSE, warning=FALSE} # Show bicluster structure plot(result.LDB, type = "Array") # Test Response Profile plot(result.LDB, type = "TRP") # Latent Rank Distribution plot(result.LDB, type = "LRD") # Rank Membership Profiles for first 9 students plot(result.LDB, type = "RMP", students = 1:9, nc = 3, nr = 3) # Field Reference Profiles plot(result.LDB, type = "FRP", nc = 3, nr = 2)`
+``` r
+
+# Show bicluster structure
+plot(result.LDB, type = "Array")
+# Test Response Profile
+plot(result.LDB, type = "TRP")
+# Latent Rank Distribution
+plot(result.LDB, type = "LRD")
+# Rank Membership Profiles for first 9 students
+plot(result.LDB, type = "RMP", students = 1:9, nc = 3, nr = 3)
+# Field Reference Profiles
+plot(result.LDB, type = "FRP", nc = 3, nr = 2)
+```
 
 In this model, you can draw a Field PIRP Profile that visualizes the
 correct answer count for each rank and each field.
 
-`{r plot-ldb-fieldpirp, fig.width=7, fig.height=5, message=FALSE, warning=FALSE} plot(result.LDB, type = "FieldPIRP")`
+``` r
+
+plot(result.LDB, type = "FieldPIRP")
+```
 
 ### Bicluster Network Model
 
@@ -639,54 +892,80 @@ To execute this analysis, in addition to the dataset, the same field
 correspondence file used during exploratory Biclustering is required, as
 well as an adjacency matrix between classes.
 
-\`\`\`{r setup-binet} \# Create field configuration vector for item
-assignment conf \<- c(1, 5, 5, 5, 9, 9, 6, 6, 6, 6, 2, 7, 7, 11, 11, 7,
-7, 12, 12, 12, 2, 2, 3, 3, 4, 4, 4, 8, 8, 12, 1, 1, 6, 10, 10)
+``` r
+
+# Create field configuration vector for item assignment
+conf <- c(1, 5, 5, 5, 9, 9, 6, 6, 6, 6, 2, 7, 7, 11, 11, 7, 7, 12, 12, 12, 2, 2, 3, 3, 4, 4, 4, 8, 8, 12, 1, 1, 6, 10, 10)
 
 # Create edge data for network structure between classes
-
-edges_data \<- data.frame( “From Class (Parent) \>\>\>” = c( 1, 2, 3, 4,
-5, 7, \# Dependencies in various fields 2, 4, 6, 8, 10, 6, 6, 11, 8, 9,
-12 ), “\>\>\> To Class (Child)” = c( 2, 4, 5, 5, 6, 11, \# Target
-classes 3, 7, 9, 12, 12, 10, 8, 12, 12, 11, 13 ), “At Field (Locus)” =
-c( 1, 2, 2, 3, 4, 4, \# Field locations 5, 5, 5, 5, 5, 7, 8, 8, 9, 9, 12
-) )
+edges_data <- data.frame(
+  "From Class (Parent) >>>" = c(
+    1, 2, 3, 4, 5, 7, # Dependencies in various fields
+    2, 4, 6, 8, 10,
+    6, 6, 11, 8, 9, 12
+  ),
+  ">>> To Class (Child)" = c(
+    2, 4, 5, 5, 6, 11, # Target classes
+    3, 7, 9, 12, 12,
+    10, 8, 12, 12, 11, 13
+  ),
+  "At Field (Locus)" = c(
+    1, 2, 2, 3, 4, 4, # Field locations
+    5, 5, 5, 5, 5,
+    7, 8, 8, 9, 9, 12
+  )
+)
 
 # Save edge data to temporary file
+edgeFile <- tempfile(fileext = ".csv")
+write.csv(edges_data, file = edgeFile, row.names = FALSE)
+```
 
-edgeFile \<- tempfile(fileext = “.csv”) write.csv(edges_data, file =
-edgeFile, row.names = FALSE)
+The model requires three components:
 
+1.  Field assignments for items (vector from configuration file)
+2.  Network structure between classes for each field
+3.  Number of classes and fields
 
-    The model requires three components:
+``` r
 
-    1. Field assignments for items (vector from configuration file)
-    2. Network structure between classes for each field
-    3. Number of classes and fields
+# Fit Bicluster Network Model
+result.BINET <- BINET(
+  U = J35S515,
+  ncls = 13, # Maximum class number from edges (13)
+  nfld = 12, # Maximum field number from conf (12)
+  conf = conf, # Field configuration vector
+  adj_file = edgeFile # Network structure file
+)
 
-    ```{r model-binet, message=FALSE, warning=FALSE}
-    # Fit Bicluster Network Model
-    result.BINET <- BINET(
-      U = J35S515,
-      ncls = 13, # Maximum class number from edges (13)
-      nfld = 12, # Maximum field number from conf (12)
-      conf = conf, # Field configuration vector
-      adj_file = edgeFile # Network structure file
-    )
-
-    # Display model results
-    print(result.BINET)
-
-`{r cleanup-binet, include=FALSE} # Clean up temporary file unlink(edgeFile)`
+# Display model results
+print(result.BINET)
+```
 
 Of course, it also supports various types of plots.
 
-`{r plot-binet, message=FALSE, warning=FALSE} # Show bicluster structure plot(result.BINET, type = "Array") # Test Response Profile plot(result.BINET, type = "TRP") # Latent Rank Distribution plot(result.BINET, type = "LRD") # Rank Membership Profiles for first 9 students plot(result.BINET, type = "RMP", students = 1:9, nc = 3, nr = 3) # Field Reference Profiles plot(result.BINET, type = "FRP", nc = 3, nr = 2)`
+``` r
+
+# Show bicluster structure
+plot(result.BINET, type = "Array")
+# Test Response Profile
+plot(result.BINET, type = "TRP")
+# Latent Rank Distribution
+plot(result.BINET, type = "LRD")
+# Rank Membership Profiles for first 9 students
+plot(result.BINET, type = "RMP", students = 1:9, nc = 3, nr = 3)
+# Field Reference Profiles
+plot(result.BINET, type = "FRP", nc = 3, nr = 2)
+```
 
 LDPSR plot shows all Passing Student Rates for all locally dependent
 classes compared with their respective parents.
 
-`{r plot-binet-ldpsr, message=FALSE, warning=FALSE} # Locally Dependent Passing Student Rates plot(result.BINET, type = "LDPSR", nc = 3, nr = 2)`
+``` r
+
+# Locally Dependent Passing Student Rates
+plot(result.BINET, type = "LDPSR", nc = 3, nr = 2)
+```
 
 ### Available Output Types by Model
 

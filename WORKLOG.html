@@ -37,6 +37,101 @@
 
 <p>Detailed development log. User-facing changes go in <code>NEWS.md</code>; this file captures the per-session internal narrative (why a change was made, what was investigated, what was ruled out). Entries are newest-first.</p>
 <div class="section level2">
+<h2 id="id_2026-05-0809--案-c-bnm-プロトタイプ動作確認--v200-設計スコープ確定">2026-05-08〜09 — 案 C BNM プロトタイプ動作確認 + v2.0.0 設計スコープ確定<a class="anchor" aria-label="anchor" href="#id_2026-05-0809--%E6%A1%88-c-bnm-%E3%83%97%E3%83%AD%E3%83%88%E3%82%BF%E3%82%A4%E3%83%97%E5%8B%95%E4%BD%9C%E7%A2%BA%E8%AA%8D--v200-%E8%A8%AD%E8%A8%88%E3%82%B9%E3%82%B3%E3%83%BC%E3%83%97%E7%A2%BA%E5%AE%9A"></a></h2>
+<p>5/1 で 3 段構え (Glasso → ξ → 案 C) の方針を固めた後,「案 C が実用に 耐えるか」をデータで確認するセッション。プロトは exametrika リポジトリ内の <code>develop/</code> (gitignored) と <code>02_研究/お遍路さん/</code> の 両方で並行進行。</p>
+<div class="section level3">
+<h3 id="a-案-c-は-brms-mo-で-1-行で書ける既存技術と判明">A. 案 C は brms <code>mo()</code> で 1 行で書ける既存技術と判明<a class="anchor" aria-label="anchor" href="#a-%E6%A1%88-c-%E3%81%AF-brms-mo-%E3%81%A7-1-%E8%A1%8C%E3%81%A7%E6%9B%B8%E3%81%91%E3%82%8B%E6%97%A2%E5%AD%98%E6%8A%80%E8%A1%93%E3%81%A8%E5%88%A4%E6%98%8E"></a></h3>
+<p>Bürkner &amp; Charpentier (2020, BJMSP 73(3) 420-451) の monotonic effects がそのまま案 C のパラメータ化と一致することを実験で確認。 <code>brm(Y ~ mo(X), family = cumulative("probit"))</code> で済む。</p>
+<p>決定的な実証: <code>develop/20260508_caseC_diagnose.R</code> で brms 内部の パラメータ化を逆算し, 案 C の μ_x と brms の <code>bsp_moX</code> の関係が <strong>μ_x = bsp_moX × D × cumsum(c(0, ζ))</strong> であることを数値検証。 RMSE 0.085 (D 倍を含む) vs 0.785 (D 倍なし) で確定。</p>
+<p>→ 翻訳ルール: <strong>案 C のパス係数 β = bsp_moX × D</strong>。SEM 流の path diagram 表記が直接できる。</p>
+</div>
+<div class="section level3">
+<h3 id="b-phase-ab-シミュレーション-j15s3810-ベース">B. Phase A/B シミュレーション (J15S3810 ベース)<a class="anchor" aria-label="anchor" href="#b-phase-ab-%E3%82%B7%E3%83%9F%E3%83%A5%E3%83%AC%E3%83%BC%E3%82%B7%E3%83%A7%E3%83%B3-j15s3810-%E3%83%99%E3%83%BC%E3%82%B9"></a></h3>
+<p><code>develop/20260508_caseC_proto.R</code>, <code>phaseA2.R</code>, <code>phaseB.R</code>:</p>
+<ul><li>
+<strong>Phase A1</strong>: 単親リカバリ (μ=(0,0.3,0.7,1.2,1.8) 真値) → 全パラメータ CrI 内, β = 1.67 [1.45, 1.90] vs 真値 1.80</li>
+<li>
+<strong>Phase A2</strong>: 4 形状 (linear/convex/concave/step) で安定リカバリ (RMSE 0.05〜0.09)。step は Dirichlet(1,…) 事前で境界を僅かに膨らます (5/5 中 4/5 カバレッジ)</li>
+<li>
+<strong>Phase B</strong>: 多親加法 vs 相互作用シナリオで LOO が正しく判別 (additive truth: m_add 勝, ΔLOO=−1.5; interaction truth: m_int 勝, ΔLOO=−62.8)</li>
+</ul></div>
+<div class="section level3">
+<h3 id="c-phase-c-j15s3810-で全パイプライン">C. Phase C (J15S3810 で全パイプライン)<a class="anchor" aria-label="anchor" href="#c-phase-c-j15s3810-%E3%81%A7%E5%85%A8%E3%83%91%E3%82%A4%E3%83%97%E3%83%A9%E3%82%A4%E3%83%B3"></a></h3>
+<ul><li>C-1: Glasso → 98 辺スケルトン</li>
+<li>C-2: <code><a href="reference/xi_stable.html">xi_stable()</a></code> で方向判定 → 78 辺の DAG. ただし <strong>xi_stable の SE はタイブレーキング由来 (B 反復で √B → 0)</strong> なので z 検定は無意味。CLAUDE.md の 5/1 の警告と整合</li>
+<li>C-4: paired data bootstrap (B=500, idx 共有で xi_jk と xi_kj を 同一リサンプル内で計算) → <strong>本物の有意辺は 11</strong>。残り 67 辺は 「タイブレーキングに対して安定」というだけだった</li>
+<li>C-5: 11 辺の DAG 可視化 (Item13 がソース, Item14→Item11←Item15 v-structure)</li>
+<li>C-6: 11 辺それぞれ案 C で β fit。Item5→Item12 だけ β CI が 0 跨ぎ (10/11 が triple-filter 通過)</li>
+</ul></div>
+<div class="section level3">
+<h3 id="d-お遍路さんデータ-n143-で-6-ノード-dag-fit">D. お遍路さんデータ N=143 で 6 ノード DAG fit<a class="anchor" aria-label="anchor" href="#d-%E3%81%8A%E9%81%8D%E8%B7%AF%E3%81%95%E3%82%93%E3%83%87%E3%83%BC%E3%82%BF-n143-%E3%81%A7-6-%E3%83%8E%E3%83%BC%E3%83%89-dag-fit"></a></h3>
+<p><code>02_研究/お遍路さん/2025本調査データ/20260509.R</code>:</p>
+<p>DAG: E05 → {E07, M60}, E07 → M50, M60 → M50, M50 → M03, M03 → M14</p>
+<p>主結果 (タスク 1〜4): - E07 → M50 が NULL (β = −0.36 [−2.09, 0.52]) → 削除で AIC/BIC 改善 - DAG 全反転で ΔAIC = +17 (forward 勝ち, <strong>方向情報が立っている</strong>) J15S3810 は同質尺度で Δ=±5 だったが, お遍路さんは多次元尺度で明確 - M50 の親候補比較で E05 を新規支持 (β = 1.16 [0.40, 2.02]) - 最終 6 辺 DAG: E05 が 3 子のハブ (E07, M60, M50)</p>
+<p>理論的補強: BNM 全体尤度 (飽和周辺込み) では H(X) と H(Y) の エントロピー項がキャンセルし, <strong>方向差は KL(P̂(Y|X) || P_caseC(Y|X)) の差</strong>として残る (5/1 棄却された “ll 差はエントロピー差に支配” は 条件付き尤度単独比較の話。BNM 文脈では別)。</p>
+</div>
+<div class="section level3">
+<h3 id="e-ggm-お遍路さん-全-98-項目">E. GGM (お遍路さん 全 98 項目)<a class="anchor" aria-label="anchor" href="#e-ggm-%E3%81%8A%E9%81%8D%E8%B7%AF%E3%81%95%E3%82%93-%E5%85%A8-98-%E9%A0%85%E7%9B%AE"></a></h3>
+<p><code>02_研究/お遍路さん/2025本調査データ/20260509_t5_GGM.R</code>:</p>
+<p>p=98 一括 Glasso は BCD 内で破綻 (<code>if (diff &lt; eps)</code> で NaN) → 3 段階に分割:</p>
+<ul><li>E 内 (32) Glasso: 219 辺 (密度 44%)</li>
+<li>M 内 (66) Glasso: 584 辺 (密度 27%, near-synonym ペア多数, M07-M08 |θ| = 0.985)</li>
+<li>E-M クロス (32×66) は polychoric 相関の上位採用 (|ρ|&gt;0.4 で 245 辺)</li>
+</ul><p>発見: - <strong>E01 (地元の人と挨拶) が E-M クロスの真のハブ</strong> (5/9 朝の DAG で E05 を選んだのは恣意的。E01 中心の方が情報量が大きい) - <strong>M-M の near-synonym ペアは Glasso でも残る</strong> → field 化が必須</p>
+</div>
+<div class="section level3">
+<h3 id="f-v200-設計スコープをdag-所与に絞り込み">F. v2.0.0 設計スコープを「DAG 所与」に絞り込み<a class="anchor" aria-label="anchor" href="#f-v200-%E8%A8%AD%E8%A8%88%E3%82%B9%E3%82%B3%E3%83%BC%E3%83%97%E3%82%92dag-%E6%89%80%E4%B8%8E%E3%81%AB%E7%B5%9E%E3%82%8A%E8%BE%BC%E3%81%BF"></a></h3>
+<p>「DAG 探索的推定は後回し, 荘島モデルも DAG ありき」と先生判断。 v2.0.0 BNM API は:</p>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">BNM_polytomous</span><span class="op">(</span><span class="va">data</span>, <span class="va">adj_matrix</span>,</span>
+<span>               model <span class="op">=</span> <span class="st">"caseC"</span>,       <span class="co"># 加法 + 単調制約</span></span>
+<span>               <span class="va">...</span><span class="op">)</span></span>
+<span><span class="co"># 出力: τ, μ プロファイル, β, log_lik, fit_indices</span></span></code></pre></div>
+<p>3 モデル比較: - M_0: 全独立 (β=0 / 周辺確率) - M_t: 案 C 加法 - M_s: DAG 内飽和 (各 child で free CPT)</p>
+<p>NFI / CFI / RMSEA / AIC / BIC / CAIC を <code><a href="reference/calcFitIndices.html">calcFitIndices()</a></code> 形式で。</p>
+<p>ξ 行列の活用案: 局所診断 (DAG で繋がっていないペアの ξ_residual が大きければ修正指数相当) として使う。</p>
+</div>
+<div class="section level3">
+<h3 id="g-readmemd-pkgdown-描画修正-cc54ab3">G. README.md pkgdown 描画修正 (cc54ab3)<a class="anchor" aria-label="anchor" href="#g-readmemd-pkgdown-%E6%8F%8F%E7%94%BB%E4%BF%AE%E6%AD%A3-cc54ab3"></a></h3>
+<p>セッション中に先生が pkgdown サイトの LDB セクションが崩れている ことに気付く。原因: 4 か所で prose 直後に <code>```{r ...}</code> が来て おり, パーサが状態を間違えていた。空行を入れて修正・push。 (その後 9787904 で README.Rmd → README.md ビルドフローに転換)</p>
+</div>
+<div class="section level3">
+<h3 id="h-データ修復-お遍路さん-00_datahandlingr">H. データ修復: お遍路さん 00_dataHandling.R<a class="anchor" aria-label="anchor" href="#h-%E3%83%87%E3%83%BC%E3%82%BF%E4%BF%AE%E5%BE%A9-%E3%81%8A%E9%81%8D%E8%B7%AF%E3%81%95%E3%82%93-00_datahandlingr"></a></h3>
+<p><code>item_definitions.rds</code> に M11-M17 (宗教性 7 項目) のラベルが欠落 していたのを発見。<code>00_dataHandling.R</code> の <code>meaning_labels</code> 定義で M10 の次が M18 になっていた。アンケート PDF と照合して 7 項目を 挿入, rds 再生成 (60 → 67 ラベル)。</p>
+</div>
+<div class="section level3">
+<h3 id="i-brms-出力の解説-e01--moe05-m24--moe01moe05">I. brms 出力の解説 (E01 ~ mo(E05), M24 ~ mo(E01)*mo(E05))<a class="anchor" aria-label="anchor" href="#i-brms-%E5%87%BA%E5%8A%9B%E3%81%AE%E8%A7%A3%E8%AA%AC-e01--moe05-m24--moe01moe05"></a></h3>
+<p>セッション末に先生が自分で brms を回し, 出力の各行の意味を確認:</p>
+<ul><li>
+<code>Intercept[q]</code> = τ_q</li>
+<li>
+<code>bsp_moX</code> = per-step slope, <strong>× D で β_caseC</strong>
+</li>
+<li>
+<code>simo_moX1[j]</code> = ζ シンプレックス</li>
+<li>
+<code>disc = 1.00</code> = 識別性のために固定</li>
+<li>
+<code>mo(X1):mo(X2)</code> = 2 つのシンプレックスを持つ交互作用項 (1 b + 3 + 3 = 7 パラメータ追加)</li>
+<li>加法 vs 交互作用は LOO 比較で判定。先生例 (M24 ~ E01*E05) は 交互作用 NULL (CI 跨ぎ) で加法で十分</li>
+</ul></div>
+<div class="section level3">
+<h3 id="次へ">次へ<a class="anchor" aria-label="anchor" href="#%E6%AC%A1%E3%81%B8"></a></h3>
+<ul><li>
+<strong>バイクラスタリング融合 (タスク 2)</strong>: フィールド代表値スコアを 作って案 C BNM の上位構造として乗せる。研究的本丸</li>
+<li>
+<strong>MLE 実装</strong>: brms は遅すぎ (1 fit 30s〜2m)。<code>optim</code> + 単調 / 順序 reparametrize で最尤推定 (推定 100 倍速)。先生が brms 体験中なので 急がない</li>
+<li>
+<strong>19 辺 DAG full fit</strong>: 先生の理論的提案 DAG を案 C で全 fit + β
+<ul><li>全体適合度</li>
+</ul></li>
+<li>
+<strong>荘島先生メール</strong>: 今日の整理を要約して送付の予定 (先生作業)</li>
+<li>
+<strong>A3 polytomous_biclustering 論文</strong>: Phase3 完走済 (5/3) なので v1.13.0 CRAN 提出 (5/15) と並行で論文 4 節の結果反映へ</li>
+</ul><hr></div>
+</div>
+<div class="section level2">
 <h2 id="id_2026-05-01--v1130-cran-check-通過対応--多値-bnm-構造学習の本格議論">2026-05-01 — v1.13.0 CRAN check 通過対応 + 多値 BNM 構造学習の本格議論<a class="anchor" aria-label="anchor" href="#id_2026-05-01--v1130-cran-check-%E9%80%9A%E9%81%8E%E5%AF%BE%E5%BF%9C--%E5%A4%9A%E5%80%A4-bnm-%E6%A7%8B%E9%80%A0%E5%AD%A6%E7%BF%92%E3%81%AE%E6%9C%AC%E6%A0%BC%E8%AD%B0%E8%AB%96"></a></h2>
 <p>このセッションは2部構成。前半は v1.12.1 → v1.13.0 のバージョン上げと GitHub Actions R-CMD-check 失敗の修正。後半は多値 BNM 構造学習の 方針確定に向けた長い議論で，案を複数比較しながら最終的に「3 段構え」 (Glasso スケルトン → Chatterjee ξ で方向 → 単調制約累積リンクで条件付き 分布) を採用する見通しを立てた。本ログは後半の議論を丁寧に残す。</p>
 <div class="section level3">
@@ -468,10 +563,10 @@
 <li>After H1+H2+H3+H4: 0.91x to 1.28x</li>
 <li>After all 5: 1.04x (N1) to 1.33x (O6)</li>
 </ul><p>Larger single-cell benchmark on J35S500 with variable grid cells, against baseline bbafdbe:</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a>ncls<span class="ot">=</span><span class="dv">5</span>  nfld<span class="ot">=</span><span class="dv">5</span>   <span class="sc">:</span> <span class="fl">0.073</span>s <span class="ot">-&gt;</span> <span class="fl">0.059</span><span class="fu">s</span>  (<span class="fl">1.24</span>x)</span>
-<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a>ncls<span class="ot">=</span><span class="dv">10</span> nfld<span class="ot">=</span><span class="dv">10</span>  <span class="sc">:</span> <span class="fl">0.161</span>s <span class="ot">-&gt;</span> <span class="fl">0.127</span><span class="fu">s</span>  (<span class="fl">1.27</span>x)</span>
-<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a>ncls<span class="ot">=</span><span class="dv">15</span> nfld<span class="ot">=</span><span class="dv">10</span>  <span class="sc">:</span> <span class="fl">0.065</span>s <span class="ot">-&gt;</span> <span class="fl">0.051</span><span class="fu">s</span>  (<span class="fl">1.27</span>x)</span>
-<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a>ncls<span class="ot">=</span><span class="dv">20</span> nfld<span class="ot">=</span><span class="dv">15</span>  <span class="sc">:</span> <span class="fl">0.071</span>s <span class="ot">-&gt;</span> <span class="fl">0.061</span><span class="fu">s</span>  (<span class="fl">1.16</span>x)</span></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a>ncls<span class="ot">=</span><span class="dv">5</span>  nfld<span class="ot">=</span><span class="dv">5</span>   <span class="sc">:</span> <span class="fl">0.073</span>s <span class="ot">-&gt;</span> <span class="fl">0.059</span><span class="fu">s</span>  (<span class="fl">1.24</span>x)</span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a>ncls<span class="ot">=</span><span class="dv">10</span> nfld<span class="ot">=</span><span class="dv">10</span>  <span class="sc">:</span> <span class="fl">0.161</span>s <span class="ot">-&gt;</span> <span class="fl">0.127</span><span class="fu">s</span>  (<span class="fl">1.27</span>x)</span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a>ncls<span class="ot">=</span><span class="dv">15</span> nfld<span class="ot">=</span><span class="dv">10</span>  <span class="sc">:</span> <span class="fl">0.065</span>s <span class="ot">-&gt;</span> <span class="fl">0.051</span><span class="fu">s</span>  (<span class="fl">1.27</span>x)</span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a>ncls<span class="ot">=</span><span class="dv">20</span> nfld<span class="ot">=</span><span class="dv">15</span>  <span class="sc">:</span> <span class="fl">0.071</span>s <span class="ot">-&gt;</span> <span class="fl">0.061</span><span class="fu">s</span>  (<span class="fl">1.16</span>x)</span></code></pre></div>
 <p>log_lik identical to every digit in all four cases.</p>
 <p>testthat: FAIL 0, WARN 0, SKIP 0, PASS 4750 (test count higher than the 3,532 figure in the outdated CLAUDE.md because of rated Biclustering and DistractorAnalysis additions in 1.11.0; all pass).</p>
 </div>
@@ -483,20 +578,20 @@
 <div class="section level3">
 <h3 id="uq-one-hot-vectorization--maxiter-bug-fix-same-day">Uq one-hot vectorization + maxiter bug fix (same day)<a class="anchor" aria-label="anchor" href="#uq-one-hot-vectorization--maxiter-bug-fix-same-day"></a></h3>
 <p>Discovered while preparing simulation deployment that the <code>Uq</code> one-hot encoding in both <code><a href="reference/Biclustering.html">Biclustering.ordinal()</a></code> and <code><a href="reference/Biclustering.html">Biclustering.nominal()</a></code> is still a nobs*nitems nested R loop:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>nobs) <span class="cf">for</span> (j <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>nitems)</span>
-<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a>  Uq[i, j, tmp<span class="sc">$</span>Q[i, j]] <span class="ot">&lt;-</span> <span class="dv">1</span></span></code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>nobs) <span class="cf">for</span> (j <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>nitems)</span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a>  Uq[i, j, tmp<span class="sc">$</span>Q[i, j]] <span class="ot">&lt;-</span> <span class="dv">1</span></span></code></pre></div>
 <p>Replaced with a single matrix-index assignment using masked <code>cbind(i_idx, j_idx, q_idx)</code> restricted to <code>tmp$Z == 1</code>. The old loop also had a silent bug: for missing entries (<code>tmp$Q[i,j] == -1</code> set by <code><a href="reference/dataFormat.html">dataFormat()</a></code>), <code>Uq[i, j, -1] &lt;- 1</code> sets every Uq[i, j, k] for k in 2..maxQ to 1 due to R’s negative-subscript semantics. The values were never read (every consumer applies the <code>tmp$Z</code> mask), but the vectorized version correctly leaves those positions at zero. Downstream outputs (BCRM, ClassMembership, TestFitIndices, log-lik) remain bit-identical to the pre-refactor baseline.</p>
 <p>Wall-clock impact on the 8-configuration validation matrix:</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="fu">O1</span> (J35S500,  B, <span class="dv">5</span>,<span class="dv">5</span>)   <span class="fl">0.068</span>s <span class="ot">-&gt;</span> <span class="fl">0.033</span><span class="fu">s</span>  (<span class="fl">2.06</span>x)</span>
-<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a><span class="fu">O2</span> (J35S500,  B, <span class="dv">10</span>,<span class="dv">5</span>)  <span class="fl">0.178</span>s <span class="ot">-&gt;</span> <span class="fl">0.147</span><span class="fu">s</span>  (<span class="fl">1.21</span>x)</span>
-<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a><span class="fu">O3</span> (J35S500,  R, <span class="dv">5</span>,<span class="dv">5</span>)   <span class="fl">0.060</span>s <span class="ot">-&gt;</span> <span class="fl">0.038</span><span class="fu">s</span>  (<span class="fl">1.58</span>x)</span>
-<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a><span class="fu">O4</span> (J35S500,  B, <span class="dv">5</span>,<span class="dv">5</span>, <span class="at">mic=</span><span class="cn">TRUE</span>)</span>
-<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a>                        <span class="fl">0.049</span>s <span class="ot">-&gt;</span> <span class="fl">0.024</span><span class="fu">s</span>  (<span class="fl">2.04</span>x)</span>
-<span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a><span class="fu">O5</span> (J15S3810, B, <span class="dv">5</span>,<span class="dv">5</span>)   <span class="fl">0.364</span>s <span class="ot">-&gt;</span> <span class="fl">0.241</span><span class="fu">s</span>  (<span class="fl">1.51</span>x)</span>
-<span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a><span class="fu">O6</span> (J15S3810, R, <span class="dv">8</span>,<span class="dv">4</span>, non<span class="sc">-</span>converge)</span>
-<span id="cb4-8"><a href="#cb4-8" tabindex="-1"></a>                        <span class="fl">0.802</span>s <span class="ot">-&gt;</span> <span class="fl">0.552</span><span class="fu">s</span>  (<span class="fl">1.45</span>x)</span>
-<span id="cb4-9"><a href="#cb4-9" tabindex="-1"></a><span class="fu">N1</span> (J20S600,  <span class="sc">-</span>, <span class="dv">4</span>,<span class="dv">3</span>)   <span class="fl">0.021</span>s <span class="ot">-&gt;</span> <span class="fl">0.004</span><span class="fu">s</span>  (<span class="fl">5.25</span>x)</span>
-<span id="cb4-10"><a href="#cb4-10" tabindex="-1"></a><span class="fu">N2</span> (J20S600,  <span class="sc">-</span>, <span class="dv">6</span>,<span class="dv">4</span>)   <span class="fl">0.058</span>s <span class="ot">-&gt;</span> <span class="fl">0.049</span><span class="fu">s</span>  (<span class="fl">1.18</span>x)</span></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="fu">O1</span> (J35S500,  B, <span class="dv">5</span>,<span class="dv">5</span>)   <span class="fl">0.068</span>s <span class="ot">-&gt;</span> <span class="fl">0.033</span><span class="fu">s</span>  (<span class="fl">2.06</span>x)</span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a><span class="fu">O2</span> (J35S500,  B, <span class="dv">10</span>,<span class="dv">5</span>)  <span class="fl">0.178</span>s <span class="ot">-&gt;</span> <span class="fl">0.147</span><span class="fu">s</span>  (<span class="fl">1.21</span>x)</span>
+<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a><span class="fu">O3</span> (J35S500,  R, <span class="dv">5</span>,<span class="dv">5</span>)   <span class="fl">0.060</span>s <span class="ot">-&gt;</span> <span class="fl">0.038</span><span class="fu">s</span>  (<span class="fl">1.58</span>x)</span>
+<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a><span class="fu">O4</span> (J35S500,  B, <span class="dv">5</span>,<span class="dv">5</span>, <span class="at">mic=</span><span class="cn">TRUE</span>)</span>
+<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a>                        <span class="fl">0.049</span>s <span class="ot">-&gt;</span> <span class="fl">0.024</span><span class="fu">s</span>  (<span class="fl">2.04</span>x)</span>
+<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a><span class="fu">O5</span> (J15S3810, B, <span class="dv">5</span>,<span class="dv">5</span>)   <span class="fl">0.364</span>s <span class="ot">-&gt;</span> <span class="fl">0.241</span><span class="fu">s</span>  (<span class="fl">1.51</span>x)</span>
+<span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a><span class="fu">O6</span> (J15S3810, R, <span class="dv">8</span>,<span class="dv">4</span>, non<span class="sc">-</span>converge)</span>
+<span id="cb5-8"><a href="#cb5-8" tabindex="-1"></a>                        <span class="fl">0.802</span>s <span class="ot">-&gt;</span> <span class="fl">0.552</span><span class="fu">s</span>  (<span class="fl">1.45</span>x)</span>
+<span id="cb5-9"><a href="#cb5-9" tabindex="-1"></a><span class="fu">N1</span> (J20S600,  <span class="sc">-</span>, <span class="dv">4</span>,<span class="dv">3</span>)   <span class="fl">0.021</span>s <span class="ot">-&gt;</span> <span class="fl">0.004</span><span class="fu">s</span>  (<span class="fl">5.25</span>x)</span>
+<span id="cb5-10"><a href="#cb5-10" tabindex="-1"></a><span class="fu">N2</span> (J20S600,  <span class="sc">-</span>, <span class="dv">6</span>,<span class="dv">4</span>)   <span class="fl">0.058</span>s <span class="ot">-&gt;</span> <span class="fl">0.049</span><span class="fu">s</span>  (<span class="fl">1.18</span>x)</span></code></pre></div>
 <p>Independent maxiter bug: ordinal also had <code>maxemt &lt;- 100</code> hardcoded at line 39, identical in spirit to the nominal bug fixed in 1.11.0. The user-supplied <code>maxiter</code> argument was being ignored. Fixed in the same commit. testthat passes (4750, FAIL 0).</p>
 </div>
 <div class="section level3">

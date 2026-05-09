@@ -4,6 +4,153 @@ Detailed development log. User-facing changes go in `NEWS.md`; this file
 captures the per-session internal narrative (why a change was made, what
 was investigated, what was ruled out). Entries are newest-first.
 
+## 2026-05-08〜09 — 案 C BNM プロトタイプ動作確認 + v2.0.0 設計スコープ確定
+
+5/1 で 3 段構え (Glasso → ξ → 案 C) の方針を固めた後,「案 C が実用に
+耐えるか」をデータで確認するセッション。プロトは exametrika
+リポジトリ内の `develop/` (gitignored) と `02_研究/お遍路さん/` の
+両方で並行進行。
+
+### A. 案 C は brms `mo()` で 1 行で書ける既存技術と判明
+
+Bürkner & Charpentier (2020, BJMSP 73(3) 420-451) の monotonic effects
+がそのまま案 C のパラメータ化と一致することを実験で確認。
+`brm(Y ~ mo(X), family = cumulative("probit"))` で済む。
+
+決定的な実証: `develop/20260508_caseC_diagnose.R` で brms 内部の
+パラメータ化を逆算し, 案 C の μ_x と brms の `bsp_moX` の関係が **μ_x =
+bsp_moX × D × cumsum(c(0, ζ))** であることを数値検証。 RMSE 0.085 (D
+倍を含む) vs 0.785 (D 倍なし) で確定。
+
+→ 翻訳ルール: **案 C のパス係数 β = bsp_moX × D**。SEM 流の path diagram
+表記が直接できる。
+
+### B. Phase A/B シミュレーション (J15S3810 ベース)
+
+`develop/20260508_caseC_proto.R`, `phaseA2.R`, `phaseB.R`:
+
+- **Phase A1**: 単親リカバリ (μ=(0,0.3,0.7,1.2,1.8) 真値) → 全パラメータ
+  CrI 内, β = 1.67 \[1.45, 1.90\] vs 真値 1.80
+- **Phase A2**: 4 形状 (linear/convex/concave/step) で安定リカバリ (RMSE
+  0.05〜0.09)。step は Dirichlet(1,…) 事前で境界を僅かに膨らます (5/5 中
+  4/5 カバレッジ)
+- **Phase B**: 多親加法 vs 相互作用シナリオで LOO が正しく判別 (additive
+  truth: m_add 勝, ΔLOO=−1.5; interaction truth: m_int 勝, ΔLOO=−62.8)
+
+### C. Phase C (J15S3810 で全パイプライン)
+
+- C-1: Glasso → 98 辺スケルトン
+- C-2:
+  [`xi_stable()`](https://kosugitti.github.io/exametrika/reference/xi_stable.md)
+  で方向判定 → 78 辺の DAG. ただし **xi_stable の SE
+  はタイブレーキング由来 (B 反復で √B → 0)** なので z
+  検定は無意味。CLAUDE.md の 5/1 の警告と整合
+- C-4: paired data bootstrap (B=500, idx 共有で xi_jk と xi_kj を
+  同一リサンプル内で計算) → **本物の有意辺は 11**。残り 67 辺は
+  「タイブレーキングに対して安定」というだけだった
+- C-5: 11 辺の DAG 可視化 (Item13 がソース, Item14→Item11←Item15
+  v-structure)
+- C-6: 11 辺それぞれ案 C で β fit。Item5→Item12 だけ β CI が 0 跨ぎ
+  (10/11 が triple-filter 通過)
+
+### D. お遍路さんデータ N=143 で 6 ノード DAG fit
+
+`02_研究/お遍路さん/2025本調査データ/20260509.R`:
+
+DAG: E05 → {E07, M60}, E07 → M50, M60 → M50, M50 → M03, M03 → M14
+
+主結果 (タスク 1〜4): - E07 → M50 が NULL (β = −0.36 \[−2.09, 0.52\]) →
+削除で AIC/BIC 改善 - DAG 全反転で ΔAIC = +17 (forward 勝ち,
+**方向情報が立っている**) J15S3810 は同質尺度で Δ=±5 だったが,
+お遍路さんは多次元尺度で明確 - M50 の親候補比較で E05 を新規支持 (β =
+1.16 \[0.40, 2.02\]) - 最終 6 辺 DAG: E05 が 3 子のハブ (E07, M60, M50)
+
+理論的補強: BNM 全体尤度 (飽和周辺込み) では H(X) と H(Y) の
+エントロピー項がキャンセルし, **方向差は KL(P̂(Y\|X) \|\| P_caseC(Y\|X))
+の差**として残る (5/1 棄却された “ll 差はエントロピー差に支配” は
+条件付き尤度単独比較の話。BNM 文脈では別)。
+
+### E. GGM (お遍路さん 全 98 項目)
+
+`02_研究/お遍路さん/2025本調査データ/20260509_t5_GGM.R`:
+
+p=98 一括 Glasso は BCD 内で破綻 (`if (diff < eps)` で NaN) → 3
+段階に分割:
+
+- E 内 (32) Glasso: 219 辺 (密度 44%)
+- M 内 (66) Glasso: 584 辺 (密度 27%, near-synonym ペア多数, M07-M08
+  \|θ\| = 0.985)
+- E-M クロス (32×66) は polychoric 相関の上位採用 (\|ρ\|\>0.4 で 245 辺)
+
+発見: - **E01 (地元の人と挨拶) が E-M クロスの真のハブ** (5/9 朝の DAG
+で E05 を選んだのは恣意的。E01 中心の方が情報量が大きい) - **M-M の
+near-synonym ペアは Glasso でも残る** → field 化が必須
+
+### F. v2.0.0 設計スコープを「DAG 所与」に絞り込み
+
+「DAG 探索的推定は後回し, 荘島モデルも DAG ありき」と先生判断。 v2.0.0
+BNM API は:
+
+``` r
+
+BNM_polytomous(data, adj_matrix,
+               model = "caseC",       # 加法 + 単調制約
+               ...)
+# 出力: τ, μ プロファイル, β, log_lik, fit_indices
+```
+
+3 モデル比較: - M_0: 全独立 (β=0 / 周辺確率) - M_t: 案 C 加法 - M_s: DAG
+内飽和 (各 child で free CPT)
+
+NFI / CFI / RMSEA / AIC / BIC / CAIC を
+[`calcFitIndices()`](https://kosugitti.github.io/exametrika/reference/calcFitIndices.md)
+形式で。
+
+ξ 行列の活用案: 局所診断 (DAG で繋がっていないペアの ξ_residual
+が大きければ修正指数相当) として使う。
+
+### G. README.md pkgdown 描画修正 (cc54ab3)
+
+セッション中に先生が pkgdown サイトの LDB セクションが崩れている
+ことに気付く。原因: 4 か所で prose 直後に ```` ```{r ...} ```` が来て
+おり, パーサが状態を間違えていた。空行を入れて修正・push。 (その後
+9787904 で README.Rmd → README.md ビルドフローに転換)
+
+### H. データ修復: お遍路さん 00_dataHandling.R
+
+`item_definitions.rds` に M11-M17 (宗教性 7 項目) のラベルが欠落
+していたのを発見。`00_dataHandling.R` の `meaning_labels` 定義で M10
+の次が M18 になっていた。アンケート PDF と照合して 7 項目を 挿入, rds
+再生成 (60 → 67 ラベル)。
+
+### I. brms 出力の解説 (E01 ~ mo(E05), M24 ~ mo(E01)\*mo(E05))
+
+セッション末に先生が自分で brms を回し, 出力の各行の意味を確認:
+
+- `Intercept[q]` = τ_q
+- `bsp_moX` = per-step slope, **× D で β_caseC**
+- `simo_moX1[j]` = ζ シンプレックス
+- `disc = 1.00` = 識別性のために固定
+- `mo(X1):mo(X2)` = 2 つのシンプレックスを持つ交互作用項 (1 b + 3 + 3 =
+  7 パラメータ追加)
+- 加法 vs 交互作用は LOO 比較で判定。先生例 (M24 ~ E01\*E05) は 交互作用
+  NULL (CI 跨ぎ) で加法で十分
+
+### 次へ
+
+- **バイクラスタリング融合 (タスク 2)**: フィールド代表値スコアを
+  作って案 C BNM の上位構造として乗せる。研究的本丸
+- **MLE 実装**: brms は遅すぎ (1 fit 30s〜2m)。`optim` + 単調 / 順序
+  reparametrize で最尤推定 (推定 100 倍速)。先生が brms 体験中なので
+  急がない
+- **19 辺 DAG full fit**: 先生の理論的提案 DAG を案 C で全 fit + β
+  - 全体適合度
+- **荘島先生メール**: 今日の整理を要約して送付の予定 (先生作業)
+- **A3 polytomous_biclustering 論文**: Phase3 完走済 (5/3) なので
+  v1.13.0 CRAN 提出 (5/15) と並行で論文 4 節の結果反映へ
+
+------------------------------------------------------------------------
+
 ## 2026-05-01 — v1.13.0 CRAN check 通過対応 + 多値 BNM 構造学習の本格議論
 
 このセッションは2部構成。前半は v1.12.1 → v1.13.0 のバージョン上げと

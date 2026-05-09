@@ -67,6 +67,16 @@
 <span id="cb1-11"><a href="#cb1-11" tabindex="-1"></a><span class="ex">Rscript</span> <span class="at">-e</span> <span class="st">'roxygen2::roxygenise()'</span></span></code></pre></div>
 </div>
 <div class="section level2">
+<h2 id="readme-workflow">README workflow<a class="anchor" aria-label="anchor" href="#readme-workflow"></a></h2>
+<ul><li>
+<strong>README.md is a generated artifact</strong> — do NOT edit it directly. It gets overwritten on the next build.</li>
+<li>Edit <code>README.Rmd</code>, then run <code>Rscript -e 'devtools::build_readme()'</code>, then commit BOTH <code>README.Rmd</code> and <code>README.md</code> together. pkgdown reads <code>README.md</code> as input, so it must be in sync with <code>README.Rmd</code> in every commit.</li>
+<li>Default chunk option is <code>eval = FALSE</code> (set in the <code>setup-readme</code> chunk). README is a static showcase; no evaluated output is embedded. If a future chunk needs to actually run, override per-chunk with <code>eval = TRUE</code> and make sure preceding setup chunks (e.g. <code><a href="https://kosugitti.github.io/exametrika/">library(exametrika)</a></code>) also run.</li>
+<li>
+<code>README.Rmd</code> is listed in <code>.Rbuildignore</code>, so it is excluded from the CRAN tarball.</li>
+<li>Background (2026-05-09, commit 9787904): the old <code>README.md</code> hand-wrote <code>```{r label, ...}</code> chunk headers verbatim. pkgdown’s CommonMark renderer did not recognize <code>{r ...}</code> as a fence info string, so chunks collapsed into inline <code>&lt;code&gt;</code> and the install chunk’s leading <code>#</code> promoted to an <code>&lt;h1&gt;</code> “Install Exametrika”. The cc54ab3 blank-line fix was insufficient; converting to a real Rmd source resolved it.</li>
+</ul></div>
+<div class="section level2">
 <h2 id="repository-structure">Repository Structure<a class="anchor" aria-label="anchor" href="#repository-structure"></a></h2>
 <pre><code>R/                   # R source files (46 files)
   00_*.R             # Utilities: plot, print, model fit, grid search, helpers

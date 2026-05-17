@@ -4,6 +4,117 @@ Detailed development log. User-facing changes go in `NEWS.md`; this file
 captures the per-session internal narrative (why a change was made, what
 was investigated, what was ruled out). Entries are newest-first.
 
+## 2026-05-12〜13 — ξ map 法の確立 + 「ステップ回帰/ステップネット」命名
+
+5/8-9 で案 C BNM プロトタイプの動作確認まで進んだ後, 「変数選択を恣意性
+から救う」目的でデータ駆動 DAG 抽出パイプラインを構築。発展的に
+ステップ回帰の概念整理と命名確定まで。
+
+### A. Chatterjee Map (ξ map) プロトタイプ
+
+`02_研究/お遍路さん/2025本調査データ/20260513_chatterjee_map.R`:
+
+着想: ξ 行列 (Chatterjee の非対称相関) から (1) 距離成分 → MDS で 2D
+埋め込み, (2) 非対称成分 → 各項目の方向ベクトル場, を分解。これに
+よって「項目地図 + 方向場」として可視化し, DAG 候補を地理的に
+読み取る方法。
+
+お遍路さん N=143, 98 項目 (E=32, M=66) で実行:
+
+- 距離 d_jk = 1 − max(ξ_jk, ξ_kj) で MDS → 2D
+- 方向 v_j = Σ_k (ξ_jk − ξ_kj) · (pos_k − pos_j) / ||·||
+- 結果: **E 群 (体験) と M 群 (意味づけ) が地図上できれいに分離**
+  (xi within-group >> xi between-group のため)。E と M の独立性
+  (A5 論文の柱 1) を視覚的に補強。
+
+先生提案 19 辺 DAG との重ね合わせ: cos alignment 整合性チェックで
+**58% (11/19) が方向場と一致**, 残り 8/19 は逆向き。「データ駆動 ξ
+方向 ≠ 因果的時間 ordering」の差を定量化。例: E19→M07 (衣装→達成感)
+は理論的に妥当だが ξ では逆向きに出る (M07 が衣装着用を予測する側で
+ξ 大)。
+
+### B. ξ map からの DAG 自動抽出
+
+`20260513_extract_edges.R` (v1, 失敗) → `20260513_extract_edges_v2.R`
+(成功):
+
+- v1: 全ペアで上位 5% フィルタ + 相対非対称度 > 5% → 73 辺だが
+  **E-M クロスが 0 辺** (E-M の絶対値が M-M に勝てない)
+- v2: **edge type 別 quota** (E-E:10, M-M:15, E-M:30) で 54 辺
+  (うち E-M:29) を救う。サイクル除去後 DAG 化
+
+E-M 分布の比較で問題が判明:
+```
+              q50    q90    q95    q99
+E-E (496)    0.133  0.250  0.282  0.398
+E-M (2112)   0.024  0.088  0.107  0.137   ← M-M の 1/8
+M-M (2145)   0.202  0.318  0.356  0.421
+```
+
+E-M クロスは絶対値で 1 桁弱い。「弱くても E-M なら重要」(先生の研究
+仮説) を実現するには **type 別フィルタが必須**。
+
+### C. 抽出 DAG の StepBNM fit
+
+`20260513_caseC_fit_extracted.R`:
+
+E-M 29 辺を子ノードでグループ化 (22 child) し, brms `mo()` + cumulative
+probit で fit。結果:
+
+- **26 / 29 (90%) が CI で 0 を跨がず有意**
+- 上位辺: E01 → M23 (β=2.84), E01 → M37 (β=2.74), E05 → M29 (β=2.43)
+- 負の β: **M19 → E27 (β=−2.38)** "リフレッシュ → トラブル少ない"
+  という非自明な発見。M19 を見ればトラブル経験者でないことが予測される
+- 非有意 3 辺: E05→M28, M35→E02, M42→E02 → triple filter
+  (GGM + ξ + StepBNM) で更に絞り込みが効く
+
+子ノード別 log_lik 改善 (vs null):
+```
+M28 (3 親): +28.4    最も改善
+M23 (E01 単親): +25.7
+E02 (M10+M48+M35+M42 4 親): +22.7
+M10 (E01+E05): +19.8
+```
+
+E01 が圧倒的ハブ性を再確認 (GGM, ξ map, StepBNM 全て一致)。
+
+### D. 命名確定: ステップ回帰 / ステップネット
+
+「案 C」が呼びにくいため命名議論。先生から「**案 C は network model
+じゃなくて regression model だろ. 多項条件付き確率の関数形だ**」と
+本質的指摘 → 二層化命名:
+
+```
+ステップ回帰 (StepReg) : P(Y | X_1,...,X_k) の関数形
+                         monotonic step (mo() in brms) + cumulative probit + 加法
+                         Bürkner-Charpentier 2020 そのもの, 独立した
+                         回帰モデルとして使える
+                         ↓
+ステップネット (StepBNM) : StepReg を各 child ノードに置いた DAG
+                          ベース BNM。荘島 binary BNM の多値拡張
+```
+
+カタカナでも英略でも通用するのが採用理由。荘島先生面会用の
+プレゼンでもこの 2 階層で説明する筋。
+
+### E. 5/29 荘島先生面会用の整理
+
+メモリ `shojima_meeting_5_29.md` 更新済。発表ストーリー候補:
+
+1. ステップ回帰 (StepReg) と SEM 流 β の対応 (β = bsp_moX × D)
+2. ステップネット (StepBNM) の動作確認 (お遍路さん 6 ノード)
+3. ξ map 法 (本セッションの新ネタ) → AMISESCAL との接続可能性
+4. データ駆動 DAG 抽出 → StepBNM 検証 (triple filter pipeline)
+
+### 次へ
+
+- **5/20 締切の社会心理学会原稿**へ復帰 (Fig 1 パス図, Fig 2 E×M heatmap,
+  Fig 3 forest plot)
+- **5/29 面会用プレゼン資料**の下書き
+- **v1.13.0 CRAN 提出 (今日, 5/15)**: 別途実施
+
+---
+
 ## 2026-05-08〜09 — 案 C BNM プロトタイプ動作確認 + v2.0.0 設計スコープ確定
 
 5/1 で 3 段構え (Glasso → ξ → 案 C) の方針を固めた後,「案 C が実用に

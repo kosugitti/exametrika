@@ -37,6 +37,63 @@
 
 <p>Detailed development log. User-facing changes go in <code>NEWS.md</code>; this file captures the per-session internal narrative (why a change was made, what was investigated, what was ruled out). Entries are newest-first.</p>
 <div class="section level2">
+<h2 id="id_2026-05-17--v1130-cran-提出515-予定から-2-日遅れ">2026-05-17 — v1.13.0 CRAN 提出（5/15 予定から 2 日遅れ）<a class="anchor" aria-label="anchor" href="#id_2026-05-17--v1130-cran-%E6%8F%90%E5%87%BA515-%E4%BA%88%E5%AE%9A%E3%81%8B%E3%82%89-2-%E6%97%A5%E9%81%85%E3%82%8C"></a></h2>
+<p>5/8-9 の案 C BNM プロト確認以降 A5 お遍路さん側に注力していたため 予定日 (5/15) を 2 日過ぎての提出。残作業は (1) 提出前チェック群, (2) tag, (3) GitHub Release / Discussions, (4) <code>devtools::release()</code>, (5) confirmation。全部消化。</p>
+<div class="section level3">
+<h3 id="a-提出前チェック">A. 提出前チェック<a class="anchor" aria-label="anchor" href="#a-%E6%8F%90%E5%87%BA%E5%89%8D%E3%83%81%E3%82%A7%E3%83%83%E3%82%AF"></a></h3>
+<p><code>tools/build_pkg.R</code> を一気通貫で実行 (styler → document → spell_check → check(cran=TRUE) → rhub → check_win_devel → release):</p>
+<ul><li>
+<strong>ローカル <code>R CMD check --as-cran</code></strong>: 0 errors / 0 warnings / 0 notes (6m 20s, macOS arm64, R 4.6.0)</li>
+<li>
+<strong>win-devel</strong> (R-devel 2026-05-15 r90061 ucrt): Status OK (build 34s, check 640s, log <a href="https://win-builder.r-project.org/DA3rl6RAg6Bn" class="external-link uri">https://win-builder.r-project.org/DA3rl6RAg6Bn</a>)</li>
+<li>
+<strong>R-hub v2</strong> (workflow_dispatch ラン <code>velveteen-asiaticlesserfreshwaterclam</code>, run id 25984718083):
+<ul><li>linux (R-devel): 14m26s success</li>
+<li>macos-arm64 (R-devel): 15m11s success</li>
+<li>windows (R-devel): 19m52s success</li>
+</ul></li>
+</ul><p>R-hub の Annotations は全部 J<em>-S</em> フィクスチャ向けの想定済み <code><a href="https://rdrr.io/r/base/message.html" class="external-link">message()</a></code> (zero variance / missing responses など) で check failure ではない。</p>
+</div>
+<div class="section level3">
+<h3 id="b-未コミット作業ログを掃除">B. 未コミット作業ログを掃除<a class="anchor" aria-label="anchor" href="#b-%E6%9C%AA%E3%82%B3%E3%83%9F%E3%83%83%E3%83%88%E4%BD%9C%E6%A5%AD%E3%83%AD%E3%82%B0%E3%82%92%E6%8E%83%E9%99%A4"></a></h3>
+<p><code>WORKLOG.md</code> に 5/12-13 セッション (ξ map + StepReg/StepNet 命名) の 追記が staged 前段で置いたままだったので <code>5fa6142</code> で先にコミット。 v1.13.0 のリリース内容自体には影響しないが台帳としては落としておく。</p>
+</div>
+<div class="section level3">
+<h3 id="c-タグ運用">C. タグ運用<a class="anchor" aria-label="anchor" href="#c-%E3%82%BF%E3%82%B0%E9%81%8B%E7%94%A8"></a></h3>
+<ul><li>
+<strong>v1.12.2</strong> (<code>26855f1</code>, “chore: re-version 1.13.1 → 1.12.2”): 既に 打ってあった。A3 polytomous_biclustering 論文のベースライン用に CRAN 未公開のまま git tag だけ残しておく方針 (NEWS は 1.13.0 が ロールアップ)</li>
+<li>
+<strong>v1.13.0</strong> (<code>5fa6142</code> = WORKLOG 追記後の main HEAD): 今日打った。 WORKLOG は <code>.Rbuildignore</code> で除外されるので tar.gz には含まれない</li>
+</ul><p>両方を <code>origin</code> に push (main も同時)。</p>
+</div>
+<div class="section level3">
+<h3 id="d-github-release--discussions-投稿">D. GitHub Release + Discussions 投稿<a class="anchor" aria-label="anchor" href="#d-github-release--discussions-%E6%8A%95%E7%A8%BF"></a></h3>
+<p>ハイライト本文を作成し:</p>
+<ul><li>
+<strong>GitHub Release</strong> v1.13.0: <code>gh release create --latest</code>, <a href="https://github.com/kosugitti/exametrika/releases/tag/v1.13.0" class="external-link uri">https://github.com/kosugitti/exametrika/releases/tag/v1.13.0</a>
+</li>
+<li>
+<strong>Discussions (日本語)</strong> #26 (Announcements): <a href="https://github.com/kosugitti/exametrika/discussions/26" class="external-link uri">https://github.com/kosugitti/exametrika/discussions/26</a>
+</li>
+<li>
+<strong>Discussions (英語)</strong> #27 (Announcements): <a href="https://github.com/kosugitti/exametrika/discussions/27" class="external-link uri">https://github.com/kosugitti/exametrika/discussions/27</a>
+</li>
+</ul><p>Discussions は <code>gh discussion create</code> が存在しないので GraphQL <code>createDiscussion</code> mutation 直接叩き。<code>repositoryId</code> は <code>gh api graphql -f query='query { repository(...) { id } }'</code> で, <code>categoryId</code> は <code>discussionCategories</code> クエリで取得 (Announcements = <code>DIC_kwDOJS6L084CZbQk</code>)。本文は <code>-F body=$(cat file.md)</code> で多バイト そのまま渡せる。</p>
+</div>
+<div class="section level3">
+<h3 id="e-cran-提出">E. CRAN 提出<a class="anchor" aria-label="anchor" href="#e-cran-%E6%8F%90%E5%87%BA"></a></h3>
+<p>RStudio から <code>devtools::release()</code> 実行 → CRAN にアップロード → confirmation メールのリンクをクリック済み。受理は incoming queue の 自動チェック後 (数日〜1週間)。</p>
+<p><code>release()</code> 副作用: - <code>CRAN-SUBMISSION</code> を 1.11.0 → 1.13.0 (SHA <code>5fa6142</code>) に書き換え - <code>tools/build_pkg.R</code> の最終行を <code>devtools::release()</code> → <code>usethis::use_release_issue()</code> に置換 (次回サイクル用の usethis 提案)</p>
+<p><code>9122685</code> でコミット &amp; push。</p>
+</div>
+<div class="section level3">
+<h3 id="次へ">次へ<a class="anchor" aria-label="anchor" href="#%E6%AC%A1%E3%81%B8"></a></h3>
+<ul><li>CRAN 受理メール待ち (来たら本ホーム CLAUDE.md A4+C1 ステータスを 「v1.13.0 CRAN 受理」に書き換え)</li>
+<li>v2.0.0 BNM (StepBNM = 案 C, DAG 所与スコープ) に着手可能</li>
+<li>A5 お遍路さん 5/20 締切の社会心理学会原稿に復帰</li>
+</ul><hr></div>
+</div>
+<div class="section level2">
 <h2 id="id_2026-05-1213--ξ-map-法の確立--ステップ回帰ステップネット命名">2026-05-12〜13 — ξ map 法の確立 + 「ステップ回帰/ステップネット」命名<a class="anchor" aria-label="anchor" href="#id_2026-05-1213--%CE%BE-map-%E6%B3%95%E3%81%AE%E7%A2%BA%E7%AB%8B--%E3%82%B9%E3%83%86%E3%83%83%E3%83%97%E5%9B%9E%E5%B8%B0%E3%82%B9%E3%83%86%E3%83%83%E3%83%97%E3%83%8D%E3%83%83%E3%83%88%E5%91%BD%E5%90%8D"></a></h2>
 <p>5/8-9 で案 C BNM プロトタイプの動作確認まで進んだ後, 「変数選択を恣意性 から救う」目的でデータ駆動 DAG 抽出パイプラインを構築。発展的に ステップ回帰の概念整理と命名確定まで。</p>
 <div class="section level3">
@@ -97,7 +154,7 @@ M10 (E01+E05): +19.8</code></pre>
 <li>データ駆動 DAG 抽出 → StepBNM 検証 (triple filter pipeline)</li>
 </ol></div>
 <div class="section level3">
-<h3 id="次へ">次へ<a class="anchor" aria-label="anchor" href="#%E6%AC%A1%E3%81%B8"></a></h3>
+<h3 id="次へ-1">次へ<a class="anchor" aria-label="anchor" href="#%E6%AC%A1%E3%81%B8-1"></a></h3>
 <ul><li>
 <strong>5/20 締切の社会心理学会原稿</strong>へ復帰 (Fig 1 パス図, Fig 2 E×M heatmap, Fig 3 forest plot)</li>
 <li>
@@ -186,7 +243,7 @@ M10 (E01+E05): +19.8</code></pre>
 <li>加法 vs 交互作用は LOO 比較で判定。先生例 (M24 ~ E01*E05) は 交互作用 NULL (CI 跨ぎ) で加法で十分</li>
 </ul></div>
 <div class="section level3">
-<h3 id="次へ-1">次へ<a class="anchor" aria-label="anchor" href="#%E6%AC%A1%E3%81%B8-1"></a></h3>
+<h3 id="次へ-2">次へ<a class="anchor" aria-label="anchor" href="#%E6%AC%A1%E3%81%B8-2"></a></h3>
 <ul><li>
 <strong>バイクラスタリング融合 (タスク 2)</strong>: フィールド代表値スコアを 作って案 C BNM の上位構造として乗せる。研究的本丸</li>
 <li>

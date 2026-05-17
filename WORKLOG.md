@@ -4,6 +4,89 @@ Detailed development log. User-facing changes go in `NEWS.md`; this file
 captures the per-session internal narrative (why a change was made, what
 was investigated, what was ruled out). Entries are newest-first.
 
+## 2026-05-17 — v1.13.0 CRAN 提出（5/15 予定から 2 日遅れ）
+
+5/8-9 の案 C BNM プロト確認以降 A5 お遍路さん側に注力していたため 予定日
+(5/15) を 2 日過ぎての提出。残作業は (1) 提出前チェック群, (2) tag, (3)
+GitHub Release / Discussions, (4) `devtools::release()`, (5)
+confirmation。全部消化。
+
+### A. 提出前チェック
+
+`tools/build_pkg.R` を一気通貫で実行 (styler → document → spell_check →
+check(cran=TRUE) → rhub → check_win_devel → release):
+
+- **ローカル `R CMD check --as-cran`**: 0 errors / 0 warnings / 0 notes
+  (6m 20s, macOS arm64, R 4.6.0)
+- **win-devel** (R-devel 2026-05-15 r90061 ucrt): Status OK (build 34s,
+  check 640s, log <https://win-builder.r-project.org/DA3rl6RAg6Bn>)
+- **R-hub v2** (workflow_dispatch ラン
+  `velveteen-asiaticlesserfreshwaterclam`, run id 25984718083):
+  - linux (R-devel): 14m26s success
+  - macos-arm64 (R-devel): 15m11s success
+  - windows (R-devel): 19m52s success
+
+R-hub の Annotations は全部 J*-S* フィクスチャ向けの想定済み
+[`message()`](https://rdrr.io/r/base/message.html) (zero variance /
+missing responses など) で check failure ではない。
+
+### B. 未コミット作業ログを掃除
+
+`WORKLOG.md` に 5/12-13 セッション (ξ map + StepReg/StepNet 命名) の
+追記が staged 前段で置いたままだったので `5fa6142` で先にコミット。
+v1.13.0 のリリース内容自体には影響しないが台帳としては落としておく。
+
+### C. タグ運用
+
+- **v1.12.2** (`26855f1`, “chore: re-version 1.13.1 → 1.12.2”): 既に
+  打ってあった。A3 polytomous_biclustering 論文のベースライン用に CRAN
+  未公開のまま git tag だけ残しておく方針 (NEWS は 1.13.0 が
+  ロールアップ)
+- **v1.13.0** (`5fa6142` = WORKLOG 追記後の main HEAD): 今日打った。
+  WORKLOG は `.Rbuildignore` で除外されるので tar.gz には含まれない
+
+両方を `origin` に push (main も同時)。
+
+### D. GitHub Release + Discussions 投稿
+
+ハイライト本文を作成し:
+
+- **GitHub Release** v1.13.0: `gh release create --latest`,
+  <https://github.com/kosugitti/exametrika/releases/tag/v1.13.0>
+- **Discussions (日本語)** \#26 (Announcements):
+  <https://github.com/kosugitti/exametrika/discussions/26>
+- **Discussions (英語)** \#27 (Announcements):
+  <https://github.com/kosugitti/exametrika/discussions/27>
+
+Discussions は `gh discussion create` が存在しないので GraphQL
+`createDiscussion` mutation 直接叩き。`repositoryId` は
+`gh api graphql -f query='query { repository(...) { id } }'` で,
+`categoryId` は `discussionCategories` クエリで取得 (Announcements =
+`DIC_kwDOJS6L084CZbQk`)。本文は `-F body=$(cat file.md)` で多バイト
+そのまま渡せる。
+
+### E. CRAN 提出
+
+RStudio から `devtools::release()` 実行 → CRAN にアップロード →
+confirmation メールのリンクをクリック済み。受理は incoming queue の
+自動チェック後 (数日〜1週間)。
+
+`release()` 副作用: - `CRAN-SUBMISSION` を 1.11.0 → 1.13.0 (SHA
+`5fa6142`) に書き換え - `tools/build_pkg.R` の最終行を
+`devtools::release()` → `usethis::use_release_issue()` に置換
+(次回サイクル用の usethis 提案)
+
+`9122685` でコミット & push。
+
+### 次へ
+
+- CRAN 受理メール待ち (来たら本ホーム CLAUDE.md A4+C1 ステータスを
+  「v1.13.0 CRAN 受理」に書き換え)
+- v2.0.0 BNM (StepBNM = 案 C, DAG 所与スコープ) に着手可能
+- A5 お遍路さん 5/20 締切の社会心理学会原稿に復帰
+
+------------------------------------------------------------------------
+
 ## 2026-05-12〜13 — ξ map 法の確立 + 「ステップ回帰/ステップネット」命名
 
 5/8-9 で案 C BNM プロトタイプの動作確認まで進んだ後, 「変数選択を恣意性

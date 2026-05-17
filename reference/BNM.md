@@ -121,9 +121,9 @@ DAG <-
 # Convert the DAG matrix to an igraph object for network analysis
 g <- igraph::graph_from_data_frame(DAG)
 g
-#> IGRAPH 005488a DN-- 5 5 -- 
+#> IGRAPH a3e3e4b DN-- 5 5 -- 
 #> + attr: name (v/c)
-#> + edges from 005488a (vertex names):
+#> + edges from a3e3e4b (vertex names):
 #> [1] Item01->Item02 Item02->Item03 Item02->Item04 Item03->Item05 Item04->Item05
 
 # Create adjacency matrix from the graph

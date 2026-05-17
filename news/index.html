@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">exametrika</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.13.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.13.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -33,6 +33,19 @@
       <small>Source: <a href="https://github.com/kosugitti/exametrika/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.13.1" id="exametrika-1131">exametrika 1.13.1<a class="anchor" aria-label="anchor" href="#exametrika-1131"></a></h2>
+<p>Resubmission of the 1.13.0 release. The 1.13.0 submission was rejected by the CRAN auto-check service for a single <code>Overall checktime</code> NOTE on r-devel-windows-x86_64 (11 min vs. the 10 min limit). The package itself passed cleanly on both Windows and Debian (Status: OK / OK).</p>
+<div class="section level3">
+<h3 id="test-suite-no-user-visible-changes-1-13-1">Test suite (no user-visible changes)<a class="anchor" aria-label="anchor" href="#test-suite-no-user-visible-changes-1-13-1"></a></h3>
+<ul><li>The two heaviest test files now skip their slowest blocks on CRAN to keep <code>R CMD check</code> comfortably under the 10-minute Windows limit. The same tests continue to run locally and on R-hub / win-devel via the <code>NOT_CRAN</code> environment variable that testthat sets.
+<ul><li>
+<code>test-grm.R</code>: the <code>J15S3810</code> regression (a 15-item / 3,810-respondent fit, ~60s) and the <code>nitems &gt;= 8</code> underflow regression (~8s) are skipped on CRAN. Default-coverage GRM tests on small data continue to run on CRAN.</li>
+<li>
+<code>test-irm.R</code>: the <code>J35S515</code> shared-fixture Gibbs run (~23s) and the two reproducibility tests that re-run Gibbs (~22s combined) are skipped on CRAN. The <code>Default seed is 123</code> structural check still runs on CRAN.</li>
+</ul></li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.13.0" id="exametrika-1130">exametrika 1.13.0<a class="anchor" aria-label="anchor" href="#exametrika-1130"></a></h2>
 <p>This release also incorporates the development changes from 1.12.0–1.12.2 (never published to CRAN). Their entries are retained below for traceability.</p>

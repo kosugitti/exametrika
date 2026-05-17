@@ -1,5 +1,27 @@
 # Changelog
 
+## exametrika 1.13.1
+
+Resubmission of the 1.13.0 release. The 1.13.0 submission was rejected
+by the CRAN auto-check service for a single `Overall checktime` NOTE on
+r-devel-windows-x86_64 (11 min vs. the 10 min limit). The package itself
+passed cleanly on both Windows and Debian (Status: OK / OK).
+
+### Test suite (no user-visible changes)
+
+- The two heaviest test files now skip their slowest blocks on CRAN to
+  keep `R CMD check` comfortably under the 10-minute Windows limit. The
+  same tests continue to run locally and on R-hub / win-devel via the
+  `NOT_CRAN` environment variable that testthat sets.
+  - `test-grm.R`: the `J15S3810` regression (a 15-item /
+    3,810-respondent fit, ~60s) and the `nitems >= 8` underflow
+    regression (~8s) are skipped on CRAN. Default-coverage GRM tests on
+    small data continue to run on CRAN.
+  - `test-irm.R`: the `J35S515` shared-fixture Gibbs run (~23s) and the
+    two reproducibility tests that re-run Gibbs (~22s combined) are
+    skipped on CRAN. The `Default seed is 123` structural check still
+    runs on CRAN.
+
 ## exametrika 1.13.0
 
 This release also incorporates the development changes from

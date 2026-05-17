@@ -2,11 +2,17 @@ library(exametrika)
 
 ### IRM (Infinite Relational Model) Tests
 
-### Setup - run model once and share across tests
-tmp_irm <- dataFormat(J35S515)
-result_irm <- Biclustering_IRM(tmp_irm, gamma_c = 1, gamma_f = 1, seed = 123, verbose = FALSE)
+### Setup - run model once and share across tests.
+### Skipped on CRAN because the J35S515 Gibbs run dominates the file's
+### runtime; all dependent tests below also call skip_on_cran().
+NOT_CRAN <- identical(Sys.getenv("NOT_CRAN"), "true")
+if (NOT_CRAN) {
+  tmp_irm <- dataFormat(J35S515)
+  result_irm <- Biclustering_IRM(tmp_irm, gamma_c = 1, gamma_f = 1, seed = 123, verbose = FALSE)
+}
 
 test_that("IRM Basic Execution", {
+  skip_on_cran()
   # Basic structure checks
   expect_s3_class(result_irm, "exametrika")
   expect_true("IRM" %in% class(result_irm))
@@ -29,6 +35,7 @@ test_that("IRM Basic Execution", {
 })
 
 test_that("IRM Backward Compatibility", {
+  skip_on_cran()
   # Deprecated field names should still work
   expect_equal(result_irm$Nclass, result_irm$n_class)
   expect_equal(result_irm$Nfield, result_irm$n_field)
@@ -37,6 +44,7 @@ test_that("IRM Backward Compatibility", {
 })
 
 test_that("IRM Test Fit Indices", {
+  skip_on_cran()
   # TestFitIndices
   expect_true(!is.null(result_irm$TestFitIndices))
   tfi <- result_irm$TestFitIndices
@@ -52,6 +60,7 @@ test_that("IRM Test Fit Indices", {
 })
 
 test_that("IRM FRP Validity", {
+  skip_on_cran()
   # FRP should contain values between 0 and 1
   expect_true(all(result_irm$FRP >= 0 & result_irm$FRP <= 1))
 
@@ -61,11 +70,13 @@ test_that("IRM FRP Validity", {
 })
 
 test_that("IRM FRPIndex Exists", {
+  skip_on_cran()
   # FRPIndex should exist
   expect_true(!is.null(result_irm$FRPIndex))
 })
 
 test_that("IRM Seed Reproducibility", {
+  skip_on_cran()
   # Same seed should produce identical results
   result_a <- Biclustering_IRM(tmp_irm, gamma_c = 1, gamma_f = 1, seed = 42, verbose = FALSE)
   result_b <- Biclustering_IRM(tmp_irm, gamma_c = 1, gamma_f = 1, seed = 42, verbose = FALSE)
@@ -80,6 +91,7 @@ test_that("IRM Seed Reproducibility", {
 })
 
 test_that("IRM Seed NULL does not set seed", {
+  skip_on_cran()
   # With seed = NULL, the function should not call set.seed()
   # and the results should depend on the current RNG state.
   # We verify that the function runs without error with seed = NULL.

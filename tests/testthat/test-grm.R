@@ -221,6 +221,7 @@ test_that("GRM works correctly with uniform category counts (apply/table bug reg
 })
 
 test_that("GRM fit indices are finite for moderate item counts (exp(-nitems*100) underflow regression)", {
+  skip_on_cran()
   # For nitems >= 8, const <- exp(-nitems * 100) underflowed to 0 and
   # 0 * log(0) poisoned every item/test fit index with NaN.
   set.seed(20260422)
@@ -246,6 +247,7 @@ test_that("GRM fit indices are finite for moderate item counts (exp(-nitems*100)
 })
 
 test_that("GRM accepts 0-based ordinal responses (ncat max-value regression)", {
+  skip_on_cran()
   # ncat was derived from apply(dat, 2, max), so 0..K-1 coded data and
   # sparse codings (e.g. 1,2,4) silently dropped the top category.
   data("J15S3810", package = "exametrika")

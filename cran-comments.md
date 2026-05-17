@@ -12,6 +12,25 @@
 
 There are currently no downstream dependencies for this package on CRAN.
 
+## Version 1.13.1 (resubmission of 1.13.0)
+
+This is a resubmission of 1.13.0. The 1.13.0 submission was rejected by
+the CRAN auto-check service for a single NOTE on
+r-devel-windows-x86_64:
+
+    Overall checktime 11 min > 10 min
+
+The package itself passed cleanly on both Windows and Debian
+(Status: OK / OK). To bring the Windows checktime comfortably under the
+10-minute limit, this 1.13.1 release marks the slowest test blocks in
+`test-grm.R` and `test-irm.R` with `skip_on_cran()`. The same tests
+continue to run locally and on R-hub / win-devel via the `NOT_CRAN`
+environment variable that `testthat` sets, so coverage is unchanged
+outside CRAN.
+
+No user-visible package changes between 1.13.0 and 1.13.1; the package
+contents below are otherwise identical to 1.13.0.
+
 ## Version 1.13.0
 
 This release introduces Graphical Lasso (`Glasso`) and Chatterjee's xi

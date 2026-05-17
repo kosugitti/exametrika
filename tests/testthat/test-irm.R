@@ -1,53 +1,53 @@
 library(exametrika)
 
 ### IRM (Infinite Relational Model) Tests
+###
+### Two-tier strategy:
+###   - The basic structure / reproducibility tests use J15S500
+###     (20 items x 400 students) as a fast fixture and run on CRAN.
+###   - The original J35S515 (35 items x 515 students) full-data run
+###     is preserved as a single skip_on_cran() smoke test.
 
-### Setup - run model once and share across tests.
-### Skipped on CRAN because the J35S515 Gibbs run dominates the file's
-### runtime; all dependent tests below also call skip_on_cran().
-NOT_CRAN <- identical(Sys.getenv("NOT_CRAN"), "true")
-if (NOT_CRAN) {
-  tmp_irm <- dataFormat(J35S515)
-  result_irm <- Biclustering_IRM(tmp_irm, gamma_c = 1, gamma_f = 1, seed = 123, verbose = FALSE)
-}
+### Fast shared fixture (J15S500, runs everywhere)
+tmp_irm_fast <- dataFormat(J15S500)
+result_irm_fast <- Biclustering_IRM(
+  tmp_irm_fast, gamma_c = 1, gamma_f = 1, seed = 123, verbose = FALSE
+)
 
 test_that("IRM Basic Execution", {
-  skip_on_cran()
   # Basic structure checks
-  expect_s3_class(result_irm, "exametrika")
-  expect_true("IRM" %in% class(result_irm))
+  expect_s3_class(result_irm_fast, "exametrika")
+  expect_true("IRM" %in% class(result_irm_fast))
 
   # Result components exist
-  expect_true(!is.null(result_irm$n_class))
-  expect_true(!is.null(result_irm$n_field))
-  expect_true(!is.null(result_irm$TRP))
-  expect_true(!is.null(result_irm$LCD))
-  expect_true(!is.null(result_irm$LFD))
-  expect_true(!is.null(result_irm$FRP))
-  expect_true(!is.null(result_irm$FieldEstimated))
-  expect_true(!is.null(result_irm$ClassEstimated))
+  expect_true(!is.null(result_irm_fast$n_class))
+  expect_true(!is.null(result_irm_fast$n_field))
+  expect_true(!is.null(result_irm_fast$TRP))
+  expect_true(!is.null(result_irm_fast$LCD))
+  expect_true(!is.null(result_irm_fast$LFD))
+  expect_true(!is.null(result_irm_fast$FRP))
+  expect_true(!is.null(result_irm_fast$FieldEstimated))
+  expect_true(!is.null(result_irm_fast$ClassEstimated))
 
   # Dimensions are consistent
-  expect_equal(length(result_irm$TRP), result_irm$n_class)
-  expect_equal(length(result_irm$LCD), result_irm$n_class)
-  expect_equal(length(result_irm$LFD), result_irm$n_field)
-  expect_equal(length(result_irm$FieldEstimated), result_irm$testlength)
+  expect_equal(length(result_irm_fast$TRP), result_irm_fast$n_class)
+  expect_equal(length(result_irm_fast$LCD), result_irm_fast$n_class)
+  expect_equal(length(result_irm_fast$LFD), result_irm_fast$n_field)
+  expect_equal(length(result_irm_fast$FieldEstimated), result_irm_fast$testlength)
 })
 
 test_that("IRM Backward Compatibility", {
-  skip_on_cran()
   # Deprecated field names should still work
-  expect_equal(result_irm$Nclass, result_irm$n_class)
-  expect_equal(result_irm$Nfield, result_irm$n_field)
-  expect_equal(result_irm$N_Cycle, result_irm$n_cycle)
-  expect_equal(result_irm$EM_Cycle, result_irm$em_cycle)
+  expect_equal(result_irm_fast$Nclass, result_irm_fast$n_class)
+  expect_equal(result_irm_fast$Nfield, result_irm_fast$n_field)
+  expect_equal(result_irm_fast$N_Cycle, result_irm_fast$n_cycle)
+  expect_equal(result_irm_fast$EM_Cycle, result_irm_fast$em_cycle)
 })
 
 test_that("IRM Test Fit Indices", {
-  skip_on_cran()
   # TestFitIndices
-  expect_true(!is.null(result_irm$TestFitIndices))
-  tfi <- result_irm$TestFitIndices
+  expect_true(!is.null(result_irm_fast$TestFitIndices))
+  tfi <- result_irm_fast$TestFitIndices
   expect_true(!is.null(tfi$model_log_like))
   expect_true(!is.null(tfi$AIC))
   expect_true(!is.null(tfi$BIC))
@@ -56,30 +56,31 @@ test_that("IRM Test Fit Indices", {
   expect_true(tfi$model_log_like < 0)
 
   # log_lik field should match
-  expect_equal(result_irm$log_lik, tfi$model_log_like)
+  expect_equal(result_irm_fast$log_lik, tfi$model_log_like)
 })
 
 test_that("IRM FRP Validity", {
-  skip_on_cran()
   # FRP should contain values between 0 and 1
-  expect_true(all(result_irm$FRP >= 0 & result_irm$FRP <= 1))
+  expect_true(all(result_irm_fast$FRP >= 0 & result_irm_fast$FRP <= 1))
 
   # FRP dimensions: n_field rows x n_class columns
-  expect_equal(nrow(result_irm$FRP), result_irm$n_field)
-  expect_equal(ncol(result_irm$FRP), result_irm$n_class)
+  expect_equal(nrow(result_irm_fast$FRP), result_irm_fast$n_field)
+  expect_equal(ncol(result_irm_fast$FRP), result_irm_fast$n_class)
 })
 
 test_that("IRM FRPIndex Exists", {
-  skip_on_cran()
   # FRPIndex should exist
-  expect_true(!is.null(result_irm$FRPIndex))
+  expect_true(!is.null(result_irm_fast$FRPIndex))
 })
 
 test_that("IRM Seed Reproducibility", {
-  skip_on_cran()
-  # Same seed should produce identical results
-  result_a <- Biclustering_IRM(tmp_irm, gamma_c = 1, gamma_f = 1, seed = 42, verbose = FALSE)
-  result_b <- Biclustering_IRM(tmp_irm, gamma_c = 1, gamma_f = 1, seed = 42, verbose = FALSE)
+  # Same seed should produce identical results (uses fast fixture)
+  result_a <- Biclustering_IRM(
+    tmp_irm_fast, gamma_c = 1, gamma_f = 1, seed = 42, verbose = FALSE
+  )
+  result_b <- Biclustering_IRM(
+    tmp_irm_fast, gamma_c = 1, gamma_f = 1, seed = 42, verbose = FALSE
+  )
 
   expect_equal(result_a$n_class, result_b$n_class)
   expect_equal(result_a$n_field, result_b$n_field)
@@ -91,11 +92,12 @@ test_that("IRM Seed Reproducibility", {
 })
 
 test_that("IRM Seed NULL does not set seed", {
-  skip_on_cran()
   # With seed = NULL, the function should not call set.seed()
   # and the results should depend on the current RNG state.
   # We verify that the function runs without error with seed = NULL.
-  result_null <- Biclustering_IRM(tmp_irm, gamma_c = 1, gamma_f = 1, seed = NULL, verbose = FALSE)
+  result_null <- Biclustering_IRM(
+    tmp_irm_fast, gamma_c = 1, gamma_f = 1, seed = NULL, verbose = FALSE
+  )
   expect_s3_class(result_null, "exametrika")
   expect_true("IRM" %in% class(result_null))
   expect_true(!is.null(result_null$n_class))
@@ -106,4 +108,18 @@ test_that("IRM Default seed is 123", {
   # Verify the default value of seed parameter is 123
   fn_formals <- formals(Biclustering_IRM.binary)
   expect_equal(fn_formals$seed, 123)
+})
+
+test_that("IRM J35S515 real-data smoke test", {
+  skip_on_cran()
+  # Preserves the original J35S515 fixture as a single off-CRAN smoke test.
+  tmp_full <- dataFormat(J35S515)
+  result_full <- Biclustering_IRM(
+    tmp_full, gamma_c = 1, gamma_f = 1, seed = 123, verbose = FALSE
+  )
+  expect_s3_class(result_full, "exametrika")
+  expect_true("IRM" %in% class(result_full))
+  expect_true(result_full$n_class >= 1)
+  expect_true(result_full$n_field >= 1)
+  expect_true(is.finite(result_full$log_lik))
 })

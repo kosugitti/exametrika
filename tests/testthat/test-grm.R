@@ -220,13 +220,13 @@ test_that("GRM works correctly with uniform category counts (apply/table bug reg
   expect_equal(tfi$null_log_like, sum(ifi$null_log_like), tolerance = 1e-10)
 })
 
-test_that("GRM fit indices are finite for moderate item counts (exp(-nitems*100) underflow regression)", {
-  skip_on_cran()
+test_that("GRM fit indices are finite for moderate item counts (exp(-nitems*100) underflow regression, fast)", {
   # For nitems >= 8, const <- exp(-nitems * 100) underflowed to 0 and
   # 0 * log(0) poisoned every item/test fit index with NaN.
+  # Fast version (nitems = 10) keeps the underflow regression on CRAN.
   set.seed(20260422)
-  nitems <- 20
-  nobs <- 250
+  nitems <- 10
+  nobs <- 100
   dat <- matrix(sample(1:3, nobs * nitems, replace = TRUE),
     nrow = nobs, ncol = nitems
   )
@@ -246,30 +246,58 @@ test_that("GRM fit indices are finite for moderate item counts (exp(-nitems*100)
   expect_true(is.finite(tfi$BIC))
 })
 
-test_that("GRM accepts 0-based ordinal responses (ncat max-value regression)", {
+test_that("GRM fit indices are finite for nitems = 20 (full regression)", {
   skip_on_cran()
+  # Original 250 x 20 reproducer; kept for off-CRAN coverage.
+  set.seed(20260422)
+  dat <- matrix(sample(1:3, 250 * 20, replace = TRUE), nrow = 250, ncol = 20)
+  fd <- dataFormat(dat, response.type = "ordinal")
+  res <- GRM(fd, verbose = FALSE)
+  expect_true(all(is.finite(res$ItemFitIndices$RMSEA)))
+  expect_true(is.finite(res$TestFitIndices$AIC))
+})
+
+test_that("GRM accepts 0-based and gapped ordinal coding (ncat max-value regression, fast)", {
   # ncat was derived from apply(dat, 2, max), so 0..K-1 coded data and
   # sparse codings (e.g. 1,2,4) silently dropped the top category.
-  data("J15S3810", package = "exametrika")
-  res <- GRM(J15S3810, verbose = FALSE)
+  # Synthetic small-data versions of the J15S3810 regression keep coverage
+  # on CRAN; the J15S3810 path is preserved as a skip_on_cran() test below.
 
-  expect_s3_class(res, c("exametrika", "GRM"))
-  expect_equal(res$testlength, 15)
-  # J15S3810 items have 4 categories each, so 3 thresholds per item.
-  expect_equal(ncol(res$params), 4L)
-  expect_true(all(is.finite(res$params$Slope)))
-  expect_true(all(is.finite(res$TestFitIndices$RMSEA)))
+  # 0-based coding: categories 0..3 should be remapped to 1..4 internally
+  # and produce 3 thresholds per item.
+  set.seed(2)
+  zero_based <- matrix(sample(0:3, 100 * 5, replace = TRUE),
+    nrow = 100, ncol = 5
+  )
+  fd_z <- dataFormat(zero_based, response.type = "ordinal")
+  res_z <- GRM(fd_z, verbose = FALSE)
+  expect_equal(ncol(res_z$params), 4L)
+  expect_true(all(is.finite(res_z$params$Slope)))
+  expect_true(is.finite(res_z$TestFitIndices$RMSEA))
 
-  # A gapped coding (categories 1, 2, 4) must estimate the same number
-  # of thresholds as a contiguous 3-category coding.
+  # Gapped coding (1, 2, 4) should estimate the same number of thresholds
+  # as a contiguous 3-category coding.
   set.seed(1)
   gapped <- matrix(sample(c(1, 2, 4), 200 * 5, replace = TRUE),
     nrow = 200, ncol = 5
   )
-  fd <- dataFormat(gapped, response.type = "ordinal")
-  res_g <- GRM(fd, verbose = FALSE)
+  fd_g <- dataFormat(gapped, response.type = "ordinal")
+  res_g <- GRM(fd_g, verbose = FALSE)
   expect_equal(ncol(res_g$params), 3L)
   expect_true(all(is.finite(res_g$TestFitIndices$AIC)))
+})
+
+test_that("GRM J15S3810 real-data regression (full)", {
+  skip_on_cran()
+  # Original real-data regression that first surfaced the ncat bug.
+  # The synthetic fast tests above cover the same code path on CRAN.
+  data("J15S3810", package = "exametrika")
+  res <- GRM(J15S3810, verbose = FALSE)
+  expect_s3_class(res, c("exametrika", "GRM"))
+  expect_equal(res$testlength, 15)
+  expect_equal(ncol(res$params), 4L)
+  expect_true(all(is.finite(res$params$Slope)))
+  expect_true(all(is.finite(res$TestFitIndices$RMSEA)))
 })
 
 test_that("GRM error handling works", {

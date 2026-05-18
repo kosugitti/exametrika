@@ -8,7 +8,7 @@
 ## Citation
 
 Source:
-[`DESCRIPTION`](https://github.com/kosugitti/exametrika/blob/main/DESCRIPTION)
+[`DESCRIPTION`](https://github.com/kosugitti/exametrika/blob/v1.13.1/DESCRIPTION)
 
 Koji Kosugi (2026). *exametrika: Test Theory Analysis and Biclustering*.
 R package version 1.13.1, <https://kosugitti.github.io/exametrika/>.

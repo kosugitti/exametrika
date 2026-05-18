@@ -2,6 +2,8 @@
 
 ## exametrika 1.13.1
 
+CRAN release: 2026-05-17
+
 Resubmission of the 1.13.0 release. The 1.13.0 submission was rejected
 by the CRAN auto-check service for a single `Overall checktime` NOTE on
 r-devel-windows-x86_64 (11 min vs. the 10 min limit). The package itself

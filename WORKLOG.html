@@ -30,12 +30,44 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="logo.png" class="logo" alt=""><h1>exametrika Work Log</h1>
-      <small class="dont-index">Source: <a href="https://github.com/kosugitti/exametrika/blob/v1.13.1/WORKLOG.md" class="external-link"><code>WORKLOG.md</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/kosugitti/exametrika/blob/main/WORKLOG.md" class="external-link"><code>WORKLOG.md</code></a></small>
     </div>
 
 <div id="exametrika-work-log" class="section level1">
 
 <p>Detailed development log. User-facing changes go in <code>NEWS.md</code>; this file captures the per-session internal narrative (why a change was made, what was investigated, what was ruled out). Entries are newest-first.</p>
+<div class="section level2">
+<h2 id="id_2026-05-20--v1131-受理後の周辺整備discussions--smoke-test--sv1sv2-展開">2026-05-20 — v1.13.1 受理後の周辺整備（Discussions / smoke test / sv1+sv2 展開）<a class="anchor" aria-label="anchor" href="#id_2026-05-20--v1131-%E5%8F%97%E7%90%86%E5%BE%8C%E3%81%AE%E5%91%A8%E8%BE%BA%E6%95%B4%E5%82%99discussions--smoke-test--sv1sv2-%E5%B1%95%E9%96%8B"></a></h2>
+<p>5/18 v1.13.1 CRAN 受理を受けて，残っていた周辺タスクを片付けるセッション。</p>
+<div class="section level3">
+<h3 id="discussions-2627-への-follow-up">Discussions #26/#27 への follow-up<a class="anchor" aria-label="anchor" href="#discussions-2627-%E3%81%B8%E3%81%AE-follow-up"></a></h3>
+<p>v1.13.0 リリース告知 (日本語 #26 / 英語 #27, 5/17 投稿) には CRAN 反映の 顛末がまだ付いていなかったので，1.13.1 受理を短くまとめてコメント追加:</p>
+<ul><li>#26 (JP): <a href="https://github.com/kosugitti/exametrika/discussions/26#discussioncomment-16972892" class="external-link uri">https://github.com/kosugitti/exametrika/discussions/26#discussioncomment-16972892</a>
+</li>
+<li>#27 (EN): <a href="https://github.com/kosugitti/exametrika/discussions/27#discussioncomment-16972893" class="external-link uri">https://github.com/kosugitti/exametrika/discussions/27#discussioncomment-16972893</a>
+</li>
+</ul><p>要旨: v1.13.0 が CRAN auto-check の r-devel-windows-x86_64 で 「Overall checktime 11 min &gt; 10 min」NOTE で auto-reject されたこと， 1.13.1 は test-grm.R / test-irm.R の重いブロックを <code>skip_on_cran()</code> で除外する hotfix で <strong>ユーザ可視変更なし</strong>，スキップ対象は CRAN だけで <code>NOT_CRAN</code> 経由のローカル/R-hub/win-devel では従来通り走るためカバレッジ不変。</p>
+</div>
+<div class="section level3">
+<h3 id="ggexametrika-smoke-test-v1131-連動">ggExametrika smoke test (v1.13.1 連動)<a class="anchor" aria-label="anchor" href="#ggexametrika-smoke-test-v1131-%E9%80%A3%E5%8B%95"></a></h3>
+<p>Newton で <code>install.packages("exametrika")</code> で 1.12.2 → 1.13.1 に上げてから ggExametrika (現 v1.1.1 dev) の <code>devtools::test()</code> を実行: <strong>611/611 PASS</strong>。 警告は BINET (Class 1→Class 2 のフィールド数チェック) の caution が 1 件 だけで，機能上は問題なし。1.13.1 の API 変更は ggExametrika 側に影響なし。</p>
+</div>
+<div class="section level3">
+<h3 id="shinyexametrika-pr14-マージ-別リポジトリ">shinyExametrika PR#14 マージ (別リポジトリ)<a class="anchor" aria-label="anchor" href="#shinyexametrika-pr14-%E3%83%9E%E3%83%BC%E3%82%B8-%E5%88%A5%E3%83%AA%E3%83%9D%E3%82%B8%E3%83%88%E3%83%AA"></a></h3>
+<p>arimune-san の “DAG plot height slider for BNM and LDLRA” を smoke test 後マージ。 詳細は shinyExametrika/WORKLOG.md 参照。</p>
+</div>
+<div class="section level3">
+<h3 id="sv1sv2-への-r-460--exametrika-1131-展開">sv1/sv2 への R 4.6.0 + exametrika 1.13.1 展開<a class="anchor" aria-label="anchor" href="#sv1sv2-%E3%81%B8%E3%81%AE-r-460--exametrika-1131-%E5%B1%95%E9%96%8B"></a></h3>
+<p>EPEL 9 に R 4.6.0-1.el9 が 5/5 以降に到着していたので，sv1/sv2 を一気に 4.5.3 → 4.6.0 + exametrika 1.13.1 へ。詳細は <code>~/Dropbox/.claude-system-inventory.md</code> の作業ログ 2026-05-20 セクション参照。 両機とも <code><a href="https://kosugitti.github.io/exametrika/">library(exametrika); IRT(J15S500)</a></code> で 11 iter 収束， LogLik -3893.03 で完全一致。</p>
+</div>
+<div class="section level3">
+<h3 id="次フォローアップ">次フォローアップ<a class="anchor" aria-label="anchor" href="#%E6%AC%A1%E3%83%95%E3%82%A9%E3%83%AD%E3%83%BC%E3%82%A2%E3%83%83%E3%83%97"></a></h3>
+<ul><li><ol start="3" style="list-style-type: lower-alpha"><li>v2.0.0 BNM 着手 (CRAN cadence で 6/18 以降 提出目安)</li>
+</ol></li>
+<li>sv1/sv2 で 1 pass で取りこぼした依存順失敗パッケージ 5-6 個の 2nd pass</li>
+<li>Newton id_ed25519.pub を sv1/sv2 へ登録して二段 SSH 解消</li>
+</ul></div>
+</div>
 <div class="section level2">
 <h2 id="id_2026-05-17--v1130-cran-提出515-予定から-2-日遅れ">2026-05-17 — v1.13.0 CRAN 提出（5/15 予定から 2 日遅れ）<a class="anchor" aria-label="anchor" href="#id_2026-05-17--v1130-cran-%E6%8F%90%E5%87%BA515-%E4%BA%88%E5%AE%9A%E3%81%8B%E3%82%89-2-%E6%97%A5%E9%81%85%E3%82%8C"></a></h2>
 <p>5/8-9 の案 C BNM プロト確認以降 A5 お遍路さん側に注力していたため 予定日 (5/15) を 2 日過ぎての提出。残作業は (1) 提出前チェック群, (2) tag, (3) GitHub Release / Discussions, (4) <code>devtools::release()</code>, (5) confirmation。全部消化。</p>

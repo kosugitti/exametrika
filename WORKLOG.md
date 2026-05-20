@@ -4,6 +4,56 @@ Detailed development log. User-facing changes go in `NEWS.md`; this file
 captures the per-session internal narrative (why a change was made, what
 was investigated, what was ruled out). Entries are newest-first.
 
+## 2026-05-20 — v1.13.1 受理後の周辺整備（Discussions / smoke test / sv1+sv2 展開）
+
+5/18 v1.13.1 CRAN
+受理を受けて，残っていた周辺タスクを片付けるセッション。
+
+### Discussions \#26/#27 への follow-up
+
+v1.13.0 リリース告知 (日本語 \#26 / 英語 \#27, 5/17 投稿) には CRAN
+反映の 顛末がまだ付いていなかったので，1.13.1
+受理を短くまとめてコメント追加:
+
+- \#26 (JP):
+  <https://github.com/kosugitti/exametrika/discussions/26#discussioncomment-16972892>
+- \#27 (EN):
+  <https://github.com/kosugitti/exametrika/discussions/27#discussioncomment-16972893>
+
+要旨: v1.13.0 が CRAN auto-check の r-devel-windows-x86_64 で 「Overall
+checktime 11 min \> 10 min」NOTE で auto-reject されたこと， 1.13.1 は
+test-grm.R / test-irm.R の重いブロックを `skip_on_cran()` で除外する
+hotfix で **ユーザ可視変更なし**，スキップ対象は CRAN だけで `NOT_CRAN`
+経由のローカル/R-hub/win-devel では従来通り走るためカバレッジ不変。
+
+### ggExametrika smoke test (v1.13.1 連動)
+
+Newton で `install.packages("exametrika")` で 1.12.2 → 1.13.1
+に上げてから ggExametrika (現 v1.1.1 dev) の `devtools::test()` を実行:
+**611/611 PASS**。 警告は BINET (Class 1→Class 2 のフィールド数チェック)
+の caution が 1 件 だけで，機能上は問題なし。1.13.1 の API 変更は
+ggExametrika 側に影響なし。
+
+### shinyExametrika PR#14 マージ (別リポジトリ)
+
+arimune-san の “DAG plot height slider for BNM and LDLRA” を smoke test
+後マージ。 詳細は shinyExametrika/WORKLOG.md 参照。
+
+### sv1/sv2 への R 4.6.0 + exametrika 1.13.1 展開
+
+EPEL 9 に R 4.6.0-1.el9 が 5/5 以降に到着していたので，sv1/sv2 を一気に
+4.5.3 → 4.6.0 + exametrika 1.13.1 へ。詳細は
+`~/Dropbox/.claude-system-inventory.md` の作業ログ 2026-05-20
+セクション参照。 両機とも
+[`library(exametrika); IRT(J15S500)`](https://kosugitti.github.io/exametrika/)
+で 11 iter 収束， LogLik -3893.03 で完全一致。
+
+### 次フォローアップ
+
+- 3.  v2.0.0 BNM 着手 (CRAN cadence で 6/18 以降 提出目安)
+- sv1/sv2 で 1 pass で取りこぼした依存順失敗パッケージ 5-6 個の 2nd pass
+- Newton id_ed25519.pub を sv1/sv2 へ登録して二段 SSH 解消
+
 ## 2026-05-17 — v1.13.0 CRAN 提出（5/15 予定から 2 日遅れ）
 
 5/8-9 の案 C BNM プロト確認以降 A5 お遍路さん側に注力していたため 予定日

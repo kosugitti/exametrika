@@ -29,6 +29,14 @@ The `exametrika` package provides comprehensive Test Data Engineering tools for 
 
 The package implements both traditional psychometric approaches and advanced statistical methods, making it suitable for various assessment and research purposes.
 
+## Try it online (community-hosted)
+
+A community-hosted preview page lets collaborators try an `exametrika`-style workflow in the browser before installing R — upload a response matrix (CSV/Excel), pick an analysis goal (IRT / latent rank / learning route / biclustering / Test Data Engineering report), and get an illustrative output. Useful for showing result mock-ups to colleagues or seminar students.
+
+[![Try exametrika-test-analysis on Socialistic](https://socialistic.ai/api/embed/exametrika-test-analysis-ebe9d8?lang=en)](https://socialistic.ai/skill/exametrika-test-analysis-ebe9d8?utm_source=github&utm_medium=readme&utm_campaign=exametrika)
+
+Not affiliated with the package authors. See [#29](https://github.com/kosugitti/exametrika/issues/29) for context.
+
 ## Features
 
 The package implements various psychometric models and techniques:

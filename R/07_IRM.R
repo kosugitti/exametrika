@@ -117,7 +117,7 @@ Biclustering_IRM.binary <- function(U, Z = NULL, w = NULL, na = NULL,
   } else {
     tmp <- U
   }
-  U <- tmp$U * tmp$Z
+  tmp$U <- tmp$U * tmp$Z
   testlength <- NCOL(tmp$U)
   nobs <- NROW(tmp$U)
   const <- 1e-100
@@ -607,7 +607,7 @@ Biclustering_IRM.binary <- function(U, Z = NULL, w = NULL, na = NULL,
   TRP <- colSums(pifr * flddist)
 
   ret <- structure(list(
-    U = U,
+    U = tmp$U,  # masked binary matrix (was using dead `U` variable before v1.14.0)
     testlength = testlength,
     msg = "Rank",
     nobs = nobs,

@@ -4,6 +4,192 @@ Detailed development log. User-facing changes go in `NEWS.md`; this file
 captures the per-session internal narrative (why a change was made, what
 was investigated, what was ruled out). Entries are newest-first.
 
+## 2026-05-27 (午後) — v1.14.0 Bug #2 IRM binary 欠測 NaN 修正
+
+A3 論文 (polytomous_biclustering) の 4.4 節 実データ適用作業中に発見した
+バグの調査と修正。
+
+### 発見の経緯
+
+論文 4.4 用に HCI (Homeostasis Concept Inventory, 651×20 4肢択一) と
+SAT12 (mirt, 600×32 5肢択一) を二値化して IRM にかけたところ，両者
+で同じエラー:
+
+```
+log(CcfPlus[i, j] + gamp - 1 - s + const) で:
+  計算結果が NaN になりました
+rmultinom(1, 1, ptab) でエラー:
+  確率ベクトル中にNAがあります
+```
+
+シミュレーションでは binary IRM の収束率が 93.7% と他データ型 (96-98%) より
+低かったのもおそらく同根 (Phase3 シミュは欠測なしだったので顕在化せず)。
+
+### 真因
+
+`Biclustering_IRM.binary` (R/07_IRM.R) は `tmp$U %*% fld01` で `Cif` を
+集計するが，`dataFormat()` は欠測セルを `tmp$U` に **-1** として残し
+別途 `tmp$Z` で観測マスクを持つ設計。`tmp$U` をマスク前のまま積算すると
+-1 が伝播して `CcfPlus` が負 → `log()` で NaN → `ptab` 全体が NaN →
+`rmultinom` クラッシュ。
+
+line 120 に `U <- tmp$U * tmp$Z` という**未使用**変数があった (代入先が
+誰にも参照されないデッドコード)。リファクタの取り残しと思われる。
+
+### 修正
+
+`R/07_IRM.R` 2行修正:
+
+1. line 120: `U <- tmp$U * tmp$Z` → `tmp$U <- tmp$U * tmp$Z`
+   下流の `tmp$U %*% fld01` 系 (line 165, 204, 324, 339) 全てが Z マスク済み
+   値で計算されるようになる。
+2. line 610: `U = U` → `U = tmp$U`
+   旧コードは line 120 のデッド代入が function parameter `U` を上書き
+   していた偶然に依存して `U = masked_matrix` を返していた。新コードは
+   `tmp$U` から明示的に取る (これがないと `plot_array` が dataFormat
+   オブジェクトを matrix と誤解して「次元不正」エラーになる; R CMD check
+   examples で発覚)。
+
+### テスト
+
+`tests/testthat/test-irm.R` 末尾に Bug #2 regression test を追加。
+500×20 二値データに 2% の欠測 (-1) を入れ，`Biclustering_IRM` が
+クラッシュせず通常の `exametrika`/`IRM` クラスのオブジェクトを返す
+ことを検証。`skip_on_cran()` 付き (推定に数秒かかるため)。
+
+### Bug #3 (CFI clip による benchmark inversion 隠蔽) は見送り
+
+同じ作業の副産物として `calcFitIndices` の `pmax(., 0)` クリップが
+`chi_A < 0` の異常を `CFI = 1.0` として隠蔽する挙動を発見 (bfi binary
+で再現)。これは Bentler-Bonett の伝統的仕様であり Mathematica reference
+も同じ挙動。仕様逸脱 (NA + warning 化) を一度実装してテスト通過まで
+持っていったが，
+
+- Mathematica reference と CSV fixture が CFI=1.0 / RMSEA=0 を出している
+- 「コードは正せず Mathematica .nb も同期する」と「クランプは設計と認める」
+  の判断が必要
+
+ため，先生判断で v1.14.0 では見送り。`develop/20260527_bug_reproduce.R`
+に再現コードを残し，将来 (v1.15+) で Mathematica 同期込みで再検討する
+材料として保留。
+
+### 検証
+
+- `devtools::test()`: 4899 PASS / 0 FAIL / 0 WARN / 0 SKIP
+- `R CMD check --as-cran`: 0 ERROR / 0 WARNING / 1 NOTE
+  (NOTE は HTML Tidy 環境依存; CRAN サーバでは出ない)
+- `R/07_IRM.R` の plot サンプル (Biclustering_IRM(J35S515)) が
+  `plot(result, type="Array")` まで完走することを確認
+
+## 2026-05-27 — PR #30 (socialistic.ai 誘導 PR) 拒否・周辺ハウスキーピング
+
+コードには触らず，GitHub 上の宛先処理だけのセッション。
+
+### PR #30 / issue #29 — community-hosted リンク追加 PR を close
+
+shesl-tinkerland (shesonglin) から README に「Try it online
+(community-hosted)」セクションを追加する PR が到着 (5/26 14:19 UTC)。
+リンク先は `socialistic.ai/skill/exametrika-test-analysis-ebe9d8` で
+`utm_source=github&utm_medium=readme&utm_campaign=exametrika` 付き。
+
+中身を吟味した結果，以下の理由で **マージ拒否 → close** を判断:
+
+1. **socialistic.ai は exametrika を走らせていない** — LLM ベースの
+   skill marketplace で，ブラウザ上で Rcpp の GRM optimizer や IRM
+   Gibbs sampler を再現できるわけがない。CSV アップで「IRT/潜在ランク
+   /学習経路/Biclustering/TDE レポート」が出ると謳っているが，実体は
+   LLM が exametrika 風の出力を捏造している可能性が極めて高い
+2. **ゼミ生・同僚への誤誘導リスク** — 「これが exametrika の出力です」
+   とハルシネーション結果を信じさせると reputational damage。 5/23 に
+   ラマヌジャン bot のハルシ対策を入れたばかりの立場で，同じ落とし穴の
+   サービスを公式 README から推奨するのは矛盾
+3. **README 同期ルール違反** — PR 自体が `README.md` 直編集 (CLAUDE.md
+   で禁止)。PR 本人も「R toolchain 入れてないので手で sync した」と
+   告白
+4. **OSS を利用した UTM トラフィック誘導** — 「community-hosted」「not
+   affiliated」と書いてリスクを著者に押し付けつつバッジで集客する手口
+
+対応:
+
+- PR #30: 1, 3 を理由として丁寧に説明するコメント投稿 → close
+- issue #29: 元の「面白い取り組みですね！」コメントを撤回するのは
+  気まずいが，PR コメントを参照する短い follow-up を投稿 → close
+
+両方 close 済み。文面は受け入れの可能性を残さない一方で，研究室外で
+個人として使う分には問題ないことを明示。
+
+### branch protection バナー — dismiss
+
+GitHub のリポジトリトップに出ていた「Your main branch isn't protected」
+バナーについて質問あり。説明:
+
+- 1 人開発 (committer は kosugitti + claude) で PR 必須化・review
+  必須化を入れると自分が自分にレビューを強要するだけで生産性低下
+- 普段から `git push origin main` 直 push 運用前提で，CRAN 提出フロー
+  (`devtools::release()` の打つ tag や `cran-comments.md` の commit)
+  と相性が悪い
+- force push 事故リスクは低い (単独開発で `--force` は意図的にしか
+  打たない)
+
+→ Dismiss で OK。外部 PR が増えてきた段階で「force push 禁止 + 削除
+禁止」最小構成だけ入れれば十分，という方針確認。
+
+### issue #28 (Release exametrika 1.14.0) の出自確認
+
+「これ何で立ってる？」と質問あり。調査結果:
+
+- 作成日時 2026-05-17 20:52 = v1.13.0 を CRAN に提出した直後
+- 中身は `usethis::use_release_issue()` の標準テンプレート (git pull
+  → NEWS polish → win-devel → revdepcheck → submit → tag → blog →
+  social の checkbox 列)
+- `devtools::release()` フロー or 直接 `usethis::use_release_issue('minor')`
+  が次の minor として 1.14.0 を提案して自動作成
+
+今 ちょうど進めている v1.14.0 (Glasso graceful divergence handling，
+ターゲット 6/15 CRAN 提出) の release tracking issue として **そのまま
+使える** ことを確認。close せず残置。
+
+### 今回得た知見
+
+- **LLM-marketplace 系の README リンク追加 PR は要警戒**。UTM 付き
+  バッジ + 「community-hosted/not affiliated」の組み合わせは典型的な
+  OSS スパムパターン。memory に拒否方針を記録
+- **`usethis::use_release_issue()` は次バージョンの checklist を
+  自動生成する** — 提出時に立つので「これ俺立てたっけ？」と混乱
+  しがち。memory 化
+
+---
+
+## 2026-05-23 — v1.13.1 後フォローアップの取りこぼし確認
+
+5/20 セッションで Discussions follow-up と smoke test を実施した記録が
+WORKLOG にあるにも関わらず，`.claude/CLAUDE.md` の TODO リストが
+`[ ]` のままだった (前回セッションが TODO 更新を忘れていた)。
+別マシン (Mac mini 側) から「メール来たぞ」の連絡があり，
+GitHub API で 5/19 08:24 UTC に kosugitti アカウントで follow-up 投稿
+されていることを確認 → TODO `[x]` に更新。
+
+ついでに smoke test を再確認:
+
+- **ggExametrika** `devtools::test()`: 611/611 PASS, WARN 1 (既知の
+  stanine 9 分割警告で 1.13.1 無関係), SKIP 0
+- **shinyExametrika** `devtools::test()`: 67/67 PASS, WARN 0 (前回 5/20
+  は PR#14 マージ作業だけで smoke test 単独の結果は WORKLOG に未記載
+  だったので，1.13.1 と shinyExametrika の組み合わせの初回正式確認)
+
+`.claude/CLAUDE.md` の「優先度：高（v1.13.1 受理後のフォローアップ）」
+3 件全て `[x]` クローズ。次は v2.0.0 (StepBNM / 案 C) 着手フェーズ。
+CRAN cadence で提出は 6/18 以降。
+
+### 教訓
+
+セッション終了時に WORKLOG.md と `.claude/CLAUDE.md` の TODO の同期を
+忘れると，後続セッションで「やったのか，やってないのか」の二度手間が
+発生する。「ログ書いておいて」ルーチンの 2. (CLAUDE.md 更新) には
+**TODO リストのチェック更新も含む**ことを明示しておく方が安全。
+
+---
+
 ## 2026-05-20 — v1.13.1 受理後の周辺整備（Discussions / smoke test / sv1+sv2 展開）
 
 5/18 v1.13.1 CRAN 受理を受けて，残っていた周辺タスクを片付けるセッション。

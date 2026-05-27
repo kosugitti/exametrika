@@ -1,3 +1,46 @@
+# exametrika 1.14.0
+
+## Bug fixes
+
+- **Binary IRM: crash on real data with missing values.** `Biclustering_IRM`
+  on a binary `exametrika` data object containing missing cells
+  (`tmp$Z[s, j] == 0`) crashed with *"確率ベクトル中にNAがあります"*
+  (NA in probability vector) inside `rmultinom()`, after `log()` produced
+  `NaN` in the Gibbs sampler. The cause was that `tmp$U` retains the
+  `-1` missingness marker from `dataFormat()` and the IRM aggregated it
+  directly (`tmp$U %*% fld01`), producing negative counts in `CcfPlus`
+  whose log was `NaN`. The pre-existing line `U <- tmp$U * tmp$Z` was a
+  dead variable. `R/07_IRM.R` now assigns the masked matrix back as
+  `tmp$U <- tmp$U * tmp$Z`, so all downstream `tmp$U` references see
+  zero in missing cells. Reproduced on HCI (651×20, 1.5% missing) and
+  SAT12 (600×32 binarised, 0.4% missing).
+
+- **Graphical Lasso: graceful handling of numerical divergence.** When the
+  inner block coordinate descent (BCD) of `Glasso()` produced non-finite
+  values — typically with high-dimensional, near-singular polychoric
+  correlation matrices (`N <= p` regime) and very small lambdas — the
+  previous implementation crashed in R's `if (diff < eps)` test with
+  *"missing value where TRUE/FALSE needed"*, discarding all of the
+  intermediate work along the lambda grid.
+
+  - `glasso_one()` now detects non-finite values in the BCD update of
+    `beta`, in the inner convergence statistic `diff`, and in the working
+    covariance `W`, and returns `converged = FALSE` instead of crashing.
+  - `Glasso()` now reacts to `converged = FALSE` (or a non-finite EBIC)
+    by emitting a `warning()` that names the offending lambda and the
+    best lambda found so far, and **breaks the lambda search**, returning
+    the best solution encountered up to that point. If divergence happens
+    on the very first lambda the call still errors out, since no solution
+    exists to return.
+  - The `path` element of the result preserves `NA` for any lambda values
+    skipped by the early break, making the breakpoint visible to the user.
+
+  Observed concretely on a 98-item / 143-respondent ordinal dataset
+  (polychoric condition number ~1.4e5): the old `Glasso()` crashed at
+  lambda = 0.0096 after ~25 minutes of work; the new implementation
+  returns the same `lambda_opt = 0.1003` solution with a clear warning
+  and a `path` whose two trailing entries are `NA`.
+
 # exametrika 1.13.1
 
 Resubmission of the 1.13.0 release. The 1.13.0 submission was rejected

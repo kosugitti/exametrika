@@ -107,3 +107,28 @@ test_that("IRM Default seed is 123", {
   fn_formals <- formals(Biclustering_IRM.binary)
   expect_equal(fn_formals$seed, 123)
 })
+
+
+test_that("Bug #2 regression: Biclustering_IRM.binary handles missing data", {
+  # Real-data missingness (HCI, SAT12) used to crash with
+  # "確率ベクトル中にNAがあります" because tmp$U retained the -1
+  # missingness marker that propagated through tmp$U %*% fld01.
+  # Fixed in v1.14.0 by tmp$U <- tmp$U * tmp$Z masking at line 120.
+  skip_on_cran()
+  set.seed(20260527)
+  n <- 500
+  J <- 20
+  U <- matrix(rbinom(n * J, 1, 0.55), n, J)
+  U[sample.int(n * J, size = round(0.02 * n * J))] <- -1L
+  df_miss <- dataFormat(data = U, na = -1)
+  expect_true(any(df_miss$Z == 0))
+
+  fit <- suppressWarnings(
+    Biclustering_IRM(df_miss, gamma_c = 1, gamma_f = 1, mic = 10,
+                     max_iter = 300, seed = 20260527, verbose = FALSE)
+  )
+  expect_s3_class(fit, "exametrika")
+  expect_true("IRM" %in% class(fit))
+  expect_true(!is.null(fit$n_class) && fit$n_class >= 1)
+  expect_true(!is.null(fit$n_field) && fit$n_field >= 1)
+})

@@ -50,6 +50,7 @@ glasso_one <- function(S, lambda, W_init = NULL, Beta_init = NULL, eps = 1e-6, m
   W_old <- W
   W_FLG <- TRUE
   Theta <- matrix(0, nrow = p, ncol = p)
+  diverged <- FALSE  # numerical divergence flag (NaN/Inf in BCD)
 
   while (W_FLG) {
     niter <- niter + 1
@@ -64,12 +65,23 @@ glasso_one <- function(S, lambda, W_init = NULL, Beta_init = NULL, eps = 1e-6, m
           r <- s12[k] - W11[k, ] %*% beta + W11[k, k] * beta[k]
           beta[k] <- soft_thresholding(r, lambda) / W11[k, k]
         }
+        if (any(!is.finite(beta))) {
+          diverged <- TRUE
+          beta_FLG <- FALSE
+          break
+        }
         diff <- sum(abs(beta - beta_old))
+        if (!is.finite(diff)) {
+          diverged <- TRUE
+          beta_FLG <- FALSE
+          break
+        }
         if (diff < eps) {
           beta_cache[, j] <- beta
           beta_FLG <- FALSE
         }
       }
+      if (diverged) break
       W12 <- W11 %*% beta
       W[-j, j] <- W[j, -j] <- W12
 
@@ -78,6 +90,11 @@ glasso_one <- function(S, lambda, W_init = NULL, Beta_init = NULL, eps = 1e-6, m
       Theta[j, j] <- theta22
       Theta[-j, j] <- theta12
       Theta[j, -j] <- theta12
+    }
+    if (diverged) break
+    if (!all(is.finite(W))) {
+      diverged <- TRUE
+      break
     }
     if (max(abs(W - W_old)) < eps) {
       W_FLG <- FALSE
@@ -94,7 +111,7 @@ glasso_one <- function(S, lambda, W_init = NULL, Beta_init = NULL, eps = 1e-6, m
     W = W,
     Beta = beta_cache,
     niter = niter,
-    converged = (niter <= max_iter)
+    converged = (niter <= max_iter) && !diverged
   ))
 }
 
@@ -225,8 +242,10 @@ Glasso <- function(U,
   best_lambda <- NA
   best_index <- NA
 
-  EBICs <- numeric(length = n_lambda)
-  n_edges <- integer(length = n_lambda)
+  # Initialise with NA so that lambda values skipped by an early break
+  # remain visible as NA in the returned path data.frame.
+  EBICs <- rep(NA_real_, n_lambda)
+  n_edges <- rep(NA_integer_, n_lambda)
 
   W_prev <- NULL
   Beta_prev <- NULL
@@ -254,10 +273,36 @@ Glasso <- function(U,
       eps = eps, max_iter = max_iter
     )
     if (!res$converged) {
-      warning(sprintf("Algorithm did not converge at lambda = %.4f.", l))
-      stop("Glasso could not be computed. Try increasing max_iter.")
+      if (is.null(best_Theta)) {
+        stop(sprintf(
+          "Glasso could not be computed at the first lambda (%.4f). The polychoric correlation matrix may be severely ill-conditioned (e.g. N < p). Try increasing max_iter or raising lambda_ratio.",
+          l
+        ))
+      } else {
+        warning(sprintf(
+          "Glasso diverged at lambda = %.4f (k=%d of %d). Stopping lambda search; returning the best solution found so far (lambda = %.4f, EBIC = %.2f).",
+          l, k, n_lambda, best_lambda, best_ebic
+        ))
+        break
+      }
     }
-    ebic_k <- compute_EBIC_glasso(S, res$Theta, n = nobs, p = p, gamma = gamma)
+    ebic_k <- tryCatch(
+      compute_EBIC_glasso(S, res$Theta, n = nobs, p = p, gamma = gamma),
+      error = function(e) NA_real_
+    )
+    if (!is.finite(ebic_k)) {
+      if (is.null(best_Theta)) {
+        stop(sprintf(
+          "EBIC could not be computed at the first lambda (%.4f).", l
+        ))
+      } else {
+        warning(sprintf(
+          "EBIC could not be computed at lambda = %.4f. Stopping lambda search; returning the best solution found so far (lambda = %.4f).",
+          l, best_lambda
+        ))
+        break
+      }
+    }
     edges_k <- sum(abs(res$Theta[upper.tri(res$Theta)]) > edge_tol)
 
     EBICs[k] <- ebic_k

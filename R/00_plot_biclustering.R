@@ -78,7 +78,7 @@ plot_array <- function(x, cell_width, cell_height, colors) {
     if (is.null(raw_data)) raw_data <- x$Q
   }
 
-  clusterd_data <- raw_data[case_order, field_order]
+  clustered_data <- raw_data[case_order, field_order]
 
   sorted_class <- x$ClassEstimated[case_order]
   sorted_field <- x$FieldEstimated[field_order]
@@ -148,16 +148,16 @@ plot_array <- function(x, cell_width, cell_height, colors) {
     }
   }
 
-  ## Clusterd Plot
+  ## Clustered Plot
   plot(0, 0,
     type = "n",
     xlim = c(0, plot_width), ylim = c(0, plot_height),
     xlab = "", ylab = "", xaxt = "n", yaxt = "n",
-    main = "Clusterd Data", frame.plot = TRUE
+    main = "Clustered Data", frame.plot = TRUE
   )
   for (i in 1:nrows) {
     for (j in 1:ncols) {
-      val <- clusterd_data[i, j]
+      val <- clustered_data[i, j]
       x1 <- (j - 1) * cell_w
       y1 <- (nrows - i) * cell_h
       x2 <- j * cell_w

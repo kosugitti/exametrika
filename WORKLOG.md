@@ -4,6 +4,40 @@ Detailed development log. User-facing changes go in `NEWS.md`; this file
 captures the per-session internal narrative (why a change was made, what
 was investigated, what was ruled out). Entries are newest-first.
 
+## 2026-06-02 — v1.14.0 Biclustering plot のtypo修正 (Clusterd -> Clustered)
+
+殿（プロジェクトオーナー）から ggExametrika 経由で「ggArrayプロットに
+Clustered Data とすべきところが Clusterd Data になっている」との指摘。
+ggExametrika の引数名 (`Clusterd*`) を辿ると本家 exametrika 内部
+(`R/00_plot_biclustering.R`) にも同種のtypoが存在していた。
+
+### 修正対象
+
+`R/00_plot_biclustering.R` のみ:
+
+- L151 コメント: `## Clusterd Plot` -> `## Clustered Plot`
+- L156 panel title: `main = "Clusterd Data"` -> `"Clustered Data"`
+- L81, L160 内部変数: `clusterd_data` -> `clustered_data`
+
+### 影響範囲
+
+引数名にはtypoなし。`plot.exametrika()` の Biclustering 経路は表示文字列
+のみが変わるユーザ可視変更で，API 影響はゼロ。Mathematica reference fixture
+には main title 文字列は含まれないので回帰テストの再生成は不要。
+
+### 連動修正 (ggExametrika 1.1.1)
+
+ggExametrika 側 `plotArray_gg()` は本家を移植した際に引数化された段で
+typoが伝染しており，こちらは引数名 (`Clusterd` / `Clusterd_lines` /
+`Clusterd_lines_color`) も含む破壊的変更。v1.14.0 リリースと同時に
+ggExametrika 1.1.1 を出す方針 (殿確認済)。
+
+### 次にやること
+
+- v1.14.0 リリース時にこの修正を含めて CRAN 提出 (6/15 目標)
+- 連動して ggExametrika 1.1.1 で `roxygen2::roxygenise()` + pkgdown 再ビルド
+  + R CMD check 後に CRAN 提出
+
 ## 2026-05-27 (午後) — v1.14.0 Bug #2 IRM binary 欠測 NaN 修正
 
 A3 論文 (polytomous_biclustering) の 4.4 節 実データ適用作業中に発見した
@@ -1397,3 +1431,13 @@ record in `failed_settings`). All 4750 testthat tests still pass.
 This behavior change is non-breaking for successful grids but is a
 genuine bug fix for pathological grids, and is shipped as part of
 v1.12.0.
+
+---
+
+## 2026-06-01 — 多値DAG制約格子モデル アイデアノート追記
+
+- `develop/20250529meetingMemo.md` → `develop/20260529meetingMemo.md` にリネーム（年号誤り修正）
+- 荘島先生ミーティング（2026-05-29）のフォローアップとして，多値DAG制約格子モデルの構想を末尾に追記
+  - フィールド間OR制約格子，有効状態の列挙，Stress最小DAG探索アルゴリズム
+  - 詳細は `02_研究/お遍路さん/WORKLOG.md` 2026-06-01 参照
+- 将来の exametrika v3.0 系機能候補として保留

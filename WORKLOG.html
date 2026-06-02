@@ -37,6 +37,51 @@
 
 <p>Detailed development log. User-facing changes go in <code>NEWS.md</code>; this file captures the per-session internal narrative (why a change was made, what was investigated, what was ruled out). Entries are newest-first.</p>
 <div class="section level2">
+<h2 id="id_2026-06-02-pm--exametrika-一家-ユーザ可視文字列-typo-総点検">2026-06-02 (PM) — exametrika 一家 ユーザ可視文字列 typo 総点検<a class="anchor" aria-label="anchor" href="#id_2026-06-02-pm--exametrika-%E4%B8%80%E5%AE%B6-%E3%83%A6%E3%83%BC%E3%82%B6%E5%8F%AF%E8%A6%96%E6%96%87%E5%AD%97%E5%88%97-typo-%E7%B7%8F%E7%82%B9%E6%A4%9C"></a></h2>
+<p><code>Clusterd</code> -&gt; <code>Clustered</code> の修正がきっかけで，殿から「人様の目に触れる plot/message/print/cat 等の出力に他にも typo がないか総点検せよ」と指示。 exametrika/ggExametrika/shinyExametrika の3プロジェクトに Explore エージェント を割り当てて並列実行。</p>
+<div class="section level3">
+<h3 id="検出と修正-exametrika-4-件">検出と修正 (exametrika 4 件)<a class="anchor" aria-label="anchor" href="#%E6%A4%9C%E5%87%BA%E3%81%A8%E4%BF%AE%E6%AD%A3-exametrika-4-%E4%BB%B6"></a></h3>
+<p>ファイル: 行 / 該当文字列 / 修正内容</p>
+<ul><li>
+<code>R/04C_ParameterEstimation.R:337</code> — IRT slope warning
+<ul><li>
+<code>"... exceeds 10.Please exercise caution ..."</code> (ピリオド後のスペース欠落)</li>
+<li>→ <code>"... exceeds 10. Please exercise caution ..."</code>
+</li>
+</ul></li>
+<li>
+<code>R/02_TestItemFunctions.R:251</code> — <code><a href="reference/CCRR.html">CCRR.nominal()</a></code> の情報メッセージ
+<ul><li>
+<code>"CCRR is for binary data only. Conditional Selection Rate for your polytomous data instead."</code> (動詞 “Using” 欠落)</li>
+<li>→ <code>"... Using Conditional Selection Rate for your polytomous data instead."</code>
+</li>
+<li>L88 (ordinal), L115 (rated), L172 (binary) の parallel メッセージは全て “Using” を含んでおり L251 のみが欠落していた</li>
+</ul></li>
+<li>
+<code>R/09_LDLRA.R:36</code>, <code>R/10_LDB.R:251</code> — max-parents warning
+<ul><li>
+<code>"[Caution!] The maximum number of parents per item is N, Please check."</code> (カンマで継いで Please)</li>
+<li>→ <code>"... is N. Please check."</code>
+</li>
+</ul></li>
+</ul></div>
+<div class="section level3">
+<h3 id="検出結果-他プロジェクト">検出結果 (他プロジェクト)<a class="anchor" aria-label="anchor" href="#%E6%A4%9C%E5%87%BA%E7%B5%90%E6%9E%9C-%E4%BB%96%E3%83%97%E3%83%AD%E3%82%B8%E3%82%A7%E3%82%AF%E3%83%88"></a></h3>
+<ul><li>
+<strong>ggExametrika</strong>: typo なし。<code>Clusterd</code> 系は v1.1.1 で既に直しており， R/<em>.R, man/</em>.Rd, vignettes/*.Rmd, NEWS.md, README.md すべてクリーン</li>
+<li>
+<strong>shinyExametrika</strong>: typo なし。ただし <code>inst/i18n/translation.json</code> の 日本語訳で「英字 と 日本語 の間のスペース」が GRM/BNM/LDLRA の 6 行だけ 欠落 (CTT/IRT/LCA/LRA/Biclustering/IRM など他 8 行はスペースあり) → shinyExametrika 側で修正</li>
+</ul></div>
+<div class="section level3">
+<h3 id="影響範囲">影響範囲<a class="anchor" aria-label="anchor" href="#%E5%BD%B1%E9%9F%BF%E7%AF%84%E5%9B%B2"></a></h3>
+<p>すべて文字列の体裁修正のみで挙動変更なし。回帰テスト再生成不要。NEWS.md 1.14.0 に “User-facing message typos and missing-word fixes” として記載。</p>
+</div>
+<div class="section level3">
+<h3 id="専門用語の-low-確信度候補">専門用語の low 確信度候補<a class="anchor" aria-label="anchor" href="#%E5%B0%82%E9%96%80%E7%94%A8%E8%AA%9E%E3%81%AE-low-%E7%A2%BA%E4%BF%A1%E5%BA%A6%E5%80%99%E8%A3%9C"></a></h3>
+<p>各エージェントの low セクションは空 (biclustering/ranklustering/IRM/LDLRA 等の造語は除外指示済み)。確認を仰ぐ案件なし。</p>
+</div>
+</div>
+<div class="section level2">
 <h2 id="id_2026-06-02--v1140-biclustering-plot-のtypo修正-clusterd---clustered">2026-06-02 — v1.14.0 Biclustering plot のtypo修正 (Clusterd -&gt; Clustered)<a class="anchor" aria-label="anchor" href="#id_2026-06-02--v1140-biclustering-plot-%E3%81%AEtypo%E4%BF%AE%E6%AD%A3-clusterd---clustered"></a></h2>
 <p>殿（プロジェクトオーナー）から ggExametrika 経由で「ggArrayプロットに Clustered Data とすべきところが Clusterd Data になっている」との指摘。 ggExametrika の引数名 (<code>Clusterd*</code>) を辿ると本家 exametrika 内部 (<code>R/00_plot_biclustering.R</code>) にも同種のtypoが存在していた。</p>
 <div class="section level3">
@@ -50,7 +95,7 @@
 </li>
 </ul></div>
 <div class="section level3">
-<h3 id="影響範囲">影響範囲<a class="anchor" aria-label="anchor" href="#%E5%BD%B1%E9%9F%BF%E7%AF%84%E5%9B%B2"></a></h3>
+<h3 id="影響範囲-1">影響範囲<a class="anchor" aria-label="anchor" href="#%E5%BD%B1%E9%9F%BF%E7%AF%84%E5%9B%B2-1"></a></h3>
 <p>引数名にはtypoなし。<code><a href="reference/plot.exametrika.html">plot.exametrika()</a></code> の Biclustering 経路は表示文字列 のみが変わるユーザ可視変更で，API 影響はゼロ。Mathematica reference fixture には main title 文字列は含まれないので回帰テストの再生成は不要。</p>
 </div>
 <div class="section level3">

@@ -4,6 +4,56 @@ Detailed development log. User-facing changes go in `NEWS.md`; this file
 captures the per-session internal narrative (why a change was made, what
 was investigated, what was ruled out). Entries are newest-first.
 
+## 2026-06-02 (PM) — exametrika 一家 ユーザ可視文字列 typo 総点検
+
+`Clusterd` -\> `Clustered` の修正がきっかけで，殿から「人様の目に触れる
+plot/message/print/cat 等の出力に他にも typo
+がないか総点検せよ」と指示。 exametrika/ggExametrika/shinyExametrika
+の3プロジェクトに Explore エージェント を割り当てて並列実行。
+
+### 検出と修正 (exametrika 4 件)
+
+ファイル: 行 / 該当文字列 / 修正内容
+
+- `R/04C_ParameterEstimation.R:337` — IRT slope warning
+  - `"... exceeds 10.Please exercise caution ..."`
+    (ピリオド後のスペース欠落)
+  - → `"... exceeds 10. Please exercise caution ..."`
+- `R/02_TestItemFunctions.R:251` —
+  [`CCRR.nominal()`](https://kosugitti.github.io/exametrika/reference/CCRR.md)
+  の情報メッセージ
+  - `"CCRR is for binary data only. Conditional Selection Rate for your polytomous data instead."`
+    (動詞 “Using” 欠落)
+  - →
+    `"... Using Conditional Selection Rate for your polytomous data instead."`
+  - L88 (ordinal), L115 (rated), L172 (binary) の parallel
+    メッセージは全て “Using” を含んでおり L251 のみが欠落していた
+- `R/09_LDLRA.R:36`, `R/10_LDB.R:251` — max-parents warning
+  - `"[Caution!] The maximum number of parents per item is N, Please check."`
+    (カンマで継いで Please)
+  - → `"... is N. Please check."`
+
+### 検出結果 (他プロジェクト)
+
+- **ggExametrika**: typo なし。`Clusterd` 系は v1.1.1 で既に直しており，
+  R/*.R, man/*.Rd, vignettes/\*.Rmd, NEWS.md, README.md すべてクリーン
+- **shinyExametrika**: typo なし。ただし `inst/i18n/translation.json` の
+  日本語訳で「英字 と 日本語 の間のスペース」が GRM/BNM/LDLRA の 6
+  行だけ 欠落 (CTT/IRT/LCA/LRA/Biclustering/IRM など他 8
+  行はスペースあり) → shinyExametrika 側で修正
+
+### 影響範囲
+
+すべて文字列の体裁修正のみで挙動変更なし。回帰テスト再生成不要。NEWS.md
+1.14.0 に “User-facing message typos and missing-word fixes”
+として記載。
+
+### 専門用語の low 確信度候補
+
+各エージェントの low セクションは空
+(biclustering/ranklustering/IRM/LDLRA
+等の造語は除外指示済み)。確認を仰ぐ案件なし。
+
 ## 2026-06-02 — v1.14.0 Biclustering plot のtypo修正 (Clusterd -\> Clustered)
 
 殿（プロジェクトオーナー）から ggExametrika 経由で「ggArrayプロットに

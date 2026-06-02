@@ -334,7 +334,7 @@ IRT <- function(U, model = 2, na = NULL, Z = NULL, w = NULL, verbose = TRUE) {
 
   #### Warning
   if (sum(paramset[, 1] > 10) > 0) {
-    warning("Some items have a discrimination parameter that exceeds 10.Please exercise caution in interpreting the model.")
+    warning("Some items have a discrimination parameter that exceeds 10. Please exercise caution in interpreting the model.")
   }
 
   ## Returns

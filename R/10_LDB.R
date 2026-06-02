@@ -248,7 +248,7 @@ LDB <- function(U, Z = NULL, w = NULL, na = NULL,
   }
 
   if (max(nparent) > maxnpa) {
-    warning("[Caution!] The maximum number of parents per item is ", maxnpa, ", Please check.")
+    warning("[Caution!] The maximum number of parents per item is ", maxnpa, ". Please check.")
   }
 
   flddist <- colSums(ret.Biclustering$FieldMembership)

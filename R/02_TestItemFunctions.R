@@ -248,7 +248,7 @@ CCRR.binary <- function(U, na = NULL, Z = NULL, w = NULL) {
 #' @rdname CCRR
 #' @export
 CCRR.nominal <- function(U, na = NULL, Z = NULL, w = NULL) {
-  message("CCRR is for binary data only. Conditional Selection Rate for your polytomous data instead.")
+  message("CCRR is for binary data only. Using Conditional Selection Rate for your polytomous data instead.")
   CSR(U)
 }
 #' @title Item Lift

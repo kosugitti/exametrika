@@ -2,6 +2,22 @@
 
 ## Bug fixes
 
+- **User-facing message typos and missing-word fixes.** Four cosmetic but
+  user-visible string fixes following a family-wide audit (exametrika,
+  ggExametrika, shinyExametrika) prompted by the `Clusterd` -> `Clustered`
+  rename. No behaviour change; messages now read correctly.
+  - `R/04C_ParameterEstimation.R`: IRT slope warning had a missing space
+    after the period (`"... exceeds 10.Please exercise caution ..."`
+    -> `"... exceeds 10. Please exercise caution ..."`).
+  - `R/02_TestItemFunctions.R`: `CCRR.nominal()` info message was missing
+    the verb "Using" (`"... binary data only. Conditional Selection Rate
+    for your polytomous data instead."` -> `"... binary data only. Using
+    Conditional Selection Rate for your polytomous data instead."`), now
+    matching the parallel messages in `CCRR.ordinal`/`CCRR.rated`/`CCRR.binary`.
+  - `R/09_LDLRA.R` and `R/10_LDB.R`: max-parents warning had a comma
+    where a period belongs (`"... is N, Please check."` -> `"... is N.
+    Please check."`).
+
 - **`plot.exametrika()` Biclustering panel: typo "Clusterd" -> "Clustered".**
   Fixed a long-standing misspelling in the base-R Biclustering array plot
   (`R/00_plot_biclustering.R`): the panel title `"Clusterd Data"` is now

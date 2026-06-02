@@ -33,7 +33,7 @@ LD_param_est <- function(tmp, adj_list, classRefMat, ncls, smoothpost, beta1 = 2
   }
 
   if (max(nparent) > maxnpa) {
-    warning("[Caution!] The maximum number of parents per item is ", maxnpa, ", Please check.")
+    warning("[Caution!] The maximum number of parents per item is ", maxnpa, ". Please check.")
   }
 
   # PIRP  --------------------------------------------------------------

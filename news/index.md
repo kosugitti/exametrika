@@ -4,6 +4,18 @@
 
 ### Bug fixes
 
+- **[`plot.exametrika()`](https://kosugitti.github.io/exametrika/reference/plot.exametrika.md)
+  Biclustering panel: typo “Clusterd” -\> “Clustered”.** Fixed a
+  long-standing misspelling in the base-R Biclustering array plot
+  (`R/00_plot_biclustering.R`): the panel title `"Clusterd Data"` is now
+  `"Clustered Data"`, the inline comment `## Clusterd Plot` is corrected
+  to `## Clustered Plot`, and the internal variable `clusterd_data` is
+  renamed to `clustered_data`. No user-facing API change. The downstream
+  `ggExametrika::plotArray_gg()` had inherited and propagated the typo
+  into its argument names (`Clusterd`, `Clusterd_lines`,
+  `Clusterd_lines_color`); that is being corrected in ggExametrika 1.1.1
+  as a coordinated release.
+
 - **Binary IRM: crash on real data with missing values.**
   `Biclustering_IRM` on a binary `exametrika` data object containing
   missing cells (`tmp$Z[s, j] == 0`) crashed with

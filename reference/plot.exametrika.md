@@ -232,7 +232,13 @@ plot(
 
 - ...:
 
-  Additional arguments passed to plotting functions.
+  Additional graphical parameters passed to the underlying base R
+  plotting functions. Standard parameters such as `pch`, `las`, `cex`,
+  `col`, `lty`, and `lwd` are forwarded consistently to all plot types
+  (including manually drawn axes), so they can be used to customise
+  point symbols, axis-label orientation, text sizes, and other graphical
+  elements. User-supplied values take precedence over the package
+  defaults (e.g. `xlab`, `ylab`, `main` can be overridden).
 
 ## Value
 

@@ -3,7 +3,7 @@
 
 #' FieldPIRP plot (LDB only)
 #' @noRd
-plot_field_pirp <- function(x) {
+plot_field_pirp <- function(x, dots = list()) {
   target <- x$IRP
   ## rank x field x nrs
   Nrank <- dim(target)[1]
@@ -13,17 +13,22 @@ plot_field_pirp <- function(x) {
     mat <- target[i, , ]
     mat[mat == 0] <- NA
     xvals <- 0:nrs
-    plot(xvals,
-      y = runif(length(xvals)), type = "n",
-      xlim = c(0, nrs), ylim = c(0, 1),
-      xlab = "PIRP(Number-Right Score) in Parent Field(s)",
-      ylab = "Correct Response Rate"
+    call_plot(
+      plot,
+      list(
+        x = xvals,
+        y = runif(length(xvals)), type = "n",
+        xlim = c(0, nrs), ylim = c(0, 1),
+        xlab = "PIRP(Number-Right Score) in Parent Field(s)",
+        ylab = "Correct Response Rate"
+      ),
+      dots
     )
     for (j in 1:NROW(mat)) {
       y <- as.vector(na.omit(mat[j, ]))
       xvals_j <- seq(0, nrs)[1:length(y)]
       labels <- rep(as.character(j), length(y))
-      lines(xvals_j, y, type = "l", lwd = 2)
+      call_plot(graphics::lines, list(x = xvals_j, y = y, type = "l", lwd = 2), dots)
       text(xvals_j, y, labels = labels, pos = 1)
     }
     title(main = paste("Rank", i))
@@ -32,22 +37,27 @@ plot_field_pirp <- function(x) {
 
 #' LDPSR plot (BINET only)
 #' @noRd
-plot_ldpsr <- function(x) {
+plot_ldpsr <- function(x, dots = list()) {
   for (i in 1:length(x$params)) {
     target <- x$params[[i]]
     ln <- length(target$fld)
     lb <- names(target$chap)
     y1 <- target$pap
     y2 <- target$chap
-    plot(1:ln, y1,
-      type = "b", xaxt = "n",
-      col = 3, lwd = 2, ylim = c(0, 1),
-      ylab = "Probability",
-      xlab = "",
-      main = paste("Field", i, "items")
+    call_plot(
+      plot,
+      list(
+        x = 1:ln, y = y1,
+        type = "b", xaxt = "n",
+        col = 3, lwd = 2, ylim = c(0, 1),
+        ylab = "Probability",
+        xlab = "",
+        main = paste("Field", i, "items")
+      ),
+      dots
     )
-    lines(1:ln, y2, col = 2, lwd = 2, type = "b")
-    axis(1, at = 1:ln, labels = lb)
+    call_plot(graphics::lines, list(x = 1:ln, y = y2, col = 2, lwd = 2, type = "b"), dots)
+    call_plot(graphics::axis, list(side = 1, at = 1:ln, labels = lb), dots)
     posx <- length(1:ln)
     text(
       x = posx, y = y1[posx], labels = paste("C", target$parent),

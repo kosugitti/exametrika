@@ -1,6 +1,40 @@
 # exametrika 1.14.0
 
+## Improvements
+
+- **`plot.exametrika()` now forwards graphical parameters supplied via `...`
+  to every plot type (R Journal review request).** Previously the `...`
+  argument documented on the `plot.exametrika()` help page was captured but
+  never passed on: the internal dispatch functions (`plot_irt_model()`,
+  `plot_grm_model()`, `plot_common_profiles()`, the polytomous Biclustering
+  plotters, the array plot, and the network plotters) did not accept or
+  propagate it, so standard graphical parameters were silently ignored. For
+  example, `plot(result.LRA, type = "IRP", items = 1:4, nc = 2, nr = 2,
+  las = 2, pch = 16)` changed neither the axis-label orientation (`las`)
+  nor the plotting symbol (`pch`).
+
+  User-supplied parameters are now forwarded consistently to the underlying
+  base R plotting calls (`plot`, `barplot`, `image`, `lines`, `curve`) for
+  **all** plot types, **including manually drawn axes** so that `las`,
+  `cex.axis`, and similar parameters take effect on every axis. Standard
+  parameters such as `pch`, `las`, `cex`, `col`, `lty`, and `lwd` work as
+  expected, and user values take precedence over the package defaults, so
+  `xlab`, `ylab`, `main`, etc. can be overridden. This is achieved without
+  adding any dependency: the package remains lightweight and base-graphics
+  only.
+
+  Internally this is implemented via small helpers (`merge_plot_dots()`,
+  `call_plot()`, `draw_curve()`) that merge the package defaults with the
+  user's `...` (user wins) and dispatch through `do.call()`; the IRT/GRM
+  curves are drawn by grid evaluation through `draw_curve()` instead of
+  `curve()` so that the non-standard evaluation of `curve()`'s first
+  argument does not block parameter forwarding.
+
 ## Bug fixes
+
+- **IRT Test Information Function plot title typo.** The `type = "TIF"`
+  plot for IRT models had `main = "Test Informaiton Function"`; it now reads
+  `"Test Information Function"` (`R/00_plot_irt.R`).
 
 - **User-facing message typos and missing-word fixes.** Four cosmetic but
   user-visible string fixes following a family-wide audit (exametrika,

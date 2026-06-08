@@ -27,7 +27,7 @@ calc_expected_scores <- function(BCRM, stat) {
 
 #' FRP: expected score line plot
 #' @noRd
-plot_poly_frp <- function(x, stat, nc, nr) {
+plot_poly_frp <- function(x, stat, nc, nr, dots = list()) {
   BCRM <- x$FRP
   nfld <- dim(BCRM)[1]
   ncls <- dim(BCRM)[2]
@@ -38,22 +38,27 @@ plot_poly_frp <- function(x, stat, nc, nr) {
 
   for (f in 1:nfld) {
     y <- FRP_mat[f, ]
-    plot(1:ncls, y,
-      type = "b", pch = 19, lwd = 2,
-      xlab = paste("Latent", msg),
-      ylab = paste0("Expected Score (", stat, ")"),
-      ylim = c(1, maxQ),
-      xaxt = "n",
-      main = paste("Field", f)
+    call_plot(
+      plot,
+      list(
+        x = 1:ncls, y = y,
+        type = "b", pch = 19, lwd = 2,
+        xlab = paste("Latent", msg),
+        ylab = paste0("Expected Score (", stat, ")"),
+        ylim = c(1, maxQ),
+        xaxt = "n",
+        main = paste("Field", f)
+      ),
+      dots
     )
-    axis(1, at = 1:ncls)
+    call_plot(graphics::axis, list(side = 1, at = 1:ncls), dots)
     abline(h = 1:maxQ, col = "gray90", lty = 3)
   }
 }
 
 #' FCRP: category probability plot
 #' @noRd
-plot_poly_fcrp <- function(x, style, nc, nr) {
+plot_poly_fcrp <- function(x, style, nc, nr, dots = list()) {
   BCRM <- x$FRP
   nfld <- dim(BCRM)[1]
   ncls <- dim(BCRM)[2]
@@ -65,29 +70,44 @@ plot_poly_fcrp <- function(x, style, nc, nr) {
 
   for (f in 1:nfld) {
     if (style == "line") {
-      plot(1:ncls, BCRM[f, , 1],
-        type = "n",
-        xlab = paste("Latent", msg),
-        ylab = "Category Probability",
-        ylim = c(0, 1),
-        xaxt = "n",
-        main = paste("Field", f, "- Category Response")
+      call_plot(
+        plot,
+        list(
+          x = 1:ncls, y = BCRM[f, , 1],
+          type = "n",
+          xlab = paste("Latent", msg),
+          ylab = "Category Probability",
+          ylim = c(0, 1),
+          xaxt = "n",
+          main = paste("Field", f, "- Category Response")
+        ),
+        dots
       )
-      axis(1, at = 1:ncls)
+      call_plot(graphics::axis, list(side = 1, at = 1:ncls), dots)
       for (q in 1:maxQ) {
-        lines(1:ncls, BCRM[f, , q],
-          type = "b", pch = q, lty = q, col = cols[q], lwd = 1.5
+        call_plot(
+          graphics::lines,
+          list(
+            x = 1:ncls, y = BCRM[f, , q],
+            type = "b", pch = q, lty = q, col = cols[q], lwd = 1.5
+          ),
+          dots
         )
       }
     } else if (style == "bar") {
       bar_data <- t(BCRM[f, , ])
-      barplot(bar_data,
-        col = cols[1:maxQ],
-        names.arg = paste0(substr(msg, 1, 1), 1:ncls),
-        xlab = paste("Latent", msg),
-        ylab = "Category Probability",
-        ylim = c(0, 1),
-        main = paste("Field", f, "- Category Response")
+      call_plot(
+        graphics::barplot,
+        list(
+          height = bar_data,
+          col = cols[1:maxQ],
+          names.arg = paste0(substr(msg, 1, 1), 1:ncls),
+          xlab = paste("Latent", msg),
+          ylab = "Category Probability",
+          ylim = c(0, 1),
+          main = paste("Field", f, "- Category Response")
+        ),
+        dots
       )
     }
   }
@@ -109,7 +129,7 @@ plot_poly_fcrp <- function(x, style, nc, nr) {
 
 #' FCBR: boundary probability plot (ordinal Biclustering only)
 #' @noRd
-plot_poly_fcbr <- function(x, nc, nr) {
+plot_poly_fcbr <- function(x, nc, nr, dots = list()) {
   BCRM <- x$FRP
   nfld <- dim(BCRM)[1]
   ncls <- dim(BCRM)[2]
@@ -129,22 +149,37 @@ plot_poly_fcbr <- function(x, nc, nr) {
       }
     }
 
-    plot(1:ncls, boundary_probs[1, ],
-      type = "n",
-      xlab = paste("Latent", msg),
-      ylab = "Boundary Probability",
-      ylim = c(0, 1),
-      xaxt = "n",
-      main = paste("Field", f, "- Boundary Prob")
+    call_plot(
+      plot,
+      list(
+        x = 1:ncls, y = boundary_probs[1, ],
+        type = "n",
+        xlab = paste("Latent", msg),
+        ylab = "Boundary Probability",
+        ylim = c(0, 1),
+        xaxt = "n",
+        main = paste("Field", f, "- Boundary Prob")
+      ),
+      dots
     )
-    axis(1, at = 1:ncls)
+    call_plot(graphics::axis, list(side = 1, at = 1:ncls), dots)
     # P(Q >= 1) = 1.0 reference line
-    lines(1:ncls, rep(1, ncls),
-      type = "b", pch = 0, lty = 1, col = "gray60", lwd = 1
+    call_plot(
+      graphics::lines,
+      list(
+        x = 1:ncls, y = rep(1, ncls),
+        type = "b", pch = 0, lty = 1, col = "gray60", lwd = 1
+      ),
+      dots
     )
     for (b in 1:n_boundaries) {
-      lines(1:ncls, boundary_probs[b, ],
-        type = "b", pch = b, lty = b, col = cols[b], lwd = 1.5
+      call_plot(
+        graphics::lines,
+        list(
+          x = 1:ncls, y = boundary_probs[b, ],
+          type = "b", pch = b, lty = b, col = cols[b], lwd = 1.5
+        ),
+        dots
       )
     }
   }
@@ -160,7 +195,7 @@ plot_poly_fcbr <- function(x, nc, nr) {
 
 #' ScoreField: expected score heatmap
 #' @noRd
-plot_scorefield <- function(x) {
+plot_scorefield <- function(x, dots = list()) {
   BCRM <- x$FRP
   nfld <- dim(BCRM)[1]
   ncls <- dim(BCRM)[2]
@@ -175,17 +210,21 @@ plot_scorefield <- function(x) {
   }
 
   par(mfrow = c(1, 1))
-  image(
-    x = 1:ncls, y = 1:nfld,
-    z = t(score_mat),
-    col = hcl.colors(50, "YlOrRd", rev = TRUE),
-    xlab = paste("Latent", msg),
-    ylab = "Field",
-    main = "Score Field Heatmap",
-    xaxt = "n", yaxt = "n"
+  call_plot(
+    graphics::image,
+    list(
+      x = 1:ncls, y = 1:nfld,
+      z = t(score_mat),
+      col = hcl.colors(50, "YlOrRd", rev = TRUE),
+      xlab = paste("Latent", msg),
+      ylab = "Field",
+      main = "Score Field Heatmap",
+      xaxt = "n", yaxt = "n"
+    ),
+    dots
   )
-  axis(1, at = 1:ncls, labels = paste0(substr(msg, 1, 1), 1:ncls))
-  axis(2, at = 1:nfld, labels = paste0("F", 1:nfld))
+  call_plot(graphics::axis, list(side = 1, at = 1:ncls, labels = paste0(substr(msg, 1, 1), 1:ncls)), dots)
+  call_plot(graphics::axis, list(side = 2, at = 1:nfld, labels = paste0("F", 1:nfld)), dots)
 
   for (f in 1:nfld) {
     for (cc in 1:ncls) {
@@ -196,7 +235,7 @@ plot_scorefield <- function(x) {
 
 #' RRV: transposed field-axis version (polytomous Biclustering)
 #' @noRd
-plot_poly_rrv <- function(x, stat) {
+plot_poly_rrv <- function(x, stat, dots = list()) {
   BCRM <- x$FRP
   nfld <- dim(BCRM)[1]
   ncls <- dim(BCRM)[2]
@@ -207,20 +246,25 @@ plot_poly_rrv <- function(x, stat) {
   RRV <- t(FRP_mat)
 
   par(mfrow = c(1, 1))
-  plot(1:nfld, RRV[1, ],
-    type = "n",
-    ylim = c(1, maxQ),
-    xlab = "Field",
-    ylab = paste0("Expected Score (", stat, ")"),
-    main = paste(msg, "Reference Vector (", stat, ")"),
-    xaxt = "n", bty = "n"
+  call_plot(
+    plot,
+    list(
+      x = 1:nfld, y = RRV[1, ],
+      type = "n",
+      ylim = c(1, maxQ),
+      xlab = "Field",
+      ylab = paste0("Expected Score (", stat, ")"),
+      main = paste(msg, "Reference Vector (", stat, ")"),
+      xaxt = "n", bty = "n"
+    ),
+    dots
   )
-  axis(1, at = 1:nfld, labels = paste0("F", 1:nfld))
+  call_plot(graphics::axis, list(side = 1, at = 1:nfld, labels = paste0("F", 1:nfld)), dots)
   abline(h = 1:maxQ, col = "gray90", lty = 3)
 
   cols <- get_cb_palette(ncls)
   for (i in 1:ncls) {
-    lines(1:nfld, RRV[i, ], type = "o", lty = i, col = cols[i], lwd = 1.5)
+    call_plot(graphics::lines, list(x = 1:nfld, y = RRV[i, ], type = "o", lty = i, col = cols[i], lwd = 1.5), dots)
     for (j in 1:nfld) {
       text(j, RRV[i, j], labels = i, pos = 3, offset = 0.5, cex = 0.8)
     }

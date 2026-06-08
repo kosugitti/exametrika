@@ -1,6 +1,45 @@
 # Biclustering plot functions (binary Array + shared color palette)
 # Internal functions called from plot.exametrika()
 
+#' Merge default plotting arguments with user-supplied graphical parameters
+#'
+#' User-supplied arguments collected by \code{...} in \code{plot.exametrika()}
+#' (passed down as \code{dots}) take precedence over the package defaults, so
+#' callers can override \code{xlab}, \code{ylab}, \code{main}, etc., and add
+#' standard graphical parameters such as \code{pch}, \code{las}, \code{cex}.
+#' Base graphics functions (\code{plot}, \code{barplot}, \code{image},
+#' \code{axis}, \code{lines}, \code{curve}) silently ignore graphical
+#' parameters that do not apply, so the merged list can be forwarded verbatim.
+#' @noRd
+merge_plot_dots <- function(defaults, dots) {
+  if (length(dots)) utils::modifyList(defaults, dots) else defaults
+}
+
+#' Call a base graphics function with defaults overridable by user dots
+#' @noRd
+call_plot <- function(.fun, defaults, dots = list()) {
+  do.call(.fun, merge_plot_dots(defaults, dots))
+}
+
+#' Draw a curve by grid evaluation, honouring user graphical parameters
+#'
+#' Replacement for \code{curve()} that evaluates \code{fn} (a vectorised
+#' function of the abscissa) on a grid and draws it via \code{plot}/\code{lines}
+#' through \code{call_plot()}, so user-supplied \code{...} arguments are
+#' applied. Using grid evaluation avoids the non-standard evaluation of
+#' \code{curve()}'s first argument.
+#' @noRd
+draw_curve <- function(fn, from = -4, to = 4, n = 201, add = FALSE,
+                       defaults = list(), dots = list()) {
+  xx <- seq(from, to, length.out = n)
+  yy <- fn(xx)
+  if (add) {
+    call_plot(graphics::lines, c(list(x = xx, y = yy), defaults), dots)
+  } else {
+    call_plot(plot, c(list(x = xx, y = yy, type = "l"), defaults), dots)
+  }
+}
+
 #' Colorblind-friendly palette (Paul Tol Vibrant + Bright extension)
 #' @noRd
 get_cb_palette <- function(n) {
@@ -52,7 +91,7 @@ draw_legend_strip <- function(...) {
 
 #' Array plot (shared by Biclustering / IRM / LDB / BINET)
 #' @noRd
-plot_array <- function(x, cell_width, cell_height, colors) {
+plot_array <- function(x, cell_width, cell_height, colors, dots = list()) {
   cell_w <- cell_width
   cell_h <- cell_height
   old_par <- par(no.readonly = TRUE)
@@ -123,11 +162,16 @@ plot_array <- function(x, cell_width, cell_height, colors) {
   plot_height <- nrows * cell_h
 
   # original data
-  plot(0, 0,
-    type = "n",
-    xlim = c(0, plot_width), ylim = c(0, plot_height),
-    xlab = "", ylab = "", xaxt = "n", yaxt = "n",
-    main = "Original Data", frame.plot = TRUE
+  call_plot(
+    plot,
+    list(
+      x = 0, y = 0,
+      type = "n",
+      xlim = c(0, plot_width), ylim = c(0, plot_height),
+      xlab = "", ylab = "", xaxt = "n", yaxt = "n",
+      main = "Original Data", frame.plot = TRUE
+    ),
+    dots
   )
   for (i in 1:nrows) {
     for (j in 1:ncols) {
@@ -149,11 +193,16 @@ plot_array <- function(x, cell_width, cell_height, colors) {
   }
 
   ## Clustered Plot
-  plot(0, 0,
-    type = "n",
-    xlim = c(0, plot_width), ylim = c(0, plot_height),
-    xlab = "", ylab = "", xaxt = "n", yaxt = "n",
-    main = "Clustered Data", frame.plot = TRUE
+  call_plot(
+    plot,
+    list(
+      x = 0, y = 0,
+      type = "n",
+      xlim = c(0, plot_width), ylim = c(0, plot_height),
+      xlab = "", ylab = "", xaxt = "n", yaxt = "n",
+      main = "Clustered Data", frame.plot = TRUE
+    ),
+    dots
   )
   for (i in 1:nrows) {
     for (j in 1:ncols) {

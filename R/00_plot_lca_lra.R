@@ -3,7 +3,7 @@
 
 #' Common profile plots (IRP / FRP / TRP / LCD / LRD / CMP / RMP / CRV / RRV)
 #' @noRd
-plot_common_profiles <- function(x, type, value, plotItemID, plotStudentID, testlength) {
+plot_common_profiles <- function(x, type, value, plotItemID, plotStudentID, testlength, dots = list()) {
   if (type == "IRP") {
     # Item Reference Profile ----------------------------------------
     msg <- x$msg
@@ -15,15 +15,20 @@ plot_common_profiles <- function(x, type, value, plotItemID, plotStudentID, test
     }
     for (i in 1:nrow(params)) {
       y <- params[i, ]
-      plot(y,
-        type = "b",
-        ylab = "Correct Response Rate",
-        xlab = paste("Latent", msg),
-        ylim = c(0, 1),
-        xaxt = "n",
-        main = paste("Item", i)
+      call_plot(
+        plot,
+        list(
+          x = y,
+          type = "b",
+          ylab = "Correct Response Rate",
+          xlab = paste("Latent", msg),
+          ylim = c(0, 1),
+          xaxt = "n",
+          main = paste("Item", i)
+        ),
+        dots
       )
-      axis(1, at = 1:steps)
+      call_plot(graphics::axis, list(side = 1, at = 1:steps), dots)
     }
   }
   if (type == "FRP") {
@@ -32,12 +37,17 @@ plot_common_profiles <- function(x, type, value, plotItemID, plotStudentID, test
     msg <- x$msg
     for (i in 1:nrow(params)) {
       y <- params[i, ]
-      plot(y,
-        type = "b",
-        ylab = "Correct Response Rate",
-        xlab = paste("Latent", msg),
-        ylim = c(0, 1),
-        main = paste("Field", i)
+      call_plot(
+        plot,
+        list(
+          x = y,
+          type = "b",
+          ylab = "Correct Response Rate",
+          xlab = paste("Latent", msg),
+          ylim = c(0, 1),
+          main = paste("Field", i)
+        ),
+        dots
       )
     }
   }
@@ -45,17 +55,22 @@ plot_common_profiles <- function(x, type, value, plotItemID, plotStudentID, test
     # Rank Reference Vector -------------------------------------------
     msg <- x$msg
     RRV <- t(x$FRP)
-    plot(1:x$Nfield, RRV[1, ],
-      type = "n",
-      ylim = c(0, 1.1),
-      xlab = "Field",
-      ylab = "Correct Response Rate",
-      main = paste(msg, "Reference Vector"),
-      xaxt = "n", bty = "n"
+    call_plot(
+      plot,
+      list(
+        x = 1:x$Nfield, y = RRV[1, ],
+        type = "n",
+        ylim = c(0, 1.1),
+        xlab = "Field",
+        ylab = "Correct Response Rate",
+        main = paste(msg, "Reference Vector"),
+        xaxt = "n", bty = "n"
+      ),
+      dots
     )
-    axis(1, at = 1:x$Nfield, labels = colnames(RRV))
+    call_plot(graphics::axis, list(side = 1, at = 1:x$Nfield, labels = colnames(RRV)), dots)
     for (i in 1:x$Nclass) {
-      lines(1:x$Nfield, RRV[i, ], type = "o", lty = i)
+      call_plot(graphics::lines, list(x = 1:x$Nfield, y = RRV[i, ], type = "o", lty = i), dots)
       for (j in 1:x$Nfield) {
         text(j, RRV[i, j], labels = i, pos = 3, offset = 0.5, cex = 0.8)
       }
@@ -101,23 +116,33 @@ plot_common_profiles <- function(x, type, value, plotItemID, plotStudentID, test
     }
     names.arg <- 1:steps
 
-    bp <- barplot(target,
-      width = .9,
-      ylim = c(0, max(target) + 10),
-      xlim = c(0, steps + 1),
-      xlab = paste("Latent", msg),
-      ylab = "Number of Students"
+    bp <- call_plot(
+      graphics::barplot,
+      list(
+        height = target,
+        width = .9,
+        ylim = c(0, max(target) + 10),
+        xlim = c(0, steps + 1),
+        xlab = paste("Latent", msg),
+        ylab = "Number of Students"
+      ),
+      dots
     )
     text(x = bp, y = target, label = target, pos = 1, cex = 1.2)
     par(new = TRUE)
-    plot(bp, x$TRP,
-      type = "b", pch = 19, lty = 1,
-      axes = FALSE, xaxt = "n", xlab = "", ylab = "",
-      bty = "n",
-      ylim = c(0, testlength),
-      xlim = c(0, steps + 1),
+    call_plot(
+      plot,
+      list(
+        x = bp, y = x$TRP,
+        type = "b", pch = 19, lty = 1,
+        axes = FALSE, xaxt = "n", xlab = "", ylab = "",
+        bty = "n",
+        ylim = c(0, testlength),
+        xlim = c(0, steps + 1)
+      ),
+      dots
     )
-    axis(4, at = pretty(range(0, testlength)))
+    call_plot(graphics::axis, list(side = 4, at = pretty(range(0, testlength))), dots)
     mtext("Expected Score", side = 4, line = 3)
   }
   if (type == "LCD" | type == "LRD") {
@@ -146,24 +171,34 @@ plot_common_profiles <- function(x, type, value, plotItemID, plotStudentID, test
     } else {
       steps <- x$Nclass
     }
-    bp <- barplot(target1,
-      names.arg = 1:steps,
-      width = .9,
-      ylim = c(0, max(target1) + 10),
-      xlim = c(0, steps + 1),
-      xlab = paste("Latent", msg),
-      ylab = "Number of Students"
+    bp <- call_plot(
+      graphics::barplot,
+      list(
+        height = target1,
+        names.arg = 1:steps,
+        width = .9,
+        ylim = c(0, max(target1) + 10),
+        xlim = c(0, steps + 1),
+        xlab = paste("Latent", msg),
+        ylab = "Number of Students"
+      ),
+      dots
     )
     text(x = bp, y = target1, label = target1, pos = 1, cex = 1.2)
     par(new = TRUE)
-    plot(bp, target2,
-      type = "b", pch = 19, lty = 1,
-      axes = FALSE, xaxt = "n", xlab = "", ylab = "",
-      bty = "n",
-      ylim = c(0, max(target1) + 10),
-      xlim = c(0, steps + 1),
+    call_plot(
+      plot,
+      list(
+        x = bp, y = target2,
+        type = "b", pch = 19, lty = 1,
+        axes = FALSE, xaxt = "n", xlab = "", ylab = "",
+        bty = "n",
+        ylim = c(0, max(target1) + 10),
+        xlim = c(0, steps + 1)
+      ),
+      dots
     )
-    axis(4, at = pretty(range(0, max(target2) + 10)))
+    call_plot(graphics::axis, list(side = 4, at = pretty(range(0, max(target2) + 10))), dots)
     mtext("Frequency", side = 4, line = 3)
   }
   if (type == "CMP" | type == "RMP") {
@@ -177,12 +212,17 @@ plot_common_profiles <- function(x, type, value, plotItemID, plotStudentID, test
     params <- x$Students[plotStudentID, 1:steps, drop = FALSE]
     for (i in 1:NROW(params)) {
       y <- params[i, ]
-      plot(y,
-        type = "b",
-        xlab = paste("Latent", msg),
-        ylab = "Membership",
-        ylim = c(0, 1),
-        main = paste("Student", plotStudentID[i])
+      call_plot(
+        plot,
+        list(
+          x = y,
+          type = "b",
+          xlab = paste("Latent", msg),
+          ylab = "Membership",
+          ylim = c(0, 1),
+          main = paste("Student", plotStudentID[i])
+        ),
+        dots
       )
     }
   }
@@ -190,19 +230,19 @@ plot_common_profiles <- function(x, type, value, plotItemID, plotStudentID, test
 
 #' LRA ordinal/rated plot dispatch
 #' @noRd
-plot_lra_ordinal <- function(x, type, plotItemID) {
+plot_lra_ordinal <- function(x, type, plotItemID, dots = list()) {
   if (type == "ScoreFreq") {
-    score_freq_plot(x)
+    score_freq_plot(x, dots)
   } else if (type == "ScoreRank") {
-    score_rank_plot(x)
+    score_rank_plot(x, dots)
   } else if (type == "ICRP" || type == "ICBR") {
-    IC_RP_BR_plot(x, type, plotItemID)
+    IC_RP_BR_plot(x, type, plotItemID, dots)
   }
 }
 
 #' ScoreFreq: score distribution frequency polygon
 #' @noRd
-score_freq_plot <- function(x) {
+score_freq_plot <- function(x, dots = list()) {
   tmp <- as.data.frame(x$Students)
   sc <- tmp$Score
   rank <- tmp$Estimate
@@ -212,10 +252,15 @@ score_freq_plot <- function(x) {
     min_rank_next <- min(sc[rank == (i + 1)])
     thresholds[i] <- (max_rank_i + min_rank_next) / 2
   }
-  plot(density(sc),
-    xlab = "Score",
-    ylab = "Frequency",
-    main = "Latent Rank"
+  call_plot(
+    plot,
+    list(
+      x = density(sc),
+      xlab = "Score",
+      ylab = "Frequency",
+      main = "Latent Rank"
+    ),
+    dots
   )
   abline(
     v = thresholds,
@@ -226,24 +271,28 @@ score_freq_plot <- function(x) {
 
 #' ScoreRank: score-membership probability heatmap
 #' @noRd
-score_rank_plot <- function(x) {
+score_rank_plot <- function(x, dots = list()) {
   score_rank_matrix <- x$ScoreRank
-  image(
-    x = 1:ncol(score_rank_matrix),
-    y = as.numeric(rownames(score_rank_matrix)),
-    z = t(score_rank_matrix),
-    col = gray(seq(1, 0, length.out = 100)),
-    xlab = "Latent Rank",
-    ylab = "Score",
-    main = "Score-Rank Distribution",
-    xaxt = "n"
+  call_plot(
+    graphics::image,
+    list(
+      x = 1:ncol(score_rank_matrix),
+      y = as.numeric(rownames(score_rank_matrix)),
+      z = t(score_rank_matrix),
+      col = gray(seq(1, 0, length.out = 100)),
+      xlab = "Latent Rank",
+      ylab = "Score",
+      main = "Score-Rank Distribution",
+      xaxt = "n"
+    ),
+    dots
   )
-  axis(1, at = 1:ncol(score_rank_matrix))
+  call_plot(graphics::axis, list(side = 1, at = 1:ncol(score_rank_matrix)), dots)
 }
 
 #' ICRP / ICBR plot
 #' @noRd
-IC_RP_BR_plot <- function(x, type, plotItemID) {
+IC_RP_BR_plot <- function(x, type, plotItemID, dots = list()) {
   label <- x$U$ItemLabel[plotItemID]
   if (type == "ICRP") {
     tmp <- x$ICRP[x$ICRP$ItemLabel %in% label, ]
@@ -254,14 +303,19 @@ IC_RP_BR_plot <- function(x, type, plotItemID) {
   for (i in 1:length(plotItemID)) {
     slice <- tmp[tmp$ItemLabel == label[i], ]
     slice <- unname(as.matrix(slice[, -c(1:2)]))
-    plot(slice[1, ],
-      type = "l", lty = 1, col = 1, ylim = yRange,
-      xlab = "Rank", ylab = "Probability", main = label[i],
-      xaxt = "n"
+    call_plot(
+      plot,
+      list(
+        x = slice[1, ],
+        type = "l", lty = 1, col = 1, ylim = yRange,
+        xlab = "Rank", ylab = "Probability", main = label[i],
+        xaxt = "n"
+      ),
+      dots
     )
-    axis(1, at = 1:ncol(slice), labels = 1:x$Nrank)
+    call_plot(graphics::axis, list(side = 1, at = 1:ncol(slice), labels = 1:x$Nrank), dots)
     for (j in 1:nrow(slice)) {
-      lines(slice[j, ], lty = j)
+      call_plot(graphics::lines, list(x = slice[j, ], lty = j), dots)
       text(
         x = ncol(slice), y = slice[j, ncol(slice)],
         labels = j, cex = 0.8, ylim = yRange

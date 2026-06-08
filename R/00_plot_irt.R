@@ -3,7 +3,7 @@
 
 #' Plot IRT model (IRF / TRF / IIF / TIF)
 #' @noRd
-plot_irt_model <- function(x, type, plotItemID, nc, nr, overlay, colors) {
+plot_irt_model <- function(x, type, plotItemID, nc, nr, overlay, colors, dots = list()) {
   testlength <- x$testlength
 
   # rename type option
@@ -28,25 +28,28 @@ plot_irt_model <- function(x, type, plotItemID, nc, nr, overlay, colors) {
   plotIRTCurve <- function(params, curveFunc, titleBase, ylab, overlay) {
     if (overlay) {
       setup_legend_layout(1, nc)
-      plot(NULL,
-        xlim = c(-4, 4),
-        ylim = c(0, 1),
-        xlab = "ability",
-        ylab = ylab,
-        main = titleBase
+      call_plot(
+        plot,
+        list(
+          x = NULL,
+          xlim = c(-4, 4),
+          ylim = c(0, 1),
+          xlab = "ability",
+          ylab = ylab,
+          main = titleBase
+        ),
+        dots
       )
       for (i in 1:nrow(params)) {
         a <- params[i, 1]
         b <- params[i, 2]
         c <- if (x$model > 2) params[i, 3] else 0
         d <- if (x$model > 3) params[i, 4] else 1
-        curve(curveFunc(a, b, c, d, theta = x),
-          from = -4,
-          to = 4,
-          add = TRUE,
-          lty = i, # Different line types
-          col = i, # Different colors
-          lwd = 2
+        draw_curve(
+          function(theta) curveFunc(a, b, c, d, theta = theta),
+          from = -4, to = 4, add = TRUE,
+          defaults = list(lty = i, col = i, lwd = 2),
+          dots = dots
         )
       }
       draw_legend_strip(
@@ -63,11 +66,11 @@ plot_irt_model <- function(x, type, plotItemID, nc, nr, overlay, colors) {
         c <- if (x$model > 2) params[i, 3] else 0
         d <- if (x$model > 3) params[i, 4] else 1
         title <- paste0(titleBase, ", item ", plotItemID[i])
-        curve(curveFunc(a, b, c, d, theta = x),
-          from = -4,
-          to = 4,
-          xlab = "ability", ylab = ylab,
-          main = title
+        draw_curve(
+          function(theta) curveFunc(a, b, c, d, theta = theta),
+          from = -4, to = 4,
+          defaults = list(xlab = "ability", ylab = ylab, main = title),
+          dots = dots
         )
       }
     }
@@ -82,11 +85,11 @@ plot_irt_model <- function(x, type, plotItemID, nc, nr, overlay, colors) {
     )
   }
   if (type == "TRF") {
-    curve(exametrika::TestResponseFunc(params, theta = x),
-      from = -4,
-      to = 4,
-      xlab = "ability", ylab = "probability",
-      main = "Test Response Function"
+    draw_curve(
+      function(theta) exametrika::TestResponseFunc(params, theta = theta),
+      from = -4, to = 4,
+      defaults = list(xlab = "ability", ylab = "probability", main = "Test Response Function"),
+      dots = dots
     )
   }
   if (type == "IIF") {
@@ -97,18 +100,18 @@ plot_irt_model <- function(x, type, plotItemID, nc, nr, overlay, colors) {
     )
   }
   if (type == "TIF") {
-    curve(exametrika::TestInformationFunc(params, theta = x),
-      from = -4,
-      to = 4,
-      xlab = "ability", ylab = "Information",
-      main = "Test Informaiton Function"
+    draw_curve(
+      function(theta) exametrika::TestInformationFunc(params, theta = theta),
+      from = -4, to = 4,
+      defaults = list(xlab = "ability", ylab = "Information", main = "Test Information Function"),
+      dots = dots
     )
   }
 }
 
 #' Plot GRM model (IRF / IIF / TIF)
 #' @noRd
-plot_grm_model <- function(x, type, plotItemID, nc, nr, colors) {
+plot_grm_model <- function(x, type, plotItemID, nc, nr, colors, dots = list()) {
   testlength <- x$testlength
 
   # rename type option
@@ -143,15 +146,20 @@ plot_grm_model <- function(x, type, plotItemID, nc, nr, colors) {
     for (i in 1:n_theta) {
       probs[i, ] <- grm_prob(thetas[i], a, b)
     }
-    plot(thetas, probs[, 1],
-      type = "l",
-      col = grm_colors[1],
-      ylim = c(0, 1),
-      xlab = expression(theta),
-      main = title
+    call_plot(
+      plot,
+      list(
+        x = thetas, y = probs[, 1],
+        type = "l",
+        col = grm_colors[1],
+        ylim = c(0, 1),
+        xlab = expression(theta),
+        main = title
+      ),
+      dots
     )
     for (k in 2:K) {
-      lines(thetas, probs[, k], col = grm_colors[k])
+      call_plot(graphics::lines, list(x = thetas, y = probs[, k], col = grm_colors[k]), dots)
     }
   }
 
@@ -159,11 +167,16 @@ plot_grm_model <- function(x, type, plotItemID, nc, nr, colors) {
     thetas <- seq(-4, 4, 0.01)
     I <- sapply(thetas, function(theta) grm_iif(theta, a, b))
 
-    plot(thetas, I,
-      type = "l",
-      xlab = expression(theta),
-      ylab = "Item Information",
-      main = title
+    call_plot(
+      plot,
+      list(
+        x = thetas, y = I,
+        type = "l",
+        xlab = expression(theta),
+        ylab = "Item Information",
+        main = title
+      ),
+      dots
     )
   }
 
@@ -210,11 +223,16 @@ plot_grm_model <- function(x, type, plotItemID, nc, nr, colors) {
       I[j, ] <- sapply(thetas, function(theta) grm_iif(theta, a, b))
     }
     TestInfo <- colSums(I, na.rm = T)
-    plot(thetas, TestInfo,
-      type = "l",
-      xlab = expression(theta),
-      ylab = "Information",
-      main = "Test Information Function"
+    call_plot(
+      plot,
+      list(
+        x = thetas, y = TestInfo,
+        type = "l",
+        xlab = expression(theta),
+        ylab = "Information",
+        main = "Test Information Function"
+      ),
+      dots
     )
   }
 }

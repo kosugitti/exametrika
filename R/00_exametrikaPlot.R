@@ -59,7 +59,14 @@
 #' One of "mean" (default), "median", or "mode".
 #' @param style Character string specifying the display style for FCRP plots.
 #' One of "line" (default) or "bar" (stacked bar chart).
-#' @param ... Additional arguments passed to plotting functions.
+#' @param ... Additional graphical parameters passed to the underlying base R
+#'   plotting functions. Standard parameters such as \code{pch}, \code{las},
+#'   \code{cex}, \code{col}, \code{lty}, and \code{lwd} are forwarded
+#'   consistently to all plot types (including manually drawn axes), so they
+#'   can be used to customise point symbols, axis-label orientation, text
+#'   sizes, and other graphical elements. User-supplied values take precedence
+#'   over the package defaults (e.g. \code{xlab}, \code{ylab}, \code{main} can
+#'   be overridden).
 #'
 #' @details
 #' Each model class supports specific plot types:
@@ -216,70 +223,76 @@ plot.exametrika <- function(x,
     1:nobs
   }
 
+  # Additional graphical parameters supplied via ... are forwarded to the
+  # underlying base graphics calls in every model-specific plot function,
+  # so standard parameters (pch, las, cex, col, lty, lwd, ...) work
+  # consistently across all plot types.
+  dots <- list(...)
+
   # Dispatch to model-specific plot functions
   switch(value,
-    IRT = plot_irt_model(x, type, plotItemID, nc, nr, overlay, colors),
-    GRM = plot_grm_model(x, type, plotItemID, nc, nr, colors),
+    IRT = plot_irt_model(x, type, plotItemID, nc, nr, overlay, colors, dots),
+    GRM = plot_grm_model(x, type, plotItemID, nc, nr, colors, dots),
     LCA = ,
     LRA = ,
-    LDLRA = plot_common_profiles(x, type, value, plotItemID, plotStudentID, testlength),
+    LDLRA = plot_common_profiles(x, type, value, plotItemID, plotStudentID, testlength, dots),
     LRAordinal = ,
     LRArated = {
       if (type == "RMP") {
-        plot_common_profiles(x, type, value, plotItemID, plotStudentID, testlength)
+        plot_common_profiles(x, type, value, plotItemID, plotStudentID, testlength, dots)
       } else {
-        plot_lra_ordinal(x, type, plotItemID)
+        plot_lra_ordinal(x, type, plotItemID, dots)
       }
     },
     Biclustering = {
       if (type == "Array") {
-        plot_array(x, cell_width, cell_height, colors)
+        plot_array(x, cell_width, cell_height, colors, dots)
       } else {
-        plot_common_profiles(x, type, value, plotItemID, plotStudentID, testlength)
+        plot_common_profiles(x, type, value, plotItemID, plotStudentID, testlength, dots)
       }
     },
     ordinalBiclustering = ,
     ratedBiclustering = ,
     nominalBiclustering = {
       if (type == "Array") {
-        plot_array(x, cell_width, cell_height, colors)
+        plot_array(x, cell_width, cell_height, colors, dots)
       } else if (type %in% c("LCD", "LRD", "CMP", "RMP")) {
-        plot_common_profiles(x, type, value, plotItemID, plotStudentID, testlength)
+        plot_common_profiles(x, type, value, plotItemID, plotStudentID, testlength, dots)
       } else if (type == "FRP") {
-        plot_poly_frp(x, stat, nc, nr)
+        plot_poly_frp(x, stat, nc, nr, dots)
       } else if (type == "FCRP") {
-        plot_poly_fcrp(x, style, nc, nr)
+        plot_poly_fcrp(x, style, nc, nr, dots)
       } else if (type == "FCBR") {
-        plot_poly_fcbr(x, nc, nr)
+        plot_poly_fcbr(x, nc, nr, dots)
       } else if (type == "ScoreField") {
-        plot_scorefield(x)
+        plot_scorefield(x, dots)
       } else if (type == "RRV") {
-        plot_poly_rrv(x, stat)
+        plot_poly_rrv(x, stat, dots)
       }
     },
     IRM = {
       if (type == "Array") {
-        plot_array(x, cell_width, cell_height, colors)
+        plot_array(x, cell_width, cell_height, colors, dots)
       } else {
-        plot_common_profiles(x, type, value, plotItemID, plotStudentID, testlength)
+        plot_common_profiles(x, type, value, plotItemID, plotStudentID, testlength, dots)
       }
     },
     LDB = {
       if (type == "FieldPIRP") {
-        plot_field_pirp(x)
+        plot_field_pirp(x, dots)
       } else if (type == "Array") {
-        plot_array(x, cell_width, cell_height, colors)
+        plot_array(x, cell_width, cell_height, colors, dots)
       } else {
-        plot_common_profiles(x, type, value, plotItemID, plotStudentID, testlength)
+        plot_common_profiles(x, type, value, plotItemID, plotStudentID, testlength, dots)
       }
     },
     BINET = {
       if (type == "LDPSR") {
-        plot_ldpsr(x)
+        plot_ldpsr(x, dots)
       } else if (type == "Array") {
-        plot_array(x, cell_width, cell_height, colors)
+        plot_array(x, cell_width, cell_height, colors, dots)
       } else {
-        plot_common_profiles(x, type, value, plotItemID, plotStudentID, testlength)
+        plot_common_profiles(x, type, value, plotItemID, plotStudentID, testlength, dots)
       }
     },
     none = {

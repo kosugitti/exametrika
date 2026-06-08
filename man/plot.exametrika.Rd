@@ -97,7 +97,14 @@ One of "mean" (default), "median", or "mode".}
 \item{style}{Character string specifying the display style for FCRP plots.
 One of "line" (default) or "bar" (stacked bar chart).}
 
-\item{...}{Additional arguments passed to plotting functions.}
+\item{...}{Additional graphical parameters passed to the underlying base R
+plotting functions. Standard parameters such as \code{pch}, \code{las},
+\code{cex}, \code{col}, \code{lty}, and \code{lwd} are forwarded
+consistently to all plot types (including manually drawn axes), so they
+can be used to customise point symbols, axis-label orientation, text
+sizes, and other graphical elements. User-supplied values take precedence
+over the package defaults (e.g. \code{xlab}, \code{ylab}, \code{main} can
+be overridden).}
 }
 \value{
 Produces visualizations based on the model class and specified type:

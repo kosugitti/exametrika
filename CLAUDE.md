@@ -5,9 +5,9 @@
 `exametrika` is an R package for Test Data Engineering based on Shojima (2022, ISBN:978-9811699856).
 It provides psychometric analysis tools: CTT, IRT, GRM, LCA, LRA, Biclustering, BNM, LDLRA, LDB, BINET.
 
-- **Current version**: 1.13.1 (CRAN)
-- **CRAN version**: 1.13.1 (accepted 2026-05-18)
-- **GitHub Release**: v1.13.1 (2026-05-18, latest) / v1.13.0 (2026-05-17)
+- **Current version**: 1.14.0.9000 (dev) / 1.14.0 (CRAN)
+- **CRAN version**: 1.14.0 (accepted/published 2026-06-14)
+- **GitHub Release**: v1.14.0 (2026-06-14, latest) / v1.13.1 (2026-05-18)
 - **License**: MIT
 - **Website**: https://kosugitti.github.io/exametrika/
 - **Language**: English (Japanese guide available as `vignettes/guide-ja.Rmd`)

@@ -9,4 +9,4 @@ devtools::check(cran = TRUE)
 rhub::rhub_check(platforms = c("linux", "macos-arm64", "windows"))
 devtools::check_win_devel(email = "kosugitti@gmail.com")
 
-usethis::use_release_issue()
+devtools::submit_cran()

@@ -37,6 +37,35 @@
 
 <p>Detailed development log. User-facing changes go in <code>NEWS.md</code>; this file captures the per-session internal narrative (why a change was made, what was investigated, what was ruled out). Entries are newest-first.</p>
 <div class="section level2">
+<h2 id="id_2026-06-08--plotexametrika-の--伝播修正-r-journal-査読対応-v1140-目玉">2026-06-08 — plot.exametrika() の <code>...</code> 伝播修正 (R Journal 査読対応, v1.14.0 目玉)<a class="anchor" aria-label="anchor" href="#id_2026-06-08--plotexametrika-%E3%81%AE--%E4%BC%9D%E6%92%AD%E4%BF%AE%E6%AD%A3-r-journal-%E6%9F%BB%E8%AA%AD%E5%AF%BE%E5%BF%9C-v1140-%E7%9B%AE%E7%8E%89"></a></h2>
+<p>R Journal (2025-66) の編集長 Emi Tanaka から 6/8 にフォローアップ。査読者の 指摘は1点のみ: 「<code><a href="reference/plot.exametrika.html">plot.exametrika()</a></code> の help には <code>...</code> で下層プロット関数へ 引数を渡せると書いてあるが実際には効かない。<code>plot(result.LRA, type="IRP", items=1:4, nc=2, nr=2, las=2, pch=16)</code> で <code>las</code> も <code>pch</code> も変わらない。原因は <code>plot_irt_model()</code>/<code>plot_grm_model()</code>/<code>plot_common_profiles()</code> 等が引数を 受け取らず伝播もしないこと」。前回 revision2 では「軽量設計だから ggExametrika で対応」と”言い訳”で返していたが今回は実修正する方針に。</p>
+<div class="section level3">
+<h3 id="調査で確定した事実">調査で確定した事実<a class="anchor" aria-label="anchor" href="#%E8%AA%BF%E6%9F%BB%E3%81%A7%E7%A2%BA%E5%AE%9A%E3%81%97%E3%81%9F%E4%BA%8B%E5%AE%9F"></a></h3>
+<ul><li>ディスパッチャ <code><a href="reference/plot.exametrika.html">plot.exametrika()</a></code> は <code>...</code> を捕捉するが，内部13関数の シグネチャに <code>...</code> が無く一切渡していなかった（査読者の診断は完全に正確）。</li>
+<li>
+<code>las</code> が効かない真因: 多くのプロットが <code>plot(..., xaxt="n")</code> で軸を消して <code>axis(1, ...)</code> で<strong>手描き</strong>しており，<code>las</code> は plot() ではなくこの手描き <code><a href="https://rdrr.io/r/graphics/axis.html" class="external-link">axis()</a></code> に渡さないと効かない（IRP がまさにこれ）。</li>
+<li>検証(<code>warn=2</code>): base 描画関数 plot/barplot/image/axis/lines は余計な グラフィカル引数を渡してもエラーも警告も出さない → フィルタ不要で全 dots を そのまま流せる。axis に pch を渡しても無警告。</li>
+<li>
+<code><a href="https://rdrr.io/r/graphics/curve.html" class="external-link">curve()</a></code> は第一引数が非標準評価 + ローカル変数(a,b,c,d)参照のため do.call での合流が環境解決で詰む → グリッド評価に置換。IRT モデル関数は theta ベクトルでベクトル化済みを実機確認。</li>
+</ul></div>
+<div class="section level3">
+<h3 id="実装">実装<a class="anchor" aria-label="anchor" href="#%E5%AE%9F%E8%A3%85"></a></h3>
+<ul><li>共有ヘルパー3つを <code>R/00_plot_biclustering.R</code> に追加: <code>merge_plot_dots(defaults, dots)</code>(modifyList でユーザ優先合流), <code>call_plot(.fun, defaults, dots)</code>(do.call), <code>draw_curve(fn,...)</code>(グリッド評価). 注: <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">graphics::plot</a></code> は存在しない(plot ジェネリックは base へ移動)ので call_plot には素の <code>plot</code> を渡す。</li>
+<li>内部13関数すべてに <code>dots = list()</code> 引数を追加し，各 plot/barplot/image/ lines/axis 呼び出しを call_plot 経由に。手描き axis にも dots 転送。</li>
+<li>副次: IRT TIF タイトル typo “Test Informaiton” -&gt; “Test Information”.</li>
+<li>
+<code>tests/testthat/test-plot-dots.R</code> 新規27件 (merge/call_plot/draw_curve の 機構 + LRA/IRT/GRM/Biclustering 統合, モデル fit する統合テストは skip_on_cran)。call_plot スパイで las/pch が3関数の下層描画まで到達する ことを実証 (las reached:TRUE / pch reached:TRUE)。</li>
+</ul></div>
+<div class="section level3">
+<h3 id="結果コミット">結果・コミット<a class="anchor" aria-label="anchor" href="#%E7%B5%90%E6%9E%9C%E3%82%B3%E3%83%9F%E3%83%83%E3%83%88"></a></h3>
+<ul><li>全 4926 テスト PASS / 0 FAIL / 0 WARN。</li>
+<li>commit <code>71171e9</code> を main に push。NEWS.md の v1.14.0 先頭に <code>## Improvements</code> として記載。<code>man/plot.exametrika.Rd</code> の <code>@param ...</code> を詳細化。</li>
+<li>
+<strong>罠</strong>: ローカル roxygen2 が 8.0.0 で <code>roxygenise()</code> が DESCRIPTION の <code>RoxygenNote: 7.3.3</code> を <code>Config/roxygen2/version: 8.0.0</code> に書き換え + Biclustering.Rd を再整形してしまう。<code>devtools::test()</code> でも誘発。該当2 ファイルは <code>git checkout</code> で都度戻す（plot.exametrika.Rd は意味的差分のみで クリーンなので保持）。</li>
+<li>CRAN は cadence 通り 6/15 以降に 1.14.0 を提出予定（前回受理 5/18 から）。</li>
+</ul></div>
+</div>
+<div class="section level2">
 <h2 id="id_2026-06-02-pm--exametrika-一家-ユーザ可視文字列-typo-総点検">2026-06-02 (PM) — exametrika 一家 ユーザ可視文字列 typo 総点検<a class="anchor" aria-label="anchor" href="#id_2026-06-02-pm--exametrika-%E4%B8%80%E5%AE%B6-%E3%83%A6%E3%83%BC%E3%82%B6%E5%8F%AF%E8%A6%96%E6%96%87%E5%AD%97%E5%88%97-typo-%E7%B7%8F%E7%82%B9%E6%A4%9C"></a></h2>
 <p><code>Clusterd</code> -&gt; <code>Clustered</code> の修正がきっかけで，殿から「人様の目に触れる plot/message/print/cat 等の出力に他にも typo がないか総点検せよ」と指示。 exametrika/ggExametrika/shinyExametrika の3プロジェクトに Explore エージェント を割り当てて並列実行。</p>
 <div class="section level3">
@@ -200,6 +229,36 @@ rmultinom(1, 1, ptab) でエラー:
 </ul><hr></div>
 </div>
 <div class="section level2">
+<h2 id="id_2026-05-24--v1140-着手-glasso-数値発散-graceful-handling">2026-05-24 — v1.14.0 着手 (Glasso 数値発散 graceful handling)<a class="anchor" aria-label="anchor" href="#id_2026-05-24--v1140-%E7%9D%80%E6%89%8B-glasso-%E6%95%B0%E5%80%A4%E7%99%BA%E6%95%A3-graceful-handling"></a></h2>
+<p>索引から転記: CLAUDE.md A4+C1 ステータス欄に記録されていた内容。</p>
+<div class="section level3">
+<h3 id="背景">背景<a class="anchor" aria-label="anchor" href="#%E8%83%8C%E6%99%AF"></a></h3>
+<p>お遍路さんデータ (N=143, p=98) で全項目一括 Glasso を実行したところ， <code>glasso_one()</code> 内部の BCD ループで <code>diff</code> が NaN になりイテレーションが 停止せず，最終的に NaN だらけの精度行列が返ってきてエラー。</p>
+</div>
+<div class="section level3">
+<h3 id="修正-ab">修正 (A+B)<a class="anchor" aria-label="anchor" href="#%E4%BF%AE%E6%AD%A3-ab"></a></h3>
+<ul><li>
+<strong>修正 A</strong> — <code>glasso_one()</code> に <code>converged</code> フラグを追加。<code>beta</code>/<code>diff</code>/<code>W</code> のいずれかに non-finite 値を検出した時点で <code>converged = FALSE</code> を立て ループを抜ける (発散の graceful detection)。</li>
+<li>
+<strong>修正 B</strong> — <code><a href="reference/Glasso.html">Glasso()</a></code> の lambda ループで diverged フラグを参照し， warning を出して early break + 収束直前の best 解を fallback 返却。 path 内の該当 lambda は NA のまま残す (caller が識別可能)。</li>
+</ul></div>
+<div class="section level3">
+<h3 id="ファイル">ファイル<a class="anchor" aria-label="anchor" href="#%E3%83%95%E3%82%A1%E3%82%A4%E3%83%AB"></a></h3>
+<ul><li>
+<code>R/22_GlassoUnit.R</code>: <code>glasso_one()</code> に diverged フラグ追加，<code><a href="reference/Glasso.html">Glasso()</a></code> に warning + early break + best 解 fallback</li>
+<li>
+<code>tests/testthat/test-glasso.R</code>: 発散シナリオ 4 件追加</li>
+<li>
+<code>DESCRIPTION</code>: Version 1.13.1 → 1.14.0</li>
+<li>
+<code>NEWS.md</code>: v1.14.0 セクション追加</li>
+</ul></div>
+<div class="section level3">
+<h3 id="結果">結果<a class="anchor" aria-label="anchor" href="#%E7%B5%90%E6%9E%9C"></a></h3>
+<p>全 4894 テスト PASS。<code>R CMD check --as-cran</code> 0/0/0。</p>
+<hr></div>
+</div>
+<div class="section level2">
 <h2 id="id_2026-05-23--v1131-後フォローアップの取りこぼし確認">2026-05-23 — v1.13.1 後フォローアップの取りこぼし確認<a class="anchor" aria-label="anchor" href="#id_2026-05-23--v1131-%E5%BE%8C%E3%83%95%E3%82%A9%E3%83%AD%E3%83%BC%E3%82%A2%E3%83%83%E3%83%97%E3%81%AE%E5%8F%96%E3%82%8A%E3%81%93%E3%81%BC%E3%81%97%E7%A2%BA%E8%AA%8D"></a></h2>
 <p>5/20 セッションで Discussions follow-up と smoke test を実施した記録が WORKLOG にあるにも関わらず，<code>.claude/CLAUDE.md</code> の TODO リストが <code>[ ]</code> のままだった (前回セッションが TODO 更新を忘れていた)。 別マシン (Mac mini 側) から「メール来たぞ」の連絡があり， GitHub API で 5/19 08:24 UTC に kosugitti アカウントで follow-up 投稿 されていることを確認 → TODO <code>[x]</code> に更新。</p>
 <p>ついでに smoke test を再確認:</p>
@@ -244,6 +303,37 @@ rmultinom(1, 1, ptab) でエラー:
 <li>sv1/sv2 で 1 pass で取りこぼした依存順失敗パッケージ 5-6 個の 2nd pass</li>
 <li>Newton id_ed25519.pub を sv1/sv2 へ登録して二段 SSH 解消</li>
 </ul></div>
+</div>
+<div class="section level2">
+<h2 id="id_2026-05-18--v1131-hotfix-cran-再提出受理-git-tag-github-release">2026-05-18 — v1.13.1 hotfix, CRAN 再提出・受理, git tag, GitHub Release<a class="anchor" aria-label="anchor" href="#id_2026-05-18--v1131-hotfix-cran-%E5%86%8D%E6%8F%90%E5%87%BA%E5%8F%97%E7%90%86-git-tag-github-release"></a></h2>
+<p>索引から転記: CLAUDE.md A4+C1 ステータス欄に記録されていた内容。</p>
+<div class="section level3">
+<h3 id="経緯">経緯<a class="anchor" aria-label="anchor" href="#%E7%B5%8C%E7%B7%AF"></a></h3>
+<p>2026-05-17 に提出した v1.13.0 が CRAN auto-check の r-devel-windows-x86_64 で <code>Overall checktime 11 min &gt; 10 min</code> という単一 NOTE により auto-reject。 パッケージ本体の Windows/Debian チェックは Status: OK だったが， checktime 制限で弾かれた。</p>
+</div>
+<div class="section level3">
+<h3 id="v1131-hotfix">v1.13.1 hotfix<a class="anchor" aria-label="anchor" href="#v1131-hotfix"></a></h3>
+<p>commit <code>69a1008</code> で以下のテストを <code>skip_on_cran()</code> で除外:</p>
+<ul><li>
+<code>test-grm.R</code>: J15S3810 GRM (~60s) + nitems≥8 underflow regression (~8s)</li>
+<li>
+<code>test-irm.R</code>: J35S515 Gibbs 共有 fixture (~23s) + 再現性テスト 2 件 (~22s)</li>
+</ul><p>ローカル / R-hub / win-devel では <code>NOT_CRAN</code> 経由で従来通り走るためカバレッジ不変。 <strong>ユーザ可視変更なし</strong>。NEWS.md に 1.13.1 セクション追加， cran-comments.md に 1.13.1 の説明追加，DESCRIPTION バンプ。</p>
+</div>
+<div class="section level3">
+<h3 id="cran-再提出受理">CRAN 再提出・受理<a class="anchor" aria-label="anchor" href="#cran-%E5%86%8D%E6%8F%90%E5%87%BA%E5%8F%97%E7%90%86"></a></h3>
+<p><code>devtools::release()</code> で 1.13.1 を再提出 → 同日 2026-05-18 に受理。</p>
+</div>
+<div class="section level3">
+<h3 id="git-tag--github-release">git tag + GitHub Release<a class="anchor" aria-label="anchor" href="#git-tag--github-release"></a></h3>
+<ul><li>annotated tag <code>v1.13.1</code> を commit <code>69a1008</code> に打って origin に push (v1.13.0 と同じ流儀でリリースノートを tag message に同梱)</li>
+<li>GitHub Release v1.13.1 作成 (latest に昇格) <a href="https://github.com/kosugitti/exametrika/releases/tag/v1.13.1" class="external-link uri">https://github.com/kosugitti/exametrika/releases/tag/v1.13.1</a>
+</li>
+</ul></div>
+<div class="section level3">
+<h3 id="恒久ルール">恒久ルール<a class="anchor" aria-label="anchor" href="#%E6%81%92%E4%B9%85%E3%83%AB%E3%83%BC%E3%83%AB"></a></h3>
+<p><strong>実データ (J<em>S</em>) を使った大規模 fit テストには必ず <code>skip_on_cran()</code> を入れること。</strong></p>
+<hr></div>
 </div>
 <div class="section level2">
 <h2 id="id_2026-05-17--v1130-cran-提出515-予定から-2-日遅れ">2026-05-17 — v1.13.0 CRAN 提出（5/15 予定から 2 日遅れ）<a class="anchor" aria-label="anchor" href="#id_2026-05-17--v1130-cran-%E6%8F%90%E5%87%BA515-%E4%BA%88%E5%AE%9A%E3%81%8B%E3%82%89-2-%E6%97%A5%E9%81%85%E3%82%8C"></a></h2>

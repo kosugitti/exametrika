@@ -20,3 +20,4 @@
 ^figure$
 ^\.positai$
 ^\.claude$
+^Rplots\.pdf$

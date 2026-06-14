@@ -4,6 +4,54 @@ Detailed development log. User-facing changes go in `NEWS.md`; this file
 captures the per-session internal narrative (why a change was made, what
 was investigated, what was ruled out). Entries are newest-first.
 
+## 2026-06-08 — plot.exametrika() の `...` 伝播修正 (R Journal 査読対応, v1.14.0 目玉)
+
+R Journal (2025-66) の編集長 Emi Tanaka から 6/8 にフォローアップ。査読者の
+指摘は1点のみ: 「`plot.exametrika()` の help には `...` で下層プロット関数へ
+引数を渡せると書いてあるが実際には効かない。`plot(result.LRA, type="IRP",
+items=1:4, nc=2, nr=2, las=2, pch=16)` で `las` も `pch` も変わらない。原因は
+`plot_irt_model()`/`plot_grm_model()`/`plot_common_profiles()` 等が引数を
+受け取らず伝播もしないこと」。前回 revision2 では「軽量設計だから ggExametrika
+で対応」と"言い訳"で返していたが今回は実修正する方針に。
+
+### 調査で確定した事実
+- ディスパッチャ `plot.exametrika()` は `...` を捕捉するが，内部13関数の
+  シグネチャに `...` が無く一切渡していなかった（査読者の診断は完全に正確）。
+- `las` が効かない真因: 多くのプロットが `plot(..., xaxt="n")` で軸を消して
+  `axis(1, ...)` で**手描き**しており，`las` は plot() ではなくこの手描き
+  `axis()` に渡さないと効かない（IRP がまさにこれ）。
+- 検証(`warn=2`): base 描画関数 plot/barplot/image/axis/lines は余計な
+  グラフィカル引数を渡してもエラーも警告も出さない → フィルタ不要で全 dots を
+  そのまま流せる。axis に pch を渡しても無警告。
+- `curve()` は第一引数が非標準評価 + ローカル変数(a,b,c,d)参照のため do.call
+  での合流が環境解決で詰む → グリッド評価に置換。IRT モデル関数は theta
+  ベクトルでベクトル化済みを実機確認。
+
+### 実装
+- 共有ヘルパー3つを `R/00_plot_biclustering.R` に追加:
+  `merge_plot_dots(defaults, dots)`(modifyList でユーザ優先合流),
+  `call_plot(.fun, defaults, dots)`(do.call), `draw_curve(fn,...)`(グリッド評価).
+  注: `graphics::plot` は存在しない(plot ジェネリックは base へ移動)ので
+  call_plot には素の `plot` を渡す。
+- 内部13関数すべてに `dots = list()` 引数を追加し，各 plot/barplot/image/
+  lines/axis 呼び出しを call_plot 経由に。手描き axis にも dots 転送。
+- 副次: IRT TIF タイトル typo "Test Informaiton" -> "Test Information".
+- `tests/testthat/test-plot-dots.R` 新規27件 (merge/call_plot/draw_curve の
+  機構 + LRA/IRT/GRM/Biclustering 統合, モデル fit する統合テストは
+  skip_on_cran)。call_plot スパイで las/pch が3関数の下層描画まで到達する
+  ことを実証 (las reached:TRUE / pch reached:TRUE)。
+
+### 結果・コミット
+- 全 4926 テスト PASS / 0 FAIL / 0 WARN。
+- commit `71171e9` を main に push。NEWS.md の v1.14.0 先頭に `## Improvements`
+  として記載。`man/plot.exametrika.Rd` の `@param ...` を詳細化。
+- **罠**: ローカル roxygen2 が 8.0.0 で `roxygenise()` が DESCRIPTION の
+  `RoxygenNote: 7.3.3` を `Config/roxygen2/version: 8.0.0` に書き換え +
+  Biclustering.Rd を再整形してしまう。`devtools::test()` でも誘発。該当2
+  ファイルは `git checkout` で都度戻す（plot.exametrika.Rd は意味的差分のみで
+  クリーンなので保持）。
+- CRAN は cadence 通り 6/15 以降に 1.14.0 を提出予定（前回受理 5/18 から）。
+
 ## 2026-06-02 (PM) — exametrika 一家 ユーザ可視文字列 typo 総点検
 
 `Clusterd` -> `Clustered` の修正がきっかけで，殿から「人様の目に触れる
@@ -236,6 +284,39 @@ GitHub のリポジトリトップに出ていた「Your main branch isn't prote
 
 ---
 
+## 2026-05-24 — v1.14.0 着手 (Glasso 数値発散 graceful handling)
+
+索引から転記: CLAUDE.md A4+C1 ステータス欄に記録されていた内容。
+
+### 背景
+
+お遍路さんデータ (N=143, p=98) で全項目一括 Glasso を実行したところ，
+`glasso_one()` 内部の BCD ループで `diff` が NaN になりイテレーションが
+停止せず，最終的に NaN だらけの精度行列が返ってきてエラー。
+
+### 修正 (A+B)
+
+- **修正 A** — `glasso_one()` に `converged` フラグを追加。`beta`/`diff`/`W`
+  のいずれかに non-finite 値を検出した時点で `converged = FALSE` を立て
+  ループを抜ける (発散の graceful detection)。
+- **修正 B** — `Glasso()` の lambda ループで diverged フラグを参照し，
+  warning を出して early break + 収束直前の best 解を fallback 返却。
+  path 内の該当 lambda は NA のまま残す (caller が識別可能)。
+
+### ファイル
+
+- `R/22_GlassoUnit.R`: `glasso_one()` に diverged フラグ追加，`Glasso()` に
+  warning + early break + best 解 fallback
+- `tests/testthat/test-glasso.R`: 発散シナリオ 4 件追加
+- `DESCRIPTION`: Version 1.13.1 → 1.14.0
+- `NEWS.md`: v1.14.0 セクション追加
+
+### 結果
+
+全 4894 テスト PASS。`R CMD check --as-cran` 0/0/0。
+
+---
+
 ## 2026-05-23 — v1.13.1 後フォローアップの取りこぼし確認
 
 5/20 セッションで Discussions follow-up と smoke test を実施した記録が
@@ -309,6 +390,45 @@ LogLik -3893.03 で完全一致。
 - (c) v2.0.0 BNM 着手 (CRAN cadence で 6/18 以降 提出目安)
 - sv1/sv2 で 1 pass で取りこぼした依存順失敗パッケージ 5-6 個の 2nd pass
 - Newton id_ed25519.pub を sv1/sv2 へ登録して二段 SSH 解消
+
+## 2026-05-18 — v1.13.1 hotfix, CRAN 再提出・受理, git tag, GitHub Release
+
+索引から転記: CLAUDE.md A4+C1 ステータス欄に記録されていた内容。
+
+### 経緯
+
+2026-05-17 に提出した v1.13.0 が CRAN auto-check の r-devel-windows-x86_64 で
+`Overall checktime 11 min > 10 min` という単一 NOTE により auto-reject。
+パッケージ本体の Windows/Debian チェックは Status: OK だったが，
+checktime 制限で弾かれた。
+
+### v1.13.1 hotfix
+
+commit `69a1008` で以下のテストを `skip_on_cran()` で除外:
+
+- `test-grm.R`: J15S3810 GRM (~60s) + nitems≥8 underflow regression (~8s)
+- `test-irm.R`: J35S515 Gibbs 共有 fixture (~23s) + 再現性テスト 2 件 (~22s)
+
+ローカル / R-hub / win-devel では `NOT_CRAN` 経由で従来通り走るためカバレッジ不変。
+**ユーザ可視変更なし**。NEWS.md に 1.13.1 セクション追加，
+cran-comments.md に 1.13.1 の説明追加，DESCRIPTION バンプ。
+
+### CRAN 再提出・受理
+
+`devtools::release()` で 1.13.1 を再提出 → 同日 2026-05-18 に受理。
+
+### git tag + GitHub Release
+
+- annotated tag `v1.13.1` を commit `69a1008` に打って origin に push
+  (v1.13.0 と同じ流儀でリリースノートを tag message に同梱)
+- GitHub Release v1.13.1 作成 (latest に昇格)
+  https://github.com/kosugitti/exametrika/releases/tag/v1.13.1
+
+### 恒久ルール
+
+**実データ (J*S*) を使った大規模 fit テストには必ず `skip_on_cran()` を入れること。**
+
+---
 
 ## 2026-05-17 — v1.13.0 CRAN 提出（5/15 予定から 2 日遅れ）
 

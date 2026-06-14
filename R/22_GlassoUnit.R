@@ -50,7 +50,7 @@ glasso_one <- function(S, lambda, W_init = NULL, Beta_init = NULL, eps = 1e-6, m
   W_old <- W
   W_FLG <- TRUE
   Theta <- matrix(0, nrow = p, ncol = p)
-  diverged <- FALSE  # numerical divergence flag (NaN/Inf in BCD)
+  diverged <- FALSE # numerical divergence flag (NaN/Inf in BCD)
 
   while (W_FLG) {
     niter <- niter + 1

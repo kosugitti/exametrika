@@ -124,8 +124,10 @@ test_that("Bug #2 regression: Biclustering_IRM.binary handles missing data", {
   expect_true(any(df_miss$Z == 0))
 
   fit <- suppressWarnings(
-    Biclustering_IRM(df_miss, gamma_c = 1, gamma_f = 1, mic = 10,
-                     max_iter = 300, seed = 20260527, verbose = FALSE)
+    Biclustering_IRM(df_miss,
+      gamma_c = 1, gamma_f = 1, mic = 10,
+      max_iter = 300, seed = 20260527, verbose = FALSE
+    )
   )
   expect_s3_class(fit, "exametrika")
   expect_true("IRM" %in% class(fit))

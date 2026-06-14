@@ -607,7 +607,7 @@ Biclustering_IRM.binary <- function(U, Z = NULL, w = NULL, na = NULL,
   TRP <- colSums(pifr * flddist)
 
   ret <- structure(list(
-    U = tmp$U,  # masked binary matrix (was using dead `U` variable before v1.14.0)
+    U = tmp$U, # masked binary matrix (was using dead `U` variable before v1.14.0)
     testlength = testlength,
     msg = "Rank",
     nobs = nobs,

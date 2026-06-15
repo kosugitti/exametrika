@@ -4,6 +4,72 @@ Detailed development log. User-facing changes go in `NEWS.md`; this file
 captures the per-session internal narrative (why a change was made, what
 was investigated, what was ruled out). Entries are newest-first.
 
+## 2026-06-15 — v1.14.0 CRAN 提出・受理・リリース一式
+
+v1.14.0 を CRAN に提出し，同日中に受理・公開された。前回 1.13.0
+を落とした Windows checktime の壁を今回はクリアし，auto-check
+一発通過からそのまま 公開まで通った。
+
+### 提出前チェック
+
+- `R CMD check --as-cran`: 当初 1 NOTE（top-level に `Rplots.pdf`）。6/8
+  の プロット作業中にデフォルトデバイスが生成した残骸が tarball
+  に混入していた。 **対処**: 実ファイル削除 + `.Rbuildignore` に
+  `^Rplots\.pdf$` を追加（.gitignore だけでは R CMD build
+  が見ないため不十分＝根本対処は .Rbuildignore）。再チェックで 0/0/0。
+- win-devel: Status OK, check time 276s（10 分制限内）。
+- rhub v2: linux / macos-arm64 / windows 全 green（13 分）。
+- `cran-comments.md` を 1.14.0 用に全面書き換え（plot `...` 伝播 /
+  Glasso 発散対応 / 二値 IRM 欠測 / typo 群，Windows checktime が
+  skip_on_cran で収まる旨も明記）。
+
+### 提出と公開
+
+- commit `4bd5ebb`（cran-comments・.Rbuildignore・WORKLOG・styler
+  整形）から提出。 styler が 07_IRM.R / 22_GlassoUnit.R / test-irm.R
+  のコメント空白を整形（コスメ）。
+- `devtools::submit_cran()` → auto-check 両 flavor Result: OK → CRAN
+  公開 （Date/Publication 2026-06-14 23:40:02 UTC）。
+- `CRAN-SUBMISSION`（SHA 4bd5ebb）を記録（commit
+  `02a5ae2`）。同コミットで `tools/build_pkg.R` 最終行を
+  `use_release_issue()` → `submit_cran()` に修正 （use_release_issue
+  はリリース開始時にチェックリスト issue を作るコマンドで，
+  提出ステップではない）。
+
+### 受理後の公開作業
+
+- git tag `v1.14.0`（注釈付き，push 済み）。
+- GitHub Release 公開・latest 昇格。
+- Discussions 2 本: JA \#33 / EN \#34（Announcements）。
+- `usethis::use_dev_version()` → DESCRIPTION 1.14.0.9000 + NEWS dev
+  見出し （非対話 Rscript は commit しないので手動 commit `b716384`）。
+- release issue \#28 を全項目反映の上クローズ。未チェックで残したのは
+  urlchecker / build_readme / revdepcheck / blog post（バグ修正主体の
+  release の ため意図的にスキップ）。
+
+### 付随した意思決定
+
+- **DESCRIPTION Title 変更を決定**（次リリース適用）:
+  `Test Theory Analysis and Biclustering` →
+  `Test Data Engineering`。book(Shojima 2022)・R Journal 論文 （2025-66,
+  “exametrika: Test Data Engineering with R”）と語を揃える。Biclustering
+  だけ名指しする粒度の不揃いを解消。1.14.0
+  は提出済みのため変更不可，**issue \#32** で次リリースに向け追跡。Title
+  規約（title case / no period / no pkg name・“R”）も クリア。
+- **ggExametrika 1.1.1** は exametrika 1.14.0 CRAN
+  着地により提出可能に。中身は 完成済み（Clusterd→Clustered
+  破壊的リネーム他）。styler を回したが 35 ファイル 全
+  unchanged（既に準拠）。未コミット 5 ファイル（NAMESPACE
+  再生成等）の整理 → check → 提出が次の作業。
+
+### 次への引き継ぎ
+
+- ggExametrika 1.1.1 CRAN 提出（依存チェーン順で exametrika の後）。
+- shinyExametrika の plotArray_gg 破壊的リネーム追従確認。
+- R Journal 編集長 Emi Tanaka へ 1.14.0 CRAN 受理報告 +
+  タイトル変更承認依頼。
+- 次リリースで DESCRIPTION Title 変更（issue \#32）。
+
 ## 2026-06-08 — plot.exametrika() の `...` 伝播修正 (R Journal 査読対応, v1.14.0 目玉)
 
 R Journal (2025-66) の編集長 Emi Tanaka から 6/8

@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="index.html">exametrika</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.14.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.14.0.9000</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -30,12 +30,56 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="logo.png" class="logo" alt=""><h1>exametrika Work Log</h1>
-      <small class="dont-index">Source: <a href="https://github.com/kosugitti/exametrika/blob/v1.14.0/WORKLOG.md" class="external-link"><code>WORKLOG.md</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/kosugitti/exametrika/blob/main/WORKLOG.md" class="external-link"><code>WORKLOG.md</code></a></small>
     </div>
 
 <div id="exametrika-work-log" class="section level1">
 
 <p>Detailed development log. User-facing changes go in <code>NEWS.md</code>; this file captures the per-session internal narrative (why a change was made, what was investigated, what was ruled out). Entries are newest-first.</p>
+<div class="section level2">
+<h2 id="id_2026-06-15--v1140-cran-提出受理リリース一式">2026-06-15 — v1.14.0 CRAN 提出・受理・リリース一式<a class="anchor" aria-label="anchor" href="#id_2026-06-15--v1140-cran-%E6%8F%90%E5%87%BA%E5%8F%97%E7%90%86%E3%83%AA%E3%83%AA%E3%83%BC%E3%82%B9%E4%B8%80%E5%BC%8F"></a></h2>
+<p>v1.14.0 を CRAN に提出し，同日中に受理・公開された。前回 1.13.0 を落とした Windows checktime の壁を今回はクリアし，auto-check 一発通過からそのまま 公開まで通った。</p>
+<div class="section level3">
+<h3 id="提出前チェック">提出前チェック<a class="anchor" aria-label="anchor" href="#%E6%8F%90%E5%87%BA%E5%89%8D%E3%83%81%E3%82%A7%E3%83%83%E3%82%AF"></a></h3>
+<ul><li>
+<code>R CMD check --as-cran</code>: 当初 1 NOTE（top-level に <code>Rplots.pdf</code>）。6/8 の プロット作業中にデフォルトデバイスが生成した残骸が tarball に混入していた。 <strong>対処</strong>: 実ファイル削除 + <code>.Rbuildignore</code> に <code>^Rplots\.pdf$</code> を追加（.gitignore だけでは R CMD build が見ないため不十分＝根本対処は .Rbuildignore）。再チェックで 0/0/0。</li>
+<li>win-devel: Status OK, check time 276s（10 分制限内）。</li>
+<li>rhub v2: linux / macos-arm64 / windows 全 green（13 分）。</li>
+<li>
+<code>cran-comments.md</code> を 1.14.0 用に全面書き換え（plot <code>...</code> 伝播 / Glasso 発散対応 / 二値 IRM 欠測 / typo 群，Windows checktime が skip_on_cran で収まる旨も明記）。</li>
+</ul></div>
+<div class="section level3">
+<h3 id="提出と公開">提出と公開<a class="anchor" aria-label="anchor" href="#%E6%8F%90%E5%87%BA%E3%81%A8%E5%85%AC%E9%96%8B"></a></h3>
+<ul><li>commit <code>4bd5ebb</code>（cran-comments・.Rbuildignore・WORKLOG・styler 整形）から提出。 styler が 07_IRM.R / 22_GlassoUnit.R / test-irm.R のコメント空白を整形（コスメ）。</li>
+<li>
+<code>devtools::submit_cran()</code> → auto-check 両 flavor Result: OK → CRAN 公開 （Date/Publication 2026-06-14 23:40:02 UTC）。</li>
+<li>
+<code>CRAN-SUBMISSION</code>（SHA 4bd5ebb）を記録（commit <code>02a5ae2</code>）。同コミットで <code>tools/build_pkg.R</code> 最終行を <code>use_release_issue()</code> → <code>submit_cran()</code> に修正 （use_release_issue はリリース開始時にチェックリスト issue を作るコマンドで， 提出ステップではない）。</li>
+</ul></div>
+<div class="section level3">
+<h3 id="受理後の公開作業">受理後の公開作業<a class="anchor" aria-label="anchor" href="#%E5%8F%97%E7%90%86%E5%BE%8C%E3%81%AE%E5%85%AC%E9%96%8B%E4%BD%9C%E6%A5%AD"></a></h3>
+<ul><li>git tag <code>v1.14.0</code>（注釈付き，push 済み）。</li>
+<li>GitHub Release 公開・latest 昇格。</li>
+<li>Discussions 2 本: JA #33 / EN #34（Announcements）。</li>
+<li>
+<code>usethis::use_dev_version()</code> → DESCRIPTION 1.14.0.9000 + NEWS dev 見出し （非対話 Rscript は commit しないので手動 commit <code>b716384</code>）。</li>
+<li>release issue #28 を全項目反映の上クローズ。未チェックで残したのは urlchecker / build_readme / revdepcheck / blog post（バグ修正主体の release の ため意図的にスキップ）。</li>
+</ul></div>
+<div class="section level3">
+<h3 id="付随した意思決定">付随した意思決定<a class="anchor" aria-label="anchor" href="#%E4%BB%98%E9%9A%8F%E3%81%97%E3%81%9F%E6%84%8F%E6%80%9D%E6%B1%BA%E5%AE%9A"></a></h3>
+<ul><li>
+<strong>DESCRIPTION Title 変更を決定</strong>（次リリース適用）: <code>Test Theory Analysis and Biclustering</code> → <code>Test Data Engineering</code>。book(Shojima 2022)・R Journal 論文 （2025-66, “exametrika: Test Data Engineering with R”）と語を揃える。Biclustering だけ名指しする粒度の不揃いを解消。1.14.0 は提出済みのため変更不可，<strong>issue #32</strong> で次リリースに向け追跡。Title 規約（title case / no period / no pkg name・“R”）も クリア。</li>
+<li>
+<strong>ggExametrika 1.1.1</strong> は exametrika 1.14.0 CRAN 着地により提出可能に。中身は 完成済み（Clusterd→Clustered 破壊的リネーム他）。styler を回したが 35 ファイル 全 unchanged（既に準拠）。未コミット 5 ファイル（NAMESPACE 再生成等）の整理 → check → 提出が次の作業。</li>
+</ul></div>
+<div class="section level3">
+<h3 id="次への引き継ぎ">次への引き継ぎ<a class="anchor" aria-label="anchor" href="#%E6%AC%A1%E3%81%B8%E3%81%AE%E5%BC%95%E3%81%8D%E7%B6%99%E3%81%8E"></a></h3>
+<ul><li>ggExametrika 1.1.1 CRAN 提出（依存チェーン順で exametrika の後）。</li>
+<li>shinyExametrika の plotArray_gg 破壊的リネーム追従確認。</li>
+<li>R Journal 編集長 Emi Tanaka へ 1.14.0 CRAN 受理報告 + タイトル変更承認依頼。</li>
+<li>次リリースで DESCRIPTION Title 変更（issue #32）。</li>
+</ul></div>
+</div>
 <div class="section level2">
 <h2 id="id_2026-06-08--plotexametrika-の--伝播修正-r-journal-査読対応-v1140-目玉">2026-06-08 — plot.exametrika() の <code>...</code> 伝播修正 (R Journal 査読対応, v1.14.0 目玉)<a class="anchor" aria-label="anchor" href="#id_2026-06-08--plotexametrika-%E3%81%AE--%E4%BC%9D%E6%92%AD%E4%BF%AE%E6%AD%A3-r-journal-%E6%9F%BB%E8%AA%AD%E5%AF%BE%E5%BF%9C-v1140-%E7%9B%AE%E7%8E%89"></a></h2>
 <p>R Journal (2025-66) の編集長 Emi Tanaka から 6/8 にフォローアップ。査読者の 指摘は1点のみ: 「<code><a href="reference/plot.exametrika.html">plot.exametrika()</a></code> の help には <code>...</code> で下層プロット関数へ 引数を渡せると書いてあるが実際には効かない。<code>plot(result.LRA, type="IRP", items=1:4, nc=2, nr=2, las=2, pch=16)</code> で <code>las</code> も <code>pch</code> も変わらない。原因は <code>plot_irt_model()</code>/<code>plot_grm_model()</code>/<code>plot_common_profiles()</code> 等が引数を 受け取らず伝播もしないこと」。前回 revision2 では「軽量設計だから ggExametrika で対応」と”言い訳”で返していたが今回は実修正する方針に。</p>

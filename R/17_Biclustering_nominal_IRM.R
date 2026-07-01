@@ -35,6 +35,7 @@ Biclustering_IRM.nominal <- function(U,
                                      minSize = 20, EM_limit = 20,
                                      seed = 123, verbose = TRUE, ...) {
   tmp <- U
+  tmp$Q <- remap_category_codes(tmp$Q)
 
   nitems <- NCOL(tmp$Q)
   nobs <- NROW(tmp$Q)
@@ -46,21 +47,27 @@ Biclustering_IRM.nominal <- function(U,
     stop("alpha must be positive (alpha > 0)")
   }
 
-  # One-hot encoding of response matrix: Uq[s, j, q] = 1 if student s chose category q on item j
+  # One-hot encoding of response matrix: Uq[s, j, q] = 1 if student s chose
+  # category q on item j. Missing cells (tmp$Z == 0) are left at zero; a raw
+  # -1 sentinel written directly as an array index would otherwise corrupt
+  # the array via R's negative-index semantics.
   Uq <- array(0, dim = c(nobs, nitems, maxQ))
-  for (s in 1:nobs) {
-    for (j in 1:nitems) {
-      Uq[s, j, tmp$Q[s, j]] <- 1
-    }
-  }
+  valid <- as.vector(tmp$Z) == 1
+  Uq[cbind(
+    rep(seq_len(nobs), times = nitems)[valid],
+    rep(seq_len(nitems), each = nobs)[valid],
+    as.vector(tmp$Q)[valid]
+  )] <- 1
 
   # Initialize -------------------------------------------------------------
   if (!is.null(seed)) {
     set.seed(seed)
   }
 
-  ## Initial Class: assign by mode category
-  mode_cat <- apply(tmp$Q, 1, function(x) {
+  ## Initial Class: assign by mode category (missing cells excluded)
+  Q_masked <- tmp$Q
+  Q_masked[tmp$Z == 0] <- NA
+  mode_cat <- apply(Q_masked, 1, function(x) {
     tab <- table(x)
     as.integer(names(which.max(tab)))
   })

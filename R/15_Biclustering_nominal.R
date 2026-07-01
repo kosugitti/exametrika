@@ -32,7 +32,7 @@ Biclustering.nominal <- function(U,
                                  verbose = TRUE,
                                  alpha = 1, ...) {
   tmp <- U
-  maxQ <- max(tmp$Q)
+  tmp$Q <- remap_category_codes(tmp$Q)
   nobs <- NROW(tmp$Q)
   nitems <- NCOL(tmp$Q)
   const <- exp(-nitems)
@@ -42,6 +42,7 @@ Biclustering.nominal <- function(U,
   maxemt <- maxiter
 
   ncat <- as.vector(tmp$categories)
+  maxQ <- max(ncat)
 
   ## confirmatory
   # set conf_mat for confirmatory clustering

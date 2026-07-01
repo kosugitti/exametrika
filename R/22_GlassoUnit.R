@@ -123,12 +123,14 @@ glasso_one <- function(S, lambda, W_init = NULL, Beta_init = NULL, eps = 1e-6, m
 #' @param n Sample size
 #' @param p Number of variables
 #' @param gamma EBIC tuning parameter (default 0.5)
+#' @param edge_tol Threshold below which an off-diagonal element of Theta is
+#' treated as a zero (non-edge) when counting edges for the EBIC penalty.
 #' @return Scalar EBIC value
 #' @noRd
 
-compute_EBIC_glasso <- function(S, Theta, n, p, gamma = 0.5) {
+compute_EBIC_glasso <- function(S, Theta, n, p, gamma = 0.5, edge_tol = 1e-6) {
   term1 <- n * sum(S * Theta) - n * as.numeric(determinant(Theta, logarithm = TRUE)$modulus)
-  E <- sum(abs(Theta[upper.tri(Theta)]) > 1e-6)
+  E <- sum(abs(Theta[upper.tri(Theta)]) > edge_tol)
   term2 <- E * log(n)
   term3 <- 4 * gamma * E * log(p)
   EBIC <- term1 + term2 + term3
@@ -287,7 +289,7 @@ Glasso <- function(U,
       }
     }
     ebic_k <- tryCatch(
-      compute_EBIC_glasso(S, res$Theta, n = nobs, p = p, gamma = gamma),
+      compute_EBIC_glasso(S, res$Theta, n = nobs, p = p, gamma = gamma, edge_tol = edge_tol),
       error = function(e) NA_real_
     )
     if (!is.finite(ebic_k)) {

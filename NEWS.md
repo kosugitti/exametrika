@@ -71,6 +71,221 @@
   actionable error when a class-by-field cell is still undefined under the
   requested smoothing (`R/11_BINET.R`).
 
+- **0-indexed or non-contiguous polytomous category codes were silently
+  dropped in `Biclustering()`/`Biclustering_IRM()` for nominal and ordinal
+  data**, with no error or warning. `Biclustering.nominal()`,
+  `Biclustering.ordinal()`, `Biclustering_IRM.nominal()`, and
+  `Biclustering_IRM.ordinal()` (and, via delegation, the `rated`/`rated_IRM`
+  variants) built a one-hot response array by indexing directly with each
+  item's raw category code; a raw code of `0` is a no-op under R's
+  array-indexing rules, so every response in category `0` vanished from the
+  likelihood and classification with no diagnostic. On the package's own
+  `J15S3810` sample data (categories coded `0..3`), this silently discarded
+  3,854 observed responses. `GRM()` already remapped each item's categories
+  to contiguous 1-based indices to avoid exactly this; that remap is now
+  shared (`remap_category_codes()`, `R/00_BiclucterUtils.R`) and applied in
+  all four functions.
+
+- **`Biclustering_IRM.nominal()`/`Biclustering_IRM.ordinal()` corrupted
+  results whenever the data had missing responses.** The one-hot response
+  array was built by writing directly at `Uq[s, j, tmp$Q[s, j]] <- 1`
+  without checking for missing cells; a missing cell's `-1` sentinel, used
+  as a raw array index, sets every category *except* the first to `1` under
+  R's negative-indexing rules instead of leaving the cell at `0`. This fed
+  through into the Gibbs sampler's small-class-adjustment step and the final
+  class/field assignments. With 8% missing data injected into `J20S600`,
+  7% of final class assignments differed from the correct (missing-masked)
+  result. Fixed by building the one-hot array with the same
+  missing-value-masked construction already used in the binary/nominal/
+  ordinal `Biclustering()` path.
+
+- **`LDB()` crashed with "object 'conf_mat' not found" when `conf` was
+  passed as a matrix or data.frame** (only the vector form of `conf` worked).
+  This is the same class of bug already fixed in `Biclustering.ordinal()`/
+  `Biclustering.nominal()` on 2026-04-27, which `LDB()` was missed by at the
+  time (`R/10_LDB.R`).
+
+- **`LDB()`'s `beta1`/`beta2` smoothing arguments had their roles swapped
+  relative to `BNM()`/`LDLRA()`/`BINET()`.** All four functions compute a
+  posterior-mode correct-response rate of the form
+  `(count + α - 1) / (N + α + β - 2)` under a Beta(α, β) prior; `BNM()`,
+  `LD_param_est()` (used by `LDLRA()`), and `BINET()` consistently use
+  `beta1` as α (the "success" pseudo-count, matching the count in the
+  numerator), but `LDB()` used `beta2`. At the package default
+  `beta1 = beta2 = 1` this made no numerical difference, but a caller
+  following `BINET()`'s own advice to set an asymmetric prior (e.g.
+  `beta1 = 2, beta2 = 2` to avoid a degenerate `0/0` cell) would see the
+  *opposite* effect in `LDB()` versus its sibling functions. Traced to the
+  original Mathematica Chapter 10 module
+  (`develop/mtmk15forVer13/mod/Module_LDB.nb`), which uses `beta2` here —
+  this is not an R porting bug but an inconsistency inherited from the
+  reference implementation. Changed `LDB()` to use `beta1`, matching the
+  mathematically conventional Beta(α, β) parameterization and the rest of
+  the package (`R/10_LDB.R`).
+
+- **`LDLRA(..., method = "C")` (local dependence latent *Class* model)
+  mislabeled its output as the Rank model.** A hardcoded `model <- 2`
+  right before building the output tables silently overrode the `model`
+  value that had correctly been set from `method` earlier in the function,
+  so `result$model`, `result$msg`, and the "Rank"/"Class" column headers in
+  `Estimation_table`/`CCRR_table` always read "Rank" regardless of the
+  requested method. Numerical estimates were unaffected — only the labeling
+  (`R/09_LDLRA.R`).
+
+- **`BNM()`'s and `BINET()`'s graph-validity checks (`acyclicFLG`,
+  `connectedFLG`) never actually detected cycles or disconnection.** Both
+  used `adj^i` in a loop intending to count length-`i` walks, but `^` on a
+  matrix in R is elementwise, not matrix power, so the loop only ever
+  re-tested self-loops and "any edge present." `BINET()`'s
+  `stop("Your graph is not a DAG")` guard was consequently a no-op for any
+  real cycle of length ≥ 2, and `BNM()` silently fit cyclic "Bayesian
+  networks" with no warning. (`BINET()`'s `connectedFLG` was further
+  computing off the student response matrix, not a graph object, so it
+  could not have tested connectivity at all.) Replaced both with
+  `igraph::is_dag()` / `igraph::is_connected(mode = "weak")` on the actual
+  adjacency matrix being validated (`R/08A_BNM.R`, `R/11_BINET.R`).
+
+- **`Biclustering_IRM.binary()`'s small-class-reduction loop tracked
+  `bestclass`/`class`, which resolve to base R's `class()` function rather
+  than any local variable**, so the intended "roll back to the best-BIC
+  class assignment" step silently did nothing. In practice this had no
+  effect on the final returned model (the class/field assignments are
+  recomputed from scratch after the loop regardless), but the code read as
+  doing something it did not; fixed to track the actual `cls` vector
+  (`R/07_IRM.R`).
+
+- **`CCRR()` returned `JCRR()`'s result when called on non-`exametrika`
+  input** — a copy-paste bug in `CCRR.default()`'s fallback branch called
+  `JCRR(U)` instead of recursing into `CCRR(U)` (`R/02_TestItemFunctions.R`).
+
+- **`MutualInformation()`'s `base` argument was ignored for binary data**;
+  `MutualInformation.binary()` always computed log base 2 regardless of the
+  requested `base`, unlike the ordinal/nominal/rated path which already
+  respected it (`R/02_TestItemFunctions.R`).
+
+- **`JSR()` and `CSR()` crashed instead of falling back cleanly when given
+  binary data.** Both message "using X instead" and call the binary
+  equivalent, but never `return()`ed its result, so execution fell through
+  into polytomous-only code (`NCOL(U$Q)`, `U$Z == 0` on nonexistent `U$Q`)
+  and crashed (`R/02_TestItemFunctions.R`).
+
+- **`ItemTotalCorr.ordinal()` did not mask missing responses before summing
+  total scores.** `total <- rowSums(U$Q)` included the `-1` missing
+  sentinel directly in the sum, so any student with even one missing item
+  got a wrong total score, corrupting their item-total correlation with
+  *every* item, not just the missing one. Fixed to mask by `Z` before
+  summing, matching `ItemThreshold.ordinal()`'s existing pattern
+  (`R/02_TestItemFunctions.R`).
+
+- **`ITBiserial()`, `ScoreReport()`, and `ItemReport()` crashed when passed
+  raw (unformatted) data** — each called `dataFormat()` but stored the
+  result in a variable that was never used, leaving the original
+  unformatted argument in place for the subsequent `$response.type` check
+  and computation (`R/02_TestItemFunctions.R`, `R/02_QitemFunctions.R`).
+
+- **`dataFormat()` silently skipped value validation for ordinal/rated/
+  nominal data.** The branch was guarded by
+  `response.type == "polytgomous"` (a typo — no `response.type` value is
+  ever literally `"polytomous"`, since the actual values are `"ordinal"`/
+  `"rated"`/`"nominal"`), so the "must be non-negative integers" check
+  never ran for any polytomous type. Fixed to check
+  `response.type %in% c("ordinal", "rated")` (deliberately excluding
+  `"nominal"`, whose category codes are arbitrary labels rather than
+  ordered counts and may legitimately be negative) (`R/01_dataFormat.R`).
+
+- **`longdataFormat()` misaligned `ID`/response-matrix rows whenever
+  numeric student or item IDs were not an exact `1..N` sequence** (e.g.
+  student IDs `10, 20, 30`). Numeric IDs were used directly as row/column
+  indices instead of being remapped to a dense index, so `nrow(result$U)`
+  could be far larger than the actual number of students, with most rows
+  entirely empty. Both `Sid`/`Qid` are now always remapped through
+  `as.factor()` to a dense, correctly-ordered 1-based index, regardless of
+  whether the raw IDs are numeric or character (`R/01_dataFormat.R`).
+
+- **`longdataFormat()`'s `w` (item weight) argument was misused as a row
+  index.** `w_vec[unique(Qid_num)]` indexed the long-format weight column
+  by item-ID *values* rather than by the row where each item first
+  appears, so weights were essentially always wrong unless item IDs
+  happened to be an exact `1..N` sequence starting from the first item
+  column. Fixed to look up each item's weight via its first occurrence in
+  the long-format data (`R/01_dataFormat.R`).
+
+- **`print(GridSearch(...))` always crashed.** `print.exametrika()`'s
+  internal `switch()` had no case for the `"GridSearch"` class, and a
+  trailing comma after the last real case created an empty unnamed
+  fallback branch that errors when evaluated. `GridSearch()` is a
+  top-level function whose result is auto-printed at the console in normal
+  interactive use, so this reliably crashed on first use. Added a proper
+  `GridSearch` print case summarizing the fit-index grid and optimal
+  setting (`R/00_exametrikaPrint.R`).
+
+- **`plot(x)` without an explicit `type` argument crashed with a confusing
+  `"the condition has length > 1"` error** instead of the intended
+  `"The 'type' argument must be specified."` message. The `missing(type)`
+  check ran *after* `type` had already been evaluated (forcing its
+  multi-element default) for an unrelated `uses_layout` computation, so by
+  the time `missing()` was checked, `type` was no longer missing in the
+  technical sense needed for the check to matter — and the multi-element
+  default itself broke the preceding `if` first. Reordered so the
+  `missing(type)` check runs first (`R/00_exametrikaPlot.R`).
+
+- **`plot(grm_result, type = "ICC")` failed even though the identical call
+  works for IRT models.** GRM's plot-type alias handling for `"ICC"` was
+  implemented but never reachable, because `valid_types$GRM` in the
+  upstream validation list omitted `"ICC"` (only `"IIC"`/`"TIC"` were
+  listed). Added `"ICC"` to `valid_types$GRM` (`R/00_exametrikaPlot.R`).
+
+- **`print(bnm_result, digits = ...)`/`print(ldlra_result, digits = ...)`
+  ignored the requested `digits` for the "Conditional Correct Response
+  Rate" table.** A typo (`x$CCRR_tabje` instead of `x$CCRR_table`, in two
+  places) wrote the formatted string into a nonexistent list field instead
+  of the one actually printed immediately afterward. Also propagated the
+  existing `digits` argument to two related tables (`IRPIndex`/`FRPIndex`
+  in the LDLRA/LDB print sections) that were missing it while equivalent
+  tables elsewhere already had it (`R/00_exametrikaPrint.R`).
+
+- **`print(InterItemAnalysis(ordinal_data))` never displayed the
+  Conditional Selection Ratio** — it printed `x$JSR` (Joint Selection
+  Ratio, already shown just above) a second time instead of `x$CSR`
+  (`R/00_exametrikaPrint.R`).
+
+- **`GridSearch()` could report the wrong optimal `(ncls, nfld)` when
+  multiple grid cells tied for the best fit index.** `which(ret == ...,
+  arr.ind = TRUE)` returns one row per tied match; `optimal_idx[1]`/
+  `optimal_idx[2]` read the matrix's column-major-flattened first two
+  values instead of the first tie's `row`/`col` pair, so with ≥ 2 ties the
+  reported optimum could combine the row of one tie with the column of
+  another — a combination that was not actually the best (or even
+  necessarily tied). Fixed to read `optimal_idx[1, "row"]`/
+  `optimal_idx[1, "col"]` (`R/00_GridSearch.R`).
+
+- **`GridSearch(..., max_ncls = 1)` silently tested `ncls = 2` anyway.**
+  `2:max_ncls` is R's descending-sequence trap: with `max_ncls = 1` it
+  evaluates to `c(2, 1)` rather than an empty range, so a value the caller
+  explicitly excluded was tested regardless. Added an explicit
+  `max_ncls`/`max_nfld < 2` guard that stops with a clear message instead
+  (`R/00_GridSearch.R`).
+
+- **`Glasso()`'s `edge_tol` argument was documented as controlling edge
+  detection but did not affect model selection.** The EBIC computation
+  used internally to choose `lambda_opt` had its own hardcoded `1e-6`
+  edge-count threshold, so changing `edge_tol` only affected the
+  *reported* `n_edge`, not which `lambda` was actually selected. Threaded
+  `edge_tol` through to `compute_EBIC_glasso()` so it consistently governs
+  both (`R/22_GlassoUnit.R`).
+
+## Removed
+
+- **Removed `LLtheta_mat()`/`EAP_PSD()` (`R/04B_AbilityEstimation.R`) and
+  the corresponding dead `print.exametrika()` `"IRT_EAP_PSD"` case.**
+  Neither function was exported or called anywhere in the package; `IRT()`
+  computes ability EAP/PSD inline instead. Also removed a handful of other
+  now-dead assignments left over from the same `tmp$U * tmp$Z`
+  class-stripping pattern fixed above, and one duplicated-then-discarded
+  array/loop in `LDLRA()`'s internal `LD_param_est()`, none of which were
+  ever read after being written (`R/06_LRA.R`, `R/08C_BNM_GA.R`,
+  `R/09B_LDLRA_GA.R`, `R/09_LDLRA.R`, `R/11_BINET.R`).
+
 # exametrika 1.14.0
 
 ## Improvements

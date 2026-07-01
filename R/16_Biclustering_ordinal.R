@@ -29,16 +29,16 @@ Biclustering.ordinal <- function(U,
                                  verbose = TRUE,
                                  alpha = 1, ...) {
   tmp <- U
-  maxQ <- max(tmp$Q)
+  tmp$Q <- remap_category_codes(tmp$Q)
   nobs <- NROW(tmp$Q)
   nitems <- NCOL(tmp$Q)
-  ncat <- tmp$categories
   const <- exp(-nitems)
   test_log_lik <- -1 / const
   old_test_log_lik <- -2 / const
   emt <- 0
   maxemt <- maxiter
   ncat <- as.vector(tmp$categories)
+  maxQ <- max(ncat)
   # if (length(unique(ncat)) > 1) {
   #   stop("Error: Variables have different numbers of categories. Nominal data processing requires the same number of categories for all variables.")
   # }

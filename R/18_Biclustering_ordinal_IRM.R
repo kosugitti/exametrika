@@ -43,6 +43,7 @@ Biclustering_IRM.ordinal <- function(U,
                                      minSize = 20, EM_limit = 100,
                                      seed = 123, verbose = TRUE, ...) {
   tmp <- U
+  tmp$Q <- remap_category_codes(tmp$Q)
 
   nitems <- NCOL(tmp$Q)
   nobs <- NROW(tmp$Q)
@@ -54,21 +55,27 @@ Biclustering_IRM.ordinal <- function(U,
     stop("alpha must be positive (alpha > 0)")
   }
 
-  # One-hot encoding of response matrix: Uq[s, j, q] = 1 if student s chose category q on item j
+  # One-hot encoding of response matrix: Uq[s, j, q] = 1 if student s chose
+  # category q on item j. Missing cells (tmp$Z == 0) are left at zero; a raw
+  # -1 sentinel written directly as an array index would otherwise corrupt
+  # the array via R's negative-index semantics.
   Uq <- array(0, dim = c(nobs, nitems, maxQ))
-  for (s in 1:nobs) {
-    for (j in 1:nitems) {
-      Uq[s, j, tmp$Q[s, j]] <- 1
-    }
-  }
+  valid <- as.vector(tmp$Z) == 1
+  Uq[cbind(
+    rep(seq_len(nobs), times = nitems)[valid],
+    rep(seq_len(nitems), each = nobs)[valid],
+    as.vector(tmp$Q)[valid]
+  )] <- 1
 
   # Initialize -------------------------------------------------------------
   if (!is.null(seed)) {
     set.seed(seed)
   }
 
-  ## Initial Class: assign by mean response score
-  means <- apply(tmp$Q, 1, mean)
+  ## Initial Class: assign by mean response score (missing cells excluded)
+  Q_masked <- tmp$Q
+  Q_masked[tmp$Z == 0] <- NA
+  means <- apply(Q_masked, 1, mean, na.rm = TRUE)
   unique_vec <- unique(sort(means))
   ncls <- length(unique_vec)
   cls01 <- matrix(0, ncol = ncls, nrow = nobs)

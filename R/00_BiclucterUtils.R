@@ -16,14 +16,6 @@ init_field_membership_probs <- function(Q, class_effect, field_effect) {
   return(probs / sum(probs))
 }
 
-#' @title Create filter matrix for clustering
-#' @description
-#' Generates a filter matrix used in clustering algorithms. The matrix is constructed
-#' with diagonal elements based on the number of classes, and off-diagonal elements
-#' that create a tridiagonal structure. The first and last columns are normalized.
-#' @param ncls Number of classes (integer value determining the matrix dimensions)
-#' @return A square filter matrix of size ncls x ncls with normalized first and last columns
-#' @noRd
 #' @title Check for empty fields in Biclustering
 #' @description
 #' Checks if any fields have no items assigned after Biclustering estimation.
@@ -46,6 +38,14 @@ check_empty_fields <- function(fld, nfld) {
   }
 }
 
+#' @title Create filter matrix for clustering
+#' @description
+#' Generates a filter matrix used in clustering algorithms. The matrix is constructed
+#' with diagonal elements based on the number of classes, and off-diagonal elements
+#' that create a tridiagonal structure. The first and last columns are normalized.
+#' @param ncls Number of classes (integer value determining the matrix dimensions)
+#' @return A square filter matrix of size ncls x ncls with normalized first and last columns
+#' @noRd
 create_filter_matrix <- function(ncls) {
   f0 <- ifelse(ncls < 5, 1.05 - 0.05 * ncls,
     ifelse(ncls < 10, 1.00 - 0.04 * ncls,
@@ -59,4 +59,26 @@ create_filter_matrix <- function(ncls) {
   Fil[, ncls] <- Fil[, ncls] / sum(Fil[, ncls])
 
   return(Fil)
+}
+
+#' @title Remap polytomous category codes to contiguous 1-based indices
+#' @description
+#' Response matrices produced by dataFormat() preserve the caller's raw
+#' category codes (e.g. 0-indexed 0..3, or codes with gaps), with missing
+#' cells marked as -1. Biclustering/Biclustering_IRM's one-hot encoding
+#' indexes an array directly by these raw codes, so a raw code of 0 is
+#' silently dropped (R's array-index semantics treat 0 as "select nothing")
+#' and any non-contiguous coding misaligns with the array's category
+#' dimension. This remaps each item's own observed codes to `1..ncat[j]`,
+#' leaving -1 (missing) untouched, mirroring the equivalent remap already
+#' done in GRM().
+#' @param Q Response matrix (nobs x nitems) with -1 marking missing cells
+#' @return Q with each column's non-missing values remapped to `1..ncat[j]`
+#' @noRd
+remap_category_codes <- function(Q) {
+  for (j in seq_len(NCOL(Q))) {
+    valid_j <- Q[, j] != -1
+    Q[valid_j, j] <- match(Q[valid_j, j], sort(unique(Q[valid_j, j])))
+  }
+  Q
 }

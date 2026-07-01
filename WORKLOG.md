@@ -4,6 +4,47 @@ Detailed development log. User-facing changes go in `NEWS.md`; this file
 captures the per-session internal narrative (why a change was made, what
 was investigated, what was ruled out). Entries are newest-first.
 
+## 2026-07-01（さらに続き） — v1.15.0: 監査で見つけた重複ロジックの4件をリファクタリング
+
+直前の全コードベース監査で「改善提案（今回は未着手）」としていた6件のうち、
+ユーザから「他のも考えたいな。進捗表示の規約違反とは？重複統合とは？」と
+質問され、`\r`進捗表示と`GridSearch`分岐重複の具体例を提示。ユーザが「進めよう。
+これら4つの修正だ」と、以下4件（巨大ファイル分割2件は対象外、リスクの低い
+共通化4件）をまとめて実施することに決定:
+
+1. **`\r`進捗表示を`\n`に統一**（8箇所: `00_EMclus.R`, `04C_ParameterEstimation.R`,
+   `07_Biclustering.R`, `08C_BNM_GA.R`×2, `09B_LDLRA_GA.R`,
+   `15_Biclustering_nominal.R`, `16_Biclustering_ordinal.R`）。単純な文字列置換、
+   計算結果への影響なし。
+2. **`beta_posterior_mode()`共通ヘルパー化**（`R/08A_BNM.R`に新設）。
+   `(count+beta1-1)/(total+beta1+beta2-2)`という式がBNM/LD_param_est(LDLRA)/BINET
+   で重複していたのを統合。BNMには`beta0<-beta2`という無駄な別名変数もあったので
+   ついでに削除。LDBは分母にゼロ観測セル穴埋め処理（`denom0`トリック）が別途
+   組み込まれており構造が異なるため対象外（既にbeta1修正済みで数値は正しい）。
+3. **`build_conf_mat()`共通ヘルパー化**（`R/07_Biclustering.R`に新設）。
+   `conf`(vector/matrix/data.frame)→`conf_mat`変換ロジックがBiclustering/
+   .nominal/.ordinal/LDBで重複していたのを統合。LDBは`conf`必須（NULL不可）・
+   他は`conf=NULL`で探索的モード、という既存の分岐差はヘルパー呼び出し側の
+   `if(!is.null(conf))`ラッパー有無で温存（ヘルパー自体はNULLを渡すと
+   `is.vector/is.matrix/is.data.frame`いずれにも該当せず自然にstopする設計）。
+4. **`GridSearch()`のBiclustering/LCA分岐の重複統合**。全滅チェック
+   (`stop_if_all_grid_failed`)・失敗設定警告(`report_failed_grid_settings`)・
+   最適値選択(`select_optimal_grid_index`)の3ヘルパーに切り出し。最適値選択は
+   `which(ret==target,arr.ind=TRUE)`が1次元ベクトルでも2次元行列でも動く性質
+   （1次元だと`arr.ind`が無視されて素の位置ベクトルが返る）を利用して1つの
+   関数で両分岐に対応。
+
+各修正後に関連テスト、最後に全5030テストFAIL 0を確認（値は前回コミット時と
+完全一致、GridSearchのoptimal_ncls/nfld等で数値比較して確認済み）。
+NEWS.mdに「Internal (no user-visible behavior change)」節を新設して記録。
+
+commit: `16ed16b`
+
+### 残った改善提案（未着手のまま）
+
+- `R/02_TestItemFunctions.R`（1748行）・`R/00_exametrikaPrint.R`（775行）の
+  巨大ファイル分割は今回もスコープ外（今回の4件よりリスクが高いと判断）
+
 ## 2026-07-01（続き） — v1.15.0: 全コードベース監査（4系統並行）+ 21件のバグ修正
 
 前段（BINET欠測クラッシュ修正）の後、ユーザから「パッケージ全体を見渡して改良点を

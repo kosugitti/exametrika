@@ -23,6 +23,12 @@
 #' @param adj_file A file detailing the relationships of the graph for each rank/class,
 #' listed in the order of starting point, ending point, and rank(class).
 #' @param verbose verbose output Flag. default is TRUE
+#' @param beta1 Beta distribution parameter 1 for prior density of the conditional
+#' correct response rates. Default is 1. Increase this (together with `beta2`) if
+#' estimation fails because some class-by-field cell has zero non-missing
+#' observations (common with many classes/fields combined with missing data).
+#' @param beta2 Beta distribution parameter 2 for prior density of the conditional
+#' correct response rates. Default is 1.
 #' @return
 #' \describe{
 #'  \item{nobs}{Sample size. The number of rows in the dataset.}
@@ -132,7 +138,7 @@
 BINET <- function(U, Z = NULL, w = NULL, na = NULL,
                   conf = NULL, ncls = NULL, nfld = NULL,
                   g_list = NULL, adj_list = NULL, adj_file = NULL,
-                  verbose = FALSE) {
+                  verbose = FALSE, beta1 = 1, beta2 = 1) {
   # data format
   if (!inherits(U, "exametrika")) {
     tmp <- dataFormat(data = U, na = na, Z = Z, w = w)
@@ -307,18 +313,17 @@ BINET <- function(U, Z = NULL, w = NULL, na = NULL,
   cls <- ret.Biclustering$ClassEstimated
 
   # Estimation for BINET -------------------------------------------------------
-  gamp <- 1
   const <- 1e-10
   lls <- 0
 
-  irp <- t(t(clsmemb) %*% tmp$U / colSums(clsmemb))
-  Ccj <- t(clsmemb) %*% tmp$U
+  irp <- t(t(clsmemb) %*% (tmp$Z * tmp$U) / colSums(clsmemb))
+  Ccj <- t(clsmemb) %*% (tmp$Z * tmp$U)
   Fcj <- t(clsmemb) %*% (tmp$Z * (1 - tmp$U))
   Ncj <- Ccj + Fcj
   Ccf <- Ccj %*% fldmemb
   Fcf <- Fcj %*% fldmemb
   Ncf <- Ccf + Fcf
-  Pcf <- (Ccf + gamp - 1) / (Ncf + 2 * gamp - 2)
+  Pcf <- (Ccf + beta1 - 1) / (Ncf + beta1 + beta2 - 2)
   Pcf[1, ] <- 0
   Pcf[NROW(Pcf), ] <- 1
   Pcf01 <- matrix(0, ncol = nfld, nrow = ncls)
@@ -341,13 +346,13 @@ BINET <- function(U, Z = NULL, w = NULL, na = NULL,
           fld_item <- which(fldmemb[, k] == 1)
           paC <- Ccj[i, fld_item]
           paN <- Ncj[i, fld_item]
-          pap <- (paC + gamp - 1) / (paN + 2 * gamp - 2)
+          pap <- (paC + beta1 - 1) / (paN + beta1 + beta2 - 2)
           if (i == 1) {
             pap <- rep(0, length(pap))
           }
           chC <- Ccj[j, fld_item]
           chN <- Ncj[j, fld_item]
-          chp <- (chC + gamp - 1) / (chN + 2 * gamp - 2)
+          chp <- (chC + beta1 - 1) / (chN + beta1 + beta2 - 2)
           if (j == ncls) {
             chp <- rep(1, length(chp))
           }
@@ -393,6 +398,17 @@ BINET <- function(U, Z = NULL, w = NULL, na = NULL,
     }
   }
 
+  if (anyNA(Pcj)) {
+    stop(
+      "Estimation failed: some class-by-field cell has zero non-missing ",
+      "observations under the current smoothing (beta1 = ", beta1, ", beta2 = ",
+      beta2, "), producing an undefined conditional correct response rate. ",
+      "This is more likely with many classes/fields (ncls x nfld) combined ",
+      "with missing data. Try increasing beta1/beta2 (e.g. beta1 = 2, ",
+      "beta2 = 2) or reducing ncls/nfld."
+    )
+  }
+
   log_num_Zic <- matrix(NA, nrow = nobs, ncol = ncls)
   log_num_Zic <- tmp$U %*% log(t(Pcj) + const) +
     (tmp$Z * (1 - tmp$U)) %*% log(t(1 - Pcj) + const)
@@ -411,7 +427,7 @@ BINET <- function(U, Z = NULL, w = NULL, na = NULL,
   clsmemb <- num_Zic / rowSums(num_Zic)
   cls <- apply(clsmemb, 1, which.max)
   cls01 <- sign(clsmemb - apply(clsmemb, 1, max)) + 1
-  Ccj <- t(clsmemb) %*% tmp$U
+  Ccj <- t(clsmemb) %*% (tmp$Z * tmp$U)
   Fcj <- t(clsmemb) %*% (tmp$Z * (1 - tmp$U))
   Ncj <- Ccj + Fcj
   llm <- sum(Ccj * log(Pcj + const) + Fcj * log(1 - Pcj + const))

@@ -139,14 +139,12 @@ BNM <- function(U, Z = NULL, w = NULL, na = NULL,
   adjU <- adj + t(adj)
   simpleFLG <- ifelse(max(adjU) <= 1, 1, 0)
   testlength <- ncol(adj)
-  acyclicFLG <- 0
-  connectedFLG <- 0
-  for (i in 1:(testlength - 1)) {
-    acyclicFLG <- acyclicFLG + sum(diag(adj^i))
-    connectedFLG <- connectedFLG + min(sum(adjU^i))
-  }
-  acyclicFLG <- ifelse(acyclicFLG == 0, 1, 0)
-  connectedFLG <- ifelse(connectedFLG > 0, 1, 0)
+  # `adj^i` is R's elementwise power, not matrix power, so it never actually
+  # tests for cycles/paths of length i. Use igraph's own DAG/connectivity
+  # checks on the same adjacency matrix instead.
+  adj_graph <- igraph::graph_from_adjacency_matrix(adj)
+  acyclicFLG <- ifelse(igraph::is_dag(adj_graph), 1, 0)
+  connectedFLG <- ifelse(igraph::is_connected(adj_graph, mode = "weak"), 1, 0)
   dag <- simpleFLG * acyclicFLG
   cdag <- dag * connectedFLG
 

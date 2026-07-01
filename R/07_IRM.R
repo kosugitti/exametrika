@@ -547,10 +547,10 @@ Biclustering_IRM.binary <- function(U, Z = NULL, w = NULL, na = NULL,
         bestfit <- fit
         best_index <- indices
         bestPcf <- Pcf
-        bestclass <- class
+        bestcls <- cls
       } else {
         Pcf <- bestPcf
-        class <- bestclass
+        cls <- bestcls
         EMrepFLG <- FALSE
         break
       }

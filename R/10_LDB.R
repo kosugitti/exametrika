@@ -170,6 +170,9 @@ LDB <- function(U, Z = NULL, w = NULL, na = NULL,
     if (any(rowSums(conf) > 1)) {
       stop("The row sums of the conf matrix must be equal to 1.")
     }
+    conf_mat <- as.matrix(conf)
+  } else {
+    stop("conf matrix is not set properly.")
   }
 
   nfld <- NCOL(conf_mat)
@@ -300,7 +303,14 @@ LDB <- function(U, Z = NULL, w = NULL, na = NULL,
   denom0 <- sign(denom_npirp)
 
   denom_npirp <- denom_npirp + (1 - denom0) * 100
-  param <- (n_pirp + beta2 - 1) / denom_npirp
+  # Numerator uses beta1 (the "success"/correct-response prior pseudo-count),
+  # matching the convention already used by BNM/LD_param_est(LDLRA)/BINET's
+  # analogous posterior-mode formula. The original Mathematica Chapter 10
+  # module (develop/mtmk15forVer13/mod/Module_LDB.nb) uses beta2 here, but at
+  # the package default beta1 = beta2 = 1 this is numerically identical; it
+  # only differs once a caller sets beta1 != beta2, where beta1-as-numerator
+  # is the mathematically consistent choice.
+  param <- (n_pirp + beta1 - 1) / denom_npirp
 
   ### IRP
   pirp_trans <- aperm(pirp_array, perm = c(2, 3, 4, 1))

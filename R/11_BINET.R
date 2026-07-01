@@ -173,10 +173,6 @@ BINET <- function(U, Z = NULL, w = NULL, na = NULL,
     if (length(conf) != NCOL(U)) {
       stop("conf vector size does NOT match with data.")
     }
-    conf_mat <- matrix(0, nrow = NCOL(U), ncol = max(conf))
-    for (i in 1:NROW(conf_mat)) {
-      conf_mat[i, conf[i]] <- 1
-    }
   } else if (is.matrix(conf) | is.data.frame(conf)) {
     if (NROW(conf) != NCOL(U)) {
       stop("conf matrix size does NOT match with data.")
@@ -277,14 +273,14 @@ BINET <- function(U, Z = NULL, w = NULL, na = NULL,
   ### Adj mat check
   adjU <- all_adj + t(all_adj)
   simpleFLG <- ifelse(max(adjU) <= 1, 1, 0)
-  acyclicFLG <- 0
-  connectedFLG <- 0
-  for (i in 1:(nfld - 1)) {
-    acyclicFLG <- acyclicFLG + sum(diag(all_adj^i))
-    connectedFLG <- connectedFLG + min(sum(U^i))
-  }
-  acyclicFLG <- ifelse(acyclicFLG == 0, 1, 0)
-  connectedFLG <- ifelse(connectedFLG > 0, 1, 0)
+  # `all_adj^i` is R's elementwise power, not matrix power, so it never
+  # actually tests for cycles of length i; `U` here was the student response
+  # matrix, not a graph object at all, so it could not test connectivity
+  # either. Use igraph's own DAG/connectivity checks on the class-level
+  # adjacency matrix instead.
+  all_adj_graph <- igraph::graph_from_adjacency_matrix(all_adj)
+  acyclicFLG <- ifelse(igraph::is_dag(all_adj_graph), 1, 0)
+  connectedFLG <- ifelse(igraph::is_connected(all_adj_graph, mode = "weak"), 1, 0)
   dag <- simpleFLG * acyclicFLG
   cdag <- dag * connectedFLG
 

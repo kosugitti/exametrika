@@ -38,10 +38,6 @@ LD_param_est <- function(tmp, adj_list, classRefMat, ncls, smoothpost, beta1 = 2
   # PIRP  --------------------------------------------------------------
   npapat <- 2^max(nparent)
   #### JxRxPattern
-  refmat <- array(NA, dim = c(testlength, ncls, npapat))
-  for (i in 1:npapat) {
-    refmat[, , i] <- classRefMat
-  }
   refmat <- array(replicate(npapat, classRefMat), dim = c(testlength, ncls, npapat))
 
   ### SxJxRxPattern
@@ -70,9 +66,6 @@ LD_param_est <- function(tmp, adj_list, classRefMat, ncls, smoothpost, beta1 = 2
   # Expand dimensions for vectorized operations
   U_expanded <- array(replicate(ncls * npapat, tmp$U), dim = dim(pat01))
   Z_expanded <- array(replicate(ncls * npapat, tmp$Z), dim = dim(pat01))
-
-  U_ezpanded <- array(rep(tmp$U, times = ncls * npapat), dim = c(nobs, testlength, ncls, npapat))
-  Z_ezpanded <- array(rep(tmp$Z, times = ncls * npapat), dim = c(nobs, testlength, ncls, npapat))
 
   # Expand smoothpost
   # Using aperm and array to expand smoothpost
@@ -340,7 +333,6 @@ LDLRA <- function(U, Z = NULL, w = NULL, na = NULL,
 
   ### refmat; Item x Rank x Pattern
   Estimation_table <- as.data.frame(matrix(NA, nrow = testlength * ncls, ncol = npapat + 2))
-  model <- 2
   if (model == 1) {
     model_msg <- "Class"
   } else {
@@ -433,7 +425,7 @@ LDLRA <- function(U, Z = NULL, w = NULL, na = NULL,
   ret <- structure(list(
     U = U,
     testlength = testlength,
-    msg = "Rank",
+    msg = model_msg,
     nobs = nobs,
     n_class = ncls,
     Nclass = ncls,

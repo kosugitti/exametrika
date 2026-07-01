@@ -87,18 +87,13 @@ BNM_GA <- function(U, Z = NULL, w = NULL, na = NULL,
   set.seed(seed)
   crr <- crr(tmp)
   sort_list <- order(crr, decreasing = TRUE)
-  adj_sort <- data.frame(item = tmp$ItemLabel, crr = crr)
-  adj <- matrix(0, ncol = testlength, nrow = testlength)
-  adj[upper.tri(adj)] <- 1
-  colnames(adj) <- rownames(adj) <- tmp$ItemLabel[sort_list]
-  gene_length <- sum(upper.tri(adj))
-
 
   # Initialize ------------------------------------------------------
   RsI <- round(population * Rs)
 
   adj <- matrix(0, ncol = testlength, nrow = testlength)
   colnames(adj) <- rownames(adj) <- tmp$ItemLabel[sort_list]
+  gene_length <- sum(upper.tri(adj))
   gene_list <- matrix(0, nrow = population, ncol = gene_length)
   for (j in 1:population) {
     adj_gene <- rbinom(gene_length, 1, 0.5)
@@ -351,9 +346,7 @@ BNM_PBIL <- function(U, Z = NULL, w = NULL, na = NULL,
   set.seed(seed)
   crr <- crr(tmp)
   sort_list <- order(crr, decreasing = TRUE)
-  adj_sort <- data.frame(item = tmp$ItemLabel, crr = crr)
   adj <- matrix(0, ncol = testlength, nrow = testlength)
-  adj[upper.tri(adj)] <- 1
   colnames(adj) <- rownames(adj) <- tmp$ItemLabel[sort_list]
   gene_length <- sum(upper.tri(adj))
 

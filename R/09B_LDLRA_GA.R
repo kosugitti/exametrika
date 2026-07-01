@@ -143,9 +143,7 @@ LDLRA_PBIL <- function(U, Z = NULL, w = NULL, na = NULL,
   set.seed(seed)
   crr <- crr(tmp)
   sort_list <- order(crr, decreasing = TRUE)
-  adj_sort <- data.frame(item = tmp$ItemLabel, crr = crr)
   adj <- matrix(0, ncol = testlength, nrow = testlength)
-  adj[upper.tri(adj)] <- 1
   colnames(adj) <- rownames(adj) <- tmp$ItemLabel[sort_list]
   gene_length <- sum(upper.tri(adj))
 

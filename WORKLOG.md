@@ -4,6 +4,107 @@ Detailed development log. User-facing changes go in `NEWS.md`; this file
 captures the per-session internal narrative (why a change was made, what
 was investigated, what was ruled out). Entries are newest-first.
 
+## 2026-07-01 — v1.15.0: dataFormat列名対応 + 欠測データ系バグ一斉修正（BINET含む）
+
+きっかけは「dataFormatのid列は列番号でしか指定できない」という一言の指摘。
+そこから列名対応 → 隣接コードのバグ探索 → 全モデル関数の並行監査、と芋づる式に
+広がり、最終的に2コミットでv1.15.0（7/15提出予定）分の修正が積み上がった。
+
+### コミット1: `2bf3857` — dataFormat列名対応 + tmp剥がれ系バグ一式
+
+**列名対応**
+- `dataFormat()`の`id`引数が数値の列番号しか受け付けず，文字列を渡すと即
+  `stop()`していた。列名（文字列）でも指定できるように修正。存在しない列名・
+  複数マッチはエラーで明示。
+- `longdataFormat()`のSid/Qid/Respは元々R側の`[[`/`[,]`が汎用的なので列名でも
+  動いてはいたが，Sid/Qid/Resp/w全てに列存在チェック・エラーメッセージを追加して
+  dataFormatと足並みを揃えた。
+- ついでに発見: `longdataFormat()`は「1学生が複数項目に回答する」通常のロング
+  形式データで必ず「Duplicated IDs found」を誤検出していた（生のSid列に対して
+  重複チェックしていたのが原因、ロング形式ではSidが複数行に渡って重複するのが
+  正常）。(Sid, Qid)ペアの重複チェックに変更。
+
+**tmp剥がれ系バグ（本セッションの主戦場）**
+`IRT()`で「`U <- tmp$U * tmp$Z`でexametrikaクラスを剥がし，欠測(-1)を0に
+潰した後，その`U`を`ItemTotalCorr()`/`ItemThreshold()`に渡している」というバグを
+発見。これらの関数は`UseMethod`ディスパッチで，`inherits(U,"exametrika")`が
+falseだと`na`/`Z`/`w`なしで`dataFormat()`を再実行してしまうため，欠測が
+「誤答」として再解釈される。実測（20名5項目・欠測2件）で`tau`/`rho`が実際に
+ずれることを確認。
+
+この型のバグを全ファイルで洗い出すため，4系統の並行Explore/general-purpose
+agentを立てて監査（IRT/GRM系，LCA/LRA系，Biclustering/IRM系，BNM/LDLRA/LDB/
+BINET系）。結果，同型のバグが`crr(U)`という形で5箇所に伝播していたことが判明:
+`Biclustering.binary`の`FieldAnalysis$CRR`，`BNM`/`LDLRA`/`LDB`/`BINET`の
+`$crr`出力フィールド。いずれも推定計算本体（EM/Gibbs, IRP/FRP, CCRR_table等）
+は`tmp$U`/`tmp$Z`を直接使っており無事，汚染されるのは`$crr`フィールドのみ
+（BNMは`print.BNM`のDAG描画ノード縦位置ソートにも影響）。全て`crr(tmp)`に
+差し替えて解決。
+
+隣接して，`CTT()`/`BNM()`/`LDLRA()`/`LDB()`/`BINET()`で「`if (U$response.type
+!= "binary")`」のように**exametrikaクラスに変換する前の生引数**をチェックして
+いるバグも発見。生のdata.frame/matrixを直接渡すと`U$response.type`がNULLになり
+即クラッシュ（`tmp$response.type`に統一）。`CTT()`だけは`inherits()`の条件が
+そもそも反転していて，生データを渡すと`dataFormat()`自体をスキップして即死する
+より重いバグだった。
+
+副産物として，同じ「`U <- tmp$U * tmp$Z`だが以降未使用」という死んだコードが
+`LRA.binary`/`BNM_GA`/`BNM_PBIL`/`LD_param_est`/`LDLRA_PBIL`の5箇所に見つかり
+削除（実害なし，可読性のみ）。
+
+全4926テストがFAIL 0で通ることを確認してコミット・プッシュ。
+
+### コミット2: `8e186e0` — BINET()の欠測データクラッシュ修正
+
+コミット1のBINET監査中，ユーザから「BINETが欠測データでクラッシュする件も
+今回合わせて直す」と指示。原因は2つの複合:
+
+1. `Ccj`（クラス別正答カウント）が`t(clsmemb) %*% tmp$U`と，欠測(-1)を
+   Zマスクせずそのまま行列積に混入させていた。対になる`Fcj`（誤答カウント）は
+   `tmp$Z * (1 - tmp$U)`と正しくマスクしているのに`Ccj`だけ漏れていた。
+   欠測が多いと`Ccj`が負値になり，条件付き正答率`Pcf`/`pap`/`chp`が破綻。
+2. 平滑化定数`gamp <- 1`（Beta(1,1)事前分布のMAP式）がハードコードで引数化
+   されておらず，あるクラス×フィールドの組み合わせで非欠測観測数がゼロになると
+   0/0でNaNになる。姉妹関数のBNM/LDLRA/LDBには同じ役割の`beta1`/`beta2`引数が
+   あるのにBINETだけ無かった。
+
+ユーザが本家Mathematica実装（`estbinet[d0_, ai0_, gp0_]`）のソースを提示して
+くれて，(2)は本家も`estbinet[uuu, structmat, 1]`とgamma=1固定で呼んでいる
+ことが判明＝移植バグではなく本家から継承した構造的弱点。一方(1)は本家の
+`Ccj = Transpose[clsmemb] . dat`が`dat`側で欠測を0に前処理済みという前提に
+依存しており，R側は`tmp$U`が欠測を`-1`で持つ設計なので前提が合わずR特有の
+移植バグと判断。
+
+対処: `Ccj`/`irp`の計算を`tmp$Z * tmp$U`でマスク，`BINET()`に`beta1 = 1,
+beta2 = 1`引数を追加（既定値は現状維持で非破壊），それでも0/0になる場合は
+謎の`'dimnames'の長さ...`エラーではなく「beta1/beta2を上げてください」という
+分かりやすいエラーに変更。欠測30件注入のトイデータで再現・修正確認，
+Mathematica参照値を使った既存test-binet.R（40件）・全4926テストとも
+FAIL 0を確認してコミット・プッシュ。
+
+### バージョニング
+
+ユーザ判断で，今回の修正一式をv1.15.0として2026-07-15にCRAN提出する方針に
+確定（前回1.14.0受理2026-06-14からの1ヶ月クールダウンにちょうど収まる）。
+NEWS.mdの`(development version)`見出しを`1.15.0`に確定し，DESCRIPTIONの
+Versionも`1.14.0.9000`→`1.15.0`にbump（このタイミングでbumpするのは1.13.0の
+時と同じ前例）。cran-comments.mdは提出直前に作業する慣例のため今回は未着手。
+
+### 次回への引き継ぎ
+
+- cran-comments.md 1.15.0化，R CMD check --as-cran / rhub / win-devel 実行は
+  7/15提出前に必要
+- 今回のtmp剥がれ監査は「危険な関数リスト」（ItemTotalCorr/ItemThreshold/crr/
+  JointSampleSize/JCRR/CCRR/ItemLift/MutualInformation/PhiCoefficient/
+  PolychoricCorrelationMatrix/TetrachoricCorrelationMatrix/ItemOdds/
+  ItemEntropy/ITBiserial/nrs/passage/sscore/percentile/stanine/
+  Dimensionality/TestStatistics/ItemStatistics/InterItemAnalysis/CTT）
+  への呼び出し箇所を対象にしたもので，パッケージ全体を網羅した形跡は
+  ある（4系統agentで03〜23番のRファイルほぼ全て担当済み）が，将来新しい
+  モデル関数を足すときは同じ「tmp剥がれ→UseMethod関数に渡す」パターンを
+  混入させないよう要注意（`.claude/CLAUDE.md`にコーディング規約として
+  一文残す価値あり）
+
 ## 2026-06-15 — v1.14.0 CRAN 提出・受理・リリース一式
 
 v1.14.0 を CRAN に提出し，同日中に受理・公開された。前回 1.13.0 を落とした

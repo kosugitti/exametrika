@@ -94,6 +94,16 @@ GridSearch <- function(
     )
   }
 
+  # Guard against max_ncls/max_nfld < 2: without this, `2:max_ncls`
+  # below would silently evaluate as a descending sequence (e.g. `2:1`)
+  # and test values the caller never asked for.
+  if (max_ncls < 2) {
+    stop("max_ncls must be at least 2.")
+  }
+  if (fun == "Biclustering" && max_nfld < 2) {
+    stop("max_nfld must be at least 2.")
+  }
+
   # ------------------------------------------ Biclustering
   if (fun == "Biclustering") {
     if (max_ncls >= nobs) {
@@ -166,8 +176,11 @@ GridSearch <- function(
     } else {
       optimal_idx <- which(ret == max(ret, na.rm = TRUE), arr.ind = TRUE)
     }
-    optimal_ncls <- optimal_idx[1] + 1
-    optimal_nfld <- optimal_idx[2] + 1
+    # arr.ind=TRUE returns one row per tied match; take the first tie
+    # deterministically instead of letting optimal_idx[1]/optimal_idx[2]
+    # silently pick mismatched row/col from different ties.
+    optimal_ncls <- optimal_idx[1, "row"] + 1
+    optimal_nfld <- optimal_idx[1, "col"] + 1
 
     # Display warning for failed convergence
     if (length(failed_settings) > 0) {

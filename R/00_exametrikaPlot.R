@@ -172,6 +172,10 @@ plot.exametrika <- function(x,
     if (!is.null(filename)) dev.off()
   })
 
+  if (missing(type)) {
+    stop("The 'type' argument must be specified.")
+  }
+
   # Skip mfrow for plot types that use layout() internally (FCRP, FCBR)
   uses_layout <- type %in% c("FCRP", "FCBR")
   if (!uses_layout) {
@@ -182,7 +186,7 @@ plot.exametrika <- function(x,
 
   valid_types <- list(
     IRT = c("IRF", "TRF", "IIF", "TIF", "IIC", "ICC", "TIC"),
-    GRM = c("IRF", "IIF", "TIF", "IIC", "TIC"),
+    GRM = c("IRF", "IIF", "TIF", "IIC", "ICC", "TIC"),
     LCA = c("IRP", "TRP", "LCD", "CMP"),
     LRA = c("IRP", "TRP", "LRD", "RMP"),
     LRAordinal = c("ScoreFreq", "ScoreRank", "ICRP", "ICBR", "RMP"),
@@ -196,10 +200,6 @@ plot.exametrika <- function(x,
     LDB = c("FRP", "TRP", "LRD", "RMP", "Array", "FieldPIRP"),
     BINET = c("FRP", "TRP", "LRD", "RMP", "Array", "LDPSR")
   )
-
-  if (missing(type)) {
-    stop("The 'type' argument must be specified.")
-  }
 
   if (!type %in% valid_types[[value]]) {
     stop(paste("Warning: The type", type, "does not correspond to the value", value))

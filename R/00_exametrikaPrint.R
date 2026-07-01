@@ -138,7 +138,7 @@ print.exametrika <- function(x, digits = 3, ...) {
       cat("\nJoint Selection Rateio\n")
       print(x$JSR, digits = digits)
       cat("\nConditonal Selection Ratio\n")
-      print(x$JSR, digits = digits)
+      print(x$CSR, digits = digits)
       cat("\nMutual Information\n")
       print(x$MI, digits = digits)
       cat("\nCorrelation Matrix\n")
@@ -149,10 +149,6 @@ print.exametrika <- function(x, digits = 3, ...) {
       print(x$Reliability, digits = digits)
       cat("\nReliability Excluding Item\n")
       print(x$ReliabilityExcludingItem, digits = digits)
-    },
-    IRT_EAP_PSD = {
-      cat("Ability")
-      print(x$EAP, digits = digits)
     },
     IRT = {
       cat("Item Parameters\n")
@@ -566,9 +562,9 @@ print.exametrika <- function(x, digits = 3, ...) {
         if (is.nan(x$CCRR_table[j, 5])) {
           x$CCRR_table[j, 5] <- "NaN(0/0)"
         } else {
-          x$CCRR_tabje[j, 5] <- sprintf(
+          x$CCRR_table[j, 5] <- sprintf(
             paste0("%.", digits, "f"),
-            as.numeric(x$CCRR_tabje[j, 5])
+            as.numeric(x$CCRR_table[j, 5])
           )
         }
       }
@@ -615,9 +611,9 @@ print.exametrika <- function(x, digits = 3, ...) {
         if (is.nan(x$CCRR_table[j, 6])) {
           x$CCRR_table[j, 6] <- "NaN(0/0)"
         } else {
-          x$CCRR_tabje[j, 6] <- sprintf(
+          x$CCRR_table[j, 6] <- sprintf(
             paste0("%.", digits, "f"),
-            as.numeric(x$CCRR_tabje[j, 6])
+            as.numeric(x$CCRR_table[j, 6])
           )
         }
       }
@@ -625,7 +621,7 @@ print.exametrika <- function(x, digits = 3, ...) {
       cat("\nMarginal Item Reference Profile\n")
       print(x$IRP, na.print = "", digits = digits)
       cat("\nIRP Indices\n")
-      print(x$IRPIndex)
+      print(x$IRPIndex, digits = digits)
       if (x$SOACflg) {
         print("Strongly ordinal alignment condition was satisfied.")
       }
@@ -678,7 +674,7 @@ print.exametrika <- function(x, digits = 3, ...) {
       cat("\nMarginal Rankluster Reference Matrix\n")
       print(x$FRP, digits = digits)
       cat("\nIRP Indices\n")
-      print(x$FRPIndex)
+      print(x$FRPIndex, digits = digits)
 
       y <- rbind(x$TRP, x$LRD, x$RMD)
       rownames(y) <- c(
@@ -767,9 +763,25 @@ print.exametrika <- function(x, digits = 3, ...) {
       class(x) <- "matrix"
       print(x, digits = digits)
     },
+    GridSearch = {
+      cat("Grid Search Results\n")
+      if (!is.null(x$index_matrix)) {
+        cat("\nFit index by (ncls, nfld):\n")
+        print(round(x$index_matrix, digits))
+        cat(sprintf("\nOptimal: ncls = %d, nfld = %d\n", x$optimal_ncls, x$optimal_nfld))
+      } else if (!is.null(x$index_vec)) {
+        cat("\nFit index by ncls:\n")
+        print(round(x$index_vec, digits))
+        cat(sprintf("\nOptimal: ncls = %d\n", x$optimal_ncls))
+      }
+      if (length(x$failed_settings) > 0) {
+        cat(sprintf("\n%d setting(s) failed to converge.\n", length(x$failed_settings)))
+      }
+      cat("\nUse `$optimal_result` to access the fitted model at the optimal setting.\n")
+    },
     all = {
       class(x) <- "list"
       print(x, digits = digits)
-    },
+    }
   )
 }

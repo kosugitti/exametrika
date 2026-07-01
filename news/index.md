@@ -2,7 +2,96 @@
 
 ## exametrika (development version)
 
+### Improvements
+
+- **[`dataFormat()`](https://kosugitti.github.io/exametrika/reference/dataFormat.md)’s
+  `id` argument, and
+  [`longdataFormat()`](https://kosugitti.github.io/exametrika/reference/longdataFormat.md)’s
+  `Sid`/`Qid`/`Resp`/`w` arguments, now accept a column name (character
+  string) in addition to a column number.** Previously only numeric
+  column indices were accepted;
+  [`dataFormat()`](https://kosugitti.github.io/exametrika/reference/dataFormat.md)
+  even raised an explicit error when a character value was passed.
+  Column names can now be supplied directly, e.g.
+  `dataFormat(data, id = "StudentID")` or
+  `longdataFormat(data, Sid = "Sid", Qid = "Qid", Resp = "Resp")`.
+  Specifying an unknown or ambiguous (duplicated) column name now raises
+  a clear error listing the available columns (`R/01_dataFormat.R`).
+
+### Bug fixes
+
+- **[`longdataFormat()`](https://kosugitti.github.io/exametrika/reference/longdataFormat.md)
+  falsely reported “Duplicated IDs found” whenever a student answered
+  more than one item.** The duplicate check ran on the raw student-ID
+  column, which is expected to repeat once per item in long format; it
+  now checks for duplicated `(student, item)` pairs instead, so ordinary
+  long-format data (one row per student-item response) no longer
+  triggers a spurious error. A genuine duplicate — the same student
+  answering the same item twice — is still caught (`R/01_dataFormat.R`).
+
+- **[`IRT()`](https://kosugitti.github.io/exametrika/reference/IRT.md),
+  [`Biclustering()`](https://kosugitti.github.io/exametrika/reference/Biclustering.md),
+  [`BNM()`](https://kosugitti.github.io/exametrika/reference/BNM.md),
+  [`LDLRA()`](https://kosugitti.github.io/exametrika/reference/LDLRA.md),
+  [`LDB()`](https://kosugitti.github.io/exametrika/reference/LDB.md),
+  and
+  [`BINET()`](https://kosugitti.github.io/exametrika/reference/BINET.md)
+  silently treated missing responses as incorrect when computing
+  item-total correlation or correct response rate
+  ([`crr()`](https://kosugitti.github.io/exametrika/reference/crr.md)).**
+  In each case, a response matrix that had already been stripped of its
+  `exametrika` class (with missing values recoded to `0` via
+  `tmp$U * tmp$Z`) was passed to
+  [`ItemTotalCorr()`](https://kosugitti.github.io/exametrika/reference/ItemTotalCorr.md),
+  [`ItemThreshold()`](https://kosugitti.github.io/exametrika/reference/ItemThreshold.md),
+  or [`crr()`](https://kosugitti.github.io/exametrika/reference/crr.md).
+  Those functions re-run
+  [`dataFormat()`](https://kosugitti.github.io/exametrika/reference/dataFormat.md)
+  internally when given an unclassed matrix, but without the original
+  missing -value mask, so missing responses were counted as incorrect
+  answers. This affected
+  [`IRT()`](https://kosugitti.github.io/exametrika/reference/IRT.md)’s
+  initial parameter values (`rho`/`tau`, which only seed the EM
+  algorithm — final estimates were unaffected),
+  [`Biclustering()`](https://kosugitti.github.io/exametrika/reference/Biclustering.md)’s
+  `FieldAnalysis$CRR` column, and the `$crr` field returned by
+  [`BNM()`](https://kosugitti.github.io/exametrika/reference/BNM.md),
+  [`LDLRA()`](https://kosugitti.github.io/exametrika/reference/LDLRA.md),
+  [`LDB()`](https://kosugitti.github.io/exametrika/reference/LDB.md),
+  and
+  [`BINET()`](https://kosugitti.github.io/exametrika/reference/BINET.md)
+  (including their
+  [`BNM_GA()`](https://kosugitti.github.io/exametrika/reference/BNM_GA.md)/[`BNM_PBIL()`](https://kosugitti.github.io/exametrika/reference/BNM_PBIL.md)/
+  [`LDLRA_PBIL()`](https://kosugitti.github.io/exametrika/reference/LDLRA_PBIL.md)
+  wrappers). Fixed by passing the already-formatted object through
+  instead of the stripped matrix (`R/04C_ParameterEstimation.R`,
+  `R/07_Biclustering.R`, `R/08A_BNM.R`, `R/09_LDLRA.R`, `R/10_LDB.R`,
+  `R/11_BINET.R`).
+
+- **[`CTT()`](https://kosugitti.github.io/exametrika/reference/CTT.md),
+  [`BNM()`](https://kosugitti.github.io/exametrika/reference/BNM.md),
+  [`LDLRA()`](https://kosugitti.github.io/exametrika/reference/LDLRA.md),
+  [`LDB()`](https://kosugitti.github.io/exametrika/reference/LDB.md),
+  and
+  [`BINET()`](https://kosugitti.github.io/exametrika/reference/BINET.md)
+  crashed when passed raw (unformatted) `matrix`/`data.frame` input
+  instead of a pre-built `exametrika` object**, even though this is
+  documented as supported. The response-type check in each function read
+  `U$response.type` from the raw input argument instead of from the
+  [`dataFormat()`](https://kosugitti.github.io/exametrika/reference/dataFormat.md)-formatted
+  object, which is `NULL` for raw input and made the check error out
+  before model fitting ever started.
+  [`CTT()`](https://kosugitti.github.io/exametrika/reference/CTT.md) had
+  a more severe variant of the same bug: its `inherits(U, "exametrika")`
+  branch was inverted, so raw input skipped
+  [`dataFormat()`](https://kosugitti.github.io/exametrika/reference/dataFormat.md)
+  entirely and crashed immediately. Fixed to consistently check the
+  formatted object (`R/03_CTT.R`, `R/08A_BNM.R`, `R/09_LDLRA.R`,
+  `R/10_LDB.R`, `R/11_BINET.R`).
+
 ## exametrika 1.14.0
+
+CRAN release: 2026-06-14
 
 ### Improvements
 

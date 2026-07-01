@@ -30,10 +30,11 @@ dataFormat(
 
 - id:
 
-  id indicates the column number containing the examinee ID. If NULL
+  id indicates the column containing the examinee ID, specified either
+  as a column number or as a column name (character string). If NULL
   (default), the first column is auto-detected as ID or response data.
-  If a column number is specified, that column is always used as the ID
-  column.
+  If a column number or column name is specified, that column is always
+  used as the ID column.
 
 - Z:
 

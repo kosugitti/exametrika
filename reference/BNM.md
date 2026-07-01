@@ -121,9 +121,9 @@ DAG <-
 # Convert the DAG matrix to an igraph object for network analysis
 g <- igraph::graph_from_data_frame(DAG)
 g
-#> IGRAPH 1ebead1 DN-- 5 5 -- 
+#> IGRAPH 3dec5d8 DN-- 5 5 -- 
 #> + attr: name (v/c)
-#> + edges from 1ebead1 (vertex names):
+#> + edges from 3dec5d8 (vertex names):
 #> [1] Item01->Item02 Item02->Item03 Item02->Item04 Item03->Item05 Item04->Item05
 
 # Create adjacency matrix from the graph
@@ -140,7 +140,6 @@ print(adj_mat)
 # Fit Bayesian Network Model using the specified adjacency matrix
 # Analyzes probabilistic relationships between items based on the graph structure
 result.BNM <- BNM(J5S10, adj_matrix = adj_mat)
-#> No ID column detected. All columns treated as response data. Sequential IDs (Student1, Student2, ...) were generated. Use id= parameter to specify the ID column explicitly.
 result.BNM
 #> Adjacency Matrix
 #>        Item01 Item02 Item03 Item04 Item05

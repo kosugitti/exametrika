@@ -33,19 +33,23 @@ longdataFormat(
 
 - Sid:
 
-  Specify the column number containing the student ID label vector.
+  Specify the column containing the student ID label vector, either as a
+  column number or as a column name (character string).
 
 - Qid:
 
-  Specify the column number containing the Question label vector.
+  Specify the column containing the Question label vector, either as a
+  column number or as a column name (character string).
 
 - Resp:
 
-  Specify the column number containing the Response value vector.
+  Specify the column containing the Response value vector, either as a
+  column number or as a column name (character string).
 
 - w:
 
-  Specify the column number containing the weight vector.
+  Specify the column containing the weight vector, either as a column
+  number or as a column name (character string).
 
 - response.type:
 

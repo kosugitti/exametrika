@@ -4,6 +4,58 @@ Detailed development log. User-facing changes go in `NEWS.md`; this file
 captures the per-session internal narrative (why a change was made, what
 was investigated, what was ruled out). Entries are newest-first.
 
+## 2026-07-01（さらにさらに続き） — v1.15.0: 巨大ファイル2本を分割
+
+先の4件リファクタリングに続き、監査時に「今回は未着手」としていた最後の2件
+（`R/02_TestItemFunctions.R`1748行と`R/00_exametrikaPrint.R`775行の分割）を
+「進めていい」「他のも考えたいな」というやり取りの後、正式に依頼されて実施。
+
+### `R/02_TestItemFunctions.R` → 3分割（commit `fd81c37`）
+
+[`InterItemAnalysis()`](https://kosugitti.github.io/exametrika/reference/InterItemAnalysis.md)/[`ItemStatistics()`](https://kosugitti.github.io/exametrika/reference/ItemStatistics.md)/[`StudentAnalysis()`](https://kosugitti.github.io/exametrika/reference/StudentAnalysis.md)が実際にどの
+低レベル関数を呼んでいるかで自然な境界線を確認（grep実測）し、既存の
+`02B_TestStatistics.R`/`02C_ItemStatistics.R`/`02D_StudentAnalysis.R`に続く
+`02E`/`02F`/`02G`として: - `02E_ItemAssociation.R`:
+JointSampleSize〜TetrachoricCorrelationMatrix +
+Dimensionality（相関行列の固有値分解なのでこちらに分類） -
+`02F_ItemDifficulty.R`: crr〜ITBiserial - `02G_StudentScore.R`:
+nrs〜stanine
+
+`sed -n`で元ファイルから正確な行範囲を切り出す方式で実施（手打ちでの
+書き写しミスを避けるため）。1回だけ、Dimensionalityセクション（ファイル末尾、
+次のセクションによる境界がない）を`wc -l`の値1749ではなく最後の内容行1748で
+区切ってしまい、閉じ`}`を1行落とすミスがあった →
+`devtools::load_all()`の
+パースエラーで即座に検出、`git show HEAD:...`から正しい範囲を再取得して修正。
+検証は「関数名の並び替えソート結果が移動前後で完全一致」「全5030テストFAIL
+0」 の2段階。
+
+### `R/00_exametrikaPrint.R` → 4分割+本体化（commit `8a39c62`）
+
+`00_exametrikaPlot.R`が既に`plot_irt_model()`のような小関数を`00_plot_irt.R`
+等に切り出し、本体はswitch()ディスパッチだけにする構造を採っていたので、
+これをそのままprintにも適用。switch文の各`X = { ... }`ブロックの閉じ括弧
+`^ },$`（4スペースインデント）をgrepで全27箇所特定し、本体側のインデント
+（6スペース以上）と区別することで、sedでの正確な行範囲抽出を実現（前段の
+TestItemFunctions分割での1行ズレ教訓を活かし、今回は最初から`grep -n "^ },$"`
+で閉じ括弧を機械的に特定してから範囲を計算）: - `00_print_ctt_irt.R`:
+TestStatistics〜GRM（10ケース） - `00_print_lca_lra.R`:
+LCA〜LRArated（4ケース） - `00_print_biclustering.R`:
+Biclustering〜IRM（5ケース） - `00_print_network.R`:
+BNM〜BINET（4ケース） -
+本体`00_exametrikaPrint.R`はswitch()ディスパッチ＋小さい残り
+（ModelFit/Glasso/matrix/GridSearch/all）のみ、775行→124行に圧縮
+
+検証は3段階: (1) 全`cat("...")`/`print(x$...)`呼び出しの集合が移動前後で
+完全一致、(2) `git stash`で分割前後のコードを切り替えながらIRT/LCA/BNM/
+TestStatistics/ItemStatistics/InterItemAnalysis/Dimensionalityの実際の
+print()出力をファイルにキャプチャして`diff`で完全一致確認、(3)
+全5030テスト FAIL 0。
+
+これで2026-07-01の全体監査で出た「改善提案」6件（`\r`統一・beta共通化・
+conf共通化・GridSearch統合・TestItemFunctions分割・exametrikaPrint分割）が
+全て完了。`.claude/CLAUDE.md`の将来課題リストからも全て除去済み。
+
 ## 2026-07-01（さらに続き） — v1.15.0: 監査で見つけた重複ロジックの4件をリファクタリング
 
 直前の全コードベース監査で「改善提案（今回は未着手）」としていた6件のうち、

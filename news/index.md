@@ -4,12 +4,12 @@
 
 ### Improvements
 
-- **[`dataFormat()`](https://kosugitti.github.io/exametrika/reference/dataFormat.md)’s
+- [`dataFormat()`](https://kosugitti.github.io/exametrika/reference/dataFormat.md)’s
   `id` argument, and
   [`longdataFormat()`](https://kosugitti.github.io/exametrika/reference/longdataFormat.md)’s
   `Sid`/`Qid`/`Resp`/`w` arguments, now accept a column name (character
-  string) in addition to a column number.** Previously only numeric
-  column indices were accepted;
+  string) in addition to a column number. Previously only numeric column
+  indices were accepted;
   [`dataFormat()`](https://kosugitti.github.io/exametrika/reference/dataFormat.md)
   even raised an explicit error when a character value was passed.
   Column names can now be supplied directly, e.g.
@@ -20,16 +20,16 @@
 
 ### Bug fixes
 
-- **[`longdataFormat()`](https://kosugitti.github.io/exametrika/reference/longdataFormat.md)
+- [`longdataFormat()`](https://kosugitti.github.io/exametrika/reference/longdataFormat.md)
   falsely reported “Duplicated IDs found” whenever a student answered
-  more than one item.** The duplicate check ran on the raw student-ID
+  more than one item. The duplicate check ran on the raw student-ID
   column, which is expected to repeat once per item in long format; it
   now checks for duplicated `(student, item)` pairs instead, so ordinary
   long-format data (one row per student-item response) no longer
   triggers a spurious error. A genuine duplicate — the same student
   answering the same item twice — is still caught (`R/01_dataFormat.R`).
 
-- **[`IRT()`](https://kosugitti.github.io/exametrika/reference/IRT.md),
+- [`IRT()`](https://kosugitti.github.io/exametrika/reference/IRT.md),
   [`Biclustering()`](https://kosugitti.github.io/exametrika/reference/Biclustering.md),
   [`BNM()`](https://kosugitti.github.io/exametrika/reference/BNM.md),
   [`LDLRA()`](https://kosugitti.github.io/exametrika/reference/LDLRA.md),
@@ -38,7 +38,7 @@
   [`BINET()`](https://kosugitti.github.io/exametrika/reference/BINET.md)
   silently treated missing responses as incorrect when computing
   item-total correlation or correct response rate
-  ([`crr()`](https://kosugitti.github.io/exametrika/reference/crr.md)).**
+  ([`crr()`](https://kosugitti.github.io/exametrika/reference/crr.md)).
   In each case, a response matrix that had already been stripped of its
   `exametrika` class (with missing values recoded to `0` via
   `tmp$U * tmp$Z`) was passed to
@@ -68,14 +68,14 @@
   `R/07_Biclustering.R`, `R/08A_BNM.R`, `R/09_LDLRA.R`, `R/10_LDB.R`,
   `R/11_BINET.R`).
 
-- **[`CTT()`](https://kosugitti.github.io/exametrika/reference/CTT.md),
+- [`CTT()`](https://kosugitti.github.io/exametrika/reference/CTT.md),
   [`BNM()`](https://kosugitti.github.io/exametrika/reference/BNM.md),
   [`LDLRA()`](https://kosugitti.github.io/exametrika/reference/LDLRA.md),
   [`LDB()`](https://kosugitti.github.io/exametrika/reference/LDB.md),
   and
   [`BINET()`](https://kosugitti.github.io/exametrika/reference/BINET.md)
   crashed when passed raw (unformatted) `matrix`/`data.frame` input
-  instead of a pre-built `exametrika` object**, even though this is
+  instead of a pre-built `exametrika` object, even though this is
   documented as supported. The response-type check in each function read
   `U$response.type` from the raw input argument instead of from the
   [`dataFormat()`](https://kosugitti.github.io/exametrika/reference/dataFormat.md)-formatted
@@ -89,13 +89,13 @@
   formatted object (`R/03_CTT.R`, `R/08A_BNM.R`, `R/09_LDLRA.R`,
   `R/10_LDB.R`, `R/11_BINET.R`).
 
-- **[`BINET()`](https://kosugitti.github.io/exametrika/reference/BINET.md)
+- [`BINET()`](https://kosugitti.github.io/exametrika/reference/BINET.md)
   could crash with a cryptic `'dimnames'` length error (via NaN values
   silently produced by [`log()`](https://rdrr.io/r/base/Log.html)) on
-  data with missing responses.** Two compounding issues were found.
-  First, `Ccj` (the per-class correct-response count used throughout the
-  RISP estimation) was computed as `t(clsmemb) %*% tmp$U`, which does
-  not mask out missing cells (encoded as `-1` in `tmp$U`) the way the
+  data with missing responses. Two compounding issues were found. First,
+  `Ccj` (the per-class correct-response count used throughout the RISP
+  estimation) was computed as `t(clsmemb) %*% tmp$U`, which does not
+  mask out missing cells (encoded as `-1` in `tmp$U`) the way the
   corresponding incorrect-response count `Fcj` already did
   (`t(clsmemb) %*% (tmp$Z * (1 - tmp$U))`); missing responses therefore
   contributed `-1` to the correct-response count instead of `0`,
@@ -117,10 +117,10 @@
   class-by-field cell is still undefined under the requested smoothing
   (`R/11_BINET.R`).
 
-- **0-indexed or non-contiguous polytomous category codes were silently
+- 0-indexed or non-contiguous polytomous category codes were silently
   dropped in
   [`Biclustering()`](https://kosugitti.github.io/exametrika/reference/Biclustering.md)/[`Biclustering_IRM()`](https://kosugitti.github.io/exametrika/reference/Biclustering_IRM.md)
-  for nominal and ordinal data**, with no error or warning.
+  for nominal and ordinal data, with no error or warning.
   [`Biclustering.nominal()`](https://kosugitti.github.io/exametrika/reference/Biclustering.md),
   [`Biclustering.ordinal()`](https://kosugitti.github.io/exametrika/reference/Biclustering.md),
   [`Biclustering_IRM.nominal()`](https://kosugitti.github.io/exametrika/reference/Biclustering_IRM.md),
@@ -139,9 +139,9 @@
   (`remap_category_codes()`, `R/00_BiclucterUtils.R`) and applied in all
   four functions.
 
-- **[`Biclustering_IRM.nominal()`](https://kosugitti.github.io/exametrika/reference/Biclustering_IRM.md)/[`Biclustering_IRM.ordinal()`](https://kosugitti.github.io/exametrika/reference/Biclustering_IRM.md)
-  corrupted results whenever the data had missing responses.** The
-  one-hot response array was built by writing directly at
+- [`Biclustering_IRM.nominal()`](https://kosugitti.github.io/exametrika/reference/Biclustering_IRM.md)/[`Biclustering_IRM.ordinal()`](https://kosugitti.github.io/exametrika/reference/Biclustering_IRM.md)
+  corrupted results whenever the data had missing responses. The one-hot
+  response array was built by writing directly at
   `Uq[s, j, tmp$Q[s, j]] <- 1` without checking for missing cells; a
   missing cell’s `-1` sentinel, used as a raw array index, sets every
   category *except* the first to `1` under R’s negative-indexing rules
@@ -154,20 +154,20 @@
   [`Biclustering()`](https://kosugitti.github.io/exametrika/reference/Biclustering.md)
   path.
 
-- **[`LDB()`](https://kosugitti.github.io/exametrika/reference/LDB.md)
+- [`LDB()`](https://kosugitti.github.io/exametrika/reference/LDB.md)
   crashed with “object ‘conf_mat’ not found” when `conf` was passed as a
-  matrix or data.frame** (only the vector form of `conf` worked). This
-  is the same class of bug already fixed in
+  matrix or data.frame (only the vector form of `conf` worked). This is
+  the same class of bug already fixed in
   [`Biclustering.ordinal()`](https://kosugitti.github.io/exametrika/reference/Biclustering.md)/
   [`Biclustering.nominal()`](https://kosugitti.github.io/exametrika/reference/Biclustering.md)
   on 2026-04-27, which
   [`LDB()`](https://kosugitti.github.io/exametrika/reference/LDB.md) was
   missed by at the time (`R/10_LDB.R`).
 
-- **[`LDB()`](https://kosugitti.github.io/exametrika/reference/LDB.md)’s
+- [`LDB()`](https://kosugitti.github.io/exametrika/reference/LDB.md)’s
   `beta1`/`beta2` smoothing arguments had their roles swapped relative
   to
-  [`BNM()`](https://kosugitti.github.io/exametrika/reference/BNM.md)/[`LDLRA()`](https://kosugitti.github.io/exametrika/reference/LDLRA.md)/[`BINET()`](https://kosugitti.github.io/exametrika/reference/BINET.md).**
+  [`BNM()`](https://kosugitti.github.io/exametrika/reference/BNM.md)/[`LDLRA()`](https://kosugitti.github.io/exametrika/reference/LDLRA.md)/[`BINET()`](https://kosugitti.github.io/exametrika/reference/BINET.md).
   All four functions compute a posterior-mode correct-response rate of
   the form `(count + α - 1) / (N + α + β - 2)` under a Beta(α, β) prior;
   [`BNM()`](https://kosugitti.github.io/exametrika/reference/BNM.md),
@@ -193,8 +193,8 @@
   use `beta1`, matching the mathematically conventional Beta(α, β)
   parameterization and the rest of the package (`R/10_LDB.R`).
 
-- **`LDLRA(..., method = "C")` (local dependence latent *Class* model)
-  mislabeled its output as the Rank model.** A hardcoded `model <- 2`
+- `LDLRA(..., method = "C")` (local dependence latent *Class* model)
+  mislabeled its output as the Rank model. A hardcoded `model <- 2`
   right before building the output tables silently overrode the `model`
   value that had correctly been set from `method` earlier in the
   function, so `result$model`, `result$msg`, and the “Rank”/“Class”
@@ -202,11 +202,11 @@
   regardless of the requested method. Numerical estimates were
   unaffected — only the labeling (`R/09_LDLRA.R`).
 
-- **[`BNM()`](https://kosugitti.github.io/exametrika/reference/BNM.md)’s
+- [`BNM()`](https://kosugitti.github.io/exametrika/reference/BNM.md)’s
   and
   [`BINET()`](https://kosugitti.github.io/exametrika/reference/BINET.md)’s
   graph-validity checks (`acyclicFLG`, `connectedFLG`) never actually
-  detected cycles or disconnection.** Both used `adj^i` in a loop
+  detected cycles or disconnection. Both used `adj^i` in a loop
   intending to count length-`i` walks, but `^` on a matrix in R is
   elementwise, not matrix power, so the loop only ever re-tested
   self-loops and “any edge present.”
@@ -223,42 +223,42 @@
   `igraph::is_connected(mode = "weak")` on the actual adjacency matrix
   being validated (`R/08A_BNM.R`, `R/11_BINET.R`).
 
-- **[`Biclustering_IRM.binary()`](https://kosugitti.github.io/exametrika/reference/Biclustering_IRM.md)’s
+- [`Biclustering_IRM.binary()`](https://kosugitti.github.io/exametrika/reference/Biclustering_IRM.md)’s
   small-class-reduction loop tracked `bestclass`/`class`, which resolve
   to base R’s [`class()`](https://rdrr.io/r/base/class.html) function
-  rather than any local variable**, so the intended “roll back to the
+  rather than any local variable, so the intended “roll back to the
   best-BIC class assignment” step silently did nothing. In practice this
   had no effect on the final returned model (the class/field assignments
   are recomputed from scratch after the loop regardless), but the code
   read as doing something it did not; fixed to track the actual `cls`
   vector (`R/07_IRM.R`).
 
-- **[`CCRR()`](https://kosugitti.github.io/exametrika/reference/CCRR.md)
+- [`CCRR()`](https://kosugitti.github.io/exametrika/reference/CCRR.md)
   returned
   [`JCRR()`](https://kosugitti.github.io/exametrika/reference/JCRR.md)’s
-  result when called on non-`exametrika` input** — a copy-paste bug in
+  result when called on non-`exametrika` input — a copy-paste bug in
   [`CCRR.default()`](https://kosugitti.github.io/exametrika/reference/CCRR.md)’s
   fallback branch called `JCRR(U)` instead of recursing into `CCRR(U)`
   (`R/02_TestItemFunctions.R`).
 
-- **[`MutualInformation()`](https://kosugitti.github.io/exametrika/reference/MutualInformation.md)’s
-  `base` argument was ignored for binary data**;
+- [`MutualInformation()`](https://kosugitti.github.io/exametrika/reference/MutualInformation.md)’s
+  `base` argument was ignored for binary data;
   [`MutualInformation.binary()`](https://kosugitti.github.io/exametrika/reference/MutualInformation.md)
   always computed log base 2 regardless of the requested `base`, unlike
   the ordinal/nominal/rated path which already respected it
   (`R/02_TestItemFunctions.R`).
 
-- **[`JSR()`](https://kosugitti.github.io/exametrika/reference/JSR.md)
-  and [`CSR()`](https://kosugitti.github.io/exametrika/reference/CSR.md)
-  crashed instead of falling back cleanly when given binary data.** Both
+- [`JSR()`](https://kosugitti.github.io/exametrika/reference/JSR.md) and
+  [`CSR()`](https://kosugitti.github.io/exametrika/reference/CSR.md)
+  crashed instead of falling back cleanly when given binary data. Both
   message “using X instead” and call the binary equivalent, but never
   [`return()`](https://rdrr.io/r/base/function.html)ed its result, so
   execution fell through into polytomous-only code (`NCOL(U$Q)`,
   `U$Z == 0` on nonexistent `U$Q`) and crashed
   (`R/02_TestItemFunctions.R`).
 
-- **[`ItemTotalCorr.ordinal()`](https://kosugitti.github.io/exametrika/reference/ItemTotalCorr.md)
-  did not mask missing responses before summing total scores.**
+- [`ItemTotalCorr.ordinal()`](https://kosugitti.github.io/exametrika/reference/ItemTotalCorr.md)
+  did not mask missing responses before summing total scores.
   `total <- rowSums(U$Q)` included the `-1` missing sentinel directly in
   the sum, so any student with even one missing item got a wrong total
   score, corrupting their item-total correlation with *every* item, not
@@ -266,21 +266,21 @@
   [`ItemThreshold.ordinal()`](https://kosugitti.github.io/exametrika/reference/ItemThreshold.md)’s
   existing pattern (`R/02_TestItemFunctions.R`).
 
-- **[`ITBiserial()`](https://kosugitti.github.io/exametrika/reference/ITBiserial.md),
+- [`ITBiserial()`](https://kosugitti.github.io/exametrika/reference/ITBiserial.md),
   [`ScoreReport()`](https://kosugitti.github.io/exametrika/reference/ScoreReport.md),
   and
   [`ItemReport()`](https://kosugitti.github.io/exametrika/reference/ItemReport.md)
-  crashed when passed raw (unformatted) data** — each called
+  crashed when passed raw (unformatted) data — each called
   [`dataFormat()`](https://kosugitti.github.io/exametrika/reference/dataFormat.md)
   but stored the result in a variable that was never used, leaving the
   original unformatted argument in place for the subsequent
   `$response.type` check and computation (`R/02_TestItemFunctions.R`,
   `R/02_QitemFunctions.R`).
 
-- **[`dataFormat()`](https://kosugitti.github.io/exametrika/reference/dataFormat.md)
-  silently skipped value validation for ordinal/rated/ nominal data.**
-  The branch was guarded by `response.type == "polytgomous"` (a typo —
-  no `response.type` value is ever literally `"polytomous"`, since the
+- [`dataFormat()`](https://kosugitti.github.io/exametrika/reference/dataFormat.md)
+  silently skipped value validation for ordinal/rated/ nominal data. The
+  branch was guarded by `response.type == "polytgomous"` (a typo — no
+  `response.type` value is ever literally `"polytomous"`, since the
   actual values are `"ordinal"`/ `"rated"`/`"nominal"`), so the “must be
   non-negative integers” check never ran for any polytomous type. Fixed
   to check `response.type %in% c("ordinal", "rated")` (deliberately
@@ -288,19 +288,19 @@
   rather than ordered counts and may legitimately be negative)
   (`R/01_dataFormat.R`).
 
-- **[`longdataFormat()`](https://kosugitti.github.io/exametrika/reference/longdataFormat.md)
+- [`longdataFormat()`](https://kosugitti.github.io/exametrika/reference/longdataFormat.md)
   misaligned `ID`/response-matrix rows whenever numeric student or item
-  IDs were not an exact `1..N` sequence** (e.g. student IDs
-  `10, 20, 30`). Numeric IDs were used directly as row/column indices
-  instead of being remapped to a dense index, so `nrow(result$U)` could
-  be far larger than the actual number of students, with most rows
-  entirely empty. Both `Sid`/`Qid` are now always remapped through
+  IDs were not an exact `1..N` sequence (e.g. student IDs `10, 20, 30`).
+  Numeric IDs were used directly as row/column indices instead of being
+  remapped to a dense index, so `nrow(result$U)` could be far larger
+  than the actual number of students, with most rows entirely empty.
+  Both `Sid`/`Qid` are now always remapped through
   [`as.factor()`](https://rdrr.io/r/base/factor.html) to a dense,
   correctly-ordered 1-based index, regardless of whether the raw IDs are
   numeric or character (`R/01_dataFormat.R`).
 
-- **[`longdataFormat()`](https://kosugitti.github.io/exametrika/reference/longdataFormat.md)’s
-  `w` (item weight) argument was misused as a row index.**
+- [`longdataFormat()`](https://kosugitti.github.io/exametrika/reference/longdataFormat.md)’s
+  `w` (item weight) argument was misused as a row index.
   `w_vec[unique(Qid_num)]` indexed the long-format weight column by
   item-ID *values* rather than by the row where each item first appears,
   so weights were essentially always wrong unless item IDs happened to
@@ -308,7 +308,7 @@
   to look up each item’s weight via its first occurrence in the
   long-format data (`R/01_dataFormat.R`).
 
-- **`print(GridSearch(...))` always crashed.**
+- `print(GridSearch(...))` always crashed.
   [`print.exametrika()`](https://kosugitti.github.io/exametrika/reference/print.exametrika.md)’s
   internal [`switch()`](https://rdrr.io/r/base/switch.html) had no case
   for the `"GridSearch"` class, and a trailing comma after the last real
@@ -320,9 +320,9 @@
   proper `GridSearch` print case summarizing the fit-index grid and
   optimal setting (`R/00_exametrikaPrint.R`).
 
-- **`plot(x)` without an explicit `type` argument crashed with a
-  confusing `"the condition has length > 1"` error** instead of the
-  intended `"The 'type' argument must be specified."` message. The
+- `plot(x)` without an explicit `type` argument crashed with a confusing
+  `"the condition has length > 1"` error instead of the intended
+  `"The 'type' argument must be specified."` message. The
   `missing(type)` check ran *after* `type` had already been evaluated
   (forcing its multi-element default) for an unrelated `uses_layout`
   computation, so by the time
@@ -332,31 +332,30 @@
   first. Reordered so the `missing(type)` check runs first
   (`R/00_exametrikaPlot.R`).
 
-- **`plot(grm_result, type = "ICC")` failed even though the identical
-  call works for IRT models.** GRM’s plot-type alias handling for
-  `"ICC"` was implemented but never reachable, because `valid_types$GRM`
-  in the upstream validation list omitted `"ICC"` (only `"IIC"`/`"TIC"`
-  were listed). Added `"ICC"` to `valid_types$GRM`
-  (`R/00_exametrikaPlot.R`).
+- `plot(grm_result, type = "ICC")` failed even though the identical call
+  works for IRT models. GRM’s plot-type alias handling for `"ICC"` was
+  implemented but never reachable, because `valid_types$GRM` in the
+  upstream validation list omitted `"ICC"` (only `"IIC"`/`"TIC"` were
+  listed). Added `"ICC"` to `valid_types$GRM` (`R/00_exametrikaPlot.R`).
 
-- **`print(bnm_result, digits = ...)`/`print(ldlra_result, digits = ...)`
+- `print(bnm_result, digits = ...)`/`print(ldlra_result, digits = ...)`
   ignored the requested `digits` for the “Conditional Correct Response
-  Rate” table.** A typo (`x$CCRR_tabje` instead of `x$CCRR_table`, in
-  two places) wrote the formatted string into a nonexistent list field
+  Rate” table. A typo (`x$CCRR_tabje` instead of `x$CCRR_table`, in two
+  places) wrote the formatted string into a nonexistent list field
   instead of the one actually printed immediately afterward. Also
   propagated the existing `digits` argument to two related tables
   (`IRPIndex`/`FRPIndex` in the LDLRA/LDB print sections) that were
   missing it while equivalent tables elsewhere already had it
   (`R/00_exametrikaPrint.R`).
 
-- **`print(InterItemAnalysis(ordinal_data))` never displayed the
-  Conditional Selection Ratio** — it printed `x$JSR` (Joint Selection
+- `print(InterItemAnalysis(ordinal_data))` never displayed the
+  Conditional Selection Ratio — it printed `x$JSR` (Joint Selection
   Ratio, already shown just above) a second time instead of `x$CSR`
   (`R/00_exametrikaPrint.R`).
 
-- **[`GridSearch()`](https://kosugitti.github.io/exametrika/reference/GridSearch.md)
+- [`GridSearch()`](https://kosugitti.github.io/exametrika/reference/GridSearch.md)
   could report the wrong optimal `(ncls, nfld)` when multiple grid cells
-  tied for the best fit index.** `which(ret == ..., arr.ind = TRUE)`
+  tied for the best fit index. `which(ret == ..., arr.ind = TRUE)`
   returns one row per tied match; `optimal_idx[1]`/ `optimal_idx[2]`
   read the matrix’s column-major-flattened first two values instead of
   the first tie’s `row`/`col` pair, so with ≥ 2 ties the reported
@@ -365,16 +364,16 @@
   tied). Fixed to read `optimal_idx[1, "row"]`/ `optimal_idx[1, "col"]`
   (`R/00_GridSearch.R`).
 
-- **`GridSearch(..., max_ncls = 1)` silently tested `ncls = 2` anyway.**
+- `GridSearch(..., max_ncls = 1)` silently tested `ncls = 2` anyway.
   `2:max_ncls` is R’s descending-sequence trap: with `max_ncls = 1` it
   evaluates to `c(2, 1)` rather than an empty range, so a value the
   caller explicitly excluded was tested regardless. Added an explicit
   `max_ncls`/`max_nfld < 2` guard that stops with a clear message
   instead (`R/00_GridSearch.R`).
 
-- **[`Glasso()`](https://kosugitti.github.io/exametrika/reference/Glasso.md)’s
+- [`Glasso()`](https://kosugitti.github.io/exametrika/reference/Glasso.md)’s
   `edge_tol` argument was documented as controlling edge detection but
-  did not affect model selection.** The EBIC computation used internally
+  did not affect model selection. The EBIC computation used internally
   to choose `lambda_opt` had its own hardcoded `1e-6` edge-count
   threshold, so changing `edge_tol` only affected the *reported*
   `n_edge`, not which `lambda` was actually selected. Threaded
@@ -383,11 +382,11 @@
 
 ### Removed
 
-- **Removed `LLtheta_mat()`/`EAP_PSD()` (`R/04B_AbilityEstimation.R`)
-  and the corresponding dead
+- Removed `LLtheta_mat()`/`EAP_PSD()` (`R/04B_AbilityEstimation.R`) and
+  the corresponding dead
   [`print.exametrika()`](https://kosugitti.github.io/exametrika/reference/print.exametrika.md)
-  `"IRT_EAP_PSD"` case.** Neither function was exported or called
-  anywhere in the package;
+  `"IRT_EAP_PSD"` case. Neither function was exported or called anywhere
+  in the package;
   [`IRT()`](https://kosugitti.github.io/exametrika/reference/IRT.md)
   computes ability EAP/PSD inline instead. Also removed a handful of
   other now-dead assignments left over from the same `tmp$U * tmp$Z`

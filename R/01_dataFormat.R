@@ -299,8 +299,10 @@ dataFormat <- function(data, na = NULL, id = NULL, Z = NULL, w = NULL,
     if (!all(response.matrix[response.matrix != -1] %in% c(0, 1))) {
       stop("For binary response type, data matrix can only contain the values 0, 1, NA, and the specified missing value")
     }
-  } else if (response.type == "polytgomous") {
-    # Check if all non-missing values are non-negative integers
+  } else if (response.type %in% c("ordinal", "rated")) {
+    # Check if all non-missing values are non-negative integers. Nominal
+    # category codes are arbitrary labels (not ordered counts), so this
+    # check intentionally does not apply to response.type == "nominal".
     if (!all(response.matrix[response.matrix != -1] == floor(response.matrix[response.matrix != -1])) || any(response.matrix[response.matrix != -1] < 0)) {
       stop("For polytomous response type, data matrix must contain only non-negative integers, NA, and the specified missing value")
     }
@@ -556,24 +558,27 @@ longdataFormat <- function(data, na = NULL,
     Resp_vec <- data[, Resp]
   }
 
-  # Process Student IDs
+  # Process Student IDs. Always remap through as.factor() to obtain a dense,
+  # 1-based, correctly-ordered index, even when the raw IDs are already
+  # numeric (e.g. student IDs 101, 102, ...): using the raw numeric values
+  # directly as row indices would leave gaps whenever the IDs are not an
+  # exact 1..N sequence, silently misaligning ID/Sid_label with the rows of
+  # the response matrix built below.
+  Sid_fac <- as.factor(Sid_vec)
+  Sid_num <- as.integer(Sid_fac)
   if (!is.numeric(Sid_vec)) {
-    Sid_vec <- as.factor(Sid_vec)
-    Sid_label <- unique(levels(Sid_vec))
-    Sid_num <- as.numeric(Sid_vec)
+    Sid_label <- levels(Sid_fac)
   } else {
-    Sid_num <- Sid_vec
-    Sid_label <- unique(paste0("Student", Sid_num))
+    Sid_label <- paste0("Student", levels(Sid_fac))
   }
 
-  # Process Question IDs
+  # Process Question IDs (same dense-remapping rationale as Sid above).
+  Qid_fac <- as.factor(Qid_vec)
+  Qid_num <- as.integer(Qid_fac)
   if (!is.numeric(Qid_vec)) {
-    Qid_vec <- as.factor(Qid_vec)
-    Qid_label <- unique(levels(Qid_vec))
-    Qid_num <- as.numeric(Qid_vec)
+    Qid_label <- levels(Qid_fac)
   } else {
-    Qid_num <- Qid_vec
-    Qid_label <- unique(paste0("Q", Qid_vec))
+    Qid_label <- paste0("Q", levels(Qid_fac))
   }
 
   # Check for duplicate (student, item) pairs. In long format, a student
@@ -661,7 +666,11 @@ longdataFormat <- function(data, na = NULL,
     } else {
       w_vec <- data[, w]
     }
-    w <- w_vec[unique(Qid_num)]
+    # w_vec is indexed by long-format row number, not by item index; look up
+    # each item's weight via the row where it first appears, in item-index
+    # order (1..max(Qid_num)), rather than misusing unique(Qid_num) (an item
+    # ID, not a row number) as a row index into w_vec.
+    w <- w_vec[match(seq_len(max(Qid_num)), Qid_num)]
   }
 
   # Calculate categories for each item

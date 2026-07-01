@@ -113,7 +113,7 @@ JSR <- function(U, na = NULL, Z = NULL, w = NULL) {
   }
   if (U$response.type == "binary") {
     message("JSR is for non-binary data only. Using Joint Correct Response Rate for your binary data instead.")
-    JCRR(U)
+    return(JCRR(U))
   }
   nitems <- NCOL(U$Q)
   ncat <- U$categories
@@ -170,7 +170,7 @@ CSR <- function(U, na = NULL, Z = NULL, w = NULL) {
   }
   if (U$response.type == "binary") {
     message("CSR is for non-binary data only. Using Conditional Correct Response Rate for your binary data instead.")
-    CCRR(U)
+    return(CCRR(U))
   }
   nitems <- NCOL(U$Q)
   ncat <- U$categories
@@ -230,7 +230,7 @@ CCRR.default <- function(U, na = NULL, Z = NULL, w = NULL) {
     )
   } else {
     U <- dataFormat(U, na = na, Z = Z, w = w)
-    JCRR(U)
+    CCRR(U)
   }
 }
 
@@ -389,14 +389,14 @@ MutualInformation.binary <- function(U, na = NULL, Z = NULL, w = NULL, base = 2)
   L$L_00 <- P$S_00 / ((1 - p) %*% t(1 - p))
 
   # Calculate mutual information
-  MI <- P$S_00 * log(L$L_00, base = 2) +
-    P$S_01 * log(L$L_01, base = 2) +
-    P$S_10 * log(L$L_10, base = 2) +
-    P$S_11 * log(L$L_11, base = 2)
+  MI <- P$S_00 * log(L$L_00, base = base) +
+    P$S_01 * log(L$L_01, base = base) +
+    P$S_10 * log(L$L_10, base = base) +
+    P$S_11 * log(L$L_11, base = base)
 
   # Adjust diagonal elements
-  diag(MI) <- diag(P$S_00 * log(L$L_00, base = 2) +
-    P$S_11 * log(L$L_11, base = 2))
+  diag(MI) <- diag(P$S_00 * log(L$L_00, base = base) +
+    P$S_11 * log(L$L_11, base = base))
 
   structure(MI, class = c("exametrika", "matrix"))
 }
@@ -1134,7 +1134,8 @@ ItemTotalCorr.binary <- function(U, na = NULL, Z = NULL, w = NULL) {
 #' @rdname ItemTotalCorr
 #' @export
 ItemTotalCorr.ordinal <- function(U, na = NULL, Z = NULL, w = NULL) {
-  total <- rowSums(U$Q)
+  U$Q[U$Z == 0] <- NA
+  total <- rowSums(U$Q, na.rm = TRUE)
   nitems <- NCOL(U$Z)
   rho_Zi <- numeric(nitems)
   for (j in 1:nitems) {
@@ -1226,7 +1227,7 @@ ITBiserial <- function(U, na = NULL, Z = NULL, w = NULL) {
 #' @export
 ITBiserial.default <- function(U, na = NULL, Z = NULL, w = NULL) {
   if (!inherits(U, "exametrika")) {
-    tmp <- dataFormat(U, na = na, Z = Z, w = w)
+    U <- dataFormat(U, na = na, Z = Z, w = w)
   }
   if (U$response.type != "binary") {
     response_type_error(U$response.type, "ITBiserial")

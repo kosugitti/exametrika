@@ -235,9 +235,9 @@ ScoreReport <- function(U, na = NULL, Z = NULL, w = NULL) {
     tmp <- U
   }
   if (tmp$response.type == "binary") {
-    response_type_error(U$response.type, "ScoreReport")
+    response_type_error(tmp$response.type, "ScoreReport")
   }
-  if (U$response.type == "rated") {
+  if (tmp$response.type == "rated") {
     tmp$Q <- tmp$U
   }
 
@@ -336,10 +336,10 @@ ItemReport <- function(U, na = NULL, Z = NULL, w = NULL) {
   } else {
     dat <- U
   }
-  if (U$response.type == "binary") {
-    response_type_error(dat$response.type, "ScoreReport")
+  if (dat$response.type == "binary") {
+    response_type_error(dat$response.type, "ItemReport")
   }
-  if (U$response.type == "rated") {
+  if (dat$response.type == "rated") {
     dat$Q <- dat$U
   }
   score <- rowSums(dat$Z * dat$Q)

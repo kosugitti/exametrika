@@ -149,9 +149,9 @@ structure is specified.</p>
 <span class="r-in"><span><span class="co"># Convert the DAG matrix to an igraph object for network analysis</span></span></span>
 <span class="r-in"><span><span class="va">g</span> <span class="op">&lt;-</span> <span class="fu">igraph</span><span class="fu">::</span><span class="fu"><a href="https://r.igraph.org/reference/graph_from_data_frame.html" class="external-link">graph_from_data_frame</a></span><span class="op">(</span><span class="va">DAG</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">g</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> IGRAPH d7dc642 DN-- 5 5 -- </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> IGRAPH 1f61633 DN-- 5 5 -- </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> + attr: name (v/c)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> + edges from d7dc642 (vertex names):</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> + edges from 1f61633 (vertex names):</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] Item01-&gt;Item02 Item02-&gt;Item03 Item02-&gt;Item04 Item03-&gt;Item05 Item04-&gt;Item05</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Create adjacency matrix from the graph</span></span></span>
@@ -189,18 +189,19 @@ structure is specified.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Item05  0.000    NaN  0.333  0.667</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Conditional Correct Response Rate</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>NAs introduced by coercion</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    Child Item N of Parents   Parent Items       PIRP Conditional CRR</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1      Item01            0     No Parents No Pattern       0.6000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2      Item02            1         Item01          0       0.2500000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3      Item02            1         Item01          1       0.5000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4      Item03            1         Item02          0       0.8333333</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5      Item03            1         Item02          1       1.0000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6      Item04            1         Item02          0       0.1666667</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 7      Item04            1         Item02          1       0.5000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 8      Item05            2 Item03, Item04         00       0.0000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 9      Item05            2 Item03, Item04         01        NaN(0/0)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 10     Item05            2 Item03, Item04         10       0.3333333</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 11     Item05            2 Item03, Item04         11       0.6666667</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1      Item01            0     No Parents No Pattern           0.600</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2      Item02            1         Item01          0           0.250</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3      Item02            1         Item01          1           0.500</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4      Item03            1         Item02          0           0.833</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5      Item03            1         Item02          1           1.000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6      Item04            1         Item02          0           0.167</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 7      Item04            1         Item02          1           0.500</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 8      Item05            2 Item03, Item04         00           0.000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 9      Item05            2 Item03, Item04         01              NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 10     Item05            2 Item03, Item04         10           0.333</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 11     Item05            2 Item03, Item04         11           0.667</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Model Fit Indices</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                  value</span>

@@ -260,7 +260,6 @@ BNM_PBIL(J5S10,
 #> Item04      0      0      0      0      0
 #> Item05      0      0      0      0      0
 #> [1] "Your graph is an acyclic graph."
-#> [1] "Your graph is connected DAG."
 
 #> 
 #> Parameter Learning
@@ -273,13 +272,13 @@ BNM_PBIL(J5S10,
 #> 
 #> Conditional Correct Response Rate
 #>   Child Item N of Parents Parent Items       PIRP Conditional CRR
-#> 1     Item01            1       Item03          0       0.0000000
-#> 2     Item01            1       Item03          1       0.6666667
-#> 3     Item02            0   No Parents No Pattern       0.4000000
-#> 4     Item03            0   No Parents No Pattern       0.9000000
-#> 5     Item04            1       Item01          0       0.0000000
-#> 6     Item04            1       Item01          1       0.5000000
-#> 7     Item05            0   No Parents No Pattern       0.4000000
+#> 1     Item01            1       Item03          0           0.000
+#> 2     Item01            1       Item03          1           0.667
+#> 3     Item02            0   No Parents No Pattern           0.400
+#> 4     Item03            0   No Parents No Pattern           0.900
+#> 5     Item04            1       Item01          0           0.000
+#> 6     Item04            1       Item01          1           0.500
+#> 7     Item05            0   No Parents No Pattern           0.400
 #> 
 #> Model Fit Indices
 #>                  value

@@ -181,7 +181,6 @@ BNM_GA(J5S10,
 #> Item04      0      0      0      0      0
 #> Item05      0      0      0      0      0
 #> [1] "Your graph is an acyclic graph."
-#> [1] "Your graph is connected DAG."
 
 #> 
 #> Parameter Learning
@@ -194,12 +193,12 @@ BNM_GA(J5S10,
 #> 
 #> Conditional Correct Response Rate
 #>   Child Item N of Parents Parent Items       PIRP Conditional CRR
-#> 1     Item01            0   No Parents No Pattern       0.6000000
-#> 2     Item02            0   No Parents No Pattern       0.4000000
-#> 3     Item03            0   No Parents No Pattern       0.9000000
-#> 4     Item04            1       Item01          0       0.0000000
-#> 5     Item04            1       Item01          1       0.5000000
-#> 6     Item05            0   No Parents No Pattern       0.4000000
+#> 1     Item01            0   No Parents No Pattern           0.600
+#> 2     Item02            0   No Parents No Pattern           0.400
+#> 3     Item03            0   No Parents No Pattern           0.900
+#> 4     Item04            1       Item01          0           0.000
+#> 5     Item04            1       Item01          1           0.500
+#> 6     Item05            0   No Parents No Pattern           0.400
 #> 
 #> Model Fit Indices
 #>                  value

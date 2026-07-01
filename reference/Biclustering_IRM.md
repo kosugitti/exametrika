@@ -604,16 +604,14 @@ plot(result, type = "Array")
 # \donttest{
 # Fit an ordinal Biclustering IRM model
 result <- Biclustering_IRM(J35S500, gamma_c = 1, gamma_f = 1, verbose = TRUE)
-#> iter 1: match=0 nfld=13 ncls=46
-#> iter 2: match=0 nfld=8 ncls=30
-#> iter 3: match=0 nfld=6 ncls=18
-#> iter 4: match=1 nfld=6 ncls=11
-#> iter 5: match=0 nfld=5 ncls=10
-#> iter 6: match=1 nfld=5 ncls=10
-#> iter 7: match=2 nfld=5 ncls=9
-#> iter 8: match=3 nfld=5 ncls=7
-#> iter 9: match=4 nfld=5 ncls=6
-#> iter 10: match=5 nfld=5 ncls=6
+#> iter 1: match=0 nfld=7 ncls=47
+#> iter 2: match=0 nfld=6 ncls=23
+#> iter 3: match=1 nfld=6 ncls=16
+#> iter 4: match=2 nfld=6 ncls=12
+#> iter 5: match=3 nfld=6 ncls=8
+#> iter 6: match=4 nfld=6 ncls=8
+#> iter 7: match=5 nfld=6 ncls=8
+#> Adjusting classes: BIC=42497.4 ncls=8 (min size < 20)
 #> Weakly ordinal alignment condition was satisfied.
 plot(result, type = "Array")
 

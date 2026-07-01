@@ -35,9 +35,9 @@ DAG <- matrix(
 # Graph object
 g <- igraph::graph_from_data_frame(DAG)
 g
-#> IGRAPH 1b5e88f DN-- 5 5 -- 
+#> IGRAPH 60a7afc DN-- 5 5 -- 
 #> + attr: name (v/c)
-#> + edges from 1b5e88f (vertex names):
+#> + edges from 60a7afc (vertex names):
 #> [1] Item01->Item02 Item02->Item03 Item02->Item04 Item03->Item05 Item04->Item05
 
 # Adjacency matrix
@@ -81,17 +81,17 @@ result.BNM
     #> 
     #> Conditional Correct Response Rate
     #>    Child Item N of Parents   Parent Items       PIRP Conditional CRR
-    #> 1      Item01            0     No Parents No Pattern       0.6000000
-    #> 2      Item02            1         Item01          0       0.2500000
-    #> 3      Item02            1         Item01          1       0.5000000
-    #> 4      Item03            1         Item02          0       0.8333333
-    #> 5      Item03            1         Item02          1       1.0000000
-    #> 6      Item04            1         Item02          0       0.1666667
-    #> 7      Item04            1         Item02          1       0.5000000
-    #> 8      Item05            2 Item03, Item04         00       0.0000000
-    #> 9      Item05            2 Item03, Item04         01        NaN(0/0)
-    #> 10     Item05            2 Item03, Item04         10       0.3333333
-    #> 11     Item05            2 Item03, Item04         11       0.6666667
+    #> 1      Item01            0     No Parents No Pattern           0.600
+    #> 2      Item02            1         Item01          0           0.250
+    #> 3      Item02            1         Item01          1           0.500
+    #> 4      Item03            1         Item02          0           0.833
+    #> 5      Item03            1         Item02          1           1.000
+    #> 6      Item04            1         Item02          0           0.167
+    #> 7      Item04            1         Item02          1           0.500
+    #> 8      Item05            2 Item03, Item04         00           0.000
+    #> 9      Item05            2 Item03, Item04         01              NA
+    #> 10     Item05            2 Item03, Item04         10           0.333
+    #> 11     Item05            2 Item03, Item04         11           0.667
     #> 
     #> Model Fit Indices
     #>                  value

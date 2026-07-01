@@ -484,8 +484,8 @@ result.Bi <- Biclustering(J35S515, nfld = 5, ncls = 6, method = "B")
 # Perform Biclustering for rated sample data
 # Analyze data with 5 fields and 6 classes
 result.Bi <- Biclustering(J35S5000, nfld = 5, ncls = 6, method = "R")
-#> iter 1 log_lik -264835                                                          
-#> iter 2 log_lik -278843                                                          
+#> iter 1 log_lik -264834                                                          
+#> iter 2 log_lik -278842                                                          
 #> Warning: Only 2 of 5 specified fields have items assigned. Fields 2, 4, 5 are empty. Consider reducing nfld.
 # }
 ```

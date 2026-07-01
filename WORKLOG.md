@@ -4,6 +4,83 @@ Detailed development log. User-facing changes go in `NEWS.md`; this file
 captures the per-session internal narrative (why a change was made, what
 was investigated, what was ruled out). Entries are newest-first.
 
+## 2026-07-01（続き） — v1.15.0: 全コードベース監査（4系統並行）+ 21件のバグ修正
+
+前段（BINET欠測クラッシュ修正）の後、ユーザから「パッケージ全体を見渡して改良点を
+洗い出してほしい。明らかなバグや死にコードは直したいが、効率化案はまずプランとして
+提案してほしい」という依頼。R/のファイル名の数字プレフィックス（00→23）が開発時系列
+に対応しているという前提のもと、4系統の並行general-purpose agentで全R/ファイル
+（約18,000行、src/のC++含む）を監査した。
+
+### 監査体制
+
+- 00番台agent: ユーティリティ群（plot/print/GridSearch/EMclus等15ファイル）
+- 01-06番台agent: dataFormat/項目分析関数群/CTT/IRT/LCA/LRA
+- 07-14番台agent: Biclustering/IRM/BNM/LDLRA/LDB/BINET/GRM（主要モデル群）
+- 15-23番台agent: 多値Biclustering派生系 + Glasso/Chatterjee + src/のC++
+
+各agentに「バグ確定/死にコード/設計の不整合/効率化の余地/改善提案」の5カテゴリで
+報告させ、バグ・死にコード候補は必ず`devtools::load_all()`後に実測検証させた
+（憶測での報告を禁止）。直前セッションのtmp剥がれ系バグ探索は既に別途完了済みと
+伝え、重複探索を避けた。
+
+結果、Tier1（実害大・9件）+ Tier2（実害限定的・12件）+ 死にコード（8件）の
+合計29件相当の指摘が集まった。ユーザ判断で「全部今回直す」ことに決定。
+
+### 発見のうち特に重かったもの
+
+- **`R/02_TestItemFunctions.R`(1748行) longdataFormat**: 数値IDが1始まり連番で
+  ないと`nrow(U)`が実際の学生数と食い違う重大バグ（ID={10,20,30}で3人なのに
+  30行のUができる）。`w=`重み引数も項目IDを行番号として誤用する別バグ。
+- **15/16/17/18番台のBiclustering/Biclustering_IRM**: 0始まりカテゴリコード
+  （0,1,2,3）が無警告で脱落するバグ。自パッケージ同梱J15S3810（まさに0始まり）
+  で3,854件の応答が消えていた。17/18番台はさらに欠測(-1)がRの負インデックス
+  仕様でone-hot配列を汚染し、実測で7%のクラス割当が変わるバグも併発。
+  GRM()には既に同種の対策（カテゴリ再割当）があったのでそれを`R/00_BiclucterUtils.R`
+  の`remap_category_codes()`として切り出し共通化、15/16/17/18全てに適用。
+  Uqの1の総数=非欠測セル数、という恒等式で修正を数値検証。
+- **`R/00_exametrikaPrint.R`**: `print(GridSearch(...))`がswitch文の末尾カンマ
+  で必ずクラッシュ（GridSearchは戻り値を返すだけの主要公開関数で対話利用では
+  自動printされるため影響大）。`CCRR_tabje`という綴りミス2箇所で`digits=`引数
+  も無効化されていた。IIAnalysis.ordinalではCSRが一度も表示されずJSRが二重表示。
+- **`R/08A_BNM.R`/`R/11_BINET.R`**: `adj^i`がRでは要素ごとの累乗であり行列累乗
+  にならないため、非巡回性・連結性チェックが実質プラシーボだった。BINETの
+  「Your graph is not a DAG」エラーは巡回グラフに対して発火しない状態。
+  `igraph::is_dag()`/`is_connected(mode="weak")`に置き換えて解決（igraphは
+  既存の依存パッケージ）。
+- **`R/10_LDB.R`**: `conf`をmatrix/data.frameで渡すとクラッシュ（4/27に
+  Biclustering.ordinal/nominalで直した同型バグの直し忘れ）。beta1/beta2の
+  分子役割もBNM/LDLRA/BINETと逆（本家Mathematica `Module_LDB.nb`のソースを
+  確認したところ本家自体が`beta2`を使っており、移植バグでなく原典の記述ゆれと
+  判明。数学的にはBeta(α,β)の慣習でα=成功側=beta1が正しいので、パッケージ内
+  一貫性を優先してbeta1に統一）。
+
+### 修正しなかったもの（設計改善プランとして提案のみ）
+
+- `R/02_TestItemFunctions.R`(1748行)/`R/00_exametrikaPrint.R`(775行)の巨大
+  ファイル分割
+- `conf`/`conf_mat`解析、beta事後平均式の共通ヘルパー化（LDBの件で一度顕在化
+  したパターン）
+- GridSearchのBiclustering/LCA分岐の重複統合
+- `\r`進捗表示の規約違反（CLAUDE.mdは`\n`推奨）の全体清掃
+
+### コミット構成
+
+監査バッチと対応させて4コミットに分割:
+1. `143c35a` 00番台（print/plot/GridSearch）
+2. `c01a2d2` 01-06番台（dataFormat/longdataFormat/項目分析関数）
+3. `7a7d891` 07-14番台（BNM/LDLRA/LDB/BINETのDAGチェック・ラベリング・死にコード）
+4. `5c1b09f` 15-23番台（カテゴリコード処理・Glasso edge_tol）+ NEWS.md
+
+各バッチ後に該当テストファイルで検証、最終コミット後に全5030テストFAIL 0を確認
+（開始時点の4926から増加＝一部テストが従来クラッシュで途中終了していた分を含む）。
+
+### 次回への引き継ぎ
+
+- cran-comments.md 1.15.0化・R CMD check --as-cran・rhub/win-devel実行が
+  7/15提出前に必要（バグ修正で内容が大きく増えたので再確認強めに）
+- 上記「修正しなかったもの」は次のクリーンアップ機会に
+
 ## 2026-07-01 — v1.15.0: dataFormat列名対応 + 欠測データ系バグ一斉修正（BINET含む）
 
 きっかけは「dataFormatのid列は列番号でしか指定できない」という一言の指摘。

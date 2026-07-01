@@ -286,6 +286,34 @@
   ever read after being written (`R/06_LRA.R`, `R/08C_BNM_GA.R`,
   `R/09B_LDLRA_GA.R`, `R/09_LDLRA.R`, `R/11_BINET.R`).
 
+## Internal (no user-visible behavior change)
+
+Follow-up cleanup after the audit above, consolidating logic that had
+drifted out of sync across near-identical call sites (the same root cause
+behind several of the bugs fixed above):
+
+- Progress messages in `R/00_EMclus.R`, `R/04C_ParameterEstimation.R`,
+  `R/07_Biclustering.R`, `R/08C_BNM_GA.R`, `R/09B_LDLRA_GA.R`,
+  `R/15_Biclustering_nominal.R`, and `R/16_Biclustering_ordinal.R` used a
+  carriage-return (`\r`) "overwrite in place" style, which reads as one
+  long run-on line when logged to a file or captured non-interactively
+  rather than the intended per-iteration progress. Switched to `\n`.
+- Extracted `beta_posterior_mode()` (`R/08A_BNM.R`) for the
+  `(count + beta1 - 1) / (total + beta1 + beta2 - 2)` formula duplicated
+  across `BNM()`, `LD_param_est()` (used by `LDLRA()`), and `BINET()` — the
+  same formula whose numerator/denominator role LDB() had swapped, above.
+- Extracted `build_conf_mat()` (`R/07_Biclustering.R`) for the `conf`
+  (vector/matrix/data.frame) parsing and validation duplicated across
+  `Biclustering()`, `Biclustering.nominal()`, `Biclustering.ordinal()`, and
+  `LDB()` — the same parsing whose missing `as.matrix(conf)` step caused
+  the `LDB()` crash fixed above.
+- Extracted `stop_if_all_grid_failed()`, `report_failed_grid_settings()`,
+  and `select_optimal_grid_index()` (`R/00_GridSearch.R`) for the
+  all-cells-failed check, failed-settings warning, and optimal-index
+  selection duplicated between `GridSearch()`'s Biclustering (2-D) and
+  LCA/LRA (1-D) branches — the same duplication in which both the tie-break
+  bug and the `max_ncls < 2` bug above were independently present.
+
 # exametrika 1.14.0
 
 ## Improvements

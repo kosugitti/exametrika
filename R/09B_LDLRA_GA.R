@@ -219,7 +219,7 @@ LDLRA_PBIL <- function(U, Z = NULL, w = NULL, na = NULL,
         if (verbose) {
           message(
             sprintf(
-              "\r%-80s",
+              "\n%-80s",
               paste0(
                 "Gen ", generation, " ID.", i,
                 " BIC ", format(round(ret.LDparam$FitIndices$BIC, 3), nsmall = 3),

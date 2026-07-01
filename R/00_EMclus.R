@@ -71,7 +71,7 @@ emclus <- function(U, Z, ncls, Fil, beta1, beta2, maxiter = 100, mic = FALSE,
     if (verbose) {
       message(
         sprintf(
-          "\r%-80s",
+          "\n%-80s",
           paste0(
             "iter ", emt, " log_lik ", format(test_log_lik, digits = 6)
           )

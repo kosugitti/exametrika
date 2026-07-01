@@ -319,7 +319,7 @@ BINET <- function(U, Z = NULL, w = NULL, na = NULL,
   Ccf <- Ccj %*% fldmemb
   Fcf <- Fcj %*% fldmemb
   Ncf <- Ccf + Fcf
-  Pcf <- (Ccf + beta1 - 1) / (Ncf + beta1 + beta2 - 2)
+  Pcf <- beta_posterior_mode(Ccf, Ncf, beta1, beta2)
   Pcf[1, ] <- 0
   Pcf[NROW(Pcf), ] <- 1
   Pcf01 <- matrix(0, ncol = nfld, nrow = ncls)
@@ -342,13 +342,13 @@ BINET <- function(U, Z = NULL, w = NULL, na = NULL,
           fld_item <- which(fldmemb[, k] == 1)
           paC <- Ccj[i, fld_item]
           paN <- Ncj[i, fld_item]
-          pap <- (paC + beta1 - 1) / (paN + beta1 + beta2 - 2)
+          pap <- beta_posterior_mode(paC, paN, beta1, beta2)
           if (i == 1) {
             pap <- rep(0, length(pap))
           }
           chC <- Ccj[j, fld_item]
           chN <- Ncj[j, fld_item]
-          chp <- (chC + beta1 - 1) / (chN + beta1 + beta2 - 2)
+          chp <- beta_posterior_mode(chC, chN, beta1, beta2)
           if (j == ncls) {
             chp <- rep(1, length(chp))
           }

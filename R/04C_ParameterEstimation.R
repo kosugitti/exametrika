@@ -324,7 +324,7 @@ IRT <- function(U, model = 2, na = NULL, Z = NULL, w = NULL, verbose = TRUE) {
     if (verbose) {
       message(
         sprintf(
-          "\r%-80s",
+          "\n%-80s",
           paste0(
             "iter ", emt, " LogLik ", format(totalLogLike, digits = 6)
           )

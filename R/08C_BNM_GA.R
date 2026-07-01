@@ -118,7 +118,7 @@ BNM_GA <- function(U, Z = NULL, w = NULL, na = NULL,
     generation <- generation + 1
     if (verbose) {
       message(
-        "\rgen. ", generation, " best BIC ", format(bestfit, digits = 6),
+        "\ngen. ", generation, " best BIC ", format(bestfit, digits = 6),
         " limit count ", limit_count,
         appendLF = FALSE
       )
@@ -370,7 +370,7 @@ BNM_PBIL <- function(U, Z = NULL, w = NULL, na = NULL,
     if (verbose) {
       message(
         sprintf(
-          "\r%-80s",
+          "\n%-80s",
           paste0(
             "gen. ", generation, " best BIC ", format(bestfit, digits = 6),
             " limit count ", limit_count

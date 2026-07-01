@@ -24,6 +24,26 @@ fill_adj <- function(g, ItemLabel) {
   return(adj)
 }
 
+#' @title Posterior-mode correct-response rate under a Beta(beta1, beta2) prior
+#' @description
+#' Shared formula used by BNM/LD_param_est(LDLRA)/BINET for the conditional
+#' correct-response rate: the posterior mode of a Binomial proportion under a
+#' Beta(beta1, beta2) prior, `(count + beta1 - 1) / (total + beta1 + beta2 - 2)`,
+#' where `beta1` is the prior pseudo-count on the "success"/correct side (the
+#' side that appears in `count`) and `beta2` is the pseudo-count on the
+#' "failure"/incorrect side. `count`/`total` may be scalars, vectors, or
+#' arrays of matching shape.
+#' @param count Number of correct/matching responses
+#' @param total Total number of (non-missing) responses
+#' @param beta1 Beta distribution parameter 1 (prior pseudo-count for `count`)
+#' @param beta2 Beta distribution parameter 2 (prior pseudo-count for the
+#' complement of `count`)
+#' @return Posterior-mode rate, same shape as `count`/`total`
+#' @noRd
+beta_posterior_mode <- function(count, total, beta1, beta2) {
+  (count + beta1 - 1) / (total + beta1 + beta2 - 2)
+}
+
 #' @title Bayesian Network Model
 #' @description
 #' performs Bayesian Network Model with specified graph structure
@@ -42,7 +62,7 @@ fill_adj <- function(g, ItemLabel) {
 #' @param adj_file specify CSV file where the graph structure is specified.
 #' @param adj_matrix specify adjacency matrix.
 #' @param beta1 Beta distribution parameter 1 (for correct responses). Default is 1.
-#' @param beta2 Beta distribution parameter 2 (for incorrect responses). Default is 1. Note: referred to as beta0 internally.
+#' @param beta2 Beta distribution parameter 2 (for incorrect responses). Default is 1.
 #' @importFrom igraph graph_from_data_frame
 #' @importFrom igraph as_adjacency_matrix
 #' @importFrom utils read.csv
@@ -149,7 +169,6 @@ BNM <- function(U, Z = NULL, w = NULL, na = NULL,
   cdag <- dag * connectedFLG
 
   # Initialize
-  beta0 <- beta2
   npa <- colSums(adj)
 
   pir <- lapply(1:length(npa), function(i) {
@@ -191,10 +210,9 @@ BNM <- function(U, Z = NULL, w = NULL, na = NULL,
     n_PIRP_0[, i] <- colSums(tmp$Z * (1 - tmp$U) * PIRP_array[, , i])
   }
 
-  deno <- n_PIRP_0 + n_PIRP_1 + beta0 + beta1 - 2
   denom0 <- sign(n_PIRP_1 + n_PIRP_0)
 
-  param <- (n_PIRP_1 + beta1 - 1) / deno
+  param <- beta_posterior_mode(n_PIRP_1, n_PIRP_0 + n_PIRP_1, beta1, beta2)
   rownames(param) <- tmp$ItemLabel
   colnames(param) <- paste("PIRP", 1:ncol(param))
 

@@ -79,7 +79,7 @@ LD_param_est <- function(tmp, adj_list, classRefMat, ncls, smoothpost, beta1 = 2
   n_correct <- colSums(U_expanded * pat01 * smoothpost_expanded)
   n_incorrect <- colSums(Z_expanded * (1 - U_expanded) * pat01 * smoothpost_expanded)
 
-  refmat <- (n_correct + beta1 - 1) / (n_correct + n_incorrect + beta1 + beta2 - 2)
+  refmat <- beta_posterior_mode(n_correct, n_correct + n_incorrect, beta1, beta2)
   item_ell <- n_correct * log(refmat + const) + n_incorrect * log(1 - refmat + const)
   item_ell <- rowSums(apply(item_ell, 1:2, sum))
   test_ell <- sum(item_ell)

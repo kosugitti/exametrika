@@ -1,3 +1,58 @@
+#' @title Stop with a diagnostic message if every grid cell failed
+#' @description Shared by GridSearch()'s Biclustering and LCA/LRA branches.
+#' @param ret Matrix (Biclustering) or vector (LCA/LRA) of fit indices, with
+#' `NA` marking cells that failed to converge or errored.
+#' @noRd
+stop_if_all_grid_failed <- function(ret) {
+  if (all(is.na(ret))) {
+    message("Error: All parameter combinations failed to converge.")
+    message("Grid search cannot find optimal parameters.")
+    message("Consider:")
+    message("  - Increasing maxiter parameter")
+    message("  - Using different parameter ranges")
+    message("  - Checking data quality")
+    stop("Grid search terminated due to convergence failure in all combinations.")
+  }
+}
+
+#' @title Report grid cells that failed to converge
+#' @description Shared by GridSearch()'s Biclustering and LCA/LRA branches.
+#' @param failed_settings List of named-list parameter settings (e.g.
+#' `list(ncls=, nfld=)` or `list(ncls=)`) that failed to converge.
+#' @noRd
+report_failed_grid_settings <- function(failed_settings) {
+  if (length(failed_settings) == 0) {
+    return(invisible(NULL))
+  }
+  message("\nWarning: The following settings may have failed to converge:")
+  for (setting in failed_settings) {
+    parts <- vapply(
+      names(setting),
+      function(nm) sprintf("%s=%d", nm, setting[[nm]]),
+      character(1)
+    )
+    message("  ", paste(parts, collapse = ", "))
+  }
+}
+
+#' @title Select the first tied optimum in a grid-search fit-index array
+#' @description
+#' Shared by GridSearch()'s Biclustering (2-D, `ret` is a matrix) and LCA/LRA
+#' (1-D, `ret` is a vector) branches. `which(..., arr.ind = TRUE)` returns
+#' one match per tie; this deterministically takes the first one instead of
+#' letting ties silently combine mismatched positions.
+#' @param ret Matrix or vector of fit indices (may contain `NA`)
+#' @param minimize `TRUE` to select the minimum (e.g. BIC), `FALSE` for the
+#' maximum (e.g. log-likelihood)
+#' @return For a vector `ret`, a single integer index. For a matrix `ret`, a
+#' named integer vector with `row`/`col` entries.
+#' @noRd
+select_optimal_grid_index <- function(ret, minimize) {
+  target <- if (minimize) min(ret, na.rm = TRUE) else max(ret, na.rm = TRUE)
+  idx <- which(ret == target, arr.ind = TRUE)
+  if (is.matrix(idx)) idx[1, , drop = TRUE] else idx[1]
+}
+
 #' Grid Search for Optimal Parameters
 #'
 #' Performs a grid search to find optimal parameters for different
@@ -161,35 +216,14 @@ GridSearch <- function(
     }
 
     # Check if all parameters failed to converge
-    if (all(is.na(ret))) {
-      message("Error: All parameter combinations failed to converge.")
-      message("Grid search cannot find optimal parameters.")
-      message("Consider:")
-      message("  - Increasing maxiter parameter")
-      message("  - Using different parameter ranges")
-      message("  - Checking data quality")
-      stop("Grid search terminated due to convergence failure in all combinations.")
-    }
+    stop_if_all_grid_failed(ret)
 
-    if (index %in% minimize_indices) {
-      optimal_idx <- which(ret == min(ret, na.rm = TRUE), arr.ind = TRUE)
-    } else {
-      optimal_idx <- which(ret == max(ret, na.rm = TRUE), arr.ind = TRUE)
-    }
-    # arr.ind=TRUE returns one row per tied match; take the first tie
-    # deterministically instead of letting optimal_idx[1]/optimal_idx[2]
-    # silently pick mismatched row/col from different ties.
-    optimal_ncls <- optimal_idx[1, "row"] + 1
-    optimal_nfld <- optimal_idx[1, "col"] + 1
+    optimal_idx <- select_optimal_grid_index(ret, minimize = index %in% minimize_indices)
+    optimal_ncls <- optimal_idx["row"] + 1
+    optimal_nfld <- optimal_idx["col"] + 1
 
     # Display warning for failed convergence
-    if (length(failed_settings) > 0) {
-      message("\nWarning: The following settings may have failed to converge:")
-      for (i in 1:length(failed_settings)) {
-        setting <- failed_settings[[i]]
-        message(sprintf("  ncls=%d, nfld=%d", setting$ncls, setting$nfld))
-      }
-    }
+    report_failed_grid_settings(failed_settings)
 
     message(paste(
       "\nOptimal ncls/nrank is ",
@@ -256,30 +290,12 @@ GridSearch <- function(
     }
 
     # Check if all parameters failed to converge
-    if (all(is.na(ret))) {
-      message("Error: All parameter combinations failed to converge.")
-      message("Grid search cannot find optimal parameters.")
-      message("Consider:")
-      message("  - Increasing maxiter parameter")
-      message("  - Using different parameter ranges")
-      message("  - Checking data quality")
-      stop("Grid search terminated due to convergence failure in all combinations.")
-    }
+    stop_if_all_grid_failed(ret)
 
-    if (index %in% minimize_indices) {
-      optimal_ncls <- which.min(ret) + 1
-    } else {
-      optimal_ncls <- which.max(ret) + 1
-    }
+    optimal_ncls <- select_optimal_grid_index(ret, minimize = index %in% minimize_indices) + 1
 
     # Display warning for failed convergence
-    if (length(failed_settings) > 0) {
-      message("\nWarning: The following settings may have failed to converge:")
-      for (i in 1:length(failed_settings)) {
-        setting <- failed_settings[[i]]
-        message(sprintf("  ncls=%d", setting$ncls))
-      }
-    }
+    report_failed_grid_settings(failed_settings)
 
     message("\nOptimal ncls/nrank is ", optimal_ncls)
 

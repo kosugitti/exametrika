@@ -151,29 +151,7 @@ LDB <- function(U, Z = NULL, w = NULL, na = NULL,
 
 
   # Check the conf
-  if (is.vector(conf)) {
-    # check size
-    if (length(conf) != NCOL(U)) {
-      stop("conf vector size does NOT match with data.")
-    }
-    conf_mat <- matrix(0, nrow = NCOL(U), ncol = max(conf))
-    for (i in 1:NROW(conf_mat)) {
-      conf_mat[i, conf[i]] <- 1
-    }
-  } else if (is.matrix(conf) | is.data.frame(conf)) {
-    if (NROW(conf) != NCOL(U)) {
-      stop("conf matrix size does NOT match with data.")
-    }
-    if (any(!conf %in% c(0, 1))) {
-      stop("The conf matrix should only contain 0s and 1s.")
-    }
-    if (any(rowSums(conf) > 1)) {
-      stop("The row sums of the conf matrix must be equal to 1.")
-    }
-    conf_mat <- as.matrix(conf)
-  } else {
-    stop("conf matrix is not set properly.")
-  }
+  conf_mat <- build_conf_mat(conf, NCOL(U))
 
   nfld <- NCOL(conf_mat)
 

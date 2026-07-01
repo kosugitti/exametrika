@@ -3,9 +3,11 @@
 #' This function serves the role of formatting the data prior to the analysis.
 #' @param data is a data matrix of the type matrix or data.frame.
 #' @param na na argument specifies the numbers or characters to be treated as missing values.
-#' @param id id indicates the column number containing the examinee ID.
+#' @param id id indicates the column containing the examinee ID, specified either
+#' as a column number or as a column name (character string).
 #' If NULL (default), the first column is auto-detected as ID or response data.
-#' If a column number is specified, that column is always used as the ID column.
+#' If a column number or column name is specified, that column is always used
+#' as the ID column.
 #' @param Z Z is a missing indicator matrix of the type matrix or data.frame
 #' @param w w is item weight vector
 #' @param response.type Character string specifying the type of response data:
@@ -111,12 +113,28 @@ dataFormat <- function(data, na = NULL, id = NULL, Z = NULL, w = NULL,
 
   # Phase 1: ID column identification and response matrix extraction
   if (!is.null(id)) {
-    # Explicit ID column specified
-    if (!is.numeric(id) || length(id) != 1) {
+    # Explicit ID column specified, either by column number or column name
+    if (length(id) != 1 || (!is.numeric(id) && !is.character(id))) {
       stop(
-        "id must be a single integer specifying the column number (e.g., id = 1). ",
-        "To pass ID labels, use a data.frame with an ID column instead."
+        "id must be a single integer specifying the column number, or a single ",
+        "character string specifying the column name (e.g., id = 1 or id = \"StudentID\")."
       )
+    }
+    if (is.character(id)) {
+      id_matches <- which(colnames(data) == id)
+      if (length(id_matches) == 0) {
+        stop(
+          "Column name '", id, "' not found in data. Available columns: ",
+          paste(colnames(data), collapse = ", ")
+        )
+      }
+      if (length(id_matches) > 1) {
+        stop(
+          "Column name '", id, "' matches multiple columns (",
+          paste(id_matches, collapse = ", "), "). Use a column number to disambiguate."
+        )
+      }
+      id <- id_matches
     }
     if (id > ncol(data)) {
       stop("ID column number exceeds the number of columns in data")
@@ -426,10 +444,14 @@ dataFormat <- function(data, na = NULL, id = NULL, Z = NULL, w = NULL,
 #' the response. Additionally, it can include a column for the weight of
 #' the items.
 #' @param na na argument specifies the numbers or characters to be treated as missing values.
-#' @param Sid Specify the column number containing the student ID label vector.
-#' @param Qid Specify the column number containing the Question label vector.
-#' @param Resp Specify the column number containing the Response value vector.
-#' @param w Specify the column number containing the weight vector.
+#' @param Sid Specify the column containing the student ID label vector, either
+#' as a column number or as a column name (character string).
+#' @param Qid Specify the column containing the Question label vector, either
+#' as a column number or as a column name (character string).
+#' @param Resp Specify the column containing the Response value vector, either
+#' as a column number or as a column name (character string).
+#' @param w Specify the column containing the weight vector, either
+#' as a column number or as a column name (character string).
 #' @param response.type Character string specifying the type of response data:
 #'   "binary" for dichotomous data,
 #'   "ordinal" for ordered polytomous data,
@@ -475,13 +497,52 @@ longdataFormat <- function(data, na = NULL,
     stop("Data must be matrix or data.frame")
   }
   if (is.null(Sid)) {
-    stop("Column number for identifier for Student must be specified.")
+    stop("Column number or column name for identifier for Student must be specified.")
   }
   if (is.null(Qid)) {
-    stop("Column number for identifier for Questions must be specified.")
+    stop("Column number or column name for identifier for Questions must be specified.")
   }
   if (is.null(Resp)) {
-    stop("Column number for response pattern must be specified.")
+    stop("Column number or column name for response pattern must be specified.")
+  }
+
+  # Resolve a column specification (number or name) to a column number
+  resolve_col <- function(col, arg_name) {
+    if (length(col) != 1 || (!is.numeric(col) && !is.character(col))) {
+      stop(
+        arg_name, " must be a single column number or a single column name ",
+        "(e.g., ", arg_name, " = 1 or ", arg_name, " = \"", arg_name, "\")."
+      )
+    }
+    if (is.character(col)) {
+      matches <- which(colnames(data) == col)
+      if (length(matches) == 0) {
+        stop(
+          "Column name '", col, "' specified for ", arg_name,
+          " not found in data. Available columns: ",
+          paste(colnames(data), collapse = ", ")
+        )
+      }
+      if (length(matches) > 1) {
+        stop(
+          "Column name '", col, "' specified for ", arg_name,
+          " matches multiple columns (", paste(matches, collapse = ", "),
+          "). Use a column number to disambiguate."
+        )
+      }
+      return(matches)
+    }
+    if (col < 1 || col > ncol(data)) {
+      stop(arg_name, " column number exceeds the number of columns in data")
+    }
+    as.integer(col)
+  }
+
+  Sid <- resolve_col(Sid, "Sid")
+  Qid <- resolve_col(Qid, "Qid")
+  Resp <- resolve_col(Resp, "Resp")
+  if (!is.null(w)) {
+    w <- resolve_col(w, "w")
   }
 
   # Extract vectors based on data type
@@ -504,10 +565,6 @@ longdataFormat <- function(data, na = NULL,
     Sid_num <- Sid_vec
     Sid_label <- unique(paste0("Student", Sid_num))
   }
-  if (any(duplicated(Sid_vec))) {
-    duplicated_ids <- Sid_vec[duplicated(Sid_vec)]
-    stop(paste("Duplicated IDs found:", paste(unique(duplicated_ids), collapse = ",")))
-  }
 
   # Process Question IDs
   if (!is.numeric(Qid_vec)) {
@@ -517,6 +574,15 @@ longdataFormat <- function(data, na = NULL,
   } else {
     Qid_num <- Qid_vec
     Qid_label <- unique(paste0("Q", Qid_vec))
+  }
+
+  # Check for duplicate (student, item) pairs. In long format, a student
+  # legitimately appears on multiple rows (one per item), so duplication must
+  # be checked on the (Sid, Qid) pair, not on Sid alone.
+  pair_key <- paste(Sid_num, Qid_num, sep = "_")
+  if (any(duplicated(pair_key))) {
+    dup_pairs <- unique(pair_key[duplicated(pair_key)])
+    stop(paste("Duplicated (student, item) pairs found:", paste(dup_pairs, collapse = ", ")))
   }
 
   # Process Response vector and determine response type if not specified

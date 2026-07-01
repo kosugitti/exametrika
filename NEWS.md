@@ -1,5 +1,56 @@
 # exametrika (development version)
 
+## Improvements
+
+- **`dataFormat()`'s `id` argument, and `longdataFormat()`'s `Sid`/`Qid`/`Resp`/`w`
+  arguments, now accept a column name (character string) in addition to a
+  column number.** Previously only numeric column indices were accepted;
+  `dataFormat()` even raised an explicit error when a character value was
+  passed. Column names can now be supplied directly, e.g.
+  `dataFormat(data, id = "StudentID")` or
+  `longdataFormat(data, Sid = "Sid", Qid = "Qid", Resp = "Resp")`. Specifying
+  an unknown or ambiguous (duplicated) column name now raises a clear error
+  listing the available columns (`R/01_dataFormat.R`).
+
+## Bug fixes
+
+- **`longdataFormat()` falsely reported "Duplicated IDs found" whenever a
+  student answered more than one item.** The duplicate check ran on the raw
+  student-ID column, which is expected to repeat once per item in long
+  format; it now checks for duplicated `(student, item)` pairs instead, so
+  ordinary long-format data (one row per student-item response) no longer
+  triggers a spurious error. A genuine duplicate — the same student
+  answering the same item twice — is still caught (`R/01_dataFormat.R`).
+
+- **`IRT()`, `Biclustering()`, `BNM()`, `LDLRA()`, `LDB()`, and `BINET()` silently
+  treated missing responses as incorrect when computing item-total correlation
+  or correct response rate (`crr()`).** In each case, a response matrix that
+  had already been stripped of its `exametrika` class (with missing values
+  recoded to `0` via `tmp$U * tmp$Z`) was passed to `ItemTotalCorr()`,
+  `ItemThreshold()`, or `crr()`. Those functions re-run `dataFormat()`
+  internally when given an unclassed matrix, but without the original missing
+  -value mask, so missing responses were counted as incorrect answers. This
+  affected `IRT()`'s initial parameter values (`rho`/`tau`, which only seed
+  the EM algorithm — final estimates were unaffected), `Biclustering()`'s
+  `FieldAnalysis$CRR` column, and the `$crr` field returned by `BNM()`,
+  `LDLRA()`, `LDB()`, and `BINET()` (including their `BNM_GA()`/`BNM_PBIL()`/
+  `LDLRA_PBIL()` wrappers). Fixed by passing the already-formatted object
+  through instead of the stripped matrix (`R/04C_ParameterEstimation.R`,
+  `R/07_Biclustering.R`, `R/08A_BNM.R`, `R/09_LDLRA.R`, `R/10_LDB.R`,
+  `R/11_BINET.R`).
+
+- **`CTT()`, `BNM()`, `LDLRA()`, `LDB()`, and `BINET()` crashed when passed raw
+  (unformatted) `matrix`/`data.frame` input instead of a pre-built
+  `exametrika` object**, even though this is documented as supported. The
+  response-type check in each function read `U$response.type` from the raw
+  input argument instead of from the `dataFormat()`-formatted object, which
+  is `NULL` for raw input and made the check error out before model fitting
+  ever started. `CTT()` had a more severe variant of the same bug: its
+  `inherits(U, "exametrika")` branch was inverted, so raw input skipped
+  `dataFormat()` entirely and crashed immediately. Fixed to consistently
+  check the formatted object (`R/03_CTT.R`, `R/08A_BNM.R`, `R/09_LDLRA.R`,
+  `R/10_LDB.R`, `R/11_BINET.R`).
+
 # exametrika 1.14.0
 
 ## Improvements

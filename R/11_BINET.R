@@ -140,8 +140,8 @@ BINET <- function(U, Z = NULL, w = NULL, na = NULL,
     tmp <- U
   }
 
-  if (U$response.type != "binary") {
-    response_type_error(U$response.type, "BINET")
+  if (tmp$response.type != "binary") {
+    response_type_error(tmp$response.type, "BINET")
   }
 
   U <- tmp$U * tmp$Z
@@ -556,7 +556,7 @@ BINET <- function(U, Z = NULL, w = NULL, na = NULL,
     n_field = nfld,
     Nclass = ncls,
     Nfield = nfld,
-    crr = crr(U),
+    crr = crr(tmp),
     ItemLabel = tmp$ItemLabel,
     FieldLabel = FieldLabel,
     all_adj = all_adj,

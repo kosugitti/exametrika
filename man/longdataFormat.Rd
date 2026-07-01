@@ -23,13 +23,17 @@ the items.}
 
 \item{na}{na argument specifies the numbers or characters to be treated as missing values.}
 
-\item{Sid}{Specify the column number containing the student ID label vector.}
+\item{Sid}{Specify the column containing the student ID label vector, either
+as a column number or as a column name (character string).}
 
-\item{Qid}{Specify the column number containing the Question label vector.}
+\item{Qid}{Specify the column containing the Question label vector, either
+as a column number or as a column name (character string).}
 
-\item{Resp}{Specify the column number containing the Response value vector.}
+\item{Resp}{Specify the column containing the Response value vector, either
+as a column number or as a column name (character string).}
 
-\item{w}{Specify the column number containing the weight vector.}
+\item{w}{Specify the column containing the weight vector, either
+as a column number or as a column name (character string).}
 
 \item{response.type}{Character string specifying the type of response data:
 "binary" for dichotomous data,

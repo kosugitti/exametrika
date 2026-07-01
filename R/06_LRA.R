@@ -124,7 +124,6 @@ LRA.binary <- function(U,
                        beta2 = 1,
                        conf = NULL, ...) {
   tmp <- U
-  U <- tmp$U * tmp$Z
   testlength <- NCOL(tmp$U)
   samplesize <- NROW(tmp$U)
   const <- exp(-testlength)

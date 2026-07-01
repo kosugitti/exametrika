@@ -501,7 +501,7 @@ Biclustering.binary <- function(U,
   FitIndices <- TestFit(tmp$U, tmp$Z, test_log_lik, nparam)
 
   ### Field Analysis
-  crr <- crr(tmp$Z * tmp$U)
+  crr <- crr(tmp)
   fieldAnalysis <- as.data.frame(fldmemb)
   fieldAnalysis <- cbind(crr, fld, fieldAnalysis)
   colnames(fieldAnalysis) <- c("CRR", "LFE", paste0("Field", 1:nfld))

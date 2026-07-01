@@ -100,8 +100,8 @@ BNM <- function(U, Z = NULL, w = NULL, na = NULL,
     tmp <- U
   }
 
-  if (U$response.type != "binary") {
-    response_type_error(U$response.type, "BNM")
+  if (tmp$response.type != "binary") {
+    response_type_error(tmp$response.type, "BNM")
   }
 
 
@@ -245,7 +245,7 @@ BNM <- function(U, Z = NULL, w = NULL, na = NULL,
     U = U,
     testlength = testlength,
     nobs = nobs,
-    crr = crr(U),
+    crr = crr(tmp),
     ItemLabel = tmp$ItemLabel,
     adj = adj,
     g = g,

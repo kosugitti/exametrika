@@ -11,7 +11,6 @@
 #' @param beta2 Beta distribution parameter 2 for prior density. Default is 2.
 #'
 LD_param_est <- function(tmp, adj_list, classRefMat, ncls, smoothpost, beta1 = 2, beta2 = 2) {
-  U <- tmp$U * tmp$Z
   testlength <- NCOL(tmp$U)
   nobs <- NROW(tmp$U)
 
@@ -240,8 +239,8 @@ LDLRA <- function(U, Z = NULL, w = NULL, na = NULL,
   }
 
 
-  if (U$response.type != "binary") {
-    response_type_error(U$response.type, "LDLRA")
+  if (tmp$response.type != "binary") {
+    response_type_error(tmp$response.type, "LDLRA")
   }
 
 
@@ -439,7 +438,7 @@ LDLRA <- function(U, Z = NULL, w = NULL, na = NULL,
     n_class = ncls,
     Nclass = ncls,
     model = model,
-    crr = crr(U),
+    crr = crr(tmp),
     ItemLabel = tmp$ItemLabel,
     adj_list = adj_list,
     g_list = g_list,

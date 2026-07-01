@@ -135,8 +135,8 @@ LDB <- function(U, Z = NULL, w = NULL, na = NULL,
     tmp <- U
   }
 
-  if (U$response.type != "binary") {
-    response_type_error(U$response.type, "LDB")
+  if (tmp$response.type != "binary") {
+    response_type_error(tmp$response.type, "LDB")
   }
 
   U <- tmp$U * tmp$Z
@@ -398,7 +398,7 @@ LDB <- function(U, Z = NULL, w = NULL, na = NULL,
     n_field = nfld,
     Nrank = ncls,
     Nfield = nfld,
-    crr = crr(U),
+    crr = crr(tmp),
     ItemLabel = tmp$ItemLabel,
     FieldLabel = FieldLabel,
     adj_list = adj_list,

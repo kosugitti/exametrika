@@ -187,14 +187,16 @@ IRT <- function(U, model = 2, na = NULL, Z = NULL, w = NULL, verbose = TRUE) {
     tmp <- U
   }
 
-  if (U$response.type != "binary") {
-    response_type_error(U$response.type, "IRT")
+  if (tmp$response.type != "binary") {
+    response_type_error(tmp$response.type, "IRT")
   }
 
-  U <- tmp$U * tmp$Z
+  # Compute on the formatted exametrika object (not a bare matrix) so that
+  # missingness (tmp$Z) is honored instead of silently treated as incorrect.
+  rho <- exametrika::ItemTotalCorr(tmp)
+  tau <- exametrika::ItemThreshold(tmp)
 
-  rho <- exametrika::ItemTotalCorr(U)
-  tau <- exametrika::ItemThreshold(U)
+  U <- tmp$U * tmp$Z
 
   # initialize
   testlength <- NCOL(U)

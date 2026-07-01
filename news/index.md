@@ -89,6 +89,34 @@
   formatted object (`R/03_CTT.R`, `R/08A_BNM.R`, `R/09_LDLRA.R`,
   `R/10_LDB.R`, `R/11_BINET.R`).
 
+- **[`BINET()`](https://kosugitti.github.io/exametrika/reference/BINET.md)
+  could crash with a cryptic `'dimnames'` length error (via NaN values
+  silently produced by [`log()`](https://rdrr.io/r/base/Log.html)) on
+  data with missing responses.** Two compounding issues were found.
+  First, `Ccj` (the per-class correct-response count used throughout the
+  RISP estimation) was computed as `t(clsmemb) %*% tmp$U`, which does
+  not mask out missing cells (encoded as `-1` in `tmp$U`) the way the
+  corresponding incorrect-response count `Fcj` already did
+  (`t(clsmemb) %*% (tmp$Z * (1 - tmp$U))`); missing responses therefore
+  contributed `-1` to the correct-response count instead of `0`,
+  corrupting the conditional correct-response-rate estimates. Second,
+  the smoothing constant that keeps those conditional rates away from
+  `0/0` when a class-by-field cell has no non-missing observations was
+  hardcoded to `gamp <- 1` (a flat Beta(1,1) prior, under which `0/0` is
+  undefined) with no way for the caller to change it, unlike the
+  equivalent `beta1`/`beta2` arguments already exposed by
+  [`BNM()`](https://kosugitti.github.io/exametrika/reference/BNM.md),
+  [`LDLRA()`](https://kosugitti.github.io/exametrika/reference/LDLRA.md),
+  and
+  [`LDB()`](https://kosugitti.github.io/exametrika/reference/LDB.md).
+  Fixed the `Ccj` computation to mask missing cells via `tmp$Z`, added
+  `beta1 = 1` / `beta2 = 1` arguments to
+  [`BINET()`](https://kosugitti.github.io/exametrika/reference/BINET.md)
+  so the prior can be strengthened when needed, and replaced the
+  eventual downstream crash with an immediate, actionable error when a
+  class-by-field cell is still undefined under the requested smoothing
+  (`R/11_BINET.R`).
+
 ## exametrika 1.14.0
 
 CRAN release: 2026-06-14

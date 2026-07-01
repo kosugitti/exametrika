@@ -21,7 +21,9 @@ BINET(
   g_list = NULL,
   adj_list = NULL,
   adj_file = NULL,
-  verbose = FALSE
+  verbose = FALSE,
+  beta1 = 1,
+  beta2 = 1
 )
 ```
 
@@ -81,6 +83,19 @@ BINET(
 - verbose:
 
   verbose output Flag. default is TRUE
+
+- beta1:
+
+  Beta distribution parameter 1 for prior density of the conditional
+  correct response rates. Default is 1. Increase this (together with
+  `beta2`) if estimation fails because some class-by-field cell has zero
+  non-missing observations (common with many classes/fields combined
+  with missing data).
+
+- beta2:
+
+  Beta distribution parameter 2 for prior density of the conditional
+  correct response rates. Default is 1.
 
 ## Value
 

@@ -66,7 +66,9 @@ latent field, where each field is a locus.</p>
 <span>  g_list <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  adj_list <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  adj_file <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  verbose <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span>  verbose <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  beta1 <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>  beta2 <span class="op">=</span> <span class="fl">1</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -122,6 +124,18 @@ listed in the order of starting point, ending point, and rank(class).</p></dd>
 
 <dt id="arg-verbose">verbose<a class="anchor" aria-label="anchor" href="#arg-verbose"></a></dt>
 <dd><p>verbose output Flag. default is TRUE</p></dd>
+
+
+<dt id="arg-beta-">beta1<a class="anchor" aria-label="anchor" href="#arg-beta-"></a></dt>
+<dd><p>Beta distribution parameter 1 for prior density of the conditional
+correct response rates. Default is 1. Increase this (together with <code>beta2</code>) if
+estimation fails because some class-by-field cell has zero non-missing
+observations (common with many classes/fields combined with missing data).</p></dd>
+
+
+<dt id="arg-beta-">beta2<a class="anchor" aria-label="anchor" href="#arg-beta-"></a></dt>
+<dd><p>Beta distribution parameter 2 for prior density of the conditional
+correct response rates. Default is 1.</p></dd>
 
 </dl></div>
     <div class="section level2">

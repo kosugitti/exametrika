@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="index.html">exametrika</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.14.0.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.15.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -36,6 +36,37 @@
 <div id="exametrika-work-log" class="section level1">
 
 <p>Detailed development log. User-facing changes go in <code>NEWS.md</code>; this file captures the per-session internal narrative (why a change was made, what was investigated, what was ruled out). Entries are newest-first.</p>
+<div class="section level2">
+<h2 id="id_2026-07-01--v1150-dataformat列名対応--欠測データ系バグ一斉修正binet含む">2026-07-01 — v1.15.0: dataFormat列名対応 + 欠測データ系バグ一斉修正（BINET含む）<a class="anchor" aria-label="anchor" href="#id_2026-07-01--v1150-dataformat%E5%88%97%E5%90%8D%E5%AF%BE%E5%BF%9C--%E6%AC%A0%E6%B8%AC%E3%83%87%E3%83%BC%E3%82%BF%E7%B3%BB%E3%83%90%E3%82%B0%E4%B8%80%E6%96%89%E4%BF%AE%E6%AD%A3binet%E5%90%AB%E3%82%80"></a></h2>
+<p>きっかけは「dataFormatのid列は列番号でしか指定できない」という一言の指摘。 そこから列名対応 → 隣接コードのバグ探索 → 全モデル関数の並行監査、と芋づる式に 広がり、最終的に2コミットでv1.15.0（7/15提出予定）分の修正が積み上がった。</p>
+<div class="section level3">
+<h3 id="コミット1-2bf3857--dataformat列名対応--tmp剥がれ系バグ一式">コミット1: <code>2bf3857</code> — dataFormat列名対応 + tmp剥がれ系バグ一式<a class="anchor" aria-label="anchor" href="#%E3%82%B3%E3%83%9F%E3%83%83%E3%83%881-2bf3857--dataformat%E5%88%97%E5%90%8D%E5%AF%BE%E5%BF%9C--tmp%E5%89%A5%E3%81%8C%E3%82%8C%E7%B3%BB%E3%83%90%E3%82%B0%E4%B8%80%E5%BC%8F"></a></h3>
+<p><strong>列名対応</strong> - <code><a href="reference/dataFormat.html">dataFormat()</a></code>の<code>id</code>引数が数値の列番号しか受け付けず，文字列を渡すと即 <code><a href="https://rdrr.io/r/base/stop.html" class="external-link">stop()</a></code>していた。列名（文字列）でも指定できるように修正。存在しない列名・ 複数マッチはエラーで明示。 - <code><a href="reference/longdataFormat.html">longdataFormat()</a></code>のSid/Qid/Respは元々R側の<code>[[</code>/<code>[,]</code>が汎用的なので列名でも 動いてはいたが，Sid/Qid/Resp/w全てに列存在チェック・エラーメッセージを追加して dataFormatと足並みを揃えた。 - ついでに発見: <code><a href="reference/longdataFormat.html">longdataFormat()</a></code>は「1学生が複数項目に回答する」通常のロング 形式データで必ず「Duplicated IDs found」を誤検出していた（生のSid列に対して 重複チェックしていたのが原因、ロング形式ではSidが複数行に渡って重複するのが 正常）。(Sid, Qid)ペアの重複チェックに変更。</p>
+<p><strong>tmp剥がれ系バグ（本セッションの主戦場）</strong> <code><a href="reference/IRT.html">IRT()</a></code>で「<code>U &lt;- tmp$U * tmp$Z</code>でexametrikaクラスを剥がし，欠測(-1)を0に 潰した後，その<code>U</code>を<code><a href="reference/ItemTotalCorr.html">ItemTotalCorr()</a></code>/<code><a href="reference/ItemThreshold.html">ItemThreshold()</a></code>に渡している」というバグを 発見。これらの関数は<code>UseMethod</code>ディスパッチで，<code>inherits(U,"exametrika")</code>が falseだと<code>na</code>/<code>Z</code>/<code>w</code>なしで<code><a href="reference/dataFormat.html">dataFormat()</a></code>を再実行してしまうため，欠測が 「誤答」として再解釈される。実測（20名5項目・欠測2件）で<code>tau</code>/<code>rho</code>が実際に ずれることを確認。</p>
+<p>この型のバグを全ファイルで洗い出すため，4系統の並行Explore/general-purpose agentを立てて監査（IRT/GRM系，LCA/LRA系，Biclustering/IRM系，BNM/LDLRA/LDB/ BINET系）。結果，同型のバグが<code>crr(U)</code>という形で5箇所に伝播していたことが判明: <code>Biclustering.binary</code>の<code>FieldAnalysis$CRR</code>，<code>BNM</code>/<code>LDLRA</code>/<code>LDB</code>/<code>BINET</code>の <code>$crr</code>出力フィールド。いずれも推定計算本体（EM/Gibbs, IRP/FRP, CCRR_table等） は<code>tmp$U</code>/<code>tmp$Z</code>を直接使っており無事，汚染されるのは<code>$crr</code>フィールドのみ （BNMは<code>print.BNM</code>のDAG描画ノード縦位置ソートにも影響）。全て<code>crr(tmp)</code>に 差し替えて解決。</p>
+<p>隣接して，<code><a href="reference/CTT.html">CTT()</a></code>/<code><a href="reference/BNM.html">BNM()</a></code>/<code><a href="reference/LDLRA.html">LDLRA()</a></code>/<code><a href="reference/LDB.html">LDB()</a></code>/<code><a href="reference/BINET.html">BINET()</a></code>で「<code>if (U$response.type != "binary")</code>」のように<strong>exametrikaクラスに変換する前の生引数</strong>をチェックして いるバグも発見。生のdata.frame/matrixを直接渡すと<code>U$response.type</code>がNULLになり 即クラッシュ（<code>tmp$response.type</code>に統一）。<code><a href="reference/CTT.html">CTT()</a></code>だけは<code><a href="https://rdrr.io/r/base/class.html" class="external-link">inherits()</a></code>の条件が そもそも反転していて，生データを渡すと<code><a href="reference/dataFormat.html">dataFormat()</a></code>自体をスキップして即死する より重いバグだった。</p>
+<p>副産物として，同じ「<code>U &lt;- tmp$U * tmp$Z</code>だが以降未使用」という死んだコードが <code>LRA.binary</code>/<code>BNM_GA</code>/<code>BNM_PBIL</code>/<code>LD_param_est</code>/<code>LDLRA_PBIL</code>の5箇所に見つかり 削除（実害なし，可読性のみ）。</p>
+<p>全4926テストがFAIL 0で通ることを確認してコミット・プッシュ。</p>
+</div>
+<div class="section level3">
+<h3 id="コミット2-8e186e0--binetの欠測データクラッシュ修正">コミット2: <code>8e186e0</code> — BINET()の欠測データクラッシュ修正<a class="anchor" aria-label="anchor" href="#%E3%82%B3%E3%83%9F%E3%83%83%E3%83%882-8e186e0--binet%E3%81%AE%E6%AC%A0%E6%B8%AC%E3%83%87%E3%83%BC%E3%82%BF%E3%82%AF%E3%83%A9%E3%83%83%E3%82%B7%E3%83%A5%E4%BF%AE%E6%AD%A3"></a></h3>
+<p>コミット1のBINET監査中，ユーザから「BINETが欠測データでクラッシュする件も 今回合わせて直す」と指示。原因は2つの複合:</p>
+<ol style="list-style-type: decimal"><li>
+<code>Ccj</code>（クラス別正答カウント）が<code>t(clsmemb) %*% tmp$U</code>と，欠測(-1)を Zマスクせずそのまま行列積に混入させていた。対になる<code>Fcj</code>（誤答カウント）は <code>tmp$Z * (1 - tmp$U)</code>と正しくマスクしているのに<code>Ccj</code>だけ漏れていた。 欠測が多いと<code>Ccj</code>が負値になり，条件付き正答率<code>Pcf</code>/<code>pap</code>/<code>chp</code>が破綻。</li>
+<li>平滑化定数<code>gamp &lt;- 1</code>（Beta(1,1)事前分布のMAP式）がハードコードで引数化 されておらず，あるクラス×フィールドの組み合わせで非欠測観測数がゼロになると 0/0でNaNになる。姉妹関数のBNM/LDLRA/LDBには同じ役割の<code>beta1</code>/<code>beta2</code>引数が あるのにBINETだけ無かった。</li>
+</ol><p>ユーザが本家Mathematica実装（<code>estbinet[d0_, ai0_, gp0_]</code>）のソースを提示して くれて，(2)は本家も<code>estbinet[uuu, structmat, 1]</code>とgamma=1固定で呼んでいる ことが判明＝移植バグではなく本家から継承した構造的弱点。一方(1)は本家の <code>Ccj = Transpose[clsmemb] . dat</code>が<code>dat</code>側で欠測を0に前処理済みという前提に 依存しており，R側は<code>tmp$U</code>が欠測を<code>-1</code>で持つ設計なので前提が合わずR特有の 移植バグと判断。</p>
+<p>対処: <code>Ccj</code>/<code>irp</code>の計算を<code>tmp$Z * tmp$U</code>でマスク，<code><a href="reference/BINET.html">BINET()</a></code>に<code>beta1 = 1, beta2 = 1</code>引数を追加（既定値は現状維持で非破壊），それでも0/0になる場合は 謎の<code>'dimnames'の長さ...</code>エラーではなく「beta1/beta2を上げてください」という 分かりやすいエラーに変更。欠測30件注入のトイデータで再現・修正確認， Mathematica参照値を使った既存test-binet.R（40件）・全4926テストとも FAIL 0を確認してコミット・プッシュ。</p>
+</div>
+<div class="section level3">
+<h3 id="バージョニング">バージョニング<a class="anchor" aria-label="anchor" href="#%E3%83%90%E3%83%BC%E3%82%B8%E3%83%A7%E3%83%8B%E3%83%B3%E3%82%B0"></a></h3>
+<p>ユーザ判断で，今回の修正一式をv1.15.0として2026-07-15にCRAN提出する方針に 確定（前回1.14.0受理2026-06-14からの1ヶ月クールダウンにちょうど収まる）。 NEWS.mdの<code>(development version)</code>見出しを<code>1.15.0</code>に確定し，DESCRIPTIONの Versionも<code>1.14.0.9000</code>→<code>1.15.0</code>にbump（このタイミングでbumpするのは1.13.0の 時と同じ前例）。cran-comments.mdは提出直前に作業する慣例のため今回は未着手。</p>
+</div>
+<div class="section level3">
+<h3 id="次回への引き継ぎ">次回への引き継ぎ<a class="anchor" aria-label="anchor" href="#%E6%AC%A1%E5%9B%9E%E3%81%B8%E3%81%AE%E5%BC%95%E3%81%8D%E7%B6%99%E3%81%8E"></a></h3>
+<ul><li>cran-comments.md 1.15.0化，R CMD check –as-cran / rhub / win-devel 実行は 7/15提出前に必要</li>
+<li>今回のtmp剥がれ監査は「危険な関数リスト」（ItemTotalCorr/ItemThreshold/crr/ JointSampleSize/JCRR/CCRR/ItemLift/MutualInformation/PhiCoefficient/ PolychoricCorrelationMatrix/TetrachoricCorrelationMatrix/ItemOdds/ ItemEntropy/ITBiserial/nrs/passage/sscore/percentile/stanine/ Dimensionality/TestStatistics/ItemStatistics/InterItemAnalysis/CTT） への呼び出し箇所を対象にしたもので，パッケージ全体を網羅した形跡は ある（4系統agentで03〜23番のRファイルほぼ全て担当済み）が，将来新しい モデル関数を足すときは同じ「tmp剥がれ→UseMethod関数に渡す」パターンを 混入させないよう要注意（<code>.claude/CLAUDE.md</code>にコーディング規約として 一文残す価値あり）</li>
+</ul></div>
+</div>
 <div class="section level2">
 <h2 id="id_2026-06-15--v1140-cran-提出受理リリース一式">2026-06-15 — v1.14.0 CRAN 提出・受理・リリース一式<a class="anchor" aria-label="anchor" href="#id_2026-06-15--v1140-cran-%E6%8F%90%E5%87%BA%E5%8F%97%E7%90%86%E3%83%AA%E3%83%AA%E3%83%BC%E3%82%B9%E4%B8%80%E5%BC%8F"></a></h2>
 <p>v1.14.0 を CRAN に提出し，同日中に受理・公開された。前回 1.13.0 を落とした Windows checktime の壁を今回はクリアし，auto-check 一発通過からそのまま 公開まで通った。</p>

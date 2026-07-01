@@ -1,6 +1,6 @@
 # Changelog
 
-## exametrika (development version)
+## exametrika 1.15.0
 
 ### Improvements
 

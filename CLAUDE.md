@@ -6,7 +6,8 @@
 (2022, <ISBN:978-9811699856>). It provides psychometric analysis tools:
 CTT, IRT, GRM, LCA, LRA, Biclustering, BNM, LDLRA, LDB, BINET.
 
-- **Current version**: 1.14.0.9000 (dev) / 1.14.0 (CRAN)
+- **Current version**: 1.15.0 (dev, targeting CRAN submission
+  2026-07-15) / 1.14.0 (CRAN)
 - **CRAN version**: 1.14.0 (accepted/published 2026-06-14)
 - **GitHub Release**: v1.14.0 (2026-06-14, latest) / v1.13.1
   (2026-05-18)
@@ -265,6 +266,57 @@ Rscript -e 'roxygen2::roxygenise()'
 - Lesson: heavy real-data fit tests (J*S* style regressions) must be
   wrapped in `skip_on_cran()` from now on. See “Test suite slimming”
   item under “Known Technical Debt” / `.claude/CLAUDE.md` 優先度：高.
+
+### v1.14.0 (CRAN, accepted 2026-06-14)
+
+- [`plot.exametrika()`](https://kosugitti.github.io/exametrika/reference/plot.exametrika.md)
+  now forwards `...` graphical parameters to every plot type (R Journal
+  review request)
+- Graceful handling of Glasso divergence (best-solution fallback instead
+  of hard failure)
+- Binary IRM missing-data fix (`R/07_IRM.R`)
+- Several docstring/message typo fixes
+- GitHub Release v1.14.0 (latest), Discussions \#33 (JP) / \#34 (EN)
+
+### v1.15.0 (dev, DESCRIPTION set 2026-07-01; CRAN submission targeted 2026-07-15)
+
+- **[`dataFormat()`](https://kosugitti.github.io/exametrika/reference/dataFormat.md)/[`longdataFormat()`](https://kosugitti.github.io/exametrika/reference/longdataFormat.md)
+  column-name support** — `id` (dataFormat) and `Sid`/`Qid`/`Resp`/`w`
+  (longdataFormat) now accept a column name in addition to a column
+  number
+- **[`longdataFormat()`](https://kosugitti.github.io/exametrika/reference/longdataFormat.md)
+  duplicate-ID false positive fixed** — the check now looks at
+  duplicated `(student, item)` pairs instead of the raw student-ID
+  column, which legitimately repeats once per item in long format
+- **Missing-data-ignored bug across
+  [`IRT()`](https://kosugitti.github.io/exametrika/reference/IRT.md)/[`Biclustering()`](https://kosugitti.github.io/exametrika/reference/Biclustering.md)/[`BNM()`](https://kosugitti.github.io/exametrika/reference/BNM.md)/[`LDLRA()`](https://kosugitti.github.io/exametrika/reference/LDLRA.md)/[`LDB()`](https://kosugitti.github.io/exametrika/reference/LDB.md)**
+  — a class-stripped, missing-recoded-to-0 matrix was passed into
+  [`ItemTotalCorr()`](https://kosugitti.github.io/exametrika/reference/ItemTotalCorr.md)/[`ItemThreshold()`](https://kosugitti.github.io/exametrika/reference/ItemThreshold.md)/[`crr()`](https://kosugitti.github.io/exametrika/reference/crr.md),
+  which silently re-ran
+  [`dataFormat()`](https://kosugitti.github.io/exametrika/reference/dataFormat.md)
+  without the original missing mask and counted missing responses as
+  incorrect
+  ([`IRT()`](https://kosugitti.github.io/exametrika/reference/IRT.md)’s
+  EM seed values only;
+  [`Biclustering()`](https://kosugitti.github.io/exametrika/reference/Biclustering.md)/[`BNM()`](https://kosugitti.github.io/exametrika/reference/BNM.md)/[`LDLRA()`](https://kosugitti.github.io/exametrika/reference/LDLRA.md)/[`LDB()`](https://kosugitti.github.io/exametrika/reference/LDB.md)’s
+  `$crr` output field)
+- **Raw-data crash fixed in
+  [`CTT()`](https://kosugitti.github.io/exametrika/reference/CTT.md)/[`BNM()`](https://kosugitti.github.io/exametrika/reference/BNM.md)/[`LDLRA()`](https://kosugitti.github.io/exametrika/reference/LDLRA.md)/[`LDB()`](https://kosugitti.github.io/exametrika/reference/LDB.md)/[`BINET()`](https://kosugitti.github.io/exametrika/reference/BINET.md)**
+  — the response-type check read from the unformatted input argument
+  instead of the
+  [`dataFormat()`](https://kosugitti.github.io/exametrika/reference/dataFormat.md)-formatted
+  object;
+  [`CTT()`](https://kosugitti.github.io/exametrika/reference/CTT.md)
+  additionally had its [`inherits()`](https://rdrr.io/r/base/class.html)
+  branch inverted
+- **[`BINET()`](https://kosugitti.github.io/exametrika/reference/BINET.md)
+  missing-data crash fixed** — `Ccj` summed the raw response matrix
+  without masking missing cells (unlike `Fcj`, which already did), and
+  the Beta(1,1) smoothing constant was hardcoded with no way to override
+  it; added `beta1`/`beta2` arguments (matching
+  [`BNM()`](https://kosugitti.github.io/exametrika/reference/BNM.md)/[`LDLRA()`](https://kosugitti.github.io/exametrika/reference/LDLRA.md)/[`LDB()`](https://kosugitti.github.io/exametrika/reference/LDB.md))
+  and a clear error message for the residual degenerate-cell case
+- See `WORKLOG.md` (2026-07-01) and `.claude/CLAUDE.md` for full detail
 
 ### v2.0.0 (breaking changes, in design)
 

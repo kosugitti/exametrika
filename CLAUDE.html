@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="index.html">exametrika</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.14.0.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.15.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -39,7 +39,7 @@
 <h2 id="package-overview">Package Overview<a class="anchor" aria-label="anchor" href="#package-overview"></a></h2>
 <p><code>exametrika</code> is an R package for Test Data Engineering based on Shojima (2022, <a href="ISBN:978-9811699856" class="uri">ISBN:978-9811699856</a>). It provides psychometric analysis tools: CTT, IRT, GRM, LCA, LRA, Biclustering, BNM, LDLRA, LDB, BINET.</p>
 <ul><li>
-<strong>Current version</strong>: 1.14.0.9000 (dev) / 1.14.0 (CRAN)</li>
+<strong>Current version</strong>: 1.15.0 (dev, targeting CRAN submission 2026-07-15) / 1.14.0 (CRAN)</li>
 <li>
 <strong>CRAN version</strong>: 1.14.0 (accepted/published 2026-06-14)</li>
 <li>
@@ -273,6 +273,29 @@ docs/                # .gitignore'd (removed from repo); pkgdown site deployed t
 <li>All tests continue to run locally and on R-hub / win-devel (the <code>NOT_CRAN</code> env var set by testthat)</li>
 </ul></li>
 <li>Lesson: heavy real-data fit tests (J<em>S</em> style regressions) must be wrapped in <code>skip_on_cran()</code> from now on. See “Test suite slimming” item under “Known Technical Debt” / <code>.claude/CLAUDE.md</code> 優先度：高.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="v1140-cran-accepted-2026-06-14">v1.14.0 (CRAN, accepted 2026-06-14)<a class="anchor" aria-label="anchor" href="#v1140-cran-accepted-2026-06-14"></a></h3>
+<ul><li>
+<code><a href="reference/plot.exametrika.html">plot.exametrika()</a></code> now forwards <code>...</code> graphical parameters to every plot type (R Journal review request)</li>
+<li>Graceful handling of Glasso divergence (best-solution fallback instead of hard failure)</li>
+<li>Binary IRM missing-data fix (<code>R/07_IRM.R</code>)</li>
+<li>Several docstring/message typo fixes</li>
+<li>GitHub Release v1.14.0 (latest), Discussions #33 (JP) / #34 (EN)</li>
+</ul></div>
+<div class="section level3">
+<h3 id="v1150-dev-description-set-2026-07-01-cran-submission-targeted-2026-07-15">v1.15.0 (dev, DESCRIPTION set 2026-07-01; CRAN submission targeted 2026-07-15)<a class="anchor" aria-label="anchor" href="#v1150-dev-description-set-2026-07-01-cran-submission-targeted-2026-07-15"></a></h3>
+<ul><li>
+<strong><code><a href="reference/dataFormat.html">dataFormat()</a></code>/<code><a href="reference/longdataFormat.html">longdataFormat()</a></code> column-name support</strong> — <code>id</code> (dataFormat) and <code>Sid</code>/<code>Qid</code>/<code>Resp</code>/<code>w</code> (longdataFormat) now accept a column name in addition to a column number</li>
+<li>
+<strong><code><a href="reference/longdataFormat.html">longdataFormat()</a></code> duplicate-ID false positive fixed</strong> — the check now looks at duplicated <code>(student, item)</code> pairs instead of the raw student-ID column, which legitimately repeats once per item in long format</li>
+<li>
+<strong>Missing-data-ignored bug across <code><a href="reference/IRT.html">IRT()</a></code>/<code><a href="reference/Biclustering.html">Biclustering()</a></code>/<code><a href="reference/BNM.html">BNM()</a></code>/<code><a href="reference/LDLRA.html">LDLRA()</a></code>/<code><a href="reference/LDB.html">LDB()</a></code></strong> — a class-stripped, missing-recoded-to-0 matrix was passed into <code><a href="reference/ItemTotalCorr.html">ItemTotalCorr()</a></code>/<code><a href="reference/ItemThreshold.html">ItemThreshold()</a></code>/<code><a href="reference/crr.html">crr()</a></code>, which silently re-ran <code><a href="reference/dataFormat.html">dataFormat()</a></code> without the original missing mask and counted missing responses as incorrect (<code><a href="reference/IRT.html">IRT()</a></code>’s EM seed values only; <code><a href="reference/Biclustering.html">Biclustering()</a></code>/<code><a href="reference/BNM.html">BNM()</a></code>/<code><a href="reference/LDLRA.html">LDLRA()</a></code>/<code><a href="reference/LDB.html">LDB()</a></code>’s <code>$crr</code> output field)</li>
+<li>
+<strong>Raw-data crash fixed in <code><a href="reference/CTT.html">CTT()</a></code>/<code><a href="reference/BNM.html">BNM()</a></code>/<code><a href="reference/LDLRA.html">LDLRA()</a></code>/<code><a href="reference/LDB.html">LDB()</a></code>/<code><a href="reference/BINET.html">BINET()</a></code></strong> — the response-type check read from the unformatted input argument instead of the <code><a href="reference/dataFormat.html">dataFormat()</a></code>-formatted object; <code><a href="reference/CTT.html">CTT()</a></code> additionally had its <code><a href="https://rdrr.io/r/base/class.html" class="external-link">inherits()</a></code> branch inverted</li>
+<li>
+<strong><code><a href="reference/BINET.html">BINET()</a></code> missing-data crash fixed</strong> — <code>Ccj</code> summed the raw response matrix without masking missing cells (unlike <code>Fcj</code>, which already did), and the Beta(1,1) smoothing constant was hardcoded with no way to override it; added <code>beta1</code>/<code>beta2</code> arguments (matching <code><a href="reference/BNM.html">BNM()</a></code>/<code><a href="reference/LDLRA.html">LDLRA()</a></code>/<code><a href="reference/LDB.html">LDB()</a></code>) and a clear error message for the residual degenerate-cell case</li>
+<li>See <code>WORKLOG.md</code> (2026-07-01) and <code>.claude/CLAUDE.md</code> for full detail</li>
 </ul></div>
 <div class="section level3">
 <h3 id="v200-breaking-changes-in-design">v2.0.0 (breaking changes, in design)<a class="anchor" aria-label="anchor" href="#v200-breaking-changes-in-design"></a></h3>

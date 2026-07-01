@@ -4,6 +4,32 @@ Detailed development log. User-facing changes go in `NEWS.md`; this file
 captures the per-session internal narrative (why a change was made, what
 was investigated, what was ruled out). Entries are newest-first.
 
+## 2026-07-01（セッション締め） — v1.15.0: NEWS.md整形 + 寝かせ入り
+
+最後に2点:
+
+- NEWS.mdの1.15.0セクション（今回書いた分だけ）から`**太字**`強調を全除去
+  （commit
+  `1a1b90a`）。ユーザから「NEWS.mdに強調表示は使わないでほしい、
+  生成AI使ったことが丸わかり」と指摘を受けた。各バグ項目の1文目を太字にする
+  書き方は生成AIにありがちな定型パターンなので、以後NEWS.md含む配布物に
+  書く文章は最初からプレーンに書く（memory
+  `feedback_no_bold.md`に追記済み）。
+  1.14.0以前の既存セクションは触っていない（既に公開済みの記録なので）。
+- 今日一日で積んだv1.15.0の変更一式（列名対応・欠測データ系バグ21件・
+  リファクタリング4件・巨大ファイル分割2件、計8コミット）はここで一旦
+  「寝かせる」ことに決定。追加の変更が入るかもしれないため、git tag /
+  GitHub Release / Discussions告知はまだ作らず、7/15の提出タイミングで
+  まとめて行う方針（過去のv1.13.0/v1.14.0と同じ流儀）。コードは全て
+  `origin/main`にpush済み・作業ツリークリーン。
+
+### 次回セッションで最初にやること
+
+- 追加の変更依頼があれば通常通り対応
+- 変更が無ければ7/15前後で: cran-comments.md 1.15.0化 → R CMD check
+  –as-cran → rhub/win-devel → git tag v1.15.0 → GitHub Release →
+  Discussions告知(JA/EN) → CRAN提出
+
 ## 2026-07-01（さらにさらに続き） — v1.15.0: 巨大ファイル2本を分割
 
 先の4件リファクタリングに続き、監査時に「今回は未着手」としていた最後の2件

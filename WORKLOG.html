@@ -37,6 +37,25 @@
 
 <p>Detailed development log. User-facing changes go in <code>NEWS.md</code>; this file captures the per-session internal narrative (why a change was made, what was investigated, what was ruled out). Entries are newest-first.</p>
 <div class="section level2">
+<h2 id="id_2026-07-01さらに続き--v1150-監査で見つけた重複ロジックの4件をリファクタリング">2026-07-01（さらに続き） — v1.15.0: 監査で見つけた重複ロジックの4件をリファクタリング<a class="anchor" aria-label="anchor" href="#id_2026-07-01%E3%81%95%E3%82%89%E3%81%AB%E7%B6%9A%E3%81%8D--v1150-%E7%9B%A3%E6%9F%BB%E3%81%A7%E8%A6%8B%E3%81%A4%E3%81%91%E3%81%9F%E9%87%8D%E8%A4%87%E3%83%AD%E3%82%B8%E3%83%83%E3%82%AF%E3%81%AE4%E4%BB%B6%E3%82%92%E3%83%AA%E3%83%95%E3%82%A1%E3%82%AF%E3%82%BF%E3%83%AA%E3%83%B3%E3%82%B0"></a></h2>
+<p>直前の全コードベース監査で「改善提案（今回は未着手）」としていた6件のうち、 ユーザから「他のも考えたいな。進捗表示の規約違反とは？重複統合とは？」と 質問され、<code>\r</code>進捗表示と<code>GridSearch</code>分岐重複の具体例を提示。ユーザが「進めよう。 これら4つの修正だ」と、以下4件（巨大ファイル分割2件は対象外、リスクの低い 共通化4件）をまとめて実施することに決定:</p>
+<ol style="list-style-type: decimal"><li>
+<strong><code>\r</code>進捗表示を<code>\n</code>に統一</strong>（8箇所: <code>00_EMclus.R</code>, <code>04C_ParameterEstimation.R</code>, <code>07_Biclustering.R</code>, <code>08C_BNM_GA.R</code>×2, <code>09B_LDLRA_GA.R</code>, <code>15_Biclustering_nominal.R</code>, <code>16_Biclustering_ordinal.R</code>）。単純な文字列置換、 計算結果への影響なし。</li>
+<li>
+<strong><code>beta_posterior_mode()</code>共通ヘルパー化</strong>（<code>R/08A_BNM.R</code>に新設）。 <code>(count+beta1-1)/(total+beta1+beta2-2)</code>という式がBNM/LD_param_est(LDLRA)/BINET で重複していたのを統合。BNMには<code>beta0&lt;-beta2</code>という無駄な別名変数もあったので ついでに削除。LDBは分母にゼロ観測セル穴埋め処理（<code>denom0</code>トリック）が別途 組み込まれており構造が異なるため対象外（既にbeta1修正済みで数値は正しい）。</li>
+<li>
+<strong><code>build_conf_mat()</code>共通ヘルパー化</strong>（<code>R/07_Biclustering.R</code>に新設）。 <code>conf</code>(vector/matrix/data.frame)→<code>conf_mat</code>変換ロジックがBiclustering/ .nominal/.ordinal/LDBで重複していたのを統合。LDBは<code>conf</code>必須（NULL不可）・ 他は<code>conf=NULL</code>で探索的モード、という既存の分岐差はヘルパー呼び出し側の <code>if(!is.null(conf))</code>ラッパー有無で温存（ヘルパー自体はNULLを渡すと <code>is.vector/is.matrix/is.data.frame</code>いずれにも該当せず自然にstopする設計）。</li>
+<li>
+<strong><code><a href="reference/GridSearch.html">GridSearch()</a></code>のBiclustering/LCA分岐の重複統合</strong>。全滅チェック (<code>stop_if_all_grid_failed</code>)・失敗設定警告(<code>report_failed_grid_settings</code>)・ 最適値選択(<code>select_optimal_grid_index</code>)の3ヘルパーに切り出し。最適値選択は <code>which(ret==target,arr.ind=TRUE)</code>が1次元ベクトルでも2次元行列でも動く性質 （1次元だと<code>arr.ind</code>が無視されて素の位置ベクトルが返る）を利用して1つの 関数で両分岐に対応。</li>
+</ol><p>各修正後に関連テスト、最後に全5030テストFAIL 0を確認（値は前回コミット時と 完全一致、GridSearchのoptimal_ncls/nfld等で数値比較して確認済み）。 NEWS.mdに「Internal (no user-visible behavior change)」節を新設して記録。</p>
+<p>commit: <code>16ed16b</code></p>
+<div class="section level3">
+<h3 id="残った改善提案未着手のまま">残った改善提案（未着手のまま）<a class="anchor" aria-label="anchor" href="#%E6%AE%8B%E3%81%A3%E3%81%9F%E6%94%B9%E5%96%84%E6%8F%90%E6%A1%88%E6%9C%AA%E7%9D%80%E6%89%8B%E3%81%AE%E3%81%BE%E3%81%BE"></a></h3>
+<ul><li>
+<code>R/02_TestItemFunctions.R</code>（1748行）・<code>R/00_exametrikaPrint.R</code>（775行）の 巨大ファイル分割は今回もスコープ外（今回の4件よりリスクが高いと判断）</li>
+</ul></div>
+</div>
+<div class="section level2">
 <h2 id="id_2026-07-01続き--v1150-全コードベース監査4系統並行-21件のバグ修正">2026-07-01（続き） — v1.15.0: 全コードベース監査（4系統並行）+ 21件のバグ修正<a class="anchor" aria-label="anchor" href="#id_2026-07-01%E7%B6%9A%E3%81%8D--v1150-%E5%85%A8%E3%82%B3%E3%83%BC%E3%83%89%E3%83%99%E3%83%BC%E3%82%B9%E7%9B%A3%E6%9F%BB4%E7%B3%BB%E7%B5%B1%E4%B8%A6%E8%A1%8C-21%E4%BB%B6%E3%81%AE%E3%83%90%E3%82%B0%E4%BF%AE%E6%AD%A3"></a></h2>
 <p>前段（BINET欠測クラッシュ修正）の後、ユーザから「パッケージ全体を見渡して改良点を 洗い出してほしい。明らかなバグや死にコードは直したいが、効率化案はまずプランとして 提案してほしい」という依頼。R/のファイル名の数字プレフィックス（00→23）が開発時系列 に対応しているという前提のもと、4系統の並行general-purpose agentで全R/ファイル （約18,000行、src/のC++含む）を監査した。</p>
 <div class="section level3">

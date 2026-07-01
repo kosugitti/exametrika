@@ -357,38 +357,71 @@ models. Behaviormetrika, 39(2), 161-178.
 # Analyze data with 5 fields and 6 classes
 result.Bi <- Biclustering(J35S515, nfld = 5, ncls = 6, method = "B")
 #> Biclustering is chosen.
+#> 
 #> iter 1 log_lik -7966.66                                                         
+#> 
 #> iter 2 log_lik -7442.38                                                         
+#> 
 #> iter 3 log_lik -7266.35                                                         
+#> 
 #> iter 4 log_lik -7151.01                                                         
+#> 
 #> iter 5 log_lik -7023.94                                                         
+#> 
 #> iter 6 log_lik -6984.82                                                         
+#> 
 #> iter 7 log_lik -6950.27                                                         
+#> 
 #> iter 8 log_lik -6939.34                                                         
+#> 
 #> iter 9 log_lik -6930.89                                                         
+#> 
 #> iter 10 log_lik -6923.5                                                         
+#> 
 #> iter 11 log_lik -6914.56                                                        
+#> 
 #> iter 12 log_lik -6908.89                                                        
+#> 
 #> iter 13 log_lik -6906.84                                                        
+#> 
 #> iter 14 log_lik -6905.39                                                        
+#> 
 #> iter 15 log_lik -6904.24                                                        
+#> 
 #> iter 16 log_lik -6903.28                                                        
+#> 
 #> iter 17 log_lik -6902.41                                                        
+#> 
 #> iter 18 log_lik -6901.58                                                        
+#> 
 #> iter 19 log_lik -6900.74                                                        
+#> 
 #> iter 20 log_lik -6899.86                                                        
+#> 
 #> iter 21 log_lik -6898.9                                                         
+#> 
 #> iter 22 log_lik -6897.84                                                        
+#> 
 #> iter 23 log_lik -6896.66                                                        
+#> 
 #> iter 24 log_lik -6895.35                                                        
+#> 
 #> iter 25 log_lik -6893.92                                                        
+#> 
 #> iter 26 log_lik -6892.4                                                         
+#> 
 #> iter 27 log_lik -6890.85                                                        
+#> 
 #> iter 28 log_lik -6889.32                                                        
+#> 
 #> iter 29 log_lik -6887.9                                                         
+#> 
 #> iter 30 log_lik -6886.66                                                        
+#> 
 #> iter 31 log_lik -6885.67                                                        
+#> 
 #> iter 32 log_lik -6884.98                                                        
+#> 
 #> iter 33 log_lik -6884.58                                                        
 #> 
 
@@ -396,12 +429,19 @@ result.Bi <- Biclustering(J35S515, nfld = 5, ncls = 6, method = "B")
 # Store results for further analysis and visualization
 result.Rank <- Biclustering(J35S515, nfld = 5, ncls = 6, method = "R")
 #> Ranklustering is chosen.
+#> 
 #> iter 1 log_lik -8097.56                                                         
+#> 
 #> iter 2 log_lik -7669.21                                                         
+#> 
 #> iter 3 log_lik -7586.72                                                         
+#> 
 #> iter 4 log_lik -7568.24                                                         
+#> 
 #> iter 5 log_lik -7561.02                                                         
+#> 
 #> iter 6 log_lik -7557.34                                                         
+#> 
 #> iter 7 log_lik -7557.36                                                         
 #> 
 #> 
@@ -427,14 +467,23 @@ field_assignments <- c(rep(1, 10), rep(2, 10), rep(3, 15))
 result.Conf <- Biclustering(J35S515, nfld = 3, ncls = 5, conf = field_assignments)
 #> Biclustering is chosen.
 #> Confirmatory Clustering is chosen.
+#> 
 #> iter 1 log_lik -9313.35                                                         
+#> 
 #> iter 2 log_lik -9217.19                                                         
+#> 
 #> iter 3 log_lik -9178.54                                                         
+#> 
 #> iter 4 log_lik -9138.03                                                         
+#> 
 #> iter 5 log_lik -9107.34                                                         
+#> 
 #> iter 6 log_lik -9093                                                            
+#> 
 #> iter 7 log_lik -9087.76                                                         
+#> 
 #> iter 8 log_lik -9085.83                                                         
+#> 
 #> iter 9 log_lik -9085.01                                                         
 #> 
 #> 
@@ -445,38 +494,71 @@ result.Conf <- Biclustering(J35S515, nfld = 3, ncls = 5, conf = field_assignment
 # Analyze data with 5 fields and 6 classes
 result.Bi <- Biclustering(J35S515, nfld = 5, ncls = 6, method = "B")
 #> Biclustering is chosen.
+#> 
 #> iter 1 log_lik -7966.66                                                         
+#> 
 #> iter 2 log_lik -7442.38                                                         
+#> 
 #> iter 3 log_lik -7266.35                                                         
+#> 
 #> iter 4 log_lik -7151.01                                                         
+#> 
 #> iter 5 log_lik -7023.94                                                         
+#> 
 #> iter 6 log_lik -6984.82                                                         
+#> 
 #> iter 7 log_lik -6950.27                                                         
+#> 
 #> iter 8 log_lik -6939.34                                                         
+#> 
 #> iter 9 log_lik -6930.89                                                         
+#> 
 #> iter 10 log_lik -6923.5                                                         
+#> 
 #> iter 11 log_lik -6914.56                                                        
+#> 
 #> iter 12 log_lik -6908.89                                                        
+#> 
 #> iter 13 log_lik -6906.84                                                        
+#> 
 #> iter 14 log_lik -6905.39                                                        
+#> 
 #> iter 15 log_lik -6904.24                                                        
+#> 
 #> iter 16 log_lik -6903.28                                                        
+#> 
 #> iter 17 log_lik -6902.41                                                        
+#> 
 #> iter 18 log_lik -6901.58                                                        
+#> 
 #> iter 19 log_lik -6900.74                                                        
+#> 
 #> iter 20 log_lik -6899.86                                                        
+#> 
 #> iter 21 log_lik -6898.9                                                         
+#> 
 #> iter 22 log_lik -6897.84                                                        
+#> 
 #> iter 23 log_lik -6896.66                                                        
+#> 
 #> iter 24 log_lik -6895.35                                                        
+#> 
 #> iter 25 log_lik -6893.92                                                        
+#> 
 #> iter 26 log_lik -6892.4                                                         
+#> 
 #> iter 27 log_lik -6890.85                                                        
+#> 
 #> iter 28 log_lik -6889.32                                                        
+#> 
 #> iter 29 log_lik -6887.9                                                         
+#> 
 #> iter 30 log_lik -6886.66                                                        
+#> 
 #> iter 31 log_lik -6885.67                                                        
+#> 
 #> iter 32 log_lik -6884.98                                                        
+#> 
 #> iter 33 log_lik -6884.58                                                        
 #> 
 # }
@@ -484,7 +566,9 @@ result.Bi <- Biclustering(J35S515, nfld = 5, ncls = 6, method = "B")
 # Perform Biclustering for rated sample data
 # Analyze data with 5 fields and 6 classes
 result.Bi <- Biclustering(J35S5000, nfld = 5, ncls = 6, method = "R")
+#> 
 #> iter 1 log_lik -264834                                                          
+#> 
 #> iter 2 log_lik -278842                                                          
 #> Warning: Only 2 of 5 specified fields have items assigned. Fields 2, 4, 5 are empty. Consider reducing nfld.
 # }

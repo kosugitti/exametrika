@@ -163,14 +163,23 @@ BNM_GA(J5S10,
   crossover = 2, # Use two-point crossover method
   elitism = 2 # Keep 2 best solutions in each generation
 )
+#> 
 #> gen. 1 best BIC 1e+100 limit count 0
+#> 
 #> gen. 2 best BIC -16.425 limit count 0
+#> 
 #> gen. 3 best BIC -16.425 limit count 1
+#> 
 #> gen. 4 best BIC -17.6327 limit count 0
+#> 
 #> gen. 5 best BIC -17.9323 limit count 0
+#> 
 #> gen. 6 best BIC -17.9323 limit count 1
+#> 
 #> gen. 7 best BIC -17.9323 limit count 2
+#> 
 #> gen. 8 best BIC -17.9323 limit count 3
+#> 
 #> gen. 9 best BIC -17.9323 limit count 4
 #> The BIC has not changed for 5 times.
 #> Adjacency Matrix

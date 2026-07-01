@@ -127,19 +127,32 @@ and among the 3PL models, the case where \(c=0\) is the 2PL model.</p>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># \donttest{</span></span></span>
 <span class="r-in"><span><span class="co"># Fit a 3-parameter IRT model to the sample dataset</span></span></span>
 <span class="r-in"><span><span class="va">result.IRT</span> <span class="op">&lt;-</span> <span class="fu">IRT</span><span class="op">(</span><span class="va">J15S500</span>, model <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 1 LogLik -3960.28                                                          </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 2 LogLik -3938.35                                                          </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 3 LogLik -3931.82                                                          </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 4 LogLik -3928.68                                                          </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 5 LogLik -3926.99                                                          </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 6 LogLik -3926.05                                                          </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 7 LogLik -3925.51                                                          </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 8 LogLik -3925.19                                                          </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 9 LogLik -3925.01                                                          </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 10 LogLik -3924.9                                                          </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 11 LogLik -3924.84                                                         </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 12 LogLik -3924.8                                                          </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 13 LogLik -3924.77                                                         </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 1 LogLik -3960.28                                                          </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 2 LogLik -3938.35                                                          </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 3 LogLik -3931.82                                                          </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 4 LogLik -3928.68                                                          </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 5 LogLik -3926.99                                                          </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 6 LogLik -3926.05                                                          </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 7 LogLik -3925.51                                                          </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 8 LogLik -3925.19                                                          </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 9 LogLik -3925.01                                                          </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 10 LogLik -3924.9                                                          </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 11 LogLik -3924.84                                                         </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 12 LogLik -3924.8                                                          </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 13 LogLik -3924.77                                                         </span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Display the first few rows of estimated student abilities</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">result.IRT</span><span class="op">$</span><span class="va">ability</span><span class="op">)</span></span></span>

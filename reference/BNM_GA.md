@@ -7,9 +7,9 @@ Generating a DAG from data using a genetic algorithm.
 ``` r
 BNM_GA(
   U,
+  na = NULL,
   Z = NULL,
   w = NULL,
-  na = NULL,
   seed = 123,
   population = 20,
   Rs = 0.5,
@@ -20,7 +20,7 @@ BNM_GA(
   crossover = 0,
   elitism = 0,
   filename = NULL,
-  verbose = TRUE
+  verbose = FALSE
 )
 ```
 
@@ -33,6 +33,11 @@ BNM_GA(
   [dataFormat](https://kosugitti.github.io/exametrika/reference/dataFormat.md)
   function.
 
+- na:
+
+  na argument specifies the numbers or characters to be treated as
+  missing values.
+
 - Z:
 
   Z is a missing indicator matrix of the type matrix or data.frame
@@ -40,11 +45,6 @@ BNM_GA(
 - w:
 
   w is item weight vector
-
-- na:
-
-  na argument specifies the numbers or characters to be treated as
-  missing values.
 
 - seed:
 
@@ -95,7 +95,7 @@ BNM_GA(
 
 - verbose:
 
-  verbose output Flag. default is TRUE
+  verbose output Flag. default is FALSE
 
 ## Value
 
@@ -163,25 +163,6 @@ BNM_GA(J5S10,
   crossover = 2, # Use two-point crossover method
   elitism = 2 # Keep 2 best solutions in each generation
 )
-#> 
-#> gen. 1 best BIC 1e+100 limit count 0
-#> 
-#> gen. 2 best BIC -16.425 limit count 0
-#> 
-#> gen. 3 best BIC -16.425 limit count 1
-#> 
-#> gen. 4 best BIC -17.6327 limit count 0
-#> 
-#> gen. 5 best BIC -17.9323 limit count 0
-#> 
-#> gen. 6 best BIC -17.9323 limit count 1
-#> 
-#> gen. 7 best BIC -17.9323 limit count 2
-#> 
-#> gen. 8 best BIC -17.9323 limit count 3
-#> 
-#> gen. 9 best BIC -17.9323 limit count 4
-#> The BIC has not changed for 5 times.
 #> Adjacency Matrix
 #>        Item01 Item02 Item03 Item04 Item05
 #> Item01      0      0      0      1      0

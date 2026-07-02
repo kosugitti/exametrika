@@ -45,4 +45,6 @@ LD_param_est(
 
 - beta2:
 
-  Beta distribution parameter 2 for prior density. Default is 2.
+  Beta distribution parameter 2 for prior density. Default is 2. Unlike
+  the other network models (which default to 1), the default of 2
+  follows the original Mathematica implementation of LDLRA.

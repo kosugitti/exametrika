@@ -18,17 +18,17 @@ Biclustering_IRM(U, na = NULL, Z = NULL, w = NULL, ...)
 # S3 method for class 'binary'
 Biclustering_IRM(
   U,
+  na = NULL,
   Z = NULL,
   w = NULL,
-  na = NULL,
   gamma_c = 1,
   gamma_f = 1,
-  max_iter = 100,
+  maxiter = 100,
   stable_limit = 5,
   minSize = 20,
   EM_limit = 20,
   seed = 123,
-  verbose = TRUE,
+  verbose = FALSE,
   ...
 )
 
@@ -38,12 +38,12 @@ Biclustering_IRM(
   gamma_c = 1,
   gamma_f = 1,
   alpha = 1,
-  max_iter = 100,
+  maxiter = 100,
   stable_limit = 5,
   minSize = 20,
   EM_limit = 20,
   seed = 123,
-  verbose = TRUE,
+  verbose = FALSE,
   ...
 )
 
@@ -53,13 +53,13 @@ Biclustering_IRM(
   gamma_c = 1,
   gamma_f = 1,
   alpha = 1,
-  mic = TRUE,
-  max_iter = 100,
+  mic = FALSE,
+  maxiter = 100,
   stable_limit = 5,
   minSize = 20,
-  EM_limit = 100,
+  EM_limit = 20,
   seed = 123,
-  verbose = TRUE,
+  verbose = FALSE,
   ...
 )
 
@@ -69,12 +69,12 @@ Biclustering_IRM(
   gamma_c = 1,
   gamma_f = 1,
   alpha = 1,
-  max_iter = 100,
+  maxiter = 100,
   stable_limit = 5,
   minSize = 20,
   EM_limit = 20,
   seed = 123,
-  verbose = TRUE,
+  verbose = FALSE,
   ...
 )
 ```
@@ -117,9 +117,11 @@ Biclustering_IRM(
   attractiveness of a new Field. The greater this value it more likely
   to be classified in the new field. The default is 1.
 
-- max_iter:
+- maxiter:
 
   A maximum iteration number of IRM process. The default is 100.
+  (Renamed from `max_iter` in v1.15.0; the old name is still accepted
+  with a deprecation warning.)
 
 - stable_limit:
 
@@ -151,7 +153,7 @@ Biclustering_IRM(
 
 - verbose:
 
-  verbose output Flag. default is TRUE
+  verbose output Flag. default is FALSE
 
 - alpha:
 
@@ -162,7 +164,8 @@ Biclustering_IRM(
 - mic:
 
   Logical; if TRUE, forces Field Reference Profiles to be monotonically
-  increasing across classes (ordinal IRM only). Default is TRUE.
+  increasing across classes (ordinal IRM only). Default is FALSE,
+  matching `LRA` and `Biclustering` for ordinal data.
 
 ## Value
 
@@ -611,8 +614,7 @@ result <- Biclustering_IRM(J35S500, gamma_c = 1, gamma_f = 1, verbose = TRUE)
 #> iter 5: match=3 nfld=6 ncls=8
 #> iter 6: match=4 nfld=6 ncls=8
 #> iter 7: match=5 nfld=6 ncls=8
-#> Adjusting classes: BIC=42497.4 ncls=8 (min size < 20)
-#> Weakly ordinal alignment condition was satisfied.
+#> Adjusting classes: BIC=40873.5 ncls=8 (min size < 20)
 plot(result, type = "Array")
 
 # }

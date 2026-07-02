@@ -13,7 +13,7 @@ GridSearch(
   max_nfld = 10,
   fun = "Biclustering",
   index = "BIC",
-  verbose = TRUE,
+  verbose = FALSE,
   ...
 )
 ```
@@ -48,7 +48,7 @@ GridSearch(
 - verbose:
 
   Logical; if TRUE, displays detailed progress messages during grid
-  search. Default is TRUE.
+  search. Default is FALSE.
 
 - ...:
 
@@ -101,9 +101,9 @@ For LCA/LRA:
 ``` r
 if (FALSE) { # \dontrun{
 # Grid search for Biclustering
-result <- grid_serch(data_matrix, max_ncls = 5, max_nfld = 5)
+result <- GridSearch(J35S515, max_ncls = 5, max_nfld = 5)
 
 # Grid search for LCA
-result <- grid_serch(data_matrix, max_ncls = 8, fun = "LCA")
+result <- GridSearch(J35S515, max_ncls = 8, fun = "LCA")
 } # }
 ```

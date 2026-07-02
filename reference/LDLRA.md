@@ -7,9 +7,9 @@ performs local dependence latent lank analysis(LD_LRA) by Shojima(2011)
 ``` r
 LDLRA(
   U,
+  na = NULL,
   Z = NULL,
   w = NULL,
-  na = NULL,
   ncls = 2,
   method = "R",
   g_list = NULL,
@@ -30,6 +30,11 @@ LDLRA(
   [dataFormat](https://kosugitti.github.io/exametrika/reference/dataFormat.md)
   function.
 
+- na:
+
+  na argument specifies the numbers or characters to be treated as
+  missing values.
+
 - Z:
 
   Z is a missing indicator matrix of the type matrix or data.frame
@@ -37,11 +42,6 @@ LDLRA(
 - w:
 
   w is item weight vector
-
-- na:
-
-  na argument specifies the numbers or characters to be treated as
-  missing values.
 
 - ncls:
 
@@ -67,7 +67,7 @@ LDLRA(
 
 - verbose:
 
-  verbose output Flag. default is TRUE
+  verbose output Flag. default is FALSE
 
 - beta1:
 
@@ -77,7 +77,9 @@ LDLRA(
 - beta2:
 
   Beta distribution parameter 2 for prior density of rank reference
-  matrix. Default is 2.
+  matrix. Default is 2. Unlike the other network models (which default
+  to 1), the default of 2 follows the original Mathematica
+  implementation of LDLRA.
 
 ## Value
 

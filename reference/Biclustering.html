@@ -64,7 +64,7 @@ in the data by creating a matrix with rows and columns arranged to highlight blo
 <span>  conf_class <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  mic <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  maxiter <span class="op">=</span> <span class="fl">100</span>,</span>
-<span>  verbose <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  verbose <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  beta1 <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  beta2 <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  <span class="va">...</span></span>
@@ -79,7 +79,7 @@ in the data by creating a matrix with rows and columns arranged to highlight blo
 <span>  conf_class <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  mic <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  maxiter <span class="op">=</span> <span class="fl">100</span>,</span>
-<span>  verbose <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  verbose <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  alpha <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span>
@@ -94,7 +94,7 @@ in the data by creating a matrix with rows and columns arranged to highlight blo
 <span>  conf_class <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  mic <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  maxiter <span class="op">=</span> <span class="fl">100</span>,</span>
-<span>  verbose <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  verbose <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  alpha <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span>
@@ -106,8 +106,9 @@ in the data by creating a matrix with rows and columns arranged to highlight blo
 <span>  nfld <span class="op">=</span> <span class="fl">2</span>,</span>
 <span>  method <span class="op">=</span> <span class="st">"R"</span>,</span>
 <span>  conf <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  conf_class <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  maxiter <span class="op">=</span> <span class="fl">100</span>,</span>
-<span>  verbose <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  verbose <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  alpha <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -148,8 +149,11 @@ observed responses, while 0 indicates missing data.</p></dd>
 
 
 <dt id="arg-method">method<a class="anchor" aria-label="anchor" href="#arg-method"></a></dt>
-<dd><p>Analysis method to use (character string):</p><ul><li><p>"B" or "Biclustering": Standard biclustering (default)</p></li>
-<li><p>"R" or "Ranklustering": Ranklustering with ordered class structure</p></li>
+<dd><p>Analysis method to use (character string):</p><ul><li><p>"B" or "Biclustering": Standard biclustering (default for binary and
+ordinal data)</p></li>
+<li><p>"R" or "Ranklustering": Ranklustering with ordered class structure
+(default for rated data, where classes are sorted by correct response
+rate)</p></li>
 </ul></dd>
 
 
@@ -181,7 +185,7 @@ increasing. Default is FALSE.</p></dd>
 
 
 <dt id="arg-verbose">verbose<a class="anchor" aria-label="anchor" href="#arg-verbose"></a></dt>
-<dd><p>Logical; if TRUE, displays progress during estimation. Default is TRUE.</p></dd>
+<dd><p>Logical; if TRUE, displays progress during estimation. Default is FALSE.</p></dd>
 
 
 <dt id="arg-beta-">beta1<a class="anchor" aria-label="anchor" href="#arg-beta-"></a></dt>
@@ -321,96 +325,10 @@ Behaviormetrika, 39(2), 161-178.</p>
 <span class="r-in"><span><span class="co"># Perform Biclustering with Binary method (B)</span></span></span>
 <span class="r-in"><span><span class="co"># Analyze data with 5 fields and 6 classes</span></span></span>
 <span class="r-in"><span><span class="va">result.Bi</span> <span class="op">&lt;-</span> <span class="fu">Biclustering</span><span class="op">(</span><span class="va">J35S515</span>, nfld <span class="op">=</span> <span class="fl">5</span>, ncls <span class="op">=</span> <span class="fl">6</span>, method <span class="op">=</span> <span class="st">"B"</span><span class="op">)</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Biclustering is chosen.</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 1 log_lik -7966.66                                                         </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 2 log_lik -7442.38                                                         </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 3 log_lik -7266.35                                                         </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 4 log_lik -7151.01                                                         </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 5 log_lik -7023.94                                                         </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 6 log_lik -6984.82                                                         </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 7 log_lik -6950.27                                                         </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 8 log_lik -6939.34                                                         </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 9 log_lik -6930.89                                                         </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 10 log_lik -6923.5                                                         </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 11 log_lik -6914.56                                                        </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 12 log_lik -6908.89                                                        </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 13 log_lik -6906.84                                                        </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 14 log_lik -6905.39                                                        </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 15 log_lik -6904.24                                                        </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 16 log_lik -6903.28                                                        </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 17 log_lik -6902.41                                                        </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 18 log_lik -6901.58                                                        </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 19 log_lik -6900.74                                                        </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 20 log_lik -6899.86                                                        </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 21 log_lik -6898.9                                                         </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 22 log_lik -6897.84                                                        </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 23 log_lik -6896.66                                                        </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 24 log_lik -6895.35                                                        </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 25 log_lik -6893.92                                                        </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 26 log_lik -6892.4                                                         </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 27 log_lik -6890.85                                                        </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 28 log_lik -6889.32                                                        </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 29 log_lik -6887.9                                                         </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 30 log_lik -6886.66                                                        </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 31 log_lik -6885.67                                                        </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 32 log_lik -6884.98                                                        </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 33 log_lik -6884.58                                                        </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Perform Biclustering with Rank method (R)</span></span></span>
 <span class="r-in"><span><span class="co"># Store results for further analysis and visualization</span></span></span>
 <span class="r-in"><span><span class="va">result.Rank</span> <span class="op">&lt;-</span> <span class="fu">Biclustering</span><span class="op">(</span><span class="va">J35S515</span>, nfld <span class="op">=</span> <span class="fl">5</span>, ncls <span class="op">=</span> <span class="fl">6</span>, method <span class="op">=</span> <span class="st">"R"</span><span class="op">)</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Ranklustering is chosen.</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 1 log_lik -8097.56                                                         </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 2 log_lik -7669.21                                                         </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 3 log_lik -7586.72                                                         </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 4 log_lik -7568.24                                                         </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 5 log_lik -7561.02                                                         </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 6 log_lik -7557.34                                                         </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 7 log_lik -7557.36                                                         </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Strongly ordinal alignment condition was satisfied.</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Display the Bicluster Reference Matrix (BRM) as a heatmap</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">result.Rank</span>, type <span class="op">=</span> <span class="st">"Array"</span><span class="op">)</span></span></span>
@@ -430,111 +348,16 @@ Behaviormetrika, 39(2), 161-178.</p>
 <span class="r-in"><span><span class="co"># Assign items 1-10 to field 1, 11-20 to field 2, etc.</span></span></span>
 <span class="r-in"><span><span class="va">field_assignments</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">10</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">10</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">3</span>, <span class="fl">15</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">result.Conf</span> <span class="op">&lt;-</span> <span class="fu">Biclustering</span><span class="op">(</span><span class="va">J35S515</span>, nfld <span class="op">=</span> <span class="fl">3</span>, ncls <span class="op">=</span> <span class="fl">5</span>, conf <span class="op">=</span> <span class="va">field_assignments</span><span class="op">)</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Biclustering is chosen.</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Confirmatory Clustering is chosen.</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 1 log_lik -9313.35                                                         </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 2 log_lik -9217.19                                                         </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 3 log_lik -9178.54                                                         </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 4 log_lik -9138.03                                                         </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 5 log_lik -9107.34                                                         </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 6 log_lik -9093                                                            </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 7 log_lik -9087.76                                                         </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 8 log_lik -9085.83                                                         </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 9 log_lik -9085.01                                                         </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Weakly ordinal alignment condition was satisfied.</span>
 <span class="r-in"><span><span class="co"># }</span></span></span>
 <span class="r-in"><span><span class="co"># \donttest{</span></span></span>
 <span class="r-in"><span><span class="co"># Perform Biclustering for nominal sample data()</span></span></span>
 <span class="r-in"><span><span class="co"># Analyze data with 5 fields and 6 classes</span></span></span>
 <span class="r-in"><span><span class="va">result.Bi</span> <span class="op">&lt;-</span> <span class="fu">Biclustering</span><span class="op">(</span><span class="va">J35S515</span>, nfld <span class="op">=</span> <span class="fl">5</span>, ncls <span class="op">=</span> <span class="fl">6</span>, method <span class="op">=</span> <span class="st">"B"</span><span class="op">)</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Biclustering is chosen.</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 1 log_lik -7966.66                                                         </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 2 log_lik -7442.38                                                         </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 3 log_lik -7266.35                                                         </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 4 log_lik -7151.01                                                         </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 5 log_lik -7023.94                                                         </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 6 log_lik -6984.82                                                         </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 7 log_lik -6950.27                                                         </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 8 log_lik -6939.34                                                         </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 9 log_lik -6930.89                                                         </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 10 log_lik -6923.5                                                         </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 11 log_lik -6914.56                                                        </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 12 log_lik -6908.89                                                        </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 13 log_lik -6906.84                                                        </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 14 log_lik -6905.39                                                        </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 15 log_lik -6904.24                                                        </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 16 log_lik -6903.28                                                        </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 17 log_lik -6902.41                                                        </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 18 log_lik -6901.58                                                        </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 19 log_lik -6900.74                                                        </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 20 log_lik -6899.86                                                        </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 21 log_lik -6898.9                                                         </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 22 log_lik -6897.84                                                        </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 23 log_lik -6896.66                                                        </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 24 log_lik -6895.35                                                        </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 25 log_lik -6893.92                                                        </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 26 log_lik -6892.4                                                         </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 27 log_lik -6890.85                                                        </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 28 log_lik -6889.32                                                        </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 29 log_lik -6887.9                                                         </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 30 log_lik -6886.66                                                        </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 31 log_lik -6885.67                                                        </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 32 log_lik -6884.98                                                        </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 33 log_lik -6884.58                                                        </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-in"><span><span class="co"># }</span></span></span>
 <span class="r-in"><span><span class="co"># \donttest{</span></span></span>
 <span class="r-in"><span><span class="co"># Perform Biclustering for rated sample data</span></span></span>
 <span class="r-in"><span><span class="co"># Analyze data with 5 fields and 6 classes</span></span></span>
 <span class="r-in"><span><span class="va">result.Bi</span> <span class="op">&lt;-</span> <span class="fu">Biclustering</span><span class="op">(</span><span class="va">J35S5000</span>, nfld <span class="op">=</span> <span class="fl">5</span>, ncls <span class="op">=</span> <span class="fl">6</span>, method <span class="op">=</span> <span class="st">"R"</span><span class="op">)</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 1 log_lik -264834                                                          </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 2 log_lik -278842                                                          </span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>Only 2 of 5 specified fields have items assigned. Fields 2, 4, 5 are empty. Consider reducing nfld.</span>
 <span class="r-in"><span><span class="co"># }</span></span></span>
 </code></pre></div>

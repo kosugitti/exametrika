@@ -104,28 +104,6 @@ interpreting complex relationships between items or latent variables.
 # \donttest{
 # Print IRT analysis results with 4 decimal places
 result <- IRT(J15S500)
-#> 
-#> iter 1 LogLik -3915.61                                                          
-#> 
-#> iter 2 LogLik -3901.1                                                           
-#> 
-#> iter 3 LogLik -3896.89                                                          
-#> 
-#> iter 4 LogLik -3894.98                                                          
-#> 
-#> iter 5 LogLik -3894.02                                                          
-#> 
-#> iter 6 LogLik -3893.53                                                          
-#> 
-#> iter 7 LogLik -3893.28                                                          
-#> 
-#> iter 8 LogLik -3893.15                                                          
-#> 
-#> iter 9 LogLik -3893.08                                                          
-#> 
-#> iter 10 LogLik -3893.04                                                         
-#> 
-#> iter 11 LogLik -3893.03                                                         
 print(result, digits = 4)
 #> Item Parameters
 #>         slope location PSD(slope) PSD(location)
@@ -216,40 +194,6 @@ print(result, digits = 4)
 
 # Print Latent Class Analysis results
 result_lca <- LCA(J15S500, ncls = 3)
-#> 
-#> iter 1 log_lik -3955.4                                                          
-#> 
-#> iter 2 log_lik -3904.63                                                         
-#> 
-#> iter 3 log_lik -3890.82                                                         
-#> 
-#> iter 4 log_lik -3880                                                            
-#> 
-#> iter 5 log_lik -3870.82                                                         
-#> 
-#> iter 6 log_lik -3863.52                                                         
-#> 
-#> iter 7 log_lik -3857.89                                                         
-#> 
-#> iter 8 log_lik -3853.58                                                         
-#> 
-#> iter 9 log_lik -3850.31                                                         
-#> 
-#> iter 10 log_lik -3847.86                                                        
-#> 
-#> iter 11 log_lik -3846.05                                                        
-#> 
-#> iter 12 log_lik -3844.72                                                        
-#> 
-#> iter 13 log_lik -3843.74                                                        
-#> 
-#> iter 14 log_lik -3843.02                                                        
-#> 
-#> iter 15 log_lik -3842.48                                                        
-#> 
-#> iter 16 log_lik -3842.07                                                        
-#> 
-#> iter 17 log_lik -3841.76                                                        
 print(result_lca)
 #> 
 #> Item Reference Profile

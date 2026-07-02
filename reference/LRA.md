@@ -122,7 +122,7 @@ LRA(
 - verbose:
 
   Logical; if TRUE, displays detailed progress during estimation.
-  Default is TRUE.
+  Default is FALSE.
 
 - beta1:
 

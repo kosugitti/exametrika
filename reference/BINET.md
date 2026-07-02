@@ -12,9 +12,9 @@ where each field is a locus.
 ``` r
 BINET(
   U,
+  na = NULL,
   Z = NULL,
   w = NULL,
-  na = NULL,
   conf = NULL,
   ncls = NULL,
   nfld = NULL,
@@ -36,6 +36,11 @@ BINET(
   [dataFormat](https://kosugitti.github.io/exametrika/reference/dataFormat.md)
   function.
 
+- na:
+
+  na argument specifies the numbers or characters to be treated as
+  missing values.
+
 - Z:
 
   Z is a missing indicator matrix of the type matrix or data.frame
@@ -43,11 +48,6 @@ BINET(
 - w:
 
   w is item weight vector
-
-- na:
-
-  na argument specifies the numbers or characters to be treated as
-  missing values.
 
 - conf:
 
@@ -82,7 +82,7 @@ BINET(
 
 - verbose:
 
-  verbose output Flag. default is TRUE
+  verbose output Flag. default is FALSE
 
 - beta1:
 

@@ -10,7 +10,7 @@ multi-step rating scales.
 ## Usage
 
 ``` r
-GRM(U, na = NULL, Z = NULL, w = NULL, verbose = TRUE)
+GRM(U, na = NULL, Z = NULL, w = NULL, verbose = FALSE)
 ```
 
 ## Arguments
@@ -37,7 +37,7 @@ GRM(U, na = NULL, Z = NULL, w = NULL, verbose = TRUE)
 
 - verbose:
 
-  Logical; if TRUE, shows progress of iterations (default: TRUE)
+  Logical; if TRUE, shows progress of iterations (default: FALSE)
 
 ## Value
 

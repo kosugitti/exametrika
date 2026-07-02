@@ -7,9 +7,9 @@ performs Bayesian Network Model with specified graph structure
 ``` r
 BNM(
   U,
+  na = NULL,
   Z = NULL,
   w = NULL,
-  na = NULL,
   g = NULL,
   adj_file = NULL,
   adj_matrix = NULL,
@@ -27,6 +27,11 @@ BNM(
   [dataFormat](https://kosugitti.github.io/exametrika/reference/dataFormat.md)
   function.
 
+- na:
+
+  na argument specifies the numbers or characters to be treated as
+  missing values.
+
 - Z:
 
   Z is a missing indicator matrix of the type matrix or data.frame
@@ -34,11 +39,6 @@ BNM(
 - w:
 
   w is item weight vector
-
-- na:
-
-  na argument specifies the numbers or characters to be treated as
-  missing values.
 
 - g:
 
@@ -120,9 +120,9 @@ DAG <-
 # Convert the DAG matrix to an igraph object for network analysis
 g <- igraph::graph_from_data_frame(DAG)
 g
-#> IGRAPH c1ccc15 DN-- 5 5 -- 
+#> IGRAPH 1cade32 DN-- 5 5 -- 
 #> + attr: name (v/c)
-#> + edges from c1ccc15 (vertex names):
+#> + edges from 1cade32 (vertex names):
 #> [1] Item01->Item02 Item02->Item03 Item02->Item04 Item03->Item05 Item04->Item05
 
 # Create adjacency matrix from the graph

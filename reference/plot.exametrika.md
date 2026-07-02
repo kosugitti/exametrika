@@ -339,32 +339,6 @@ plot(lca_result, type = "LCD")
 
 # Array plot with custom output
 biclustering_result <- exametrika::Biclustering(J35S515)
-#> Biclustering is chosen.
-#> 
-#> iter 1 log_lik -9064.04                                                         
-#> 
-#> iter 2 log_lik -8928.5                                                          
-#> 
-#> iter 3 log_lik -8882.79                                                         
-#> 
-#> iter 4 log_lik -8865.01                                                         
-#> 
-#> iter 5 log_lik -8856.44                                                         
-#> 
-#> iter 6 log_lik -8844.54                                                         
-#> 
-#> iter 7 log_lik -8842.6                                                          
-#> 
-#> iter 8 log_lik -8831.87                                                         
-#> 
-#> iter 9 log_lik -8830.51                                                         
-#> 
-#> iter 10 log_lik -8825.68                                                        
-#> 
-#> iter 11 log_lik -8825.73                                                        
-#> 
-#> 
-#> Strongly ordinal alignment condition was satisfied.
 # Custom colors and file output
 my_colors <- c("#404040", "#E69F00", "#56B4E9", "#009E73", "#F0E442")
 plot(biclustering_result, type = "Array", colors = my_colors)

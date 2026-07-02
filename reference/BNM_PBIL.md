@@ -7,9 +7,9 @@ Generating a DAG from data using a Population-Based Incremental Learning
 ``` r
 BNM_PBIL(
   U,
+  na = NULL,
   Z = NULL,
   w = NULL,
-  na = NULL,
   seed = 123,
   population = 20,
   Rs = 0.5,
@@ -21,7 +21,7 @@ BNM_PBIL(
   alpha = 0.05,
   estimate = 1,
   filename = NULL,
-  verbose = TRUE
+  verbose = FALSE
 )
 ```
 
@@ -34,6 +34,11 @@ BNM_PBIL(
   [dataFormat](https://kosugitti.github.io/exametrika/reference/dataFormat.md)
   function.
 
+- na:
+
+  na argument specifies the numbers or characters to be treated as
+  missing values.
+
 - Z:
 
   Z is a missing indicator matrix of the type matrix or data.frame
@@ -41,11 +46,6 @@ BNM_PBIL(
 - w:
 
   w is item weight vector
-
-- na:
-
-  na argument specifies the numbers or characters to be treated as
-  missing values.
 
 - seed:
 
@@ -101,7 +101,7 @@ BNM_PBIL(
 
 - verbose:
 
-  verbose output Flag. default is TRUE
+  verbose output Flag. default is FALSE
 
 ## Value
 
@@ -174,161 +174,6 @@ BNM_PBIL(J5S10,
   estimate = 4 # Use rounded generational gene method
 )
 #> Warning: Too many survivers. Limit to 5
-#> 
-#> gen. 1 best BIC 1e+100 limit count 0                                            
-#> 
-#> gen. 2 best BIC -14.9985 limit count 0                                          
-#> 
-#> gen. 3 best BIC -17.1462 limit count 0                                          
-#> 
-#> gen. 4 best BIC -14.9985 limit count 0                                          
-#> 
-#> gen. 5 best BIC -15.607 limit count 0                                           
-#> 
-#> gen. 6 best BIC -16.425 limit count 0                                           
-#> 
-#> gen. 7 best BIC -16.8466 limit count 0                                          
-#> 
-#> gen. 8 best BIC -15.4874 limit count 0                                          
-#> 
-#> gen. 9 best BIC -15.607 limit count 0                                           
-#> 
-#> gen. 10 best BIC -17.1462 limit count 0                                         
-#> 
-#> gen. 11 best BIC -15.6389 limit count 0                                         
-#> 
-#> gen. 12 best BIC -17.9323 limit count 0                                         
-#> 
-#> gen. 13 best BIC -15.9066 limit count 0                                         
-#> 
-#> gen. 14 best BIC -17.9323 limit count 0                                         
-#> 
-#> gen. 15 best BIC -17.1462 limit count 0                                         
-#> 
-#> gen. 16 best BIC -17.6327 limit count 0                                         
-#> 
-#> gen. 17 best BIC -15.6389 limit count 0                                         
-#> 
-#> gen. 18 best BIC -17.1462 limit count 0                                         
-#> 
-#> gen. 19 best BIC -17.9323 limit count 0                                         
-#> 
-#> gen. 20 best BIC -17.9323 limit count 1                                         
-#> 
-#> gen. 21 best BIC -17.6327 limit count 0                                         
-#> 
-#> gen. 22 best BIC -17.9323 limit count 0                                         
-#> 
-#> gen. 23 best BIC -17.9323 limit count 1                                         
-#> 
-#> gen. 24 best BIC -17.6327 limit count 0                                         
-#> 
-#> gen. 25 best BIC -17.9323 limit count 0                                         
-#> 
-#> gen. 26 best BIC -17.6327 limit count 0                                         
-#> 
-#> gen. 27 best BIC -17.6327 limit count 1                                         
-#> 
-#> gen. 28 best BIC -17.6327 limit count 2                                         
-#> 
-#> gen. 29 best BIC -17.6327 limit count 3                                         
-#> 
-#> gen. 30 best BIC -17.9323 limit count 0                                         
-#> 
-#> gen. 31 best BIC -17.9323 limit count 1                                         
-#> 
-#> gen. 32 best BIC -17.6327 limit count 0                                         
-#> 
-#> gen. 33 best BIC -17.9323 limit count 0                                         
-#> 
-#> gen. 34 best BIC -17.6327 limit count 0                                         
-#> 
-#> gen. 35 best BIC -17.6327 limit count 1                                         
-#> 
-#> gen. 36 best BIC -17.9323 limit count 0                                         
-#> 
-#> gen. 37 best BIC -17.9323 limit count 1                                         
-#> 
-#> gen. 38 best BIC -17.9323 limit count 2                                         
-#> 
-#> gen. 39 best BIC -17.9323 limit count 3                                         
-#> 
-#> gen. 40 best BIC -17.6327 limit count 0                                         
-#> 
-#> gen. 41 best BIC -17.9323 limit count 0                                         
-#> 
-#> gen. 42 best BIC -17.6327 limit count 0                                         
-#> 
-#> gen. 43 best BIC -17.9323 limit count 0                                         
-#> 
-#> gen. 44 best BIC -17.9323 limit count 1                                         
-#> 
-#> gen. 45 best BIC -17.9323 limit count 2                                         
-#> 
-#> gen. 46 best BIC -17.9323 limit count 3                                         
-#> 
-#> gen. 47 best BIC -17.6327 limit count 0                                         
-#> 
-#> gen. 48 best BIC -17.9323 limit count 0                                         
-#> 
-#> gen. 49 best BIC -17.6327 limit count 0                                         
-#> 
-#> gen. 50 best BIC -17.6327 limit count 1                                         
-#> 
-#> gen. 51 best BIC -17.6327 limit count 2                                         
-#> 
-#> gen. 52 best BIC -17.6327 limit count 3                                         
-#> 
-#> gen. 53 best BIC -17.6327 limit count 4                                         
-#> 
-#> gen. 54 best BIC -17.9323 limit count 0                                         
-#> 
-#> gen. 55 best BIC -17.9323 limit count 1                                         
-#> 
-#> gen. 56 best BIC -17.6327 limit count 0                                         
-#> 
-#> gen. 57 best BIC -17.9323 limit count 0                                         
-#> 
-#> gen. 58 best BIC -17.9323 limit count 1                                         
-#> 
-#> gen. 59 best BIC -17.6327 limit count 0                                         
-#> 
-#> gen. 60 best BIC -17.6327 limit count 1                                         
-#> 
-#> gen. 61 best BIC -17.9323 limit count 0                                         
-#> 
-#> gen. 62 best BIC -17.9323 limit count 1                                         
-#> 
-#> gen. 63 best BIC -17.6327 limit count 0                                         
-#> 
-#> gen. 64 best BIC -17.9323 limit count 0                                         
-#> 
-#> gen. 65 best BIC -17.9323 limit count 1                                         
-#> 
-#> gen. 66 best BIC -17.6327 limit count 0                                         
-#> 
-#> gen. 67 best BIC -17.6327 limit count 1                                         
-#> 
-#> gen. 68 best BIC -17.9323 limit count 0                                         
-#> 
-#> gen. 69 best BIC -17.9323 limit count 1                                         
-#> 
-#> gen. 70 best BIC -17.6327 limit count 0                                         
-#> 
-#> gen. 71 best BIC -17.9323 limit count 0                                         
-#> 
-#> gen. 72 best BIC -17.6327 limit count 0                                         
-#> 
-#> gen. 73 best BIC -17.9323 limit count 0                                         
-#> 
-#> gen. 74 best BIC -17.9323 limit count 1                                         
-#> 
-#> gen. 75 best BIC -17.9323 limit count 2                                         
-#> 
-#> gen. 76 best BIC -17.9323 limit count 3                                         
-#> 
-#> gen. 77 best BIC -17.9323 limit count 4                                         
-#> The BIC has not changed for 5 times.
 #> Adjacency Matrix
 #>        Item01 Item02 Item03 Item04 Item05
 #> Item01      0      0      0      1      0

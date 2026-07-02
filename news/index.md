@@ -380,6 +380,29 @@
   `edge_tol` through to `compute_EBIC_glasso()` so it consistently
   governs both (`R/22_GlassoUnit.R`).
 
+- [`dataFormat()`](https://kosugitti.github.io/exametrika/reference/dataFormat.md)
+  could silently miss items with no real variance whenever the item also
+  had missing responses, letting them through into
+  [`IRT()`](https://kosugitti.github.io/exametrika/reference/IRT.md),
+  which then crashed with the uninformative “object ‘result’ not found”
+  (the EM optimizer’s initial parameter, seeded from an item-total
+  correlation of `NaN`, made every retry of
+  [`optim()`](https://rdrr.io/r/stats/optim.html) fail). The existing
+  zero-variance check computed [`sd()`](https://rdrr.io/r/stats/sd.html)
+  on the raw response column, which still contains the `-1`
+  missing-value sentinel; an item that only a handful of students
+  answered, all identically, therefore looked non-constant (`-1` mixed
+  with the real value) even though it truly had zero variance among
+  actual respondents. `sd.check` is now computed on each item’s valid
+  (`Z == 1`) responses only. Additionally, items with no variance among
+  valid responses are now excluded from the data (with a message
+  identifying them) instead of merely warned about and left in, matching
+  the original Mathematica `dataformat[]`, which drops such items before
+  any analysis; an item with `CA` specified (rated data) has its `CA`
+  entry dropped along with it so the two stay aligned. All-missing items
+  (no valid responses at all) are unaffected and continue to be kept
+  with a separate warning (`R/01_dataFormat.R`).
+
 ### Removed
 
 - Removed `LLtheta_mat()`/`EAP_PSD()` (`R/04B_AbilityEstimation.R`) and

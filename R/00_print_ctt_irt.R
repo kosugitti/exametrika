@@ -17,12 +17,12 @@ print_test_statistics_case <- function(x, digits) {
 #' @title Print helper: Dimensionality
 #' @noRd
 print_dimensionality_case <- function(x, digits) {
-  cat("Dimensionality Analyeis\n")
+  cat("Dimensionality Analysis\n")
   cat("Eigenvalues\n")
   print(x$Eigenvalue)
   cat("Percentage Of Variance\n")
   print(x$PerOfVar)
-  cat("Cummurative Percentage\n")
+  cat("Cumulative Percentage\n")
   print(x$CumOfPer)
   xdim <- x$Component
   ydim <- x$Eigenvalue
@@ -82,7 +82,7 @@ print_ii_analysis_case <- function(x, digits) {
   print(x$JSS, digits = digits)
   cat("\nJoint Correct Response Ratio\n")
   print(x$JCRR, digits = digits)
-  cat("\nConditonal Correct Response Ratio\n")
+  cat("\nConditional Correct Response Ratio\n")
   print(x$CCRR, digits = digits)
   cat("\nItem Lift\n")
   print(x$IL, digits = digits)
@@ -101,7 +101,7 @@ print_ii_analysis_ordinal_case <- function(x, digits) {
   print(x$JSS, digits = digits)
   cat("\nJoint Selection Rateio\n")
   print(x$JSR, digits = digits)
-  cat("\nConditonal Selection Ratio\n")
+  cat("\nConditional Selection Ratio\n")
   print(x$CSR, digits = digits)
   cat("\nMutual Information\n")
   print(x$MI, digits = digits)

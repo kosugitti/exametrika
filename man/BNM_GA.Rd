@@ -6,9 +6,9 @@
 \usage{
 BNM_GA(
   U,
+  na = NULL,
   Z = NULL,
   w = NULL,
-  na = NULL,
   seed = 123,
   population = 20,
   Rs = 0.5,
@@ -19,18 +19,18 @@ BNM_GA(
   crossover = 0,
   elitism = 0,
   filename = NULL,
-  verbose = TRUE
+  verbose = FALSE
 )
 }
 \arguments{
 \item{U}{U is either a data class of exametrika, or raw data. When raw data is given,
 it is converted to the exametrika class with the \link{dataFormat} function.}
 
+\item{na}{na argument specifies the numbers or characters to be treated as missing values.}
+
 \item{Z}{Z is a missing indicator matrix of the type matrix or data.frame}
 
 \item{w}{w is item weight vector}
-
-\item{na}{na argument specifies the numbers or characters to be treated as missing values.}
 
 \item{seed}{seed for random.}
 
@@ -58,7 +58,7 @@ the next generation.}
 \item{filename}{Specify the filename when saving the generated adjacency matrix in CSV format.
 The default is null, and no output is written to the file.}
 
-\item{verbose}{verbose output Flag. default is TRUE}
+\item{verbose}{verbose output Flag. default is FALSE}
 }
 \value{
 \describe{

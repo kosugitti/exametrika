@@ -123,12 +123,12 @@ test_that("Biclustering_IRM nominal end-to-end (C++ default) is reproducible", {
   set.seed(42)
   r1 <- Biclustering_IRM(J20S600,
     gamma_c = 1, gamma_f = 1,
-    max_iter = 30, verbose = FALSE
+    maxiter = 30, verbose = FALSE
   )
   set.seed(42)
   r2 <- Biclustering_IRM(J20S600,
     gamma_c = 1, gamma_f = 1,
-    max_iter = 30, verbose = FALSE
+    maxiter = 30, verbose = FALSE
   )
   expect_equal(r1$n_class, r2$n_class)
   expect_equal(r1$n_field, r2$n_field)

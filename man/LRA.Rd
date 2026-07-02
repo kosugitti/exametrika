@@ -74,7 +74,7 @@ it is converted to the exametrika class with the \code{\link{dataFormat}} functi
 
 \item{seed}{For binary data with SOM method only. Random seed for reproducibility.}
 
-\item{verbose}{Logical; if TRUE, displays detailed progress during estimation. Default is TRUE.}
+\item{verbose}{Logical; if TRUE, displays detailed progress during estimation. Default is FALSE.}
 
 \item{beta1}{Beta distribution parameter 1 for prior density of rank reference matrix (GTM method only). Default is 1.}
 

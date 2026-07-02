@@ -15,7 +15,7 @@
 #' @param mic Logical; if TRUE, forces Field Reference Profiles to be monotonically
 #' increasing. Default is FALSE.
 #' @param maxiter Maximum number of EM algorithm iterations. Default is 100.
-#' @param verbose Logical; if TRUE, displays progress during estimation. Default is TRUE.
+#' @param verbose Logical; if TRUE, displays progress during estimation. Default is FALSE.
 #' @param alpha Dirichlet distribution concentration parameter for prior density of field reference probabilities. Default is 1.
 #' @param ... Additional arguments passed to specific methods.
 #' @export
@@ -26,7 +26,7 @@ Biclustering.ordinal <- function(U,
                                  conf_class = NULL,
                                  mic = FALSE,
                                  maxiter = 100,
-                                 verbose = TRUE,
+                                 verbose = FALSE,
                                  alpha = 1, ...) {
   tmp <- U
   tmp$Q <- remap_category_codes(tmp$Q)
@@ -132,7 +132,7 @@ Biclustering.ordinal <- function(U,
     }
   }
 
-  # Bicluter Boundary Reference Matrix(FxCxQ+1)
+  # Bicluster Boundary Reference Matrix(FxCxQ+1)
   BBRM <- array(NA, dim = c(nfld, ncls, maxQ + 1))
   BBRM[, , 1] <- 1
   BBRM[, , maxQ + 1] <- 0

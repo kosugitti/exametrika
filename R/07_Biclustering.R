@@ -39,6 +39,9 @@ build_conf_mat <- function(conf, nitems) {
     if (NROW(conf) != nitems) {
       stop("conf matrix size does NOT match with data.")
     }
+    # coerce before validating: `%in%` on a data.frame compares whole
+    # columns, so a valid 0/1 data.frame would be rejected otherwise
+    conf <- as.matrix(conf)
     if (any(!conf %in% c(0, 1))) {
       stop("The conf matrix should only contain 0s and 1s.")
     }
@@ -174,7 +177,7 @@ Biclustering.default <- function(U, na = NULL, Z = NULL, w = NULL, ...) {
 #' @param mic Logical; if TRUE, forces Field Reference Profiles to be monotonically
 #' increasing. Default is FALSE.
 #' @param maxiter Maximum number of EM algorithm iterations. Default is 100.
-#' @param verbose Logical; if TRUE, displays progress during estimation. Default is TRUE.
+#' @param verbose Logical; if TRUE, displays progress during estimation. Default is FALSE.
 #' @param beta1 Beta distribution parameter 1 for prior density of field reference matrix. Default is 1.
 #' @param beta2 Beta distribution parameter 2 for prior density of field reference matrix. Default is 1.
 #' @param ... Additional arguments passed to specific methods.
@@ -213,7 +216,7 @@ Biclustering.binary <- function(U,
                                 conf_class = NULL,
                                 mic = FALSE,
                                 maxiter = 100,
-                                verbose = TRUE,
+                                verbose = FALSE,
                                 beta1 = 1,
                                 beta2 = 1, ...) {
   tmp <- U

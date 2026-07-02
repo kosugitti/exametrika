@@ -321,7 +321,7 @@ test_that("regression: ItemTotalCorr.ordinal() masks missing responses", {
 
 
 # --- print(InterItemAnalysis(ordinal)) shows CSR, not JSR twice -------------
-# NEWS: the "Conditonal Selection Ratio" block printed x$JSR instead of x$CSR.
+# NEWS: the "Conditional Selection Ratio" (label typo since fixed) block printed x$JSR instead of x$CSR.
 test_that("regression: print(IIAnalysis.ordinal) shows the CSR block", {
   set.seed(9)
   N <- 200
@@ -338,7 +338,7 @@ test_that("regression: print(IIAnalysis.ordinal) shows the CSR block", {
   # identity row therefore appears only when the CSR block is printed.
   expect_true(any(grepl("Cat1[[:space:]]+1[[:space:]]+0[[:space:]]+0[[:space:]]+0", out)))
   # The Conditional Selection Ratio header is present exactly once.
-  expect_equal(sum(grepl("Conditonal Selection Ratio", out)), 1L)
+  expect_equal(sum(grepl("Conditional Selection Ratio", out)), 1L)
 })
 
 
@@ -398,4 +398,78 @@ test_that("regression: select_optimal_grid_index() picks the first tie", {
   expect_equal(unname(idx[2]), 2)
   # Minimise a vector: first occurrence of the minimum.
   expect_equal(sel(c(5, 3, 3, 9), minimize = TRUE), 2)
+})
+
+
+# --- v1.15.0 API unification ------------------------------------------------
+# NEWS: Biclustering_IRM's max_iter renamed to maxiter (deprecated shim),
+# mic/EM_limit defaults aligned, verbose defaults unified to FALSE.
+test_that("regression: deprecated max_iter still works with a warning", {
+  skip_on_cran()
+  expect_warning(
+    r_old <- Biclustering_IRM(J20S600,
+      gamma_c = 1, gamma_f = 1,
+      max_iter = 5, verbose = FALSE
+    ),
+    "deprecated"
+  )
+  r_new <- Biclustering_IRM(J20S600,
+    gamma_c = 1, gamma_f = 1,
+    maxiter = 5, verbose = FALSE
+  )
+  expect_equal(r_old$ClassEstimated, r_new$ClassEstimated)
+})
+
+test_that("regression: unified defaults across the model functions", {
+  # verbose defaults to FALSE everywhere it exists
+  for (fn in list(
+    IRT, GRM, LCA, GridSearch,
+    exametrika:::Biclustering.binary, exametrika:::Biclustering.nominal,
+    exametrika:::Biclustering.ordinal, exametrika:::Biclustering.rated,
+    exametrika:::Biclustering_IRM.binary, exametrika:::Biclustering_IRM.nominal,
+    exametrika:::Biclustering_IRM.ordinal, exametrika:::Biclustering_IRM.rated
+  )) {
+    expect_false(eval(formals(fn)$verbose))
+  }
+  # ordinal IRM matches its siblings
+  expect_false(formals(exametrika:::Biclustering_IRM.ordinal)$mic)
+  expect_equal(formals(exametrika:::Biclustering_IRM.ordinal)$EM_limit, 20)
+  # rated Biclustering exposes conf_class like its siblings
+  expect_true("conf_class" %in% names(formals(exametrika:::Biclustering.rated)))
+})
+
+# NEWS: DistractorAnalysis counted raw category codes against 1..maxQ,
+# dropping category-0 responses entirely for 0-based rated data.
+test_that("regression: DistractorAnalysis remaps 0-based category codes", {
+  skip_on_cran()
+  set.seed(7)
+  N <- 150
+  J <- 5
+  Q0 <- matrix(sample(0:3, N * J, replace = TRUE), N, J)
+  CA0 <- rep(1, J)
+  d0 <- as.data.frame(Q0)
+  fit0 <- Biclustering(dataFormat(d0, response.type = "rated", CA = CA0),
+    ncls = 2, nfld = 2, verbose = FALSE
+  )
+  da0 <- DistractorAnalysis(fit0)
+  # every observed response must be counted exactly once
+  expect_equal(
+    sum(vapply(da0$freq_table, sum, numeric(1))),
+    sum(fit0$Z == 1)
+  )
+  # shift invariance: 1-based version gives the same frequency tables
+  fit1 <- Biclustering(dataFormat(as.data.frame(Q0 + 1),
+    response.type = "rated", CA = CA0 + 1
+  ), ncls = 2, nfld = 2, verbose = FALSE)
+  da1 <- DistractorAnalysis(fit1)
+  expect_equal(da0$freq_table, da1$freq_table)
+})
+
+# NEWS: build_conf_mat() rejected a valid 0/1 data.frame conf (column-wise
+# %in% comparison before coercion).
+test_that("regression: data.frame conf is accepted and equals matrix conf", {
+  conf_vec <- c(1, 1, 2, 2, 3, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3)
+  cm <- exametrika:::build_conf_mat(conf_vec, 15)
+  cm_df <- exametrika:::build_conf_mat(as.data.frame(cm), 15)
+  expect_identical(cm, unname(cm_df))
 })

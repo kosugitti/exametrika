@@ -12,6 +12,58 @@
   an unknown or ambiguous (duplicated) column name now raises a clear error
   listing the available columns (`R/01_dataFormat.R`).
 
+## API consistency changes
+
+An API audit across all exported model functions surfaced a number of
+gratuitous inconsistencies in argument names, argument order, and defaults.
+They are unified in this release; the changes below alter default behavior
+or (rarely) positional-argument calls, so please review if you relied on
+the old defaults.
+
+- The `verbose` argument now defaults to `FALSE` in every function that has
+  one. Previously `IRT()`, `GRM()`, `LCA()`, `GridSearch()`, all
+  `Biclustering()` methods, all `Biclustering_IRM()` methods, `BNM_GA()`,
+  and `BNM_PBIL()` defaulted to `TRUE` while `LRA()`, `LDLRA()`, `LDB()`,
+  `BINET()`, `LDLRA_PBIL()`, `Glasso()`, and `chatterjee_matrix()` defaulted
+  to `FALSE`. Estimation results are unaffected; pass `verbose = TRUE` to
+  restore progress messages. Several roxygen pages that claimed
+  "default is TRUE" for functions whose default was already `FALSE` were
+  corrected as well.
+
+- `Biclustering_IRM()`'s iteration-limit argument is renamed from
+  `max_iter` to `maxiter`, matching `Biclustering()`, `LCA()`, `LRA()`, and
+  the rest of the package. Because the IRM methods accept `...`, a
+  `maxiter =` argument passed under the old assumption was silently
+  swallowed with no effect — an easy trap when switching between
+  `Biclustering()` and `Biclustering_IRM()`. The old name is still honored
+  (with a deprecation warning) and will be removed in v2.0.0.
+
+- `Biclustering_IRM()` for ordinal data now defaults to `mic = FALSE` and
+  `EM_limit = 20`, matching `LRA()`/`Biclustering()` (ordinal) and the
+  other `Biclustering_IRM()` methods respectively. It previously defaulted
+  to `mic = TRUE` and `EM_limit = 100` with no documented rationale. Pass
+  `mic = TRUE` explicitly if you want monotonically increasing Field
+  Reference Profiles.
+
+- `BNM()`, `LDLRA()`, `LDB()`, `BINET()`, `BNM_GA()`, `BNM_PBIL()`,
+  `LDLRA_PBIL()`, and `Biclustering_IRM()` (binary) now declare their
+  missing-data arguments in the order `na, Z, w` — the order used by
+  `CTT()`, `IRT()`, `GRM()`, `LCA()`, `LRA()`, and `Biclustering()` — where
+  they previously used `Z, w, na`. Only calls that passed these three
+  arguments positionally are affected; named usage (`Z = ...`) is
+  unchanged.
+
+- `Biclustering()` for rated data now exposes `conf_class` in its signature
+  and documentation. It was already forwarded to the internal nominal
+  engine via `...`, but never appeared on the help page. Also documented
+  that the rated method defaults to `method = "R"` (Ranklustering, classes
+  sorted by correct response rate) while binary/ordinal default to
+  `method = "B"`.
+
+- `LDLRA()`'s `beta1`/`beta2` defaults remain 2 (the other network models
+  use 1); the help page now notes this follows the original Mathematica
+  implementation of LDLRA rather than being an accident.
+
 ## Bug fixes
 
 - `longdataFormat()` falsely reported "Duplicated IDs found" whenever a
@@ -293,6 +345,38 @@
   items (no valid responses at all) are unaffected and continue to be kept
   with a separate warning (`R/01_dataFormat.R`).
 
+- `DistractorAnalysis()` counted raw category codes against columns
+  `1..maxQ` of its frequency tables. For rated data coded from 0 (or with
+  gaps in the codes), every category-0 response silently vanished from the
+  frequency/proportion tables and the remaining categories were shifted by
+  one column — inconsistent with the fitted model itself, whose category
+  probabilities are computed on codes remapped to `1..K` per item since the
+  category-code fix earlier in this release. The stored `Q` and correct
+  answers are now remapped the same way before tabulation
+  (`R/21_DistractorAnalysis.R`).
+
+- A `conf` given as a `data.frame` was wrongly rejected ("The conf matrix
+  should only contain 0s and 1s") by `Biclustering()` and `LDB()`, because
+  the 0/1 validation ran before coercion and `%in%` compares whole columns
+  on a data.frame. The input is now coerced with `as.matrix()` first
+  (`R/07_Biclustering.R`).
+
+- `GridSearch()`'s help-page example called a nonexistent function
+  `grid_serch(data_matrix, ...)`; it now calls `GridSearch(J35S515, ...)`
+  (`R/00_GridSearch.R`).
+
+- `LDLRA()` now stops with an informative error when a
+  rank-by-parent-pattern cell has no (smoothed) observations under
+  `beta1 = beta2 = 1` (0/0), instead of silently propagating `NaN` through
+  the log-likelihood, matching the diagnostic added to `BINET()` earlier in
+  this release (`R/09_LDLRA.R`).
+
+- Fixed user-visible typos in printed output: "Dimensionality Analyeis" →
+  "Dimensionality Analysis", "Cummurative Percentage" → "Cumulative
+  Percentage", and "Conditonal" → "Conditional" (in "Conditional Correct
+  Response Ratio" and "Conditional Selection Ratio" headings)
+  (`R/00_print_ctt_irt.R`).
+
 ## Removed
 
 - Removed `LLtheta_mat()`/`EAP_PSD()` (`R/04B_AbilityEstimation.R`) and
@@ -332,6 +416,16 @@ behind several of the bugs fixed above):
   selection duplicated between `GridSearch()`'s Biclustering (2-D) and
   LCA/LRA (1-D) branches — the same duplication in which both the tie-break
   bug and the `max_ncls < 2` bug above were independently present.
+- Added regression tests pinning the bug fixes of this release
+  (`tests/testthat/test-regression-1150.R`) and smoke tests for
+  `AlphaCoefficient()`, `OmegaCoefficient()`, and `BiserialCorrelation()`,
+  which previously had no direct tests
+  (`tests/testthat/test-smoke-reliability.R`).
+- Renamed `R/00_BiclucterUtils.R` to `R/00_BiclusterUtils.R` (filename
+  typo) and fixed a "Bicluter" comment typo; removed a stray `.png` file
+  accidentally committed to the repository root in 2024, and broadened the
+  `.Rbuildignore` rule for `Rplots.pdf` so a leftover
+  `tests/testthat/Rplots.pdf` can no longer slip into the CRAN tarball.
 
 # exametrika 1.14.0
 

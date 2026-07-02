@@ -27,7 +27,7 @@
 #' the next generation.
 #' @param filename Specify the filename when saving the generated adjacency matrix in CSV format.
 #' The default is null, and no output is written to the file.
-#' @param verbose verbose output Flag. default is TRUE
+#' @param verbose verbose output Flag. default is FALSE
 #' @importFrom igraph as_adjacency_matrix
 #' @importFrom igraph graph_from_adjacency_matrix
 #' @importFrom igraph as_data_frame
@@ -63,13 +63,13 @@
 #' }
 #' @export
 
-BNM_GA <- function(U, Z = NULL, w = NULL, na = NULL,
+BNM_GA <- function(U, na = NULL, Z = NULL, w = NULL,
                    seed = 123,
                    population = 20, Rs = 0.5, Rm = 0.005,
                    maxParents = 2, maxGeneration = 100,
                    successiveLimit = 5, crossover = 0,
                    elitism = 0, filename = NULL,
-                   verbose = TRUE) {
+                   verbose = FALSE) {
   # data format
   if (!inherits(U, "exametrika")) {
     tmp <- dataFormat(data = U, na = na, Z = Z, w = w)
@@ -265,7 +265,7 @@ BNM_GA <- function(U, Z = NULL, w = NULL, na = NULL,
 #' generational gene of the last generation. The default is 1.
 #' @param filename Specify the filename when saving the generated adjacency matrix in CSV format.
 #' The default is null, and no output is written to the file.
-#' @param verbose verbose output Flag. default is TRUE
+#' @param verbose verbose output Flag. default is FALSE
 #' @importFrom igraph as_adjacency_matrix
 #' @importFrom igraph graph_from_adjacency_matrix
 #' @importFrom igraph as_data_frame
@@ -302,14 +302,14 @@ BNM_GA <- function(U, Z = NULL, w = NULL, na = NULL,
 #' }
 #' @export
 
-BNM_PBIL <- function(U, Z = NULL, w = NULL, na = NULL,
+BNM_PBIL <- function(U, na = NULL, Z = NULL, w = NULL,
                      seed = 123,
                      population = 20, Rs = 0.5, Rm = 0.002,
                      maxParents = 2, maxGeneration = 100,
                      successiveLimit = 5, elitism = 0,
                      alpha = 0.05, estimate = 1,
                      filename = NULL,
-                     verbose = TRUE) {
+                     verbose = FALSE) {
   # data format
   if (!inherits(U, "exametrika")) {
     tmp <- dataFormat(data = U, na = na, Z = Z, w = w)

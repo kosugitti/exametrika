@@ -107,6 +107,18 @@ DistractorAnalysis.ratedBiclustering <- function(x, ...) {
 distractor_core <- function(Q, Z, rank_est, CA, nrank, maxQ, item_labels) {
   nitems <- NCOL(Q)
 
+  # The stored Q keeps the raw category codes, but maxQ comes from the model
+  # output (FRP dimension / category count), which is based on codes remapped
+  # to 1..K per item (remap_category_codes). Remap Q and CA the same way here,
+  # otherwise 0-based or gapped codes are counted against the wrong column
+  # (a category-0 response would vanish entirely).
+  for (j in seq_len(nitems)) {
+    valid_j <- Z[, j] == 1
+    lv <- sort(unique(Q[valid_j, j]))
+    Q[valid_j, j] <- match(Q[valid_j, j], lv)
+    CA[j] <- match(CA[j], lv)
+  }
+
   # Frequency table: item x rank x category
   freq_table <- list()
   for (j in 1:nitems) {

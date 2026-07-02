@@ -6,14 +6,17 @@
 #' @param w Item weight vector specifying the relative importance of each item.
 #' @param na Values to be treated as missing values.
 #' @param method Analysis method to use (character string):
-#'   * "B" or "Biclustering": Standard biclustering (default)
+#'   * "B" or "Biclustering": Standard biclustering (default for binary and
+#'     ordinal data)
 #'   * "R" or "Ranklustering": Ranklustering with ordered class structure
+#'     (default for rated data, where classes are sorted by correct response
+#'     rate)
 #' @param conf Confirmatory parameter for pre-specified field assignments. Can be either:
 #'   * A vector with items and corresponding fields in sequence
 #'   * A field membership profile matrix (items x fields) with 0/1 values
 #'   * NULL (default) for exploratory analysis where field memberships are estimated
 #' @param maxiter Maximum number of EM algorithm iterations. Default is 100.
-#' @param verbose Logical; if TRUE, displays progress during estimation. Default is TRUE.
+#' @param verbose Logical; if TRUE, displays progress during estimation. Default is FALSE.
 #' @param alpha Dirichlet distribution concentration parameter for prior density of field reference probabilities. Default is 1.
 #' @param ... Additional arguments passed to specific methods.
 #'
@@ -28,8 +31,9 @@ Biclustering.rated <- function(U,
                                ncls = 2, nfld = 2,
                                method = "R",
                                conf = NULL,
+                               conf_class = NULL,
                                maxiter = 100,
-                               verbose = TRUE,
+                               verbose = FALSE,
                                alpha = 1, ...) {
   tmp <- U
   nobs <- NROW(tmp$Q)
@@ -46,6 +50,7 @@ Biclustering.rated <- function(U,
     ncls = ncls,
     nfld = nfld,
     conf = conf,
+    conf_class = conf_class,
     maxiter = maxiter,
     verbose = verbose,
     alpha = alpha,

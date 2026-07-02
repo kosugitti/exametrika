@@ -12,7 +12,7 @@
 #' @param w Item weight vector specifying the relative importance of each item.
 #' @param na Values to be treated as missing values.
 #' @param maxiter Maximum number of EM algorithm iterations. Default is 100.
-#' @param verbose Logical; if TRUE, displays progress during estimation. Default is TRUE.
+#' @param verbose Logical; if TRUE, displays progress during estimation. Default is FALSE.
 #' @param beta1 Beta distribution parameter 1 for prior density of class reference matrix. Default is 1.
 #' @param beta2 Beta distribution parameter 2 for prior density of class reference matrix. Default is 1.
 #' @param conf Confirmatory IRP matrix (items x ncls) for test equating.
@@ -109,7 +109,7 @@
 #'
 #' @export
 LCA <- function(U, ncls = 2, na = NULL, Z = NULL, w = NULL, maxiter = 100,
-                verbose = TRUE, beta1 = 1, beta2 = 1, conf = NULL) {
+                verbose = FALSE, beta1 = 1, beta2 = 1, conf = NULL) {
   # data format
   if (!inherits(U, "exametrika")) {
     tmp <- dataFormat(data = U, na = na, Z = Z, w = w)

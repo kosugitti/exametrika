@@ -19,7 +19,7 @@
 #' @param adj_list A list compiling matrix-type adjacency matrices for each rank/class.
 #' @param adj_file A file detailing the relationships of the graph for each rank/class,
 #' listed in the order of starting point, ending point, and rank(class).
-#' @param verbose verbose output Flag. default is TRUE
+#' @param verbose verbose output Flag. default is FALSE
 #' @param beta1 Beta distribution parameter 1 for prior density. Default is 1.
 #' @param beta2 Beta distribution parameter 2 for prior density. Default is 1.
 #' @return
@@ -123,7 +123,7 @@
 #' }
 #' @export
 
-LDB <- function(U, Z = NULL, w = NULL, na = NULL,
+LDB <- function(U, na = NULL, Z = NULL, w = NULL,
                 ncls = 2, method = "R",
                 conf = NULL,
                 g_list = NULL, adj_list = NULL, adj_file = NULL,

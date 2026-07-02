@@ -1,6 +1,7 @@
 #' @rdname Biclustering_IRM
 #' @param mic Logical; if TRUE, forces Field Reference Profiles to be monotonically
-#' increasing across classes (ordinal IRM only). Default is TRUE.
+#' increasing across classes (ordinal IRM only). Default is FALSE, matching
+#' \code{LRA} and \code{Biclustering} for ordinal data.
 #' @return
 #' For ordinal data, the returned list includes:
 #' \describe{
@@ -38,10 +39,11 @@
 #' @export
 Biclustering_IRM.ordinal <- function(U,
                                      gamma_c = 1, gamma_f = 1, alpha = 1,
-                                     mic = TRUE,
-                                     max_iter = 100, stable_limit = 5,
-                                     minSize = 20, EM_limit = 100,
-                                     seed = 123, verbose = TRUE, ...) {
+                                     mic = FALSE,
+                                     maxiter = 100, stable_limit = 5,
+                                     minSize = 20, EM_limit = 20,
+                                     seed = 123, verbose = FALSE, ...) {
+  maxiter <- resolve_deprecated_max_iter(maxiter, list(...))
   tmp <- U
   tmp$Q <- remap_category_codes(tmp$Q)
 
@@ -96,7 +98,7 @@ Biclustering_IRM.ordinal <- function(U,
   gibbs <- irm_gibbs_core(
     Uq = Uq, Z = tmp$Z, cls01 = cls01, fld01 = fld01,
     gamma_c = gamma_c, gamma_f = gamma_f, alpha_vec = alpha_vec,
-    max_iter = max_iter, stable_limit = stable_limit, verbose = verbose
+    max_iter = maxiter, stable_limit = stable_limit, verbose = verbose
   )
 
   cls01 <- gibbs$cls01

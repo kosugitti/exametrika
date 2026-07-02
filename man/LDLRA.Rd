@@ -6,9 +6,9 @@
 \usage{
 LDLRA(
   U,
+  na = NULL,
   Z = NULL,
   w = NULL,
-  na = NULL,
   ncls = 2,
   method = "R",
   g_list = NULL,
@@ -23,11 +23,11 @@ LDLRA(
 \item{U}{U is either a data class of exametrika, or raw data. When raw data is given,
 it is converted to the exametrika class with the \link{dataFormat} function.}
 
+\item{na}{na argument specifies the numbers or characters to be treated as missing values.}
+
 \item{Z}{Z is a missing indicator matrix of the type matrix or data.frame}
 
 \item{w}{w is item weight vector}
-
-\item{na}{na argument specifies the numbers or characters to be treated as missing values.}
 
 \item{ncls}{number of latent class(rank). The default is 2.}
 
@@ -41,11 +41,13 @@ class model is set to "C", latent rank model is set "R". The default is "R".}
 \item{adj_file}{A file detailing the relationships of the graph for each rank/class,
 listed in the order of starting point, ending point, and rank(class).}
 
-\item{verbose}{verbose output Flag. default is TRUE}
+\item{verbose}{verbose output Flag. default is FALSE}
 
 \item{beta1}{Beta distribution parameter 1 for prior density of rank reference matrix. Default is 2.}
 
-\item{beta2}{Beta distribution parameter 2 for prior density of rank reference matrix. Default is 2.}
+\item{beta2}{Beta distribution parameter 2 for prior density of rank reference matrix. Default is 2.
+Unlike the other network models (which default to 1), the default of 2
+follows the original Mathematica implementation of LDLRA.}
 }
 \value{
 \describe{

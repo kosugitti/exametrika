@@ -205,7 +205,8 @@ test_that("Ordinal IRM mic Parameter Stored", {
   # mic parameter should be stored in the result
   expect_true(!is.null(result_oirm$mic))
   expect_true(is.logical(result_oirm$mic))
-  expect_true(result_oirm$mic) # default is TRUE
+  expect_false(result_oirm$mic) # default is FALSE since v1.15.0, matching LRA/Biclustering ordinal
+  expect_false(formals(exametrika:::Biclustering_IRM.ordinal)$mic)
 })
 
 test_that("Ordinal IRM Test Fit Indices", {

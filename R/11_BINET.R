@@ -22,7 +22,7 @@
 #' @param adj_list A list compiling matrix-type adjacency matrices for each rank/class.
 #' @param adj_file A file detailing the relationships of the graph for each rank/class,
 #' listed in the order of starting point, ending point, and rank(class).
-#' @param verbose verbose output Flag. default is TRUE
+#' @param verbose verbose output Flag. default is FALSE
 #' @param beta1 Beta distribution parameter 1 for prior density of the conditional
 #' correct response rates. Default is 1. Increase this (together with `beta2`) if
 #' estimation fails because some class-by-field cell has zero non-missing
@@ -135,7 +135,7 @@
 #' }
 #' @export
 
-BINET <- function(U, Z = NULL, w = NULL, na = NULL,
+BINET <- function(U, na = NULL, Z = NULL, w = NULL,
                   conf = NULL, ncls = NULL, nfld = NULL,
                   g_list = NULL, adj_list = NULL, adj_file = NULL,
                   verbose = FALSE, beta1 = 1, beta2 = 1) {

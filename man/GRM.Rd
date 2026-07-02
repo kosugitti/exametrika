@@ -4,7 +4,7 @@
 \alias{GRM}
 \title{Graded Response Model (GRM)}
 \usage{
-GRM(U, na = NULL, Z = NULL, w = NULL, verbose = TRUE)
+GRM(U, na = NULL, Z = NULL, w = NULL, verbose = FALSE)
 }
 \arguments{
 \item{U}{Either an object of class "exametrika" or raw data. When raw data is given,
@@ -16,7 +16,7 @@ it is converted to the exametrika class using the \code{\link{dataFormat}} funct
 
 \item{w}{Item weight vector}
 
-\item{verbose}{Logical; if TRUE, shows progress of iterations (default: TRUE)}
+\item{verbose}{Logical; if TRUE, shows progress of iterations (default: FALSE)}
 }
 \value{
 A list of class "exametrika" and "GRM" containing the following elements:

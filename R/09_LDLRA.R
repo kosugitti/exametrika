@@ -9,6 +9,8 @@
 #' @param smoothpost smoothpost
 #' @param beta1 Beta distribution parameter 1 for prior density. Default is 2.
 #' @param beta2 Beta distribution parameter 2 for prior density. Default is 2.
+#' Unlike the other network models (which default to 1), the default of 2
+#' follows the original Mathematica implementation of LDLRA.
 #'
 LD_param_est <- function(tmp, adj_list, classRefMat, ncls, smoothpost, beta1 = 2, beta2 = 2) {
   testlength <- NCOL(tmp$U)
@@ -80,6 +82,14 @@ LD_param_est <- function(tmp, adj_list, classRefMat, ncls, smoothpost, beta1 = 2
   n_incorrect <- colSums(Z_expanded * (1 - U_expanded) * pat01 * smoothpost_expanded)
 
   refmat <- beta_posterior_mode(n_correct, n_correct + n_incorrect, beta1, beta2)
+  if (anyNA(refmat)) {
+    stop(
+      "Estimation failed: some item-by-rank-by-parent-pattern cell has zero ",
+      "(smoothed) observations under the current prior (beta1 = ", beta1,
+      ", beta2 = ", beta2, "), producing an undefined conditional correct ",
+      "response rate. Try increasing beta1/beta2 (e.g. the default 2, 2)."
+    )
+  }
   item_ell <- n_correct * log(refmat + const) + n_incorrect * log(1 - refmat + const)
   item_ell <- rowSums(apply(item_ell, 1:2, sum))
   test_ell <- sum(item_ell)
@@ -136,9 +146,11 @@ LD_param_est <- function(tmp, adj_list, classRefMat, ncls, smoothpost, beta1 = 2
 #' @param adj_list A list compiling matrix-type adjacency matrices for each rank/class.
 #' @param adj_file A file detailing the relationships of the graph for each rank/class,
 #' listed in the order of starting point, ending point, and rank(class).
-#' @param verbose verbose output Flag. default is TRUE
+#' @param verbose verbose output Flag. default is FALSE
 #' @param beta1 Beta distribution parameter 1 for prior density of rank reference matrix. Default is 2.
 #' @param beta2 Beta distribution parameter 2 for prior density of rank reference matrix. Default is 2.
+#' Unlike the other network models (which default to 1), the default of 2
+#' follows the original Mathematica implementation of LDLRA.
 #' @importFrom igraph as_adjacency_matrix
 #' @importFrom igraph graph_from_data_frame
 #' @importFrom igraph graph_from_adjacency_matrix
@@ -220,7 +232,7 @@ LD_param_est <- function(tmp, adj_list, classRefMat, ncls, smoothpost, beta1 = 2
 #' @export
 #'
 
-LDLRA <- function(U, Z = NULL, w = NULL, na = NULL,
+LDLRA <- function(U, na = NULL, Z = NULL, w = NULL,
                   ncls = 2, method = "R",
                   g_list = NULL, adj_list = NULL, adj_file = NULL,
                   verbose = FALSE, beta1 = 2, beta2 = 2) {

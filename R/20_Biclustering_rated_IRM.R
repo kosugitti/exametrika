@@ -42,9 +42,10 @@
 #' @export
 Biclustering_IRM.rated <- function(U,
                                    gamma_c = 1, gamma_f = 1, alpha = 1,
-                                   max_iter = 100, stable_limit = 5,
+                                   maxiter = 100, stable_limit = 5,
                                    minSize = 20, EM_limit = 20,
-                                   seed = 123, verbose = TRUE, ...) {
+                                   seed = 123, verbose = FALSE, ...) {
+  maxiter <- resolve_deprecated_max_iter(maxiter, list(...))
   tmp <- U
   nobs <- NROW(tmp$Q)
   nitems <- NCOL(tmp$Q)
@@ -57,7 +58,7 @@ Biclustering_IRM.rated <- function(U,
   ret_nom <- Biclustering_IRM.nominal(
     dat_nom,
     gamma_c = gamma_c, gamma_f = gamma_f, alpha = alpha,
-    max_iter = max_iter, stable_limit = stable_limit,
+    maxiter = maxiter, stable_limit = stable_limit,
     minSize = minSize, EM_limit = EM_limit,
     seed = seed, verbose = verbose,
     ...

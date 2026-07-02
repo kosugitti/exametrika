@@ -38,7 +38,11 @@ fill_adj <- function(g, ItemLabel) {
 #' @param beta1 Beta distribution parameter 1 (prior pseudo-count for `count`)
 #' @param beta2 Beta distribution parameter 2 (prior pseudo-count for the
 #' complement of `count`)
-#' @return Posterior-mode rate, same shape as `count`/`total`
+#' @return Posterior-mode rate, same shape as `count`/`total`. When
+#' `total == 0` and `beta1 + beta2 == 2` the cell is undefined (0/0) and
+#' `NaN` is returned; every caller must handle that case explicitly
+#' (`BNM()` masks such cells via its `denom0` indicator and reports them as
+#' "NaN(0/0)", `LDLRA()` and `BINET()` stop with an informative error).
 #' @noRd
 beta_posterior_mode <- function(count, total, beta1, beta2) {
   (count + beta1 - 1) / (total + beta1 + beta2 - 2)
@@ -110,7 +114,7 @@ beta_posterior_mode <- function(count, total, beta1, beta2) {
 #'
 #' @export
 
-BNM <- function(U, Z = NULL, w = NULL, na = NULL,
+BNM <- function(U, na = NULL, Z = NULL, w = NULL,
                 g = NULL, adj_file = NULL, adj_matrix = NULL,
                 beta1 = 1, beta2 = 1) {
   # data format

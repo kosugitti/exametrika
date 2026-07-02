@@ -6,9 +6,9 @@
 \usage{
 LDB(
   U,
+  na = NULL,
   Z = NULL,
   w = NULL,
-  na = NULL,
   ncls = 2,
   method = "R",
   conf = NULL,
@@ -24,11 +24,11 @@ LDB(
 \item{U}{U is either a data class of exametrika, or raw data. When raw data is given,
 it is converted to the exametrika class with the \link{dataFormat} function.}
 
+\item{na}{na argument specifies the numbers or characters to be treated as missing values.}
+
 \item{Z}{Z is a missing indicator matrix of the type matrix or data.frame}
 
 \item{w}{w is item weight vector}
-
-\item{na}{na argument specifies the numbers or characters to be treated as missing values.}
 
 \item{ncls}{number of latent class(rank). The default is 2.}
 
@@ -48,7 +48,7 @@ The number of fields(nfld) will be overwrite to the number of columns of this ma
 \item{adj_file}{A file detailing the relationships of the graph for each rank/class,
 listed in the order of starting point, ending point, and rank(class).}
 
-\item{verbose}{verbose output Flag. default is TRUE}
+\item{verbose}{verbose output Flag. default is FALSE}
 
 \item{beta1}{Beta distribution parameter 1 for prior density. Default is 1.}
 

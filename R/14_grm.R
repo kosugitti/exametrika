@@ -155,7 +155,7 @@ params_to_target <- function(a_vec, b_list) {
 #' @param Z Missing indicator matrix of type matrix or data.frame. 1 indicates observed values, 0 indicates missing values.
 #' @param w Item weight vector
 #' @param na Specifies numbers or characters to be treated as missing values.
-#' @param verbose Logical; if TRUE, shows progress of iterations (default: TRUE)
+#' @param verbose Logical; if TRUE, shows progress of iterations (default: FALSE)
 #'
 #' @return A list of class "exametrika" and "GRM" containing the following elements:
 #' \describe{
@@ -191,7 +191,7 @@ params_to_target <- function(a_vec, b_list) {
 #' @export
 #'
 #'
-GRM <- function(U, na = NULL, Z = NULL, w = NULL, verbose = TRUE) {
+GRM <- function(U, na = NULL, Z = NULL, w = NULL, verbose = FALSE) {
   # data format
   if (!inherits(U, "exametrika")) {
     tmp <- dataFormat(data = U, na = na, Z = Z, w = w)

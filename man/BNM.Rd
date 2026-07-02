@@ -6,9 +6,9 @@
 \usage{
 BNM(
   U,
+  na = NULL,
   Z = NULL,
   w = NULL,
-  na = NULL,
   g = NULL,
   adj_file = NULL,
   adj_matrix = NULL,
@@ -20,11 +20,11 @@ BNM(
 \item{U}{U is either a data class of exametrika, or raw data. When raw data is given,
 it is converted to the exametrika class with the \link{dataFormat} function.}
 
+\item{na}{na argument specifies the numbers or characters to be treated as missing values.}
+
 \item{Z}{Z is a missing indicator matrix of the type matrix or data.frame}
 
 \item{w}{w is item weight vector}
-
-\item{na}{na argument specifies the numbers or characters to be treated as missing values.}
 
 \item{g}{Specify a graph object suitable for the igraph class.}
 

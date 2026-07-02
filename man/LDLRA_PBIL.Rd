@@ -6,9 +6,9 @@
 \usage{
 LDLRA_PBIL(
   U,
+  na = NULL,
   Z = NULL,
   w = NULL,
-  na = NULL,
   seed = 123,
   ncls = 2,
   method = "R",
@@ -22,7 +22,7 @@ LDLRA_PBIL(
   alpha = 0.05,
   estimate = 1,
   filename = NULL,
-  verbose = TRUE,
+  verbose = FALSE,
   beta1 = 2,
   beta2 = 2
 )
@@ -31,11 +31,11 @@ LDLRA_PBIL(
 \item{U}{U is either a data class of exametrika, or raw data. When raw data is given,
 it is converted to the exametrika class with the \link{dataFormat} function.}
 
+\item{na}{na argument specifies the numbers or characters to be treated as missing values.}
+
 \item{Z}{Z is a missing indicator matrix of the type matrix or data.frame}
 
 \item{w}{w is item weight vector}
-
-\item{na}{na argument specifies the numbers or characters to be treated as missing values.}
 
 \item{seed}{seed for random.}
 
@@ -70,11 +70,13 @@ generational gene of the last generation. The default is 1.}
 \item{filename}{Specify the filename when saving the generated adjacency matrix in CSV format.
 The default is null, and no output is written to the file.}
 
-\item{verbose}{verbose output Flag. default is TRUE}
+\item{verbose}{verbose output Flag. default is FALSE}
 
 \item{beta1}{Beta distribution parameter 1 for prior density. Default is 2.}
 
-\item{beta2}{Beta distribution parameter 2 for prior density. Default is 2.}
+\item{beta2}{Beta distribution parameter 2 for prior density. Default is 2.
+Unlike the other network models (which default to 1), the default of 2
+follows the original Mathematica implementation of LDLRA.}
 }
 \value{
 \describe{

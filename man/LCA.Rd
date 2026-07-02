@@ -11,7 +11,7 @@ LCA(
   Z = NULL,
   w = NULL,
   maxiter = 100,
-  verbose = TRUE,
+  verbose = FALSE,
   beta1 = 1,
   beta2 = 1,
   conf = NULL
@@ -32,7 +32,7 @@ observed responses, while 0 indicates missing data.}
 
 \item{maxiter}{Maximum number of EM algorithm iterations. Default is 100.}
 
-\item{verbose}{Logical; if TRUE, displays progress during estimation. Default is TRUE.}
+\item{verbose}{Logical; if TRUE, displays progress during estimation. Default is FALSE.}
 
 \item{beta1}{Beta distribution parameter 1 for prior density of class reference matrix. Default is 1.}
 

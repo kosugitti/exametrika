@@ -16,17 +16,17 @@ Biclustering_IRM(U, ...)
 
 \method{Biclustering_IRM}{binary}(
   U,
+  na = NULL,
   Z = NULL,
   w = NULL,
-  na = NULL,
   gamma_c = 1,
   gamma_f = 1,
-  max_iter = 100,
+  maxiter = 100,
   stable_limit = 5,
   minSize = 20,
   EM_limit = 20,
   seed = 123,
-  verbose = TRUE,
+  verbose = FALSE,
   ...
 )
 
@@ -35,12 +35,12 @@ Biclustering_IRM(U, ...)
   gamma_c = 1,
   gamma_f = 1,
   alpha = 1,
-  max_iter = 100,
+  maxiter = 100,
   stable_limit = 5,
   minSize = 20,
   EM_limit = 20,
   seed = 123,
-  verbose = TRUE,
+  verbose = FALSE,
   ...
 )
 
@@ -49,13 +49,13 @@ Biclustering_IRM(U, ...)
   gamma_c = 1,
   gamma_f = 1,
   alpha = 1,
-  mic = TRUE,
-  max_iter = 100,
+  mic = FALSE,
+  maxiter = 100,
   stable_limit = 5,
   minSize = 20,
-  EM_limit = 100,
+  EM_limit = 20,
   seed = 123,
-  verbose = TRUE,
+  verbose = FALSE,
   ...
 )
 
@@ -64,12 +64,12 @@ Biclustering_IRM(U, ...)
   gamma_c = 1,
   gamma_f = 1,
   alpha = 1,
-  max_iter = 100,
+  maxiter = 100,
   stable_limit = 5,
   minSize = 20,
   EM_limit = 20,
   seed = 123,
-  verbose = TRUE,
+  verbose = FALSE,
   ...
 )
 }
@@ -93,7 +93,9 @@ to be seated at a vacant class. The default is 1.}
 attractiveness of a new Field. The greater this value it more likely to be classified
 in the new field. The default is 1.}
 
-\item{max_iter}{A maximum iteration number of IRM process. The default is 100.}
+\item{maxiter}{A maximum iteration number of IRM process. The default is 100.
+(Renamed from \code{max_iter} in v1.15.0; the old name is still accepted
+with a deprecation warning.)}
 
 \item{stable_limit}{The IRM process exits the loop when the FRM stabilizes and no longer
 changes significantly. This option sets the maximum number of stable iterations,
@@ -113,13 +115,14 @@ reproducible results. The default is \code{123}, which guarantees deterministic
 output. Set to \code{NULL} to disable seed setting and let the results depend
 on the current state of the random number generator.}
 
-\item{verbose}{verbose output Flag. default is TRUE}
+\item{verbose}{verbose output Flag. default is FALSE}
 
 \item{alpha}{Dirichlet distribution concentration parameter for the prior density of
 field reference probabilities (rated/nominal IRM). Must be positive. The default is 1.}
 
 \item{mic}{Logical; if TRUE, forces Field Reference Profiles to be monotonically
-increasing across classes (ordinal IRM only). Default is TRUE.}
+increasing across classes (ordinal IRM only). Default is FALSE, matching
+\code{LRA} and \code{Biclustering} for ordinal data.}
 }
 \value{
 An object of class "exametrika" containing the IRM results.

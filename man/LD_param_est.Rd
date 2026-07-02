@@ -27,7 +27,9 @@ LD_param_est(
 
 \item{beta1}{Beta distribution parameter 1 for prior density. Default is 2.}
 
-\item{beta2}{Beta distribution parameter 2 for prior density. Default is 2.}
+\item{beta2}{Beta distribution parameter 2 for prior density. Default is 2.
+Unlike the other network models (which default to 1), the default of 2
+follows the original Mathematica implementation of LDLRA.}
 }
 \description{
 A function that extracts only the estimation of graph parameters

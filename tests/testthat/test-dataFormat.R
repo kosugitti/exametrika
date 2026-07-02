@@ -391,9 +391,9 @@ test_that("dataFormat handles edge cases correctly", {
     item1 = rep(1, 15), # Zero variance
     item2 = sample(1:5, 15, replace = TRUE) # Normal variance
   )
-  result <- dataFormat(zero_var)
+  expect_message(result <- dataFormat(zero_var), "no variance")
   expect_s3_class(result, "exametrika")
-  expect_equal(ncol(result$Q), 2) # Both columns remain (zero variance might not be excluded)
+  expect_equal(ncol(result$Q), 1) # item1 excluded, item2 remains
 })
 
 test_that("dataFormat error handling works correctly", {

@@ -309,16 +309,30 @@ test_that("single item after ID removal works", {
 # Variance anomalies (sd = NA or 0)
 # ============================================================
 
-test_that("all items constant value → warns zero variance", {
+test_that("all items constant value -> excluded, none left -> error", {
   data <- data.frame(
     id = paste0("S", 1:15),
     item1 = rep(3, 15),
     item2 = rep(5, 15),
     item3 = rep(1, 15)
   )
-  expect_message(result <- dataFormat(data), "zero variance")
+  # Every item is constant, so all are excluded and none remain (matches
+  # the original Mathematica dataformat[], which drops such items before
+  # analysis rather than keeping them).
+  expect_error(dataFormat(data), "All items have no variance and were excluded")
+})
+
+test_that("some items constant value -> excluded, others survive", {
+  set.seed(233)
+  data <- data.frame(
+    id = paste0("S", 1:15),
+    item1 = rep(3, 15), # constant -> excluded
+    item2 = sample(1:5, 15, replace = TRUE) # varies -> kept
+  )
+  expect_message(result <- dataFormat(data), "no variance")
   expect_s3_class(result, "exametrika")
-  expect_equal(ncol(result$Q), 3) # Not excluded, but warned
+  expect_equal(ncol(result$Q), 1)
+  expect_false("item1" %in% result$ItemLabel)
 })
 
 test_that("all-NA column → warns all missing values", {
@@ -886,17 +900,31 @@ test_that("wide data (more items than students)", {
 
 # --- Extremely sparse data ---
 
-test_that("mostly NA data (>90% missing) → NA becomes -1, still works", {
+test_that("mostly NA data (>90% missing, single valid response) → excluded", {
   data <- data.frame(
     id = paste0("S", 1:20),
     item1 = c(1, rep(NA, 19)),
     item2 = c(rep(NA, 19), 2),
     item3 = c(NA, 3, rep(NA, 18))
   )
-  # After NA→-1, each column has {value, -1, -1, ...}: sd > 0, not excluded
+  # Each item has exactly one valid response, so sd() among valid responses
+  # cannot be computed (NA) and the item is excluded, same as any other
+  # item with no computable variance.
+  expect_error(dataFormat(data), "All items have no variance and were excluded")
+})
+
+test_that("mostly NA data (>90% missing) with 2 differing valid responses -> kept", {
+  data <- data.frame(
+    id = paste0("S", 1:25),
+    item1 = c(0, 1, rep(NA, 23)),
+    item2 = c(rep(NA, 23), 1, 0),
+    item3 = c(NA, 1, 0, rep(NA, 22))
+  )
+  # Each item now has 2 valid, differing responses: real (nonzero) variance,
+  # so none are excluded despite being >90% missing.
   result <- dataFormat(data)
   expect_s3_class(result, "exametrika")
-  expect_equal(ncol(result$Q), 3)
+  expect_equal(ncol(result$U), 3)
 })
 
 test_that("sparse but enough variance survives", {
@@ -1019,15 +1047,28 @@ test_that("data.frame subclass still works", {
 
 # --- rated: all correct or all incorrect ---
 
-test_that("rated: all students answer correctly → U all 1s, warns zero variance", {
+test_that("rated: all students answer correctly on every item -> all excluded -> error", {
   data <- data.frame(
     id = paste0("S", 1:10),
     item1 = rep(3, 10),
     item2 = rep(2, 10)
   )
-  expect_message(result <- dataFormat(data, CA = c(3, 2)), "zero variance")
+  # Every item is constant (raw response), so all are excluded and none
+  # remain to form a rated result.
+  expect_error(dataFormat(data, CA = c(3, 2)), "All items have no variance and were excluded")
+})
+
+test_that("rated: one constant item excluded, CA stays aligned with survivor", {
+  set.seed(234)
+  data <- data.frame(
+    id = paste0("S", 1:10),
+    item1 = rep(3, 10), # constant -> excluded
+    item2 = sample(1:3, 10, replace = TRUE) # varies -> kept
+  )
+  expect_message(result <- dataFormat(data, CA = c(3, 2)), "no variance")
   expect_equal(result$response.type, "rated")
-  expect_true(all(result$U == 1))
+  expect_equal(result$ItemLabel, "item2")
+  expect_equal(result$CA, 2) # CA re-aligned to the surviving item, not item1's CA
 })
 
 test_that("rated: almost no student answers correctly", {

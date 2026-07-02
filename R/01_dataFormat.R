@@ -323,27 +323,21 @@ dataFormat <- function(data, na = NULL, id = NULL, Z = NULL, w = NULL,
     w <- rep(1, NCOL(response.matrix))
   }
 
-  # check sd for each items
-  sd.check <- apply(response.matrix, 2, function(x) sd(x, na.rm = TRUE))
-  if (sum(is.na(sd.check)) != 0) {
-    excluded_items <- ItemLabel[is.na(sd.check)]
-    message(
-      "The following items with no variance.Excluded from the data:\n",
-      paste(excluded_items, collapse = ", "), "\n"
-    )
-    response.matrix <- response.matrix[, !is.na(sd.check), drop = FALSE]
-    Z <- Z[, !is.na(sd.check), drop = FALSE]
-    ItemLabel <- ItemLabel[!is.na(sd.check)]
-    w <- w[!is.na(sd.check)]
-
-    # Check if all items were excluded
-    if (ncol(response.matrix) == 0) {
-      stop("All items have no variance and were excluded. No valid response data remains.")
+  # Check variance for each item using only its valid (Z == 1) responses.
+  # Computing sd() on the raw matrix would count the -1 missing sentinel as
+  # data, which masks items that are constant among the students who
+  # actually responded (e.g. an item only 12 students took, all of whom
+  # answered correctly) whenever other students left it unanswered.
+  n_valid <- colSums(Z)
+  sd.check <- vapply(seq_len(ncol(response.matrix)), function(j) {
+    if (n_valid[j] == 0) {
+      return(NA_real_)
     }
-  }
+    sd(response.matrix[Z[, j] == 1, j])
+  }, numeric(1))
 
-  # Warn about items with all missing values
-  all_missing_cols <- which(apply(response.matrix, 2, function(x) all(x == -1)))
+  # Warn about items with all missing values (kept in the data, not excluded)
+  all_missing_cols <- which(n_valid == 0)
   if (length(all_missing_cols) > 0) {
     message(
       "Warning: The following items have all missing values: ",
@@ -351,15 +345,32 @@ dataFormat <- function(data, na = NULL, id = NULL, Z = NULL, w = NULL,
     )
   }
 
-  # Warn about items with zero variance (constant values, excluding all-missing)
-  zero_var_cols <- which(!is.na(sd.check[seq_len(ncol(response.matrix))]) &
-    sd.check[seq_len(ncol(response.matrix))] == 0)
-  zero_var_cols <- setdiff(zero_var_cols, all_missing_cols)
-  if (length(zero_var_cols) > 0) {
+  # Items with no variance among their valid responses (a constant response,
+  # or too few/anomalous valid responses to compute variance) are excluded
+  # before analysis, matching the original Mathematica implementation's
+  # dataformat[], which drops items where every respondent answered the
+  # same way. All-missing items are handled separately above and are not
+  # excluded here.
+  no_variance_cols <- setdiff(which(is.na(sd.check) | sd.check == 0), all_missing_cols)
+  if (length(no_variance_cols) > 0) {
+    excluded_items <- ItemLabel[no_variance_cols]
     message(
-      "Warning: The following items have zero variance (constant values): ",
-      paste(ItemLabel[zero_var_cols], collapse = ", ")
+      "The following items have no variance among valid responses (constant, or too few valid responses to compute variance). Excluded from the data:\n",
+      paste(excluded_items, collapse = ", "), "\n"
     )
+    keep <- setdiff(seq_len(ncol(response.matrix)), no_variance_cols)
+    response.matrix <- response.matrix[, keep, drop = FALSE]
+    Z <- Z[, keep, drop = FALSE]
+    ItemLabel <- ItemLabel[keep]
+    w <- w[keep]
+    if (!is.null(CA)) {
+      CA <- CA[keep]
+    }
+
+    # Check if all items were excluded
+    if (ncol(response.matrix) == 0) {
+      stop("All items have no variance and were excluded. No valid response data remains.")
+    }
   }
 
   # Warn about students with all missing responses

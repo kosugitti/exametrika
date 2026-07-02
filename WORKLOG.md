@@ -4,6 +4,58 @@ Detailed development log. User-facing changes go in `NEWS.md`; this file
 captures the per-session internal narrative (why a change was made, what
 was investigated, what was ruled out). Entries are newest-first.
 
+## 2026-07-01（続き） — v1.15.0: dataFormatの分散ゼロ項目検出漏れ修正（IRT() "object 'result' not found"）
+
+class_statistics（先生の別プロジェクト、試験問題プールのIRT分析）で
+`IRT(dat)`が「Error in IRT(dat) : object 'result' not found」で落ちる
+という報告を受けて調査。
+
+原因は`IRT()`内のEMのMステップで、項目の傾き初期値をNaN（分散ゼロ項目の
+item-total correlationがNaNになるため）で`optim()`に渡すと、tryCatchで
+100回リトライしても毎回失敗し、`result`が一度も代入されないまま
+`result$value`を参照してクラッシュすること。再現データ（定数列を1本混ぜた
+ダミー行列）で確認済み。
+
+本家Mathematica実装（`develop/mtmk15forVer13/mod/Module_CTT.wl`の
+`dataformat[]`）を確認したところ、`Total[uuu]`が`samplesize`（全員正解）
+または`0`（全員不正解）の項目は、全ての分析の入口で無条件に除外される
+仕様だった（wolframscriptで実データ相当のテストケースを実際に実行し確認
+済み）。一方R版`dataFormat()`は同種の項目を`message()`で警告するだけで
+除外しておらず、ここが本家との差分。
+
+実際にclass_statisticsの`res_pool`（複数年度の試験回答を縦積みしたプール）
+を`dataFormat()`に通して調べたところ、M0033（12人中12人正解）・M0048
+（28人中28人正解）の2項目が該当。ただし既存の分散ゼロ検出（`sd.check`）
+はこれを検出できていなかった。原因は`sd.check`が生の応答行列（欠測は`-1`
+に埋められている）に対して`sd()`を計算していたため。回答者が少なく欠測
+(-1)が大半を占める項目では、-1と実際の回答値が混在することで見かけ上
+分散が生じてしまい、実際には回答者全員が同じ答えでも検出をすり抜けていた。
+
+ユーザと相談の上、本家に倣う方針（除外して継続）に決定。対応:
+
+- `R/01_dataFormat.R`: `sd.check`を欠測マスク（`Z == 1`）済みの有効回答
+  のみで計算するよう修正。既存の「NA sd」除外ブロックと「分散ゼロ」警告
+  のみブロックを1本に統合し、両方とも除外して継続する仕様に変更
+  （メッセージは表示）。rated型の`CA`引数も項目除外に連動して詰め直す
+  ように修正（従来は除外時にCAがずれる潜在バグがあった）。
+- 「全員未回答」の項目（有効回答0件）は今まで通り除外せず警告のみ
+  （本家とは意図的に異なる、既存の挙動を維持）。
+- `tests/testthat/test-dataFormat.R`/`test-dataFormat-edge.R`:
+  新しい除外仕様に合わせて3件更新、2件追加（全項目が定数の場合は
+  エラーになること、一部項目が定数の場合はCAがずれずに除外されること）。
+- フルテストスイート（4900件超）を実行し、FAIL 0を確認。
+- `NEWS.md`の1.15.0 Bug fixesに追記。
+
+この過程で、ユーザから「RStudioでテスト実行中に'No ID column detected'
+という警告が大量に出る、前回直したのでは」という指摘もあったが調査の
+結果、これは前回（同日）修正した`Biclustering.rated()`/`GridSearch()`
+の**二重呼び出し**バグとは別物で、IDカラムを持たないテスト用行列を
+意図的に使っているテスト（6ファイル・計26回）が仕様通りメッセージを
+出しているだけと判明。`test-dataFormat-edge.R`はこの文言自体を
+`expect_message()`でテストしている。バグの再発ではないため変更なし。
+
+次: class_statistics側（M0033/M0048を含む再推定の実行）に対応。
+
 ## 2026-07-01（セッション締め） — v1.15.0: NEWS.md整形 + 寝かせ入り
 
 最後に2点:

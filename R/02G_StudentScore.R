@@ -387,4 +387,3 @@ stanine.binary <- function(U, na = NULL, Z = NULL, w = NULL) {
     stanineScore = stanine_scores
   )
 }
-

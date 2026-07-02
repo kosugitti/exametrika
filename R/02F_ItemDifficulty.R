@@ -485,5 +485,3 @@ ITBiserial.binary <- function(U, na = NULL, Z = NULL, w = NULL) {
 
   return(ITB)
 }
-
-

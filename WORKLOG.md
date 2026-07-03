@@ -4,6 +4,81 @@ Detailed development log. User-facing changes go in `NEWS.md`; this file
 captures the per-session internal narrative (why a change was made, what
 was investigated, what was ruled out). Entries are newest-first.
 
+## 2026-07-02〜03 — v1.15.0: 第2次監査（横断4系統）→ 回帰テスト → API統一 → 提出前チェック一式
+
+「他にまだゴミ・バグ・不統一がないか」という依頼で、前日の縦割り監査
+（ファイル番号帯4分割）と切り口を変えた横断監査を4系統並行agentで実施:
+API一貫性 / ドキュメント整合性 / 前日8コミットの回帰レビュー / 残ゴミ・テスト衛生。
+全指摘は実測検証つき。主な発見: Biclustering系のmaxiter/max_iter混在
+（...に吸われ無警告無視）、mic既定がordinal IRMだけTRUE、BNMだけplotなし、
+DistractorAnalysisの0始まりカテゴリ脱落（前日修正の同型取りこぼし、実測319件消失）、
+前日21件修正に回帰テストゼロ、GridSearch @examplesのgrid_serch誤記、
+verbose @paramの記述逆転4系統、死にコード約120行、cat_labelXXX、
+tarballへのRplots.pdf混入、ファイル名Biclucter誤記、git追跡の「.png」等。
+
+### コミット構成（全push済）
+
+1. `88c8f38` 前セッション未コミットのdataFormat分散ゼロ修正一式を救済コミット
+2. `f9889e1` print系再インデント（空白のみ、diff -wで検証）
+3. `d412b68` 回帰テスト21本（test-regression-1150.R）+ Alpha/Omega/Biserial
+   スモークテスト（test-smoke-reliability.R）。テスト作成agentが
+   build_conf_mat()のdata.frame conf拒否バグ（%in%が列単位比較）を追加発見
+4. `fbb7ca4` 掃除: R/00_BiclucterUtils.R→00_BiclusterUtils.R改名、
+   ルートの「.png」git rm、.RbuildignoreにRplots.pdf非アンカー版追加
+5. `661c70d` API統一+バグ修正（NEWS「API consistency changes」節新設）:
+   - verbose既定を全関数FALSEに統一（IRT/GRM/LCA/GridSearch/Biclustering系/
+     IRM系/BNM_GA/BNM_PBILがTRUEだった）+ 記述逆転doc 4系統修正
+   - Biclustering_IRMのmax_iter→maxiter改名（resolve_deprecated_max_iter()
+     シムで旧名も警告つきで受理、v2.0.0で削除予定）
+   - ordinal IRMのmic既定TRUE→FALSE・EM_limit 100→20（兄弟と統一）
+   - BNM/LDLRA/LDB/BINET/GA系/IRM.binaryの引数順を(na,Z,w)に統一
+   - Biclustering.ratedにconf_classをシグネチャ明示（...経由の隠し渡し解消）、
+     rated既定method="R"をdocに明記
+   - LDLRA beta=2,2は本家Module_LDLRA.wl確認で本家由来と確定→docに根拠明記
+     （BNM/Biclusは本家も1,1。BNMのbeta0エイリアスも本家由来だった）
+   - DistractorAnalysisのdistractor_coreでQ/CAをremap（0始まり/飛び番対応、
+     モデル側FRPと整合）
+   - build_conf_matにas.matrix(conf)を検証前に追加
+   - grid_serch→GridSearch例修正、LDLRAに0/0時の明示エラー
+     （beta_posterior_modeのNaN仕様をdocstring化、BNMはis.nan表示に依存
+     するため戻り値表現は不変更）
+   - print typo: Dimensionality Analyeis/Cummurative/Conditonal×2
+6. `48d8ad6` LRA.ratedのminFreqRatioカテゴリ潰し機能を復活: 判定条件が
+   度数と正答コードを比較しており一度も発火せず、発火すれば組立部で
+   長さ不一致クラッシュという二重の死に機能だった。「頻度が閾値以上
+   または正答なら残す」に修正、ICRPはcat_label（旧cat_labelXXX、位置対応
+   のmatch引きに改良）で潰しバケットを「CatX」表示。既定0は挙動不変。
+   合成データで単一/複数カテゴリプールを実測検証、回帰テスト追加
+7. `31905c4` styler（新規テスト2ファイルの空白のみ）
+8. `383567b` cran-comments.md 1.15.0化
+
+### 提出前チェック（tools/build_pkg.R をステップ実行）
+
+- **submit_cran()だけは実行していない**（スクリプト最終行に入っており、
+  実行すると即提出＝クールダウン7/14明け前になるため。7/15に手動実行）
+- local devtools::check(cran=TRUE): 0/0/0（5m22s）
+- rhub v2: linux/macos-arm64/windows（全てR-devel）全green
+- win-builder R-devel: 投入済み → **結果メール（kosugitti@gmail.com）の確認が残タスク**
+- spell_check: 日本語ビネットの既知誤検知のみ
+- 下流: dev版をローカルinstallして ggExametrika 611全パス（WARN1は2024年からの
+  BINET Cautionで無関係）、shinyExametrika 183全パス
+- GitHub Actions: R-CMD-check/pkgdown/test-coverage 全green
+- フルスイート 5137テスト FAIL 0
+
+### 保留（意図的に未対応）
+
+- BNMのplotメソッドなし（やるならv1.16+の機能追加）
+- qBiNormal/polychoric_likelihoodのR参照実装・コメントアウト旧コードは
+  思い出として温存
+- 直接テストなしエクスポート残り約26本（GA/PBIL系は意図的、他は間接被覆）
+- 診断用C++（compare_gradients_grm等）のdev専用コード同梱（低優先）
+
+### 次回（7/15前後）
+
+1. win-builderの結果メール確認
+2. `devtools::submit_cran()`（cran-comments.mdは更新済み）
+3. CRAN受理後: git tag v1.15.0 → GitHub Release → Discussions告知（日英）
+
 ## 2026-07-01（続き） — v1.15.0: dataFormatの分散ゼロ項目検出漏れ修正（IRT() "object 'result' not found"）
 
 class_statistics（先生の別プロジェクト、試験問題プールのIRT分析）で

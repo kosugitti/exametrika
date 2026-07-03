@@ -37,6 +37,67 @@
 
 <p>Detailed development log. User-facing changes go in <code>NEWS.md</code>; this file captures the per-session internal narrative (why a change was made, what was investigated, what was ruled out). Entries are newest-first.</p>
 <div class="section level2">
+<h2 id="id_2026-07-0203--v1150-第2次監査横断4系統-回帰テスト--api統一--提出前チェック一式">2026-07-02〜03 — v1.15.0: 第2次監査（横断4系統）→ 回帰テスト → API統一 → 提出前チェック一式<a class="anchor" aria-label="anchor" href="#id_2026-07-0203--v1150-%E7%AC%AC2%E6%AC%A1%E7%9B%A3%E6%9F%BB%E6%A8%AA%E6%96%AD4%E7%B3%BB%E7%B5%B1-%E5%9B%9E%E5%B8%B0%E3%83%86%E3%82%B9%E3%83%88--api%E7%B5%B1%E4%B8%80--%E6%8F%90%E5%87%BA%E5%89%8D%E3%83%81%E3%82%A7%E3%83%83%E3%82%AF%E4%B8%80%E5%BC%8F"></a></h2>
+<p>「他にまだゴミ・バグ・不統一がないか」という依頼で、前日の縦割り監査 （ファイル番号帯4分割）と切り口を変えた横断監査を4系統並行agentで実施: API一貫性 / ドキュメント整合性 / 前日8コミットの回帰レビュー / 残ゴミ・テスト衛生。 全指摘は実測検証つき。主な発見: Biclustering系のmaxiter/max_iter混在 （…に吸われ無警告無視）、mic既定がordinal IRMだけTRUE、BNMだけplotなし、 DistractorAnalysisの0始まりカテゴリ脱落（前日修正の同型取りこぼし、実測319件消失）、 前日21件修正に回帰テストゼロ、GridSearch @examplesのgrid_serch誤記、 verbose @paramの記述逆転4系統、死にコード約120行、cat_labelXXX、 tarballへのRplots.pdf混入、ファイル名Biclucter誤記、git追跡の「.png」等。</p>
+<div class="section level3">
+<h3 id="コミット構成全push済">コミット構成（全push済）<a class="anchor" aria-label="anchor" href="#%E3%82%B3%E3%83%9F%E3%83%83%E3%83%88%E6%A7%8B%E6%88%90%E5%85%A8push%E6%B8%88"></a></h3>
+<ol style="list-style-type: decimal"><li>
+<code>88c8f38</code> 前セッション未コミットのdataFormat分散ゼロ修正一式を救済コミット</li>
+<li>
+<code>f9889e1</code> print系再インデント（空白のみ、diff -wで検証）</li>
+<li>
+<code>d412b68</code> 回帰テスト21本（test-regression-1150.R）+ Alpha/Omega/Biserial スモークテスト（test-smoke-reliability.R）。テスト作成agentが build_conf_mat()のdata.frame conf拒否バグ（%in%が列単位比較）を追加発見</li>
+<li>
+<code>fbb7ca4</code> 掃除: R/00_BiclucterUtils.R→00_BiclusterUtils.R改名、 ルートの「.png」git rm、.RbuildignoreにRplots.pdf非アンカー版追加</li>
+<li>
+<code>661c70d</code> API統一+バグ修正（NEWS「API consistency changes」節新設）:
+<ul><li>verbose既定を全関数FALSEに統一（IRT/GRM/LCA/GridSearch/Biclustering系/ IRM系/BNM_GA/BNM_PBILがTRUEだった）+ 記述逆転doc 4系統修正</li>
+<li>Biclustering_IRMのmax_iter→maxiter改名（resolve_deprecated_max_iter() シムで旧名も警告つきで受理、v2.0.0で削除予定）</li>
+<li>ordinal IRMのmic既定TRUE→FALSE・EM_limit 100→20（兄弟と統一）</li>
+<li>BNM/LDLRA/LDB/BINET/GA系/IRM.binaryの引数順を(na,Z,w)に統一</li>
+<li>Biclustering.ratedにconf_classをシグネチャ明示（…経由の隠し渡し解消）、 rated既定method=“R”をdocに明記</li>
+<li>LDLRA beta=2,2は本家Module_LDLRA.wl確認で本家由来と確定→docに根拠明記 （BNM/Biclusは本家も1,1。BNMのbeta0エイリアスも本家由来だった）</li>
+<li>DistractorAnalysisのdistractor_coreでQ/CAをremap（0始まり/飛び番対応、 モデル側FRPと整合）</li>
+<li>build_conf_matにas.matrix(conf)を検証前に追加</li>
+<li>grid_serch→GridSearch例修正、LDLRAに0/0時の明示エラー （beta_posterior_modeのNaN仕様をdocstring化、BNMはis.nan表示に依存 するため戻り値表現は不変更）</li>
+<li>print typo: Dimensionality Analyeis/Cummurative/Conditonal×2</li>
+</ul></li>
+<li>
+<code>48d8ad6</code> LRA.ratedのminFreqRatioカテゴリ潰し機能を復活: 判定条件が 度数と正答コードを比較しており一度も発火せず、発火すれば組立部で 長さ不一致クラッシュという二重の死に機能だった。「頻度が閾値以上 または正答なら残す」に修正、ICRPはcat_label（旧cat_labelXXX、位置対応 のmatch引きに改良）で潰しバケットを「CatX」表示。既定0は挙動不変。 合成データで単一/複数カテゴリプールを実測検証、回帰テスト追加</li>
+<li>
+<code>31905c4</code> styler（新規テスト2ファイルの空白のみ）</li>
+<li>
+<code>383567b</code> cran-comments.md 1.15.0化</li>
+</ol></div>
+<div class="section level3">
+<h3 id="提出前チェックtoolsbuild_pkgr-をステップ実行">提出前チェック（tools/build_pkg.R をステップ実行）<a class="anchor" aria-label="anchor" href="#%E6%8F%90%E5%87%BA%E5%89%8D%E3%83%81%E3%82%A7%E3%83%83%E3%82%AFtoolsbuild_pkgr-%E3%82%92%E3%82%B9%E3%83%86%E3%83%83%E3%83%97%E5%AE%9F%E8%A1%8C"></a></h3>
+<ul><li>
+<strong>submit_cran()だけは実行していない</strong>（スクリプト最終行に入っており、 実行すると即提出＝クールダウン7/14明け前になるため。7/15に手動実行）</li>
+<li>local devtools::check(cran=TRUE): 0/0/0（5m22s）</li>
+<li>rhub v2: linux/macos-arm64/windows（全てR-devel）全green</li>
+<li>win-builder R-devel: 投入済み → <strong>結果メール（<a href="mailto:kosugitti@gmail.com" class="email">kosugitti@gmail.com</a>）の確認が残タスク</strong>
+</li>
+<li>spell_check: 日本語ビネットの既知誤検知のみ</li>
+<li>下流: dev版をローカルinstallして ggExametrika 611全パス（WARN1は2024年からの BINET Cautionで無関係）、shinyExametrika 183全パス</li>
+<li>GitHub Actions: R-CMD-check/pkgdown/test-coverage 全green</li>
+<li>フルスイート 5137テスト FAIL 0</li>
+</ul></div>
+<div class="section level3">
+<h3 id="保留意図的に未対応">保留（意図的に未対応）<a class="anchor" aria-label="anchor" href="#%E4%BF%9D%E7%95%99%E6%84%8F%E5%9B%B3%E7%9A%84%E3%81%AB%E6%9C%AA%E5%AF%BE%E5%BF%9C"></a></h3>
+<ul><li>BNMのplotメソッドなし（やるならv1.16+の機能追加）</li>
+<li>qBiNormal/polychoric_likelihoodのR参照実装・コメントアウト旧コードは 思い出として温存</li>
+<li>直接テストなしエクスポート残り約26本（GA/PBIL系は意図的、他は間接被覆）</li>
+<li>診断用C++（compare_gradients_grm等）のdev専用コード同梱（低優先）</li>
+</ul></div>
+<div class="section level3">
+<h3 id="次回715前後">次回（7/15前後）<a class="anchor" aria-label="anchor" href="#%E6%AC%A1%E5%9B%9E715%E5%89%8D%E5%BE%8C"></a></h3>
+<ol style="list-style-type: decimal"><li>win-builderの結果メール確認</li>
+<li>
+<code>devtools::submit_cran()</code>（cran-comments.mdは更新済み）</li>
+<li>CRAN受理後: git tag v1.15.0 → GitHub Release → Discussions告知（日英）</li>
+</ol></div>
+</div>
+<div class="section level2">
 <h2 id="id_2026-07-01続き--v1150-dataformatの分散ゼロ項目検出漏れ修正irt-object-result-not-found">2026-07-01（続き） — v1.15.0: dataFormatの分散ゼロ項目検出漏れ修正（IRT() “object ‘result’ not found”）<a class="anchor" aria-label="anchor" href="#id_2026-07-01%E7%B6%9A%E3%81%8D--v1150-dataformat%E3%81%AE%E5%88%86%E6%95%A3%E3%82%BC%E3%83%AD%E9%A0%85%E7%9B%AE%E6%A4%9C%E5%87%BA%E6%BC%8F%E3%82%8C%E4%BF%AE%E6%AD%A3irt-object-result-not-found"></a></h2>
 <p>class_statistics（先生の別プロジェクト、試験問題プールのIRT分析）で <code>IRT(dat)</code>が「Error in IRT(dat) : object ‘result’ not found」で落ちる という報告を受けて調査。</p>
 <p>原因は<code><a href="reference/IRT.html">IRT()</a></code>内のEMのMステップで、項目の傾き初期値をNaN（分散ゼロ項目の item-total correlationがNaNになるため）で<code><a href="https://rdrr.io/r/stats/optim.html" class="external-link">optim()</a></code>に渡すと、tryCatchで 100回リトライしても毎回失敗し、<code>result</code>が一度も代入されないまま <code>result$value</code>を参照してクラッシュすること。再現データ（定数列を1本混ぜた ダミー行列）で確認済み。</p>

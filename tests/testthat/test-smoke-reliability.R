@@ -41,10 +41,12 @@ test_that("BiserialCorrelation() recovers a strong synthetic association", {
 
 test_that("BiserialCorrelation() item-total values match ITBiserial()", {
   tmp <- dataFormat(J15S500)
-  total <- scale(rowSums(tmp$U * tmp$Z))[, 1]  # standard-normal continuous score
-  bs <- vapply(seq_len(ncol(tmp$U)),
-               function(j) BiserialCorrelation(tmp$U[, j], total),
-               numeric(1))
+  total <- scale(rowSums(tmp$U * tmp$Z))[, 1] # standard-normal continuous score
+  bs <- vapply(
+    seq_len(ncol(tmp$U)),
+    function(j) BiserialCorrelation(tmp$U[, j], total),
+    numeric(1)
+  )
   expect_true(all(bs >= -1 & bs <= 1))
   expect_equal(bs, unname(ITBiserial(J15S500)), tolerance = 1e-3)
 })

@@ -21,8 +21,10 @@ test_that("regression: longdataFormat handles colnames, sparse IDs, w, dups", {
   # (10/20/30, 100/200/300) yield a dense 3x3 matrix, not a sparse blown-up one.
   ld <- longdataFormat(long, Sid = "sid", Qid = "qid", Resp = "resp", w = "wt")
   expect_equal(dim(ld$U), c(3L, 3L))
-  expect_equal(as.vector(ld$U),
-    as.vector(matrix(c(1, 0, 1, 0, 1, 1, 1, 1, 0), nrow = 3, byrow = TRUE)))
+  expect_equal(
+    as.vector(ld$U),
+    as.vector(matrix(c(1, 0, 1, 0, 1, 1, 1, 1, 0), nrow = 3, byrow = TRUE))
+  )
 
   # (c) w reads the weight column, keyed by each item's first occurrence.
   expect_equal(as.numeric(ld$w), c(2, 5, 9))
@@ -73,8 +75,8 @@ test_that("regression: BNM()$crr uses the missing-masked crr", {
   Z[sample(length(Z), 300)] <- 0
   obj <- dataFormat(U, Z = Z)
 
-  crr_masked  <- as.vector(crr(obj))           # correct: honours Z
-  crr_imputed <- as.vector(crr(obj$U * obj$Z))  # buggy: 0-imputes missing
+  crr_masked <- as.vector(crr(obj)) # correct: honours Z
+  crr_imputed <- as.vector(crr(obj$U * obj$Z)) # buggy: 0-imputes missing
   expect_false(isTRUE(all.equal(crr_masked, crr_imputed)))
 
   labs <- obj$ItemLabel
@@ -108,8 +110,10 @@ test_that("regression: BINET() runs on missing data and accepts beta1/beta2", {
 
   expect_no_error(
     bn <- suppressWarnings(suppressMessages(
-      BINET(obj, ncls = 13, nfld = 12, conf = conf, adj_file = edgeFile,
-            beta1 = 2, beta2 = 2)
+      BINET(obj,
+        ncls = 13, nfld = 12, conf = conf, adj_file = edgeFile,
+        beta1 = 2, beta2 = 2
+      )
     ))
   )
   expect_s3_class(bn, "BINET")
@@ -147,7 +151,7 @@ test_that("regression: BNM() flags cyclic graphs as non-acyclic", {
     m
   }
   adj_dag <- mk(list(c(1, 2), c(2, 3), c(3, 4)))
-  adj_cyc <- mk(list(c(1, 2), c(2, 3), c(3, 4), c(4, 1)))  # 1->2->3->4->1
+  adj_cyc <- mk(list(c(1, 2), c(2, 3), c(3, 4), c(4, 1))) # 1->2->3->4->1
 
   b_dag <- suppressMessages(BNM(J5S10, adj_matrix = adj_dag))
   b_cyc <- suppressMessages(BNM(J5S10, adj_matrix = adj_cyc))
@@ -171,7 +175,7 @@ test_that("regression: LDB() accepts vector, matrix and data.frame conf", {
   conf_mat <- matrix(0, ni, nf)
   for (i in seq_len(ni)) conf_mat[i, conf_vec[i]] <- 1
 
-  rawU <- dataFormat(J35S515)$U  # genuine matrix input
+  rawU <- dataFormat(J35S515)$U # genuine matrix input
   r_vec <- suppressMessages(LDB(rawU, ncls = 5, conf = conf_vec, adj_file = edgeFile))
   r_mat <- suppressMessages(LDB(rawU, ncls = 5, conf = conf_mat, adj_file = edgeFile))
   expect_s3_class(r_mat, "LDB")
@@ -204,8 +208,8 @@ test_that("regression: Biclustering() nominal is invariant to a +1 code shift", 
   set.seed(1)
   N <- 120
   J <- 6
-  Q0 <- matrix(sample(0:2, N * J, replace = TRUE), N, J)  # codes 0,1,2
-  Q1 <- Q0 + 1                                             # codes 1,2,3
+  Q0 <- matrix(sample(0:2, N * J, replace = TRUE), N, J) # codes 0,1,2
+  Q1 <- Q0 + 1 # codes 1,2,3
   r0 <- suppressMessages(Biclustering(Q0, nfld = 2, ncls = 3, verbose = FALSE))
   r1 <- suppressMessages(Biclustering(Q1, nfld = 2, ncls = 3, verbose = FALSE))
   expect_equal(r0$ClassEstimated, r1$ClassEstimated)
@@ -303,7 +307,7 @@ test_that("regression: ItemTotalCorr.ordinal() masks missing responses", {
   # sentinel. Confirm the result matches the masked total, not the raw one.
   polyserial <- exametrika:::polyserial
   masked_total <- rowSums(replace(d$Q, d$Z == 0, NA), na.rm = TRUE)
-  buggy_total  <- rowSums(d$Q)  # includes -1 sentinels
+  buggy_total <- rowSums(d$Q) # includes -1 sentinels
   expect_false(isTRUE(all.equal(masked_total, buggy_total)))
   itc_masked <- vapply(seq_len(J), function(j) {
     qc <- d$Q[, j]
@@ -351,28 +355,40 @@ test_that("regression: remap_category_codes() densifies codes per column", {
   Q <- matrix(c(0, 1, 2, 3, 0, 0, 1, -1), ncol = 2)
   expect_equal(remap(Q), matrix(c(1, 2, 3, 4, 1, 1, 2, -1), ncol = 2))
   # Non-contiguous codes collapse to 1..k.
-  expect_equal(remap(matrix(c(2, 4, 6, 8), ncol = 1)),
-               matrix(c(1, 2, 3, 4), ncol = 1))
+  expect_equal(
+    remap(matrix(c(2, 4, 6, 8), ncol = 1)),
+    matrix(c(1, 2, 3, 4), ncol = 1)
+  )
   # A single-category column maps to all 1s; missing (-1) is left untouched.
-  expect_equal(remap(matrix(c(5, 5, 5), ncol = 1)),
-               matrix(c(1, 1, 1), ncol = 1))
+  expect_equal(
+    remap(matrix(c(5, 5, 5), ncol = 1)),
+    matrix(c(1, 1, 1), ncol = 1)
+  )
 })
 
 test_that("regression: build_conf_mat() handles vector/named/matrix/df conf", {
   bcm <- exametrika:::build_conf_mat
   # Plain confirmatory vector -> one-hot field membership.
-  expect_equal(bcm(c(1, 1, 2, 2, 3), 5),
-               matrix(c(1, 1, 0, 0, 0,
-                        0, 0, 1, 1, 0,
-                        0, 0, 0, 0, 1), ncol = 3))
+  expect_equal(
+    bcm(c(1, 1, 2, 2, 3), 5),
+    matrix(c(
+      1, 1, 0, 0, 0,
+      0, 0, 1, 1, 0,
+      0, 0, 0, 0, 1
+    ), ncol = 3)
+  )
   # Named vector is still a vector: names must not change the result.
-  expect_equal(unname(bcm(c(a = 1, b = 1, c = 2), 3)),
-               matrix(c(1, 1, 0, 0, 0, 1), ncol = 2))
+  expect_equal(
+    unname(bcm(c(a = 1, b = 1, c = 2), 3)),
+    matrix(c(1, 1, 0, 0, 0, 1), ncol = 2)
+  )
   # A gap in the codes leaves an all-zero field column (max drives ncol).
-  expect_equal(bcm(c(1, 1, 3, 3), 4),
-               matrix(c(1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1), ncol = 3))
+  expect_equal(
+    bcm(c(1, 1, 3, 3), 4),
+    matrix(c(1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1), ncol = 3)
+  )
   # A matrix conf (row-wise one-hot) is returned as a plain matrix.
-  m <- matrix(c(1, 0, 1, 0, 1, 0), ncol = 2)  # rows: f1, f2, f1
+  m <- matrix(c(1, 0, 1, 0, 1, 0), ncol = 2) # rows: f1, f2, f1
   expect_equal(bcm(m, 3), m)
   # Size mismatch is a clear error.
   expect_error(bcm(c(1, 2), 5), "does NOT match")
@@ -499,7 +515,8 @@ test_that("regression: LRA.rated minFreqRatio collapses rare distractors", {
   expect_equal(nrow(r1$ICRP), sum(dat$categories) - J)
   expect_equal(sum(r1$ICRP$CategoryLabel == "CatX"), J)
   # the correct answer is never collapsed
-  kept <- tapply(r1$ICRP$CategoryLabel, r1$ICRP$ItemLabel,
+  kept <- tapply(
+    r1$ICRP$CategoryLabel, r1$ICRP$ItemLabel,
     function(x) any(grepl("-Cat2$", x))
   )
   expect_true(all(kept))

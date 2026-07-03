@@ -371,6 +371,19 @@ the old defaults.
   the log-likelihood, matching the diagnostic added to `BINET()` earlier in
   this release (`R/09_LDLRA.R`).
 
+- `LRA()` for rated data has a `minFreqRatio` argument that is documented to
+  pool response categories rarer than `nobs * minFreqRatio` into a single
+  bucket, but the feature was doubly broken: the collapse test compared each
+  category's frequency against the correct-answer code (`catfreq != CA`,
+  almost always true), so no category was ever pooled; and had it fired, the
+  report assembly indexed the full category-label set and would have stopped
+  on a length mismatch. The condition now reads "keep a category if it is
+  frequent enough or it is the correct answer" (the correct answer must
+  never be pooled), and the Item-Category Reference Profile labels the
+  pooled bucket "CatX", using only the labels of the categories actually
+  estimated. The default `minFreqRatio = 0` keeps every category and is
+  unaffected (`R/13_LRA_rated.R`).
+
 - Fixed user-visible typos in printed output: "Dimensionality Analyeis" →
   "Dimensionality Analysis", "Cummurative Percentage" → "Cumulative
   Percentage", and "Conditonal" → "Conditional" (in "Conditional Correct

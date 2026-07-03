@@ -473,3 +473,34 @@ test_that("regression: data.frame conf is accepted and equals matrix conf", {
   cm_df <- exametrika:::build_conf_mat(as.data.frame(cm), 15)
   expect_identical(cm, unname(cm_df))
 })
+
+# NEWS: LRA.rated's minFreqRatio category collapse never fired (frequency
+# compared against the correct-answer CODE), and would have crashed at
+# report assembly if it had (labels used the full category set).
+test_that("regression: LRA.rated minFreqRatio collapses rare distractors", {
+  skip_on_cran()
+  set.seed(4)
+  N <- 400
+  J <- 5
+  Q <- matrix(sample(1:3, N * J, replace = TRUE), N, J)
+  r4 <- matrix(runif(N * J) < 0.02, N, J)
+  Q[r4] <- 4
+  r5 <- matrix(runif(N * J) < 0.02, N, J)
+  Q[r5] <- 5
+  dat <- dataFormat(as.data.frame(Q), response.type = "rated", CA = rep(2, J))
+
+  # default minFreqRatio = 0 keeps every category (previous behavior)
+  r0 <- suppressMessages(LRA(dat, nrank = 3))
+  expect_equal(nrow(r0$ICRP), sum(dat$categories))
+  expect_false(any(r0$ICRP$CategoryLabel == "CatX"))
+
+  # minFreqRatio = 0.1 pools the two ~2% categories into one CatX bucket
+  r1 <- suppressMessages(LRA(dat, nrank = 3, minFreqRatio = 0.1))
+  expect_equal(nrow(r1$ICRP), sum(dat$categories) - J)
+  expect_equal(sum(r1$ICRP$CategoryLabel == "CatX"), J)
+  # the correct answer is never collapsed
+  kept <- tapply(r1$ICRP$CategoryLabel, r1$ICRP$ItemLabel,
+    function(x) any(grepl("-Cat2$", x))
+  )
+  expect_true(all(kept))
+})

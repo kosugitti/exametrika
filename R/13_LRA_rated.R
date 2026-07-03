@@ -111,7 +111,12 @@ LRA.rated <- function(U,
   usecategory <- list()
   for (j in 1:nitems) {
     temp <- sapply(1:ncat[j], function(k) {
-      if (catfreq[[j]][k] >= nobs * minFreqRatio || catfreq[[j]][k] != U$CA[j]) {
+      # keep a category if it is frequent enough OR it is the correct
+      # answer (which must never be collapsed; design6 depends on it).
+      # The old condition compared the frequency against the correct-answer
+      # CODE (catfreq != CA), which is almost always true, so the
+      # minFreqRatio collapse never fired.
+      if (catfreq[[j]][k] >= nobs * minFreqRatio || category[[j]][k] == U$CA[j]) {
         category[[j]][k]
       } else {
         collapse_indicator
@@ -449,22 +454,28 @@ LRA.rated <- function(U,
   category_report <- as.data.frame(catRefmat)
   colnames(category_report) <- paste0("rank", 1:nrank)
 
-  cat_labelXXX <- vector("list", length(category))
+  # Per-item display labels for the categories actually estimated. When
+  # minFreqRatio collapses rare distractors, the pooled bucket
+  # (collapse_indicator, sorted last in usecategory) is labeled "CatX";
+  # labels of kept categories are looked up by their position in
+  # category[[i]] (CategoryLabel is positional, not indexed by code).
+  cat_label <- vector("list", length(category))
   for (i in seq_along(category)) {
     original_labels <- U$CategoryLabel[[i]]
     used_cats <- usecategory[[i]]
 
-    is_dropped <- used_cats == 100
+    is_dropped <- used_cats == collapse_indicator
 
     if (any(is_dropped)) {
-      used_labels <- original_labels[used_cats[!is_dropped]]
-      cat_labelXXX[[i]] <- c(used_labels, "CatX")
+      kept_codes <- used_cats[!is_dropped]
+      used_labels <- original_labels[match(kept_codes, category[[i]])]
+      cat_label[[i]] <- c(used_labels, "CatX")
     } else {
-      cat_labelXXX[[i]] <- original_labels
+      cat_label[[i]] <- original_labels
     }
   }
-  category_report$ItemLabel <- rep(U$ItemLabel, U$categories)
-  category_report$CategoryLabel <- unlist(U$CategoryLabel)
+  category_report$ItemLabel <- rep(U$ItemLabel, useNcat)
+  category_report$CategoryLabel <- unlist(cat_label)
   ## Item-Category Reference Profile
   ICRP <- category_report[, c("ItemLabel", "CategoryLabel", paste0("rank", 1:nrank))]
 

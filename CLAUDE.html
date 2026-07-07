@@ -125,6 +125,12 @@ docs/                # .gitignore'd (removed from repo); pkgdown site deployed t
 <strong>Rcpp</strong>: Performance-critical code in <code>src/</code> (GRM gradient, polychoric correlation).</li>
 <li>
 <strong>apply() caution</strong>: Never use <code>apply(X, 2, FUN)</code> when the result is used as a list. Use <code>lapply(seq_len(ncol(X)), function(j) FUN(X[, j]))</code> instead, because <code><a href="https://rdrr.io/r/base/apply.html" class="external-link">apply()</a></code> returns a matrix (not a list) when all columns produce same-length results.</li>
+<li>
+<strong>Staging</strong>: prototype in <code>develop/</code> (excluded from the build); only polished, CRAN-ready code goes into <code>R/</code>. R only — no Python.</li>
+<li>
+<strong>NEWS.md</strong>: every change, however small, must be recorded in <code>NEWS.md</code>; check for missing entries before each commit.</li>
+<li>
+<strong>dataFormat() stripped-matrix trap</strong>: after <code>tmp &lt;- dataFormat(...)</code>, never pass a class-stripped raw matrix (e.g. <code>U &lt;- tmp$U * tmp$Z</code>) to dispatching helpers such as <code><a href="reference/ItemTotalCorr.html">ItemTotalCorr()</a></code>/<code><a href="reference/ItemThreshold.html">ItemThreshold()</a></code>/<code><a href="reference/crr.html">crr()</a></code>. Their <code>.default</code> re-runs <code><a href="reference/dataFormat.html">dataFormat()</a></code> without the original <code>na</code>/<code>Z</code>/<code>w</code>, so missing responses get recounted as incorrect. Always pass <code>tmp</code> itself (fixed across IRT/Biclustering/BNM/LDLRA/LDB/BINET in v1.15.0).</li>
 </ul></div>
 <div class="section level2">
 <h2 id="testing">Testing<a class="anchor" aria-label="anchor" href="#testing"></a></h2>
@@ -145,6 +151,39 @@ docs/                # .gitignore'd (removed from repo); pkgdown site deployed t
 <li>
 <strong>R CMD check</strong>: 0 errors | 0 warnings | 0 notes</li>
 </ul></div>
+<div class="section level2">
+<h2 id="release-process-notes">Release Process Notes<a class="anchor" aria-label="anchor" href="#release-process-notes"></a></h2>
+<ul><li>CRAN cadence: leave at least 1 month between accepted submissions.</li>
+<li>
+<code>tools/build_pkg.R</code> ends with <code>devtools::submit_cran()</code> — never <code><a href="https://rdrr.io/r/base/source.html" class="external-link">source()</a></code> the whole file; run the steps individually and call <code>submit_cran()</code> by hand on submission day.</li>
+<li>Local roxygen2 8.0.0 rewrites <code>DESCRIPTION</code> (RoxygenNote → <code>Config/roxygen2/version</code>) and reformats <code>Biclustering.Rd</code> during <code>roxygenise()</code>/<code>devtools::test()</code>; revert those files with <code>git checkout</code> before committing.</li>
+<li>After CRAN acceptance: git tag → GitHub Release → Discussions announcements (JA/EN), in that order (same flow as v1.13.x/v1.14.0).</li>
+<li>Windows R-devel enforces a 10-minute overall checktime; heavy real-data fit tests (J<em>S</em> regressions) must carry <code>skip_on_cran()</code>.</li>
+</ul></div>
+<div class="section level2">
+<h2 id="polytomous-support-matrix">Polytomous Support Matrix<a class="anchor" aria-label="anchor" href="#polytomous-support-matrix"></a></h2>
+<table class="table"><thead><tr><th></th>
+<th>binary</th>
+<th>ordinal</th>
+<th>rated</th>
+<th>nominal</th>
+</tr></thead><tbody><tr><td>LRA</td>
+<td>yes</td>
+<td>yes</td>
+<td>yes</td>
+<td>—</td>
+</tr><tr><td>Biclustering</td>
+<td>yes</td>
+<td>yes</td>
+<td>yes</td>
+<td>yes</td>
+</tr><tr><td>IRM</td>
+<td>yes</td>
+<td>yes</td>
+<td>—</td>
+<td>yes</td>
+</tr></tbody></table><p>rated = nominal + correct answer (multiple-choice tests); ordinal = Likert-type ordered ratings.</p>
+</div>
 <div class="section level2">
 <h2 id="known-technical-debt">Known Technical Debt<a class="anchor" aria-label="anchor" href="#known-technical-debt"></a></h2>
 <div class="section level3">
@@ -189,7 +228,15 @@ docs/                # .gitignore'd (removed from repo); pkgdown site deployed t
 </ul></div>
 <div class="section level3">
 <h3 id="future-work">Future Work<a class="anchor" aria-label="anchor" href="#future-work"></a></h3>
-<ul><li>BINET FRPIndex addition</li>
+<ul><li>Test-suite slimming before v2.0.0 BNM work: subsample heavy real-data tests, compress seed-sweep parity tests to a few representative seeds, isolate benchmarks into <code>tests/extra/</code> outside the <code>R CMD check</code> path</li>
+<li>Re-run Mathematica notebooks after the CAIC fix (wolframscript; needs <code>UsingFrontEnd[]</code> wrapper and <code>/Applications/Wolfram.app/Contents/MacOS</code> on PATH) → regenerate fixtures</li>
+<li>DESCRIPTION <code>Title:</code> → <code>Test Data Engineering</code> (issue #32, aligning with the book and the R Journal paper)</li>
+<li>
+<code>conf</code> → <code>conf_field</code> rename consideration (v2.0.0, together with the other field renames; note <code>conf</code> is also used by LCA/LRA for test equating)</li>
+<li>IRM Gibbs C++ phase 2: replace R-level <code>sample.int</code>/<code>rmultinom</code> calls with an RNG-order-compatible pure C++ implementation (~1.5-2x headroom)</li>
+<li>BNM/LDLRA GA/PBIL acceleration: write in C++ at the same time as the polytomous BNM implementation, not before</li>
+<li>BINET FRPIndex addition</li>
+<li>LCA.nominal</li>
 <li>Input data storage method unification (v2.0.0)</li>
 <li>LRA.ordinal mixed category count support (requires matrix→list refactor)</li>
 </ul></div>

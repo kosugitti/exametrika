@@ -102,6 +102,15 @@ docs/                # .gitignore'd (removed from repo); pkgdown site deployed t
 - **apply() caution**: Never use `apply(X, 2, FUN)` when the result is used as a list.
   Use `lapply(seq_len(ncol(X)), function(j) FUN(X[, j]))` instead, because `apply()`
   returns a matrix (not a list) when all columns produce same-length results.
+- **Staging**: prototype in `develop/` (excluded from the build); only polished,
+  CRAN-ready code goes into `R/`. R only — no Python.
+- **NEWS.md**: every change, however small, must be recorded in `NEWS.md`; check for
+  missing entries before each commit.
+- **dataFormat() stripped-matrix trap**: after `tmp <- dataFormat(...)`, never pass a
+  class-stripped raw matrix (e.g. `U <- tmp$U * tmp$Z`) to dispatching helpers such as
+  `ItemTotalCorr()`/`ItemThreshold()`/`crr()`. Their `.default` re-runs `dataFormat()`
+  without the original `na`/`Z`/`w`, so missing responses get recounted as incorrect.
+  Always pass `tmp` itself (fixed across IRT/Biclustering/BNM/LDLRA/LDB/BINET in v1.15.0).
 
 ## Testing
 
@@ -116,6 +125,29 @@ docs/                # .gitignore'd (removed from repo); pkgdown site deployed t
   `tools/`, `.github/`, etc. Tests and inst are NOT excluded (fixed in v1.10.0)
 - **Current status**: ~4,840 tests, all passing locally. On CRAN (Windows checktime limit), the slowest blocks in `test-grm.R` (J15S3810 GRM, nitems>=8 underflow regression) and `test-irm.R` (J35S515 Gibbs reproducibility) are wrapped in `skip_on_cran()` (added in v1.13.1).
 - **R CMD check**: 0 errors | 0 warnings | 0 notes
+
+## Release Process Notes
+
+- CRAN cadence: leave at least 1 month between accepted submissions.
+- `tools/build_pkg.R` ends with `devtools::submit_cran()` — never `source()` the whole
+  file; run the steps individually and call `submit_cran()` by hand on submission day.
+- Local roxygen2 8.0.0 rewrites `DESCRIPTION` (RoxygenNote → `Config/roxygen2/version`)
+  and reformats `Biclustering.Rd` during `roxygenise()`/`devtools::test()`; revert those
+  files with `git checkout` before committing.
+- After CRAN acceptance: git tag → GitHub Release → Discussions announcements (JA/EN),
+  in that order (same flow as v1.13.x/v1.14.0).
+- Windows R-devel enforces a 10-minute overall checktime; heavy real-data fit tests
+  (J*S* regressions) must carry `skip_on_cran()`.
+
+## Polytomous Support Matrix
+
+| | binary | ordinal | rated | nominal |
+|---|---|---|---|---|
+| LRA | yes | yes | yes | — |
+| Biclustering | yes | yes | yes | yes |
+| IRM | yes | yes | — | yes |
+
+rated = nominal + correct answer (multiple-choice tests); ordinal = Likert-type ordered ratings.
 
 ## Known Technical Debt
 
@@ -139,7 +171,21 @@ docs/                # .gitignore'd (removed from repo); pkgdown site deployed t
 - `LogLik` → `log_lik`
 
 ### Future Work
+- Test-suite slimming before v2.0.0 BNM work: subsample heavy real-data tests,
+  compress seed-sweep parity tests to a few representative seeds, isolate benchmarks
+  into `tests/extra/` outside the `R CMD check` path
+- Re-run Mathematica notebooks after the CAIC fix (wolframscript; needs `UsingFrontEnd[]`
+  wrapper and `/Applications/Wolfram.app/Contents/MacOS` on PATH) → regenerate fixtures
+- DESCRIPTION `Title:` → `Test Data Engineering` (issue #32, aligning with the book and
+  the R Journal paper)
+- `conf` → `conf_field` rename consideration (v2.0.0, together with the other field
+  renames; note `conf` is also used by LCA/LRA for test equating)
+- IRM Gibbs C++ phase 2: replace R-level `sample.int`/`rmultinom` calls with an
+  RNG-order-compatible pure C++ implementation (~1.5-2x headroom)
+- BNM/LDLRA GA/PBIL acceleration: write in C++ at the same time as the polytomous BNM
+  implementation, not before
 - BINET FRPIndex addition
+- LCA.nominal
 - Input data storage method unification (v2.0.0)
 - LRA.ordinal mixed category count support (requires matrix→list refactor)
 

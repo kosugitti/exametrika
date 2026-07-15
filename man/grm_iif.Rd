@@ -19,6 +19,18 @@ Value of the Item Information Function
 \description{
 Calculates the value of the Item Information Function for the Graded Response Model.
 }
+\details{
+The information is Samejima's (1969) item information for the GRM,
+\deqn{I(\theta) = \sum_{k=1}^{K} \frac{[P_k'(\theta)]^2}{P_k(\theta)},}
+where \eqn{P_k(\theta) = P_{k-1}^*(\theta) - P_k^*(\theta)} is the
+category response probability, \eqn{P_k^*(\theta)} is the cumulative
+(boundary) probability with \eqn{P_0^* = 1} and \eqn{P_K^* = 0}, and
+\eqn{P_k^{*\prime}(\theta) = a P_k^*(\theta) [1 - P_k^*(\theta)]}.
+The logistic metric of the estimation routine is used as is (no
+1.702 scaling constant), so the information is consistent with the
+parameters returned by \code{\link{GRM}} and with the posterior
+standard deviations (PSD).
+}
 \examples{
 \dontrun{
 # Example for an item with 3 categories

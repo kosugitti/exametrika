@@ -142,6 +142,7 @@ plot_grm_model <- function(x, type, plotItemID, nc, nr, colors, dots = list()) {
     } else {
       c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7", "#8B4513")
     }
+    grm_colors <- rep_len(grm_colors, K) # recycle when K exceeds the palette
     probs <- matrix(0, nrow = n_theta, ncol = K)
     for (i in 1:n_theta) {
       probs[i, ] <- grm_prob(thetas[i], a, b)
@@ -198,6 +199,7 @@ plot_grm_model <- function(x, type, plotItemID, nc, nr, colors, dots = list()) {
     } else {
       c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7", "#8B4513")
     }
+    grm_colors <- rep_len(grm_colors, max_K) # recycle when K exceeds the palette
     draw_legend_strip(
       legend = paste("Category", 1:max_K),
       col = grm_colors[1:max_K], lty = 1,

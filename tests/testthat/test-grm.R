@@ -280,3 +280,69 @@ test_that("GRM error handling works", {
   tiny_data <- matrix(c(1, 2, 1, 2), nrow = 2, ncol = 2)
   expect_error(GRM(tiny_data))
 })
+
+test_that("grm_iif matches the numerical Fisher information", {
+  # I(theta) = sum_k (dP_k/dtheta)^2 / P_k, checked by central differences
+  fisher_num <- function(theta, a, b, h = 1e-5) {
+    P <- grm_prob(theta, a, b)
+    dP <- (grm_prob(theta + h, a, b) - grm_prob(theta - h, a, b)) / (2 * h)
+    sum(dP^2 / P)
+  }
+  a <- 1.5
+  b <- c(-1, -0.5, 0.5, 1)
+  for (th in seq(-3, 3, 0.5)) {
+    expect_equal(grm_iif(th, a, b), fisher_num(th, a, b),
+      tolerance = 1e-6,
+      info = paste("theta =", th)
+    )
+  }
+  # Binary special case: reduces to the 2PL information a^2 P Q
+  # (logistic metric, no 1.702 constant)
+  a2 <- 1.2
+  b2 <- 0.3
+  p <- 1 / (1 + exp(-a2 * (0.5 - b2)))
+  expect_equal(grm_iif(0.5, a2, b2), a2^2 * p * (1 - p), tolerance = 1e-10)
+})
+
+test_that("GRM posterior ability estimates use the product likelihood", {
+  data("J5S1000", package = "exametrika")
+  fit <- GRM(J5S1000, verbose = FALSE)
+
+  # Recompute the EAP independently from the returned parameters with
+  # an explicit product-of-items posterior
+  tmp <- dataFormat(J5S1000)
+  dat <- tmp$Q
+  dat[tmp$Z == 0] <- NA
+  nitems <- ncol(dat)
+  for (j in seq_len(nitems)) {
+    lv <- sort(unique(dat[!is.na(dat[, j]), j]))
+    dat[, j] <- match(dat[, j], lv)
+  }
+  quadrature <- seq(-6, 6, 0.01)
+  qw <- dnorm(quadrature)
+  qw <- qw / sum(qw)
+  nobs <- nrow(dat)
+  nq <- length(quadrature)
+  logL <- matrix(log(qw), nrow = nobs, ncol = nq, byrow = TRUE)
+  for (j in seq_len(nitems)) {
+    a <- fit$params[j, 1]
+    b <- as.numeric(fit$params[j, -1])
+    b <- b[!is.na(b)]
+    Pj <- sapply(quadrature, function(t) grm_prob(t, a, b))
+    lPj <- log(pmax(Pj, 1e-300))
+    ok <- which(!is.na(dat[, j]))
+    logL[ok, ] <- logL[ok, ] + lPj[dat[ok, j], , drop = FALSE]
+  }
+  logL <- logL - apply(logL, 1, max)
+  post <- exp(logL)
+  post <- post / rowSums(post)
+  EAP_ref <- as.numeric(post %*% quadrature)
+  PSD_ref <- sqrt(as.numeric(post %*% quadrature^2) - EAP_ref^2)
+
+  expect_equal(fit$EAP, EAP_ref, tolerance = 1e-8)
+  expect_equal(fit$PSD, PSD_ref, tolerance = 1e-8)
+
+  # The sum-posterior bug shrank the EAP scale to ~0.29; the correct
+  # product posterior spreads it out
+  expect_gt(sd(fit$EAP), 0.5)
+})

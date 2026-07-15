@@ -44,6 +44,17 @@ grm_prob <- function(theta, a, b) {
 #' @title Item Information Function for GRM
 #' @description
 #' Calculates the value of the Item Information Function for the Graded Response Model.
+#' @details
+#' The information is Samejima's (1969) item information for the GRM,
+#' \deqn{I(\theta) = \sum_{k=1}^{K} \frac{[P_k'(\theta)]^2}{P_k(\theta)},}
+#' where \eqn{P_k(\theta) = P_{k-1}^*(\theta) - P_k^*(\theta)} is the
+#' category response probability, \eqn{P_k^*(\theta)} is the cumulative
+#' (boundary) probability with \eqn{P_0^* = 1} and \eqn{P_K^* = 0}, and
+#' \eqn{P_k^{*\prime}(\theta) = a P_k^*(\theta) [1 - P_k^*(\theta)]}.
+#' The logistic metric of the estimation routine is used as is (no
+#' 1.702 scaling constant), so the information is consistent with the
+#' parameters returned by \code{\link{GRM}} and with the posterior
+#' standard deviations (PSD).
 #' @param theta Latent trait value of the subject
 #' @param a Discrimination parameter of IRF
 #' @param b Vector of difficulty parameters (thresholds) of IRF
@@ -62,22 +73,14 @@ grm_prob <- function(theta, a, b) {
 
 grm_iif <- function(theta, a, b) {
   K <- length(b) + 1
-  p <- grm_prob(theta, a, b)
-  info <- 1
-  for (c in 1:(K - 1)) {
-    p_c <- grm_cumprob(theta, a, b)[c]
-    q_c <- 1 - p_c
-
-    p_c_plus1 <- grm_cumprob(theta, a, b)[c + 1]
-    if (is.na(p_c_plus1)) {
-      p_c_plus1 <- 0
-    }
-    q_c_plus1 <- 1 - p_c_plus1
-
-    num <- (p_c * q_c - p_c_plus1 * q_c_plus1)^2
-    den <- p_c
-    info <- info + (1.702^2 * a^2 * num) / den
-  }
+  # Boundary probabilities P*_0 = 1 > P*_1 > ... > P*_{K-1} > P*_K = 0
+  cum_p <- c(1, grm_cumprob(theta, a, b), 0)
+  # Category probabilities P_k = P*_{k-1} - P*_k
+  p <- cum_p[1:K] - cum_p[2:(K + 1)]
+  # dP*_k/dtheta = a P*_k (1 - P*_k); zero at both endpoints
+  d_cum <- a * cum_p * (1 - cum_p)
+  d_p <- d_cum[1:K] - d_cum[2:(K + 1)]
+  info <- sum(d_p^2 / pmax(p, 1e-10))
   return(unname(info))
 }
 
@@ -257,35 +260,28 @@ GRM <- function(U, na = NULL, Z = NULL, w = NULL, verbose = FALSE) {
   quad_weight <- dnorm(quadrature)
   quad_weight <- quad_weight / sum(quad_weight)
   nq <- length(quadrature)
-  # W(SxP), L(PxQ)
-  W <- matrix(nrow = nobs, ncol = sum(ncat))
-  L <- matrix(nrow = sum(ncat), ncol = nq)
 
-  for (i in 1:nobs) {
-    vec <- c()
-    for (j in 1:nitems) {
-      resp <- dat[i, j]
-      v <- rep(0, ncat[j])
-      v[resp] <- 1
-      vec <- c(vec, v)
-    }
-    W[i, ] <- vec
-  }
-
+  # Posterior over the quadrature grid:
+  #   log P(theta_q | x_i) = log w(q) + sum_j log P_j(x_ij | theta_q) + const
+  # (product of item category probabilities, accumulated in log space;
+  # missing responses are simply skipped)
+  log_post <- matrix(log(quad_weight), nrow = nobs, ncol = nq, byrow = TRUE)
   for (j in 1:nitems) {
-    a <- est_a[j]
-    b <- est_b[[j]]
-    start_pos <- c(0, cumsum(ncat)) + 1
-    end_pos <- start_pos - 1
-    start_pos <- start_pos[1:nitems]
-    end_pos <- end_pos[-1]
-    for (q in 1:nq) {
-      L[start_pos[j]:end_pos[j], q] <- grm_prob(quadrature[q], a, b)
-    }
+    # K x nq matrix of category probabilities for item j
+    Pj <- vapply(
+      quadrature,
+      function(t) grm_prob(t, est_a[j], est_b[[j]]),
+      numeric(ncat[j])
+    )
+    lPj <- log(pmax(Pj, 1e-300))
+    resp <- dat[, j]
+    ok <- which(!is.na(resp))
+    log_post[ok, ] <- log_post[ok, ] + lPj[resp[ok], , drop = FALSE]
   }
 
-  L_weighted <- t(t(L) * quad_weight)
-  post_theta <- W %*% L_weighted
+  # Normalize per subject (log-sum-exp for numerical stability)
+  log_post <- log_post - apply(log_post, 1, max)
+  post_theta <- exp(log_post)
   post_theta <- post_theta / rowSums(post_theta)
   score_idx <- apply(post_theta, 1, which.max)
   MAP <- quadrature[score_idx]

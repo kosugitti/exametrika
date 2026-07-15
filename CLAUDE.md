@@ -6,9 +6,9 @@
 (2022, <ISBN:978-9811699856>). It provides psychometric analysis tools:
 CTT, IRT, GRM, LCA, LRA, Biclustering, BNM, LDLRA, LDB, BINET.
 
-- **Current version**: 1.15.0 (dev, targeting CRAN submission
-  2026-07-15) / 1.14.0 (CRAN)
-- **CRAN version**: 1.14.0 (accepted/published 2026-06-14)
+- **Current version**: 1.16.0 (dev, targeting CRAN submission
+  2026-08-15)
+- **CRAN version**: 1.15.0 (accepted/published 2026-07)
 - **GitHub Release**: v1.14.0 (2026-06-14, latest) / v1.13.1
   (2026-05-18)
 - **License**: MIT
@@ -336,7 +336,7 @@ Likert-type ordered ratings.
 - Several docstring/message typo fixes
 - GitHub Release v1.14.0 (latest), Discussions \#33 (JP) / \#34 (EN)
 
-### v1.15.0 (dev, DESCRIPTION set 2026-07-01; CRAN submission targeted 2026-07-15)
+### v1.15.0 (CRAN, accepted 2026-07; submitted 2026-07-15)
 
 - **[`dataFormat()`](https://kosugitti.github.io/exametrika/reference/dataFormat.md)/[`longdataFormat()`](https://kosugitti.github.io/exametrika/reference/longdataFormat.md)
   column-name support** — `id` (dataFormat) and `Sid`/`Qid`/`Resp`/`w`
@@ -391,6 +391,36 @@ Likert-type ordered ratings.
   examples run on CRAN’s incoming check and are often the real cost, not
   the tests.
 - See `WORKLOG.md` (2026-07-01) and `.claude/CLAUDE.md` for full detail
+
+### v1.16.0 (dev, targeting CRAN submission 2026-08-15)
+
+- **GRM bug fixes (2026-07-16 audit; in working tree, not yet committed;
+  see NEWS.md)**:
+  - [`grm_iif()`](https://kosugitti.github.io/exametrika/reference/grm_iif.md)
+    rewritten to the correct Samejima (1969) item information on the
+    logistic metric used by estimation (old code: cumulative-probability
+    denominator, accumulator starting at 1, missing first-category term,
+    and a spurious 1.702 constant — information was inflated
+    severalfold). Verified against numerical differentiation; regression
+    tests added in `test-grm.R`.
+  - [`GRM()`](https://kosugitti.github.io/exametrika/reference/GRM.md)
+    ability estimates (`EAP`/`MAP`/`PSD`) fixed: the posterior was built
+    as the *sum* of item category probabilities (`W %*% L_weighted`)
+    instead of their product. Now accumulated in log space with
+    log-sum-exp; missing responses skipped explicitly. EAP scale
+    recovered (sd 0.29 → 0.79 on J5S1000); `1/PSD^2 ≈ TIF + 1` now
+    holds. ItemFit/TestFit change accordingly.
+  - GRM IRF plot palette recycled for items with more than 8 categories.
+  - Estimation core (C++ marginal likelihood, analytical gradient)
+    audited and confirmed correct — item parameter estimates are
+    unaffected.
+- **Isotonic latent rank model** (3rd LRA; order-restricted + step
+  Dirichlet, beats GTM on fit) — under development in `develop/`;
+  planned as `method = "isotonic"` plus deprecation of the current
+  polytomous ordinal variant (memory: project_isotonic_latent_rank)
+- Downstream: ggExametrika v1.1.2 (audit release, ready) will be
+  submitted after this version is accepted, so its GRM information plots
+  match the fixed parent
 
 ### v2.0.0 (breaking changes, in design)
 

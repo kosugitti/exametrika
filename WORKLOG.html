@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="index.html">exametrika</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.15.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.16.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -1283,6 +1283,45 @@ M10 (E01+E05): +19.8</code></pre>
 </ul></li>
 <li>将来の exametrika v3.0 系機能候補として保留</li>
 </ul></div>
+<div class="section level2">
+<h2 id="id_2026-07-13-アイソトニック潜在ランクモデル第3のlradevelopv1160候補">2026-07-13 アイソトニック潜在ランクモデル（第3のLRA・develop/・v1.16.0候補）<a class="anchor" aria-label="anchor" href="#id_2026-07-13-%E3%82%A2%E3%82%A4%E3%82%BD%E3%83%88%E3%83%8B%E3%83%83%E3%82%AF%E6%BD%9C%E5%9C%A8%E3%83%A9%E3%83%B3%E3%82%AF%E3%83%A2%E3%83%87%E3%83%AB%E7%AC%AC3%E3%81%AElradevelopv1160%E5%80%99%E8%A3%9C"></a></h2>
+<p>A3方法論文の順序版の弱さ（平均で並べ替え＝実質空虚。AIレビュー2本が指摘）を直す過程で，LRA/ランクラスタリングの順序性を根本から作り直す新モデルが派生。SOM→フィルタ(GTM)に続く<strong>第3のやり方＝順序制約(アイソトニック)を制約として課す確率モデル</strong>。</p>
+<ul><li>
+<strong>定式化</strong>: 各項目の正答率 π*_jc がランクで単調非減少。段差 δ_jc=π*_{j,c+1}−π*_jc≥0 を (C+1)-単体に載せ，<strong>累積和で自動単調</strong>（単調制約を明示的に書かない）。段差に<strong>ディリクレ</strong>（濃度 a＝ダイヤル: a=1純アイソトニック/a&gt;1タイなし・均等）。名義のカテゴリ確率と同じディリクレ-多項の器を「ランク差分」に効かせる＝魂の統一（ただし累積和が非線形なので共役ではない）。</li>
+<li>
+<strong>推定</strong>: E-step現行同一（順序制約はパラメタ空間の話でM-stepにしか入らない）。M-step＝ランク方向の<strong>重み付きPAVA</strong>（a=1で制約付き最尤の厳密解・Ayer et al. 1955）。a&gt;1は単体上の凸最適化。ベイズ版は<strong>Stan</strong>（段差 simplex＋cumulative_sum→単調自動）。</li>
+<li>
+<strong>実証(J15S500, S500/J15/C6)</strong>: (1)EM<strong>大域最適</strong>（多初期値で既定超え0/30）, (2)Stan動く・<strong>必ず単調</strong>・収束Rhat≈1.02, (3)aダイヤルで段差ばらつき 0.187(EM MAP)→0.082(a=1)→0.038(a=30), (4)<strong>タイは点推定(モード)の癖・事後平均は滑らか</strong>（潰れはMAPの性質でベイズなら a=1でも滑らか）, (5)<strong>piR(ランク分布)</strong>: 現行GTM(emclus)/バイクラのE-stepに事前項なし＝<strong>一様仮定</strong>（SOMのみheuristicなprior_list）・実データ非一様(rank5≈40%,rank1≈1.4%)・<code>piR&lt;-colMeans(pd)</code>で推定するとfit↑(−4131.8→−4124.7)だがAIC/BICはトレードオフ, (6)<strong>適合度: Isotonic&gt;GTM</strong>（loglik −4131.8/−4124.7 vs GTM −4148.5, AIC/BICもIsotonic勝ち＝GTM劣位。目玉）。</li>
+<li>
+<strong>現行多値順序版のバグ確認</strong>: 16/18等は「平均で並べ替え」で実質空虚（カテゴリ点推定＝名義と恒等・フィルタは死にコード・trace(Fil)不整合）。→v1.16.0で非推奨化対象。</li>
+<li>
+<strong>files(develop/)</strong>: <code>OrderRestrictedLRA_ja.tex/.pdf</code>(荘島先生への報告書6p), <code>_prototype.R</code>(EM+自作PAVA), <code>isotonic_LRA.stan</code>＋<code>_run.R</code>, <code>isotonic_compare.R/.png</code>(EM vs MCMC・aダイヤル図), <code>isotonic_diagnose.R</code>(多初期値・piR), <code>isotonic_fit_compare.R</code>(GTM比較)。<code>myBiber.bib</code>に<code>ayer1955</code>追加, 文献PDF=<code>02_研究/多値バイクラスタリング/文献/ayer1955.pdf</code>。</li>
+<li>
+<strong>計画(未確定)</strong>: <strong>v1.16.0</strong>で<code>method="isotonic"</code>新設＋現行多値順序版の非推奨化（R JournalのSOM/GTM記述と衝突しない追加。2.0.0は多値BNM温存）。math→dev→exametrika→論文を荘島先生と共同開発。次＝荘島先生の反応待ち／ランクラスタリング(2モード)へ持ち上げ。</li>
+</ul><div class="section level3">
+<h3 id="id_2026-07-13-追記適合度計算のレシピ確定報告書仕上げ荘島先生へ報告">2026-07-13 追記：適合度計算のレシピ確定＋報告書仕上げ（荘島先生へ報告）<a class="anchor" aria-label="anchor" href="#id_2026-07-13-%E8%BF%BD%E8%A8%98%E9%81%A9%E5%90%88%E5%BA%A6%E8%A8%88%E7%AE%97%E3%81%AE%E3%83%AC%E3%82%B7%E3%83%94%E7%A2%BA%E5%AE%9A%E5%A0%B1%E5%91%8A%E6%9B%B8%E4%BB%95%E4%B8%8A%E3%81%92%E8%8D%98%E5%B3%B6%E5%85%88%E7%94%9F%E3%81%B8%E5%A0%B1%E5%91%8A"></a></h3>
+<ul><li>
+<strong>適合度(AIC/BIC)のレシピ確定</strong>：(1)<strong>推定後に観測周辺対数尤度を計算し直す</strong>(log-sum-exp・M-stepのQでない)，(2)有効パラメタ数 df ＝ <strong>各項目のuniqueな正答率の数(タイで潰れたブロック数)</strong> ＝ 形状制約回帰のdf(Meyer &amp; Woodroofe 2000: shape-restricted回帰のdf＝ブロック数)。piR推定版は <strong>+(C-1)</strong>。GTMだけは平滑スムーザなので df＝<strong>trace(Fil)×J</strong>。(3)<strong>BICのN＝人数S</strong>。→ <code>isotonic_fit_compare.R</code> は最初からこの定義で計算しており，(f)表は再実行で完全一致(GTM −4148.5/71.5, Iso一様 −4131.8/49, Iso piR推定 −4124.7/69)＝<strong>変更不要</strong>を確認。</li>
+<li>
+<strong>piR推定をLRA_3rd_20260712.Rに実装(殿が)</strong>：3行(init <code>piR&lt;-rep(1/ncls,ncls)</code> ／E-step <code>llmat&lt;-sweep(llmat,2,log(piR),"+")</code> をexp前に ／M-step <code>piR&lt;-colMeans(postDist)</code>)。ベースレートとして割り振りに効く＝事後計算(現行GTMの一様)とは別物・IRPが変わる。</li>
+<li>
+<strong>報告書 <code>OrderRestrictedLRA_ja.pdf</code> 仕上げ</strong>：APAスタイルのbiber配線(<code>myBiber.bib</code>, PAVA初出でAyer1955を<code>\parencite</code>＋参考文献リスト＋PAVAフルネーム)，(d)を「タイはモード(MAP)の癖・EAPなら滑らか」に精密化(StanのoptimizeでMCMC-MAP≒EM+PAVAを数値確認：populated ranks一致・空rank1のみ非識別で分岐)，(f)にdf数え方の注記追加。殿が文体を平場化(表記”Isotonic”に統一・節短縮)。5ページ・未定義0。<strong>殿が荘島先生に報告予定</strong>。</li>
+<li>追加ファイル: <code>isotonic_map_check.R</code>(MCMC-MAP vs EM+PAVA検証)。</li>
+</ul></div>
+<div class="section level3">
+<h3 id="id_2026-07-13-追記2文献スキャン結果出版戦略の解決実装ラダー">2026-07-13 追記2：文献スキャン結果・出版戦略の解決・実装ラダー<a class="anchor" aria-label="anchor" href="#id_2026-07-13-%E8%BF%BD%E8%A8%982%E6%96%87%E7%8C%AE%E3%82%B9%E3%82%AD%E3%83%A3%E3%83%B3%E7%B5%90%E6%9E%9C%E5%87%BA%E7%89%88%E6%88%A6%E7%95%A5%E3%81%AE%E8%A7%A3%E6%B1%BA%E5%AE%9F%E8%A3%85%E3%83%A9%E3%83%80%E3%83%BC"></a></h3>
+<ul><li>
+<strong>文献スキャン(裏で実行・完了)</strong>: 二値アイソトニックLRA＋EM+PAVAは<strong>Croon(1990, BJMSP)が既出</strong>(順序潜在クラス+PAVA)。増分事前=Yang-O’Brien-Dunson(2011, JASA)。Dirichlet増分累積和=Ferguson/Sethuraman。<strong>Ligtvoet(2012 Psychometrika)「An isotonic partial credit model」=タイトル衝突</strong>(要区別)。→<strong>単独の二値isotonicは新規性で撃墜リスク大</strong>。白地は<strong>(1)二モード(バイクラ)・(2)多値統一・(3)SOM/GTMフィルタ→isotonic置換テーゼ+実データhead-to-head勝利・(4)LRA国際化</strong>の組み合わせのみ。Related Workで Croon/Vermunt/van Onna/Ligtvoet/Yang を明示配置し新規性をnarrowに。要原典照合=Croon1990のPAVA使用(現状二次ソース)。</li>
+<li>
+<strong>出版戦略の解決</strong>: 単独isotonicは諦め，<strong>アイソトニックをA3の組織原理として統合＝旗艦「多値アイソトニック・バイクラスタリング」(Psychometrika本命→Behaviormetrika→和文の二/三の矢)</strong>。旗艦はプレプリ先行(優先権確保)を残す。IRMは数理新規性なし=<strong>研究ノート/資料</strong>で<strong>紀要へ</strong>(arXivは手間嫌で不採用)。紀要=IRM導出+GridSearch vs IRM(<strong>名義・既存結果・再計算なし</strong>)で9月末に安全着地(isotonic非依存)。SWB=JPA。→<strong>3本(旗艦/紀要/SWB)＋旗艦プレプリ</strong>。</li>
+<li>
+<strong>切り分けの鍵</strong>: isotonicが変えるのは順序emissionのみ→名義/択一式/二値は不変=既存結果流用可。旧「順序54%対28%」はフィルタ産物=無効で落とす。GridSearch vs IRMは構造個数の話でisotonicと直交=紀要は名義で完結。フルisotonicシミュ(1から・同一データ・seed再現可)は<strong>旗艦のため秋に隔離</strong>(締切から外す・計算は背景で放置)。</li>
+<li>
+<strong>実装ラダー</strong>: フィルタ使用=isotonic対象=06_LRA/07_Biclustering/12_LRA_ordinal/13_LRA_rated/16_Biclustering_ordinal。<strong>易(単一閾値PAVA)=二値LRA(06)・二値ランクラスタリング(07)→8月exametrika</strong>(＋piR・12/16/18は非推奨マーク)。<strong>難(二重単調・Dykstra)=多値順序LRA(12)・多値順序バイクラ(16)→秋</strong>。<strong>多値はLRA(12)から着手(1モードで二重単調を分離)→バイクラ(16)は2モード後乗せ</strong>が筋(殿判断)。択一式(13)の扱い要決定。</li>
+<li>
+<strong>状態</strong>: 報告書(OrderRestrictedLRA_ja.pdf)送付準備済＝<strong>荘島先生の反応待ちが次のゲート</strong>。反応で次目標確定→実装着手。</li>
+</ul></div>
+</div>
 </div>
 
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

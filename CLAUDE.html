@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="index.html">exametrika</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.15.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.16.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -39,9 +39,9 @@
 <h2 id="package-overview">Package Overview<a class="anchor" aria-label="anchor" href="#package-overview"></a></h2>
 <p><code>exametrika</code> is an R package for Test Data Engineering based on Shojima (2022, <a href="ISBN:978-9811699856" class="uri">ISBN:978-9811699856</a>). It provides psychometric analysis tools: CTT, IRT, GRM, LCA, LRA, Biclustering, BNM, LDLRA, LDB, BINET.</p>
 <ul><li>
-<strong>Current version</strong>: 1.15.0 (dev, targeting CRAN submission 2026-07-15) / 1.14.0 (CRAN)</li>
+<strong>Current version</strong>: 1.16.0 (dev, targeting CRAN submission 2026-08-15)</li>
 <li>
-<strong>CRAN version</strong>: 1.14.0 (accepted/published 2026-06-14)</li>
+<strong>CRAN version</strong>: 1.15.0 (accepted/published 2026-07)</li>
 <li>
 <strong>GitHub Release</strong>: v1.14.0 (2026-06-14, latest) / v1.13.1 (2026-05-18)</li>
 <li>
@@ -331,7 +331,7 @@ docs/                # .gitignore'd (removed from repo); pkgdown site deployed t
 <li>GitHub Release v1.14.0 (latest), Discussions #33 (JP) / #34 (EN)</li>
 </ul></div>
 <div class="section level3">
-<h3 id="v1150-dev-description-set-2026-07-01-cran-submission-targeted-2026-07-15">v1.15.0 (dev, DESCRIPTION set 2026-07-01; CRAN submission targeted 2026-07-15)<a class="anchor" aria-label="anchor" href="#v1150-dev-description-set-2026-07-01-cran-submission-targeted-2026-07-15"></a></h3>
+<h3 id="v1150-cran-accepted-2026-07-submitted-2026-07-15">v1.15.0 (CRAN, accepted 2026-07; submitted 2026-07-15)<a class="anchor" aria-label="anchor" href="#v1150-cran-accepted-2026-07-submitted-2026-07-15"></a></h3>
 <ul><li>
 <strong><code><a href="reference/dataFormat.html">dataFormat()</a></code>/<code><a href="reference/longdataFormat.html">longdataFormat()</a></code> column-name support</strong> — <code>id</code> (dataFormat) and <code>Sid</code>/<code>Qid</code>/<code>Resp</code>/<code>w</code> (longdataFormat) now accept a column name in addition to a column number</li>
 <li>
@@ -345,6 +345,21 @@ docs/                # .gitignore'd (removed from repo); pkgdown site deployed t
 <li>
 <strong>Windows checktime margin (2026-07-15, pre-submission)</strong> — win-builder R-devel reported 724s (~12 min) for 1.15.0, over CRAN’s 10-min Windows limit and identical in profile to 1.14.0 (which was accepted). The cost was dominated not by tests (only ~28s under CRAN gating) but by three slow <code>\donttest</code> examples: <code>LDLRA_PBIL</code> (63s), <code>chatterjee_matrix</code> (27s), <code>Biclustering_IRM</code> (22s). All three were switched to smaller sample datasets and lighter iteration settings (<code>LDLRA_PBIL</code>/<code>Biclustering_IRM</code> → <code>J15S500</code>; <code>chatterjee_matrix</code> → <code>J5S1000</code>, the smallest ordinal set, as <code>chatterjee_matrix</code> rejects binary data; <code>LDLRA_PBIL</code> also dropped to <code>ncls=3</code>, <code>population=10</code>, <code>maxGeneration=5</code>). Combined example time fell ~112s→9s locally, cutting the overall <code>--as-cran</code> check from 232s→128s and projecting the Windows check to ~7 min. Lesson: for the Windows checktime NOTE, profile <code>checking examples with --run-donttest</code> first — <code>\donttest</code> examples run on CRAN’s incoming check and are often the real cost, not the tests.</li>
 <li>See <code>WORKLOG.md</code> (2026-07-01) and <code>.claude/CLAUDE.md</code> for full detail</li>
+</ul></div>
+<div class="section level3">
+<h3 id="v1160-dev-targeting-cran-submission-2026-08-15">v1.16.0 (dev, targeting CRAN submission 2026-08-15)<a class="anchor" aria-label="anchor" href="#v1160-dev-targeting-cran-submission-2026-08-15"></a></h3>
+<ul><li>
+<strong>GRM bug fixes (2026-07-16 audit; in working tree, not yet committed; see NEWS.md)</strong>:
+<ul><li>
+<code><a href="reference/grm_iif.html">grm_iif()</a></code> rewritten to the correct Samejima (1969) item information on the logistic metric used by estimation (old code: cumulative-probability denominator, accumulator starting at 1, missing first-category term, and a spurious 1.702 constant — information was inflated severalfold). Verified against numerical differentiation; regression tests added in <code>test-grm.R</code>.</li>
+<li>
+<code><a href="reference/GRM.html">GRM()</a></code> ability estimates (<code>EAP</code>/<code>MAP</code>/<code>PSD</code>) fixed: the posterior was built as the <em>sum</em> of item category probabilities (<code>W %*% L_weighted</code>) instead of their product. Now accumulated in log space with log-sum-exp; missing responses skipped explicitly. EAP scale recovered (sd 0.29 → 0.79 on J5S1000); <code>1/PSD^2 ≈ TIF + 1</code> now holds. ItemFit/TestFit change accordingly.</li>
+<li>GRM IRF plot palette recycled for items with more than 8 categories.</li>
+<li>Estimation core (C++ marginal likelihood, analytical gradient) audited and confirmed correct — item parameter estimates are unaffected.</li>
+</ul></li>
+<li>
+<strong>Isotonic latent rank model</strong> (3rd LRA; order-restricted + step Dirichlet, beats GTM on fit) — under development in <code>develop/</code>; planned as <code>method = "isotonic"</code> plus deprecation of the current polytomous ordinal variant (memory: project_isotonic_latent_rank)</li>
+<li>Downstream: ggExametrika v1.1.2 (audit release, ready) will be submitted after this version is accepted, so its GRM information plots match the fixed parent</li>
 </ul></div>
 <div class="section level3">
 <h3 id="v200-breaking-changes-in-design">v2.0.0 (breaking changes, in design)<a class="anchor" aria-label="anchor" href="#v200-breaking-changes-in-design"></a></h3>

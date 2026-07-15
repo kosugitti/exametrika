@@ -1,6 +1,47 @@
 # Changelog
 
+## exametrika 1.16.0 (development, targeting CRAN 2026-08-15)
+
+### Bug Fixes
+
+- Fixed the GRM item information function
+  [`grm_iif()`](https://kosugitti.github.io/exametrika/reference/grm_iif.md).
+  The previous implementation deviated from Samejima’s (1969)
+  information in four ways: the denominator used the cumulative
+  (boundary) probability instead of the category probability, the
+  accumulator started at 1 instead of 0, the first category’s term was
+  missing, and a 1.702 scaling constant was applied even though
+  [`GRM()`](https://kosugitti.github.io/exametrika/reference/GRM.md)
+  estimates its parameters on the pure logistic metric (no scaling
+  constant). Together these inflated the reported information
+  severalfold (e.g. 1.93 vs the correct 0.70 at theta = 0 for a = 1.5, b
+  = c(-1, -0.5, 0.5, 1)). The function now computes
+  `I(theta) = sum_k [P'_k(theta)]^2 / P_k(theta)` on the same logistic
+  metric as the estimation, verified against numerical differentiation
+  and consistent with the posterior standard deviations
+  (`1/PSD^2 ~ TIF + 1`). Affects `plot(x, type = "IIF")` and
+  `plot(x, type = "TIF")` for GRM objects, and downstream ggExametrika.
+- Fixed the ability estimates of
+  [`GRM()`](https://kosugitti.github.io/exametrika/reference/GRM.md)
+  (`EAP`, `MAP`, `PSD`). The posterior over the quadrature grid was
+  built as the *sum* of the item category probabilities
+  (`W %*% L_weighted`) instead of their *product*, which is not a valid
+  likelihood. Rank order was nearly preserved (r \> 0.99 with the
+  correct estimates on `J5S1000`), but the scale was strongly shrunken
+  (EAP sd 0.29 vs the correct 0.79) and `PSD` did not correspond to the
+  test information. The posterior is now accumulated in log space with a
+  log-sum-exp normalization, and missing responses are skipped
+  explicitly (previously they were skipped only by an R indexing
+  accident: `v[NA] <- 1` silently does nothing).
+  `ItemFitIndices`/`TestFitIndices` change accordingly, since the
+  analysis-model log-likelihood is evaluated at each examinee’s EAP.
+- GRM plots (`type = "IRF"`) no longer produce `NA` colors for items
+  with more than 8 response categories; the default palette is now
+  recycled.
+
 ## exametrika 1.15.0
+
+CRAN release: 2026-07-15
 
 ### Improvements
 

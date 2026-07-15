@@ -67,13 +67,14 @@
 #' \donttest{
 #' # Perform Structure Learning for LDLRA using PBIL algorithm
 #' # This process may take considerable time due to evolutionary optimization
-#' result.LDLRA.PBIL <- LDLRA_PBIL(J35S515,
+#' result.LDLRA.PBIL <- LDLRA_PBIL(J15S500,
 #'   seed = 123, # Set random seed for reproducibility
-#'   ncls = 5, # Number of latent ranks
-#'   maxGeneration = 10,
+#'   ncls = 3, # Number of latent ranks
+#'   population = 10, # Candidate solutions evaluated per generation
+#'   maxGeneration = 5,
 #'   method = "R", # Use rank model (vs. class model)
 #'   elitism = 1, # Keep best solution in each generation
-#'   successiveLimit = 15 # Convergence criterion
+#'   successiveLimit = 5 # Convergence criterion
 #' )
 #'
 #' # Examine the learned network structure

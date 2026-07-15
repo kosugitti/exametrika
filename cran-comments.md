@@ -62,8 +62,11 @@ with a deprecation warning.
 Regression tests pinning all of the above were added
 (`tests/testthat/test-regression-1150.R`).
 
-The CRAN check time on r-devel-windows-x86_64 remains within the
-10-minute limit: the heaviest real-data fit tests in `test-grm.R` and
+On check time: the heaviest real-data fit tests in `test-grm.R` and
 `test-irm.R` are wrapped in `skip_on_cran()` (introduced in 1.13.1) and
 continue to run locally and on R-hub / win-devel via `NOT_CRAN`, so
-coverage is unchanged outside CRAN.
+coverage is unchanged outside CRAN. The three slowest `\donttest`
+examples (`LDLRA_PBIL`, `chatterjee_matrix`, `Biclustering_IRM`) have
+been switched to smaller sample datasets and lighter iteration settings
+in this release, cutting their combined run time on the Windows check
+from roughly 340s to under 30s.

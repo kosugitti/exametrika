@@ -15,7 +15,7 @@
 #' \donttest{
 #' # Fit a Biclustering model with automatic structure learning using IRM
 #' # gamma_c and gamma_f are concentration parameters for the Chinese Restaurant Process
-#' result <- Biclustering_IRM(J35S515, gamma_c = 1, gamma_f = 1, verbose = TRUE)
+#' result <- Biclustering_IRM(J15S500, gamma_c = 1, gamma_f = 1)
 #'
 #' # Display the Bicluster Reference Matrix (BRM) as a heatmap
 #' plot(result, type = "Array")
@@ -123,7 +123,7 @@ Biclustering_IRM.default <- function(U, na = NULL, Z = NULL, w = NULL, ...) {
 #' }
 #' @examples
 #' \donttest{
-#' result <- Biclustering_IRM(J35S515, gamma_c = 1, gamma_f = 1, verbose = TRUE)
+#' result <- Biclustering_IRM(J15S500, gamma_c = 1, gamma_f = 1)
 #' plot(result, type = "Array")
 #' }
 #' @export

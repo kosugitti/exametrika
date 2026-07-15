@@ -215,20 +215,20 @@ Multimedia, 3, 7–13. DOI: 10.9781/ijimai.2014.311
 # \donttest{
 # Perform Structure Learning for LDLRA using PBIL algorithm
 # This process may take considerable time due to evolutionary optimization
-result.LDLRA.PBIL <- LDLRA_PBIL(J35S515,
+result.LDLRA.PBIL <- LDLRA_PBIL(J15S500,
   seed = 123, # Set random seed for reproducibility
-  ncls = 5, # Number of latent ranks
-  maxGeneration = 10,
+  ncls = 3, # Number of latent ranks
+  population = 10, # Candidate solutions evaluated per generation
+  maxGeneration = 5,
   method = "R", # Use rank model (vs. class model)
   elitism = 1, # Keep best solution in each generation
-  successiveLimit = 15 # Convergence criterion
+  successiveLimit = 5 # Convergence criterion
 )
-#> Warning: Too many survivers. Limit to 5
+#> Warning: Too many survivers. Limit to 2
 
 # Examine the learned network structure
 # Plot Item Response Profiles showing item patterns across ranks
 plot(result.LDLRA.PBIL, type = "IRP", nc = 4, nr = 3)
-
 
 
 

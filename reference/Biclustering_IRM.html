@@ -482,23 +482,7 @@ the slope parameters A and Alpha, and the monotonicity indices C and Gamma.</p><
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># \donttest{</span></span></span>
 <span class="r-in"><span><span class="co"># Fit a Biclustering model with automatic structure learning using IRM</span></span></span>
 <span class="r-in"><span><span class="co"># gamma_c and gamma_f are concentration parameters for the Chinese Restaurant Process</span></span></span>
-<span class="r-in"><span><span class="va">result</span> <span class="op">&lt;-</span> <span class="fu">Biclustering_IRM</span><span class="op">(</span><span class="va">J35S515</span>, gamma_c <span class="op">=</span> <span class="fl">1</span>, gamma_f <span class="op">=</span> <span class="fl">1</span>, verbose <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 1: match=0 nfld=15 ncls=30</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 2: match=0 nfld=12 ncls=27</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 3: match=1 nfld=12 ncls=24</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 4: match=2 nfld=12 ncls=23</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 5: match=3 nfld=12 ncls=23</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 6: match=0 nfld=12 ncls=23</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 7: match=1 nfld=12 ncls=23</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 8: match=2 nfld=12 ncls=23</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 9: match=3 nfld=12 ncls=21</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 10: match=4 nfld=12 ncls=21</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 11: match=5 nfld=12 ncls=21</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Adjusting classes: BIC=-99592.5 ncls=21 (min size &lt; 20)</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Adjusting classes: BIC=-99980.4 ncls=20 (min size &lt; 20)</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Adjusting classes: BIC=-99959.7 ncls=19 (min size &lt; 20)</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Adjusting classes: BIC=-99988.3 ncls=18 (min size &lt; 20)</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Adjusting classes: BIC=-100001.3 ncls=17 (min size &lt; 20)</span>
+<span class="r-in"><span><span class="va">result</span> <span class="op">&lt;-</span> <span class="fu">Biclustering_IRM</span><span class="op">(</span><span class="va">J15S500</span>, gamma_c <span class="op">=</span> <span class="fl">1</span>, gamma_f <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Display the Bicluster Reference Matrix (BRM) as a heatmap</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">result</span>, type <span class="op">=</span> <span class="st">"Array"</span><span class="op">)</span></span></span>
@@ -507,31 +491,12 @@ the slope parameters A and Alpha, and the monotonicity indices C and Gamma.</p><
 <span class="r-in"><span><span class="co"># Plot Field Reference Profiles (FRP) in a 3-column grid</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">result</span>, type <span class="op">=</span> <span class="st">"FRP"</span>, nc <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="Biclustering_IRM-2.png" alt="" width="700" height="433"></span>
-<span class="r-plt img"><img src="Biclustering_IRM-3.png" alt="" width="700" height="433"></span>
-<span class="r-plt img"><img src="Biclustering_IRM-4.png" alt="" width="700" height="433"></span>
-<span class="r-plt img"><img src="Biclustering_IRM-5.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span><span class="co"># }</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># \donttest{</span></span></span>
-<span class="r-in"><span><span class="va">result</span> <span class="op">&lt;-</span> <span class="fu">Biclustering_IRM</span><span class="op">(</span><span class="va">J35S515</span>, gamma_c <span class="op">=</span> <span class="fl">1</span>, gamma_f <span class="op">=</span> <span class="fl">1</span>, verbose <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 1: match=0 nfld=15 ncls=30</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 2: match=0 nfld=12 ncls=27</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 3: match=1 nfld=12 ncls=24</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 4: match=2 nfld=12 ncls=23</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 5: match=3 nfld=12 ncls=23</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 6: match=0 nfld=12 ncls=23</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 7: match=1 nfld=12 ncls=23</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 8: match=2 nfld=12 ncls=23</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 9: match=3 nfld=12 ncls=21</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 10: match=4 nfld=12 ncls=21</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iter 11: match=5 nfld=12 ncls=21</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Adjusting classes: BIC=-99592.5 ncls=21 (min size &lt; 20)</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Adjusting classes: BIC=-99980.4 ncls=20 (min size &lt; 20)</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Adjusting classes: BIC=-99959.7 ncls=19 (min size &lt; 20)</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Adjusting classes: BIC=-99988.3 ncls=18 (min size &lt; 20)</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Adjusting classes: BIC=-100001.3 ncls=17 (min size &lt; 20)</span>
+<span class="r-in"><span><span class="va">result</span> <span class="op">&lt;-</span> <span class="fu">Biclustering_IRM</span><span class="op">(</span><span class="va">J15S500</span>, gamma_c <span class="op">=</span> <span class="fl">1</span>, gamma_f <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">result</span>, type <span class="op">=</span> <span class="st">"Array"</span><span class="op">)</span></span></span>
-<span class="r-plt img"><img src="Biclustering_IRM-6.png" alt="" width="700" height="433"></span>
+<span class="r-plt img"><img src="Biclustering_IRM-3.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span><span class="co"># }</span></span></span>
 <span class="r-in"><span><span class="co"># \donttest{</span></span></span>
 <span class="r-in"><span><span class="co"># Fit a nominal Biclustering IRM model</span></span></span>
@@ -545,7 +510,7 @@ the slope parameters A and Alpha, and the monotonicity indices C and Gamma.</p><
 <span class="r-out co"><span class="r-pr">#&gt;</span> iter 7: match=5 nfld=4 ncls=6</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Adjusting classes: BIC=28686.8 ncls=6 (min size &lt; 20)</span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">result</span>, type <span class="op">=</span> <span class="st">"Array"</span><span class="op">)</span></span></span>
-<span class="r-plt img"><img src="Biclustering_IRM-7.png" alt="" width="700" height="433"></span>
+<span class="r-plt img"><img src="Biclustering_IRM-4.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span><span class="co"># }</span></span></span>
 <span class="r-in"><span><span class="co"># \donttest{</span></span></span>
 <span class="r-in"><span><span class="co"># Fit an ordinal Biclustering IRM model</span></span></span>
@@ -559,7 +524,7 @@ the slope parameters A and Alpha, and the monotonicity indices C and Gamma.</p><
 <span class="r-out co"><span class="r-pr">#&gt;</span> iter 7: match=5 nfld=6 ncls=8</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Adjusting classes: BIC=40873.5 ncls=8 (min size &lt; 20)</span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">result</span>, type <span class="op">=</span> <span class="st">"Array"</span><span class="op">)</span></span></span>
-<span class="r-plt img"><img src="Biclustering_IRM-8.png" alt="" width="700" height="433"></span>
+<span class="r-plt img"><img src="Biclustering_IRM-5.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span><span class="co"># }</span></span></span>
 <span class="r-in"><span><span class="co"># \donttest{</span></span></span>
 <span class="r-in"><span><span class="co"># Fit a rated Biclustering IRM model</span></span></span>
@@ -575,7 +540,7 @@ the slope parameters A and Alpha, and the monotonicity indices C and Gamma.</p><
 <span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Weakly ordinal alignment condition was satisfied.</span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">result</span>, type <span class="op">=</span> <span class="st">"Array"</span><span class="op">)</span></span></span>
-<span class="r-plt img"><img src="Biclustering_IRM-9.png" alt="" width="700" height="433"></span>
+<span class="r-plt img"><img src="Biclustering_IRM-6.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span><span class="co"># }</span></span></span>
 </code></pre></div>
     </div>
@@ -588,7 +553,7 @@ the slope parameters A and Alpha, and the monotonicity indices C and Gamma.</p><
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer></div>

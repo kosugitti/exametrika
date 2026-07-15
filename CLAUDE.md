@@ -374,6 +374,22 @@ Likert-type ordered ratings.
   it; added `beta1`/`beta2` arguments (matching
   [`BNM()`](https://kosugitti.github.io/exametrika/reference/BNM.md)/[`LDLRA()`](https://kosugitti.github.io/exametrika/reference/LDLRA.md)/[`LDB()`](https://kosugitti.github.io/exametrika/reference/LDB.md))
   and a clear error message for the residual degenerate-cell case
+- **Windows checktime margin (2026-07-15, pre-submission)** —
+  win-builder R-devel reported 724s (~12 min) for 1.15.0, over CRAN’s
+  10-min Windows limit and identical in profile to 1.14.0 (which was
+  accepted). The cost was dominated not by tests (only ~28s under CRAN
+  gating) but by three slow `\donttest` examples: `LDLRA_PBIL` (63s),
+  `chatterjee_matrix` (27s), `Biclustering_IRM` (22s). All three were
+  switched to smaller sample datasets and lighter iteration settings
+  (`LDLRA_PBIL`/`Biclustering_IRM` → `J15S500`; `chatterjee_matrix` →
+  `J5S1000`, the smallest ordinal set, as `chatterjee_matrix` rejects
+  binary data; `LDLRA_PBIL` also dropped to `ncls=3`, `population=10`,
+  `maxGeneration=5`). Combined example time fell ~112s→9s locally,
+  cutting the overall `--as-cran` check from 232s→128s and projecting
+  the Windows check to ~7 min. Lesson: for the Windows checktime NOTE,
+  profile `checking examples with --run-donttest` first — `\donttest`
+  examples run on CRAN’s incoming check and are often the real cost, not
+  the tests.
 - See `WORKLOG.md` (2026-07-01) and `.claude/CLAUDE.md` for full detail
 
 ### v2.0.0 (breaking changes, in design)

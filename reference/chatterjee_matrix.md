@@ -72,6 +72,6 @@ American Statistical Association, 116(536), 2009-2022.
 
 ``` r
 # \donttest{
-xi_mat <- chatterjee_matrix(J15S3810, B = 500, seed = 42)
+xi_mat <- chatterjee_matrix(J5S1000, B = 100, seed = 42)
 # }
 ```

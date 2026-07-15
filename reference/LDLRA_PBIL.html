@@ -232,30 +232,30 @@ Intelligence and Interactive Multimedia, 3, 7–13. DOI: 10.9781/ijimai.2014.311
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># \donttest{</span></span></span>
 <span class="r-in"><span><span class="co"># Perform Structure Learning for LDLRA using PBIL algorithm</span></span></span>
 <span class="r-in"><span><span class="co"># This process may take considerable time due to evolutionary optimization</span></span></span>
-<span class="r-in"><span><span class="va">result.LDLRA.PBIL</span> <span class="op">&lt;-</span> <span class="fu">LDLRA_PBIL</span><span class="op">(</span><span class="va">J35S515</span>,</span></span>
+<span class="r-in"><span><span class="va">result.LDLRA.PBIL</span> <span class="op">&lt;-</span> <span class="fu">LDLRA_PBIL</span><span class="op">(</span><span class="va">J15S500</span>,</span></span>
 <span class="r-in"><span>  seed <span class="op">=</span> <span class="fl">123</span>, <span class="co"># Set random seed for reproducibility</span></span></span>
-<span class="r-in"><span>  ncls <span class="op">=</span> <span class="fl">5</span>, <span class="co"># Number of latent ranks</span></span></span>
-<span class="r-in"><span>  maxGeneration <span class="op">=</span> <span class="fl">10</span>,</span></span>
+<span class="r-in"><span>  ncls <span class="op">=</span> <span class="fl">3</span>, <span class="co"># Number of latent ranks</span></span></span>
+<span class="r-in"><span>  population <span class="op">=</span> <span class="fl">10</span>, <span class="co"># Candidate solutions evaluated per generation</span></span></span>
+<span class="r-in"><span>  maxGeneration <span class="op">=</span> <span class="fl">5</span>,</span></span>
 <span class="r-in"><span>  method <span class="op">=</span> <span class="st">"R"</span>, <span class="co"># Use rank model (vs. class model)</span></span></span>
 <span class="r-in"><span>  elitism <span class="op">=</span> <span class="fl">1</span>, <span class="co"># Keep best solution in each generation</span></span></span>
-<span class="r-in"><span>  successiveLimit <span class="op">=</span> <span class="fl">15</span> <span class="co"># Convergence criterion</span></span></span>
+<span class="r-in"><span>  successiveLimit <span class="op">=</span> <span class="fl">5</span> <span class="co"># Convergence criterion</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>Too many survivers. Limit to 5</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>Too many survivers. Limit to 2</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Examine the learned network structure</span></span></span>
 <span class="r-in"><span><span class="co"># Plot Item Response Profiles showing item patterns across ranks</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">result.LDLRA.PBIL</span>, type <span class="op">=</span> <span class="st">"IRP"</span>, nc <span class="op">=</span> <span class="fl">4</span>, nr <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="LDLRA_PBIL-1.png" alt="" width="700" height="433"></span>
 <span class="r-plt img"><img src="LDLRA_PBIL-2.png" alt="" width="700" height="433"></span>
-<span class="r-plt img"><img src="LDLRA_PBIL-3.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Plot Test Response Profile showing overall response patterns</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">result.LDLRA.PBIL</span>, type <span class="op">=</span> <span class="st">"TRP"</span><span class="op">)</span></span></span>
-<span class="r-plt img"><img src="LDLRA_PBIL-4.png" alt="" width="700" height="433"></span>
+<span class="r-plt img"><img src="LDLRA_PBIL-3.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Plot Latent Rank Distribution showing student distribution</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">result.LDLRA.PBIL</span>, type <span class="op">=</span> <span class="st">"LRD"</span><span class="op">)</span></span></span>
-<span class="r-plt img"><img src="LDLRA_PBIL-5.png" alt="" width="700" height="433"></span>
+<span class="r-plt img"><img src="LDLRA_PBIL-4.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span><span class="co"># }</span></span></span>
 </code></pre></div>
     </div>
@@ -268,7 +268,7 @@ Intelligence and Interactive Multimedia, 3, 7–13. DOI: 10.9781/ijimai.2014.311
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer></div>

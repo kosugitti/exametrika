@@ -49,8 +49,8 @@ American Statistical Association, 116(536), 2009-2022.
 x <- rnorm(100)
 y <- x^2 + rnorm(100, sd = 0.1)
 chatterjee_xi(x, y) # near 1, since y is determined by x
-#> [1] 0.7008701
+#> [1] 0.8028803
 chatterjee_xi(y, x) # smaller, since x is not determined by y
-#> [1] 0.289529
+#> [1] 0.3333333
 # }
 ```

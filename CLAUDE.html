@@ -342,6 +342,8 @@ docs/                # .gitignore'd (removed from repo); pkgdown site deployed t
 <strong>Raw-data crash fixed in <code><a href="reference/CTT.html">CTT()</a></code>/<code><a href="reference/BNM.html">BNM()</a></code>/<code><a href="reference/LDLRA.html">LDLRA()</a></code>/<code><a href="reference/LDB.html">LDB()</a></code>/<code><a href="reference/BINET.html">BINET()</a></code></strong> — the response-type check read from the unformatted input argument instead of the <code><a href="reference/dataFormat.html">dataFormat()</a></code>-formatted object; <code><a href="reference/CTT.html">CTT()</a></code> additionally had its <code><a href="https://rdrr.io/r/base/class.html" class="external-link">inherits()</a></code> branch inverted</li>
 <li>
 <strong><code><a href="reference/BINET.html">BINET()</a></code> missing-data crash fixed</strong> — <code>Ccj</code> summed the raw response matrix without masking missing cells (unlike <code>Fcj</code>, which already did), and the Beta(1,1) smoothing constant was hardcoded with no way to override it; added <code>beta1</code>/<code>beta2</code> arguments (matching <code><a href="reference/BNM.html">BNM()</a></code>/<code><a href="reference/LDLRA.html">LDLRA()</a></code>/<code><a href="reference/LDB.html">LDB()</a></code>) and a clear error message for the residual degenerate-cell case</li>
+<li>
+<strong>Windows checktime margin (2026-07-15, pre-submission)</strong> — win-builder R-devel reported 724s (~12 min) for 1.15.0, over CRAN’s 10-min Windows limit and identical in profile to 1.14.0 (which was accepted). The cost was dominated not by tests (only ~28s under CRAN gating) but by three slow <code>\donttest</code> examples: <code>LDLRA_PBIL</code> (63s), <code>chatterjee_matrix</code> (27s), <code>Biclustering_IRM</code> (22s). All three were switched to smaller sample datasets and lighter iteration settings (<code>LDLRA_PBIL</code>/<code>Biclustering_IRM</code> → <code>J15S500</code>; <code>chatterjee_matrix</code> → <code>J5S1000</code>, the smallest ordinal set, as <code>chatterjee_matrix</code> rejects binary data; <code>LDLRA_PBIL</code> also dropped to <code>ncls=3</code>, <code>population=10</code>, <code>maxGeneration=5</code>). Combined example time fell ~112s→9s locally, cutting the overall <code>--as-cran</code> check from 232s→128s and projecting the Windows check to ~7 min. Lesson: for the Windows checktime NOTE, profile <code>checking examples with --run-donttest</code> first — <code>\donttest</code> examples run on CRAN’s incoming check and are often the real cost, not the tests.</li>
 <li>See <code>WORKLOG.md</code> (2026-07-01) and <code>.claude/CLAUDE.md</code> for full detail</li>
 </ul></div>
 <div class="section level3">
@@ -380,7 +382,7 @@ docs/                # .gitignore'd (removed from repo); pkgdown site deployed t
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer></div>

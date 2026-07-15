@@ -539,23 +539,7 @@ For rated data, the returned list includes:
 # \donttest{
 # Fit a Biclustering model with automatic structure learning using IRM
 # gamma_c and gamma_f are concentration parameters for the Chinese Restaurant Process
-result <- Biclustering_IRM(J35S515, gamma_c = 1, gamma_f = 1, verbose = TRUE)
-#> iter 1: match=0 nfld=15 ncls=30
-#> iter 2: match=0 nfld=12 ncls=27
-#> iter 3: match=1 nfld=12 ncls=24
-#> iter 4: match=2 nfld=12 ncls=23
-#> iter 5: match=3 nfld=12 ncls=23
-#> iter 6: match=0 nfld=12 ncls=23
-#> iter 7: match=1 nfld=12 ncls=23
-#> iter 8: match=2 nfld=12 ncls=23
-#> iter 9: match=3 nfld=12 ncls=21
-#> iter 10: match=4 nfld=12 ncls=21
-#> iter 11: match=5 nfld=12 ncls=21
-#> Adjusting classes: BIC=-99592.5 ncls=21 (min size < 20)
-#> Adjusting classes: BIC=-99980.4 ncls=20 (min size < 20)
-#> Adjusting classes: BIC=-99959.7 ncls=19 (min size < 20)
-#> Adjusting classes: BIC=-99988.3 ncls=18 (min size < 20)
-#> Adjusting classes: BIC=-100001.3 ncls=17 (min size < 20)
+result <- Biclustering_IRM(J15S500, gamma_c = 1, gamma_f = 1)
 
 # Display the Bicluster Reference Matrix (BRM) as a heatmap
 plot(result, type = "Array")
@@ -564,29 +548,10 @@ plot(result, type = "Array")
 # Plot Field Reference Profiles (FRP) in a 3-column grid
 plot(result, type = "FRP", nc = 3)
 
-
-
-
 # }
 
 # \donttest{
-result <- Biclustering_IRM(J35S515, gamma_c = 1, gamma_f = 1, verbose = TRUE)
-#> iter 1: match=0 nfld=15 ncls=30
-#> iter 2: match=0 nfld=12 ncls=27
-#> iter 3: match=1 nfld=12 ncls=24
-#> iter 4: match=2 nfld=12 ncls=23
-#> iter 5: match=3 nfld=12 ncls=23
-#> iter 6: match=0 nfld=12 ncls=23
-#> iter 7: match=1 nfld=12 ncls=23
-#> iter 8: match=2 nfld=12 ncls=23
-#> iter 9: match=3 nfld=12 ncls=21
-#> iter 10: match=4 nfld=12 ncls=21
-#> iter 11: match=5 nfld=12 ncls=21
-#> Adjusting classes: BIC=-99592.5 ncls=21 (min size < 20)
-#> Adjusting classes: BIC=-99980.4 ncls=20 (min size < 20)
-#> Adjusting classes: BIC=-99959.7 ncls=19 (min size < 20)
-#> Adjusting classes: BIC=-99988.3 ncls=18 (min size < 20)
-#> Adjusting classes: BIC=-100001.3 ncls=17 (min size < 20)
+result <- Biclustering_IRM(J15S500, gamma_c = 1, gamma_f = 1)
 plot(result, type = "Array")
 
 # }

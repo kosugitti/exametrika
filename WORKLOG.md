@@ -2079,3 +2079,29 @@ v1.12.0.
   - フィールド間OR制約格子，有効状態の列挙，Stress最小DAG探索アルゴリズム
   - 詳細は `02_研究/お遍路さん/WORKLOG.md` 2026-06-01 参照
 - 将来の exametrika v3.0 系機能候補として保留
+
+## 2026-07-13 アイソトニック潜在ランクモデル（第3のLRA・develop/・v1.16.0候補）
+
+A3方法論文の順序版の弱さ（平均で並べ替え＝実質空虚。AIレビュー2本が指摘）を直す過程で，LRA/ランクラスタリングの順序性を根本から作り直す新モデルが派生。SOM→フィルタ(GTM)に続く**第3のやり方＝順序制約(アイソトニック)を制約として課す確率モデル**。
+
+- **定式化**: 各項目の正答率 π*_jc がランクで単調非減少。段差 δ_jc=π*_{j,c+1}−π*_jc≥0 を (C+1)-単体に載せ，**累積和で自動単調**（単調制約を明示的に書かない）。段差に**ディリクレ**（濃度 a＝ダイヤル: a=1純アイソトニック/a>1タイなし・均等）。名義のカテゴリ確率と同じディリクレ-多項の器を「ランク差分」に効かせる＝魂の統一（ただし累積和が非線形なので共役ではない）。
+- **推定**: E-step現行同一（順序制約はパラメタ空間の話でM-stepにしか入らない）。M-step＝ランク方向の**重み付きPAVA**（a=1で制約付き最尤の厳密解・Ayer et al. 1955）。a>1は単体上の凸最適化。ベイズ版は**Stan**（段差 simplex＋cumulative_sum→単調自動）。
+- **実証(J15S500, S500/J15/C6)**: (1)EM**大域最適**（多初期値で既定超え0/30）, (2)Stan動く・**必ず単調**・収束Rhat≈1.02, (3)aダイヤルで段差ばらつき 0.187(EM MAP)→0.082(a=1)→0.038(a=30), (4)**タイは点推定(モード)の癖・事後平均は滑らか**（潰れはMAPの性質でベイズなら a=1でも滑らか）, (5)**piR(ランク分布)**: 現行GTM(emclus)/バイクラのE-stepに事前項なし＝**一様仮定**（SOMのみheuristicなprior_list）・実データ非一様(rank5≈40%,rank1≈1.4%)・`piR<-colMeans(pd)`で推定するとfit↑(−4131.8→−4124.7)だがAIC/BICはトレードオフ, (6)**適合度: Isotonic>GTM**（loglik −4131.8/−4124.7 vs GTM −4148.5, AIC/BICもIsotonic勝ち＝GTM劣位。目玉）。
+- **現行多値順序版のバグ確認**: 16/18等は「平均で並べ替え」で実質空虚（カテゴリ点推定＝名義と恒等・フィルタは死にコード・trace(Fil)不整合）。→v1.16.0で非推奨化対象。
+- **files(develop/)**: `OrderRestrictedLRA_ja.tex/.pdf`(荘島先生への報告書6p), `_prototype.R`(EM+自作PAVA), `isotonic_LRA.stan`＋`_run.R`, `isotonic_compare.R/.png`(EM vs MCMC・aダイヤル図), `isotonic_diagnose.R`(多初期値・piR), `isotonic_fit_compare.R`(GTM比較)。`myBiber.bib`に`ayer1955`追加, 文献PDF=`02_研究/多値バイクラスタリング/文献/ayer1955.pdf`。
+- **計画(未確定)**: **v1.16.0**で`method="isotonic"`新設＋現行多値順序版の非推奨化（R JournalのSOM/GTM記述と衝突しない追加。2.0.0は多値BNM温存）。math→dev→exametrika→論文を荘島先生と共同開発。次＝荘島先生の反応待ち／ランクラスタリング(2モード)へ持ち上げ。
+
+### 2026-07-13 追記：適合度計算のレシピ確定＋報告書仕上げ（荘島先生へ報告）
+
+- **適合度(AIC/BIC)のレシピ確定**：(1)**推定後に観測周辺対数尤度を計算し直す**(log-sum-exp・M-stepのQでない)，(2)有効パラメタ数 df ＝ **各項目のuniqueな正答率の数(タイで潰れたブロック数)** ＝ 形状制約回帰のdf(Meyer & Woodroofe 2000: shape-restricted回帰のdf＝ブロック数)。piR推定版は **+(C-1)**。GTMだけは平滑スムーザなので df＝**trace(Fil)×J**。(3)**BICのN＝人数S**。→ `isotonic_fit_compare.R` は最初からこの定義で計算しており，(f)表は再実行で完全一致(GTM −4148.5/71.5, Iso一様 −4131.8/49, Iso piR推定 −4124.7/69)＝**変更不要**を確認。
+- **piR推定をLRA_3rd_20260712.Rに実装(殿が)**：3行(init `piR<-rep(1/ncls,ncls)` ／E-step `llmat<-sweep(llmat,2,log(piR),"+")` をexp前に ／M-step `piR<-colMeans(postDist)`)。ベースレートとして割り振りに効く＝事後計算(現行GTMの一様)とは別物・IRPが変わる。
+- **報告書 `OrderRestrictedLRA_ja.pdf` 仕上げ**：APAスタイルのbiber配線(`myBiber.bib`, PAVA初出でAyer1955を`\parencite`＋参考文献リスト＋PAVAフルネーム)，(d)を「タイはモード(MAP)の癖・EAPなら滑らか」に精密化(StanのoptimizeでMCMC-MAP≒EM+PAVAを数値確認：populated ranks一致・空rank1のみ非識別で分岐)，(f)にdf数え方の注記追加。殿が文体を平場化(表記"Isotonic"に統一・節短縮)。5ページ・未定義0。**殿が荘島先生に報告予定**。
+- 追加ファイル: `isotonic_map_check.R`(MCMC-MAP vs EM+PAVA検証)。
+
+### 2026-07-13 追記2：文献スキャン結果・出版戦略の解決・実装ラダー
+
+- **文献スキャン(裏で実行・完了)**: 二値アイソトニックLRA＋EM+PAVAは**Croon(1990, BJMSP)が既出**(順序潜在クラス+PAVA)。増分事前=Yang-O'Brien-Dunson(2011, JASA)。Dirichlet増分累積和=Ferguson/Sethuraman。**Ligtvoet(2012 Psychometrika)「An isotonic partial credit model」=タイトル衝突**(要区別)。→**単独の二値isotonicは新規性で撃墜リスク大**。白地は**(1)二モード(バイクラ)・(2)多値統一・(3)SOM/GTMフィルタ→isotonic置換テーゼ+実データhead-to-head勝利・(4)LRA国際化**の組み合わせのみ。Related Workで Croon/Vermunt/van Onna/Ligtvoet/Yang を明示配置し新規性をnarrowに。要原典照合=Croon1990のPAVA使用(現状二次ソース)。
+- **出版戦略の解決**: 単独isotonicは諦め，**アイソトニックをA3の組織原理として統合＝旗艦「多値アイソトニック・バイクラスタリング」(Psychometrika本命→Behaviormetrika→和文の二/三の矢)**。旗艦はプレプリ先行(優先権確保)を残す。IRMは数理新規性なし=**研究ノート/資料**で**紀要へ**(arXivは手間嫌で不採用)。紀要=IRM導出+GridSearch vs IRM(**名義・既存結果・再計算なし**)で9月末に安全着地(isotonic非依存)。SWB=JPA。→**3本(旗艦/紀要/SWB)＋旗艦プレプリ**。
+- **切り分けの鍵**: isotonicが変えるのは順序emissionのみ→名義/択一式/二値は不変=既存結果流用可。旧「順序54%対28%」はフィルタ産物=無効で落とす。GridSearch vs IRMは構造個数の話でisotonicと直交=紀要は名義で完結。フルisotonicシミュ(1から・同一データ・seed再現可)は**旗艦のため秋に隔離**(締切から外す・計算は背景で放置)。
+- **実装ラダー**: フィルタ使用=isotonic対象=06_LRA/07_Biclustering/12_LRA_ordinal/13_LRA_rated/16_Biclustering_ordinal。**易(単一閾値PAVA)=二値LRA(06)・二値ランクラスタリング(07)→8月exametrika**(＋piR・12/16/18は非推奨マーク)。**難(二重単調・Dykstra)=多値順序LRA(12)・多値順序バイクラ(16)→秋**。**多値はLRA(12)から着手(1モードで二重単調を分離)→バイクラ(16)は2モード後乗せ**が筋(殿判断)。択一式(13)の扱い要決定。
+- **状態**: 報告書(OrderRestrictedLRA_ja.pdf)送付準備済＝**荘島先生の反応待ちが次のゲート**。反応で次目標確定→実装着手。

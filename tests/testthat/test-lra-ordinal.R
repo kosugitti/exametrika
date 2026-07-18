@@ -172,3 +172,62 @@ test_that("Test Fit", {
   cols_to_test <- 1:7
   expect_equal(actual[cols_to_test], expect[cols_to_test], tolerance = 1e-4)
 })
+
+### Mixed category counts -----------------------------------------------------
+# LRA.ordinal now supports items with differing numbers of categories
+# (ragged sum(ncat) layout). No Mathematica reference exists for the mixed
+# case, so these are structural / internal-consistency checks. The dataset is
+# J15S3810 with category 3 collapsed into 2 on odd-numbered items, giving a
+# 3/4 alternating category-count pattern.
+mixQ <- J15S3810$Q
+for (j in seq(1, ncol(mixQ), by = 2)) {
+  v <- mixQ[, j]
+  v[v == 3] <- 2
+  mixQ[, j] <- v
+}
+Umix <- suppressMessages(dataFormat(mixQ, na = -1))
+ncat_mix <- as.vector(Umix$categories)
+result_mix <- suppressWarnings(LRA(Umix, nrank = 4, mic = TRUE))
+
+test_that("Mixed categories: data really is mixed", {
+  # sanity check on the constructed fixture
+  expect_gt(length(unique(ncat_mix)), 1)
+  expect_equal(ncat_mix, rep(c(3, 4), length.out = ncol(mixQ)))
+})
+
+test_that("Mixed categories: does not error and returns LRAordinal", {
+  expect_s3_class(result_mix, "LRAordinal")
+})
+
+test_that("Mixed categories: ICRP/ICBR have ragged row counts", {
+  # one ICRP row per category => sum(ncat) rows total
+  expect_equal(nrow(result_mix$ICRP), sum(ncat_mix))
+  expect_equal(nrow(result_mix$ICBR), sum(ncat_mix))
+  # per-item row counts follow ncat[j]
+  rowcount <- as.vector(table(factor(
+    result_mix$ICRP$ItemLabel,
+    levels = unique(result_mix$ICRP$ItemLabel)
+  )))
+  expect_equal(rowcount, ncat_mix)
+})
+
+test_that("Mixed categories: category probabilities sum to 1 per item/rank", {
+  probs <- as.matrix(result_mix$ICRP[, grep("rank", names(result_mix$ICRP))])
+  sums <- tapply(
+    seq_len(nrow(result_mix$ICRP)),
+    result_mix$ICRP$ItemLabel,
+    function(ix) colSums(probs[ix, , drop = FALSE])
+  )
+  expect_equal(unlist(sums), rep(1, length(unlist(sums))),
+    tolerance = 1e-6, ignore_attr = TRUE
+  )
+})
+
+test_that("Mixed categories: nested log-likelihood ordering holds", {
+  tf <- result_mix$TestFitIndices
+  # null <= model <= saturated(benchmark)
+  expect_lte(tf$null_log_like, tf$model_log_like)
+  expect_lte(tf$model_log_like, tf$bench_log_like)
+  expect_true(is.finite(tf$CFI))
+  expect_true(is.finite(tf$RMSEA))
+})

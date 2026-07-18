@@ -90,21 +90,10 @@ LRA.ordinal <- function(U,
   # number of categories excluding missing
   ncat <- sapply(category, length)
 
-  ## Check for mixed category counts
-  ## LRA.ordinal uses fixed-stride matrix indexing (nitems * max(ncat)) that
-
-  ## assumes all items have the same number of categories. Mixed category counts
-  ## cause dimension mismatches in the saturation/restricted model matrices.
-  if (length(unique(ncat)) > 1) {
-    stop(
-      "LRA.ordinal does not support items with different numbers of categories.\n",
-      "  Found category counts: ", paste(unique(ncat), collapse = ", "),
-      " across items.\n",
-      "  All items must have the same number of response categories.\n",
-      "  Note: LRA.rated supports mixed category counts via its list-based design.\n",
-      "  Consider using Biclustering.ordinal, which also supports mixed categories."
-    )
-  }
+  design0 <- sapply(1:nitems, function(j) sum(ncat[1:j]))
+  design1 <- cbind(design0 - ncat + 1, design0)
+  designB0 <- cumsum(ncat - 1)
+  designB1 <- cbind(designB0 - (ncat - 1) + 1, designB0)
 
   # Frequency table of categories
   catfreq999 <- lapply(seq_len(nitems), function(j) table(U$Q[, j]))
@@ -113,7 +102,7 @@ LRA.ordinal <- function(U,
 
   UU <- array(NA, dim = c(nobs, nitems, max(ncat)))
   YY <- array(0, dim = c(nobs, nitems, max(ncat) - 1))
-  uuMat <- matrix(NA, nrow = nobs, ncol = nitems * max(ncat))
+  uuMat <- matrix(NA, nrow = nobs, ncol = sum(ncat))
   for (i in 1:nobs) {
     for (j in 1:nitems) {
       for (k in 1:ncat[j]) {
@@ -123,9 +112,11 @@ LRA.ordinal <- function(U,
         YY[i, j, k - 1] <- ifelse((U$Z[i, j] * U$Q[i, j]) >= category[[j]][k], 1, 0)
       }
     }
-    uuMat[i, ] <- as.vector(t(UU[i, , ]))
   }
 
+  for (j in 1:nitems) {
+    uuMat[, design1[j, 1]:design1[j, 2]] <- UU[, j, 1:ncat[j]]
+  }
 
   quantileScore <- quantile(score, probs = (1:(nquan - 1)) / nquan)
   quantileRank <- rowSums(outer(score, quantileScore, ">")) + 1
@@ -152,7 +143,7 @@ LRA.ordinal <- function(U,
     categories <- dimnames(catfreq[[i]])[[1]]
     ratios <- as.vector(catfreq[[i]] / zzzTotal[i])
 
-    ref_mat[((i - 1) * ncat[i] + 1):((i * ncat[i])), ] <- catquanRefmat[i, , ]
+    ref_mat[design1[i, 1]:design1[i, 2], ] <- catquanRefmat[i, 1:ncat[i], ]
 
     item_data <- data.frame(
       item = item_name,
@@ -195,9 +186,6 @@ LRA.ordinal <- function(U,
     return(matrix)
   }
 
-  design0 <- sapply(1:nitems, function(j) sum(ncat[1:j]))
-  design1 <- cbind(design0 - ncat[1] + 1, design0)
-
   design2 <- lapply(1:nitems, function(j) {
     seq(design1[j, 1], design1[j, 2])
   })
@@ -236,10 +224,9 @@ LRA.ordinal <- function(U,
   refbox111_satu[, 2:max(ncat), ] <- refbox_satu
   refbox000_satu[, 1:(max(ncat) - 1), ] <- refbox_satu
   catrefbox_satu <- refbox111_satu - refbox000_satu
-  catRefMat_satu <- matrix(0, nrow = (nitems * max(ncat)), ncol = nitems)
+  catRefMat_satu <- matrix(0, nrow = sum(ncat), ncol = nitems)
   for (i in 1:nitems) {
-    l <- (i - 1) * ncat[i] + 1
-    catRefMat_satu[l:(l + ncat[i] - 1), ] <- catrefbox_satu[i, , ]
+    catRefMat_satu[design1[i, 1]:design1[i, 2], ] <- catrefbox_satu[i, 1:ncat[i], ]
   }
   ## EM Algorithm
   if (verbose) {
@@ -257,7 +244,7 @@ LRA.ordinal <- function(U,
     ## Mstep
     refMatcore_satu <- t(uuMat) %*% rankProf_satu
     refMat111_satu <- design6 %*% refMatcore_satu / design5 %*% refMatcore_satu
-    delete_rows <- design0 - ncat[1] + 1
+    delete_rows <- design0 - ncat + 1
     refMat_satu <- refMat111_satu[-delete_rows, ]
     refMat000_satu <- rbind(refMat111_satu[-1, ], refMat111_satu[1, ])
     refMat000_satu[design0, ] <- 0
@@ -297,7 +284,7 @@ LRA.ordinal <- function(U,
     refMat111_satu <- t(apply(refMat111_satu, 1, sort))
   }
 
-  delete_rows <- design0 - ncat[1] + 1
+  delete_rows <- design0 - ncat + 1
   refMat_satu <- refMat111_satu[-delete_rows, ]
 
   refMat000_satu <- rbind(refMat111_satu[-1, ], refMat111_satu[1, ])
@@ -324,17 +311,15 @@ LRA.ordinal <- function(U,
   refBox000[, 1:(max(ncat) - 1), ] <- refBox
   catRefBox <- refBox111 - refBox000
 
-  refMat <- matrix(0, nrow = nitems * (max(ncat) - 1), nrank)
-  refMat111 <- matrix(0, nrow = nitems * (max(ncat)), nrank)
-  refMat000 <- matrix(0, nrow = nitems * (max(ncat)), nrank)
-  catRefMat <- matrix(0, nrow = nitems * (max(ncat)), nrank)
+  refMat <- matrix(0, nrow = sum(ncat) - nitems, nrank)
+  refMat111 <- matrix(0, nrow = sum(ncat), nrank)
+  refMat000 <- matrix(0, nrow = sum(ncat), nrank)
+  catRefMat <- matrix(0, nrow = sum(ncat), nrank)
   for (i in 1:nitems) {
-    l <- (i - 1) * (max(ncat) - 1) + 1
-    refMat[l:(l + max(ncat) - 2), ] <- refBox[i, , ]
-    m <- (i - 1) * (max(ncat)) + 1
-    refMat111[m:(m + max(ncat) - 1), ] <- refBox111[i, , ]
-    refMat000[m:(m + max(ncat) - 1), ] <- refBox000[i, , ]
-    catRefMat[m:(m + max(ncat) - 1), ] <- catRefBox[i, , ]
+    refMat[designB1[i, 1]:designB1[i, 2], ] <- refBox[i, 1:(ncat[i] - 1), ]
+    refMat111[design1[i, 1]:design1[i, 2], ] <- refBox111[i, 1:ncat[i], ]
+    refMat000[design1[i, 1]:design1[i, 2], ] <- refBox000[i, 1:ncat[i], ]
+    catRefMat[design1[i, 1]:design1[i, 2], ] <- catRefBox[i, 1:ncat[i], ]
   }
 
   ## EM Algorithm
@@ -362,7 +347,7 @@ LRA.ordinal <- function(U,
       refMat111 <- t(apply(refMat111, 1, sort))
     }
 
-    delete_rows <- sapply(1:nitems, function(j) design0[j] - ncat[1] + 1)
+    delete_rows <- design0 - ncat + 1
     refMat <- refMat111[-delete_rows, ]
 
     refMat000 <- rbind(refMat111[2:nrow(refMat111), ], rep(0, nrank))
@@ -489,8 +474,10 @@ LRA.ordinal <- function(U,
   satu_itemll2 <- design4 %*% colSums(t(satuggg_jq2 * log(catRefMat_satu + const)))
 
   # Null item log-likelihood
-  catfreqMat <- matrix(unlist(catfreq), ncol = ncat, byrow = T)
-  null_itemll <- colSums(t(catfreqMat * log(catfreqMat / zzzTotal + const)))
+  null_itemll <- sapply(seq_len(nitems), function(j) {
+    f <- as.vector(catfreq[[j]])
+    sum(f * log(f / zzzTotal[j] + const))
+  })
 
   # Model chi-square
   # model_itemchisq1 <- pmax(0.000001, pmin(2 * (satu_itemll1 - model_itemll1), 1000000000))

@@ -187,7 +187,10 @@ rated = nominal + correct answer (multiple-choice tests); ordinal = Likert-type 
 - BINET FRPIndex addition
 - LCA.nominal
 - Input data storage method unification (v2.0.0)
-- LRA.ordinal mixed category count support (requires matrix→list refactor)
+- ~~LRA.ordinal mixed category count support (requires matrix→list refactor)~~
+  — DONE in v1.16.0 (2026-07-18): ragged `sum(ncat)` layout via `design`/`designB`
+  index maps; `stop()` guard removed; uniform-data parity verified against the
+  pre-refactor implementation. See `NEWS.md` and `test-lra-ordinal.R`.
 
 ## Roadmap
 

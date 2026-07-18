@@ -188,8 +188,8 @@ rated = nominal + correct answer (multiple-choice tests); ordinal = Likert-type 
 - LCA.nominal
 - Input data storage method unification (v2.0.0)
 - ~~LRA.ordinal mixed category count support (requires matrix→list refactor)~~
-  — DONE in v1.16.0 (2026-07-18): ragged `sum(ncat)` layout via `design`/`designB`
-  index maps; `stop()` guard removed; uniform-data parity verified against the
+  — DONE in v1.16.0 (2026-07-18): ragged `sum(ncat)` layout via the `design1`
+  index map; `stop()` guard removed; uniform-data parity verified against the
   pre-refactor implementation. See `NEWS.md` and `test-lra-ordinal.R`.
 
 ## Roadmap
@@ -310,6 +310,15 @@ rated = nominal + correct answer (multiple-choice tests); ordinal = Likert-type 
   - GRM IRF plot palette recycled for items with more than 8 categories.
   - Estimation core (C++ marginal likelihood, analytical gradient) audited and
     confirmed correct — item parameter estimates are unaffected.
+- **`LRA.ordinal` mixed category counts (2026-07-18; committed 14d0e7c)** — the
+  ordinal method no longer requires equal category counts across items. The
+  saturation/restricted reference matrices, `uuMat`, and the null term were
+  moved from a fixed `nitems*max(ncat)` stride to a ragged `sum(ncat)` layout
+  addressed via the `design1` index map; the `stop()` guard is removed.
+  Uniform-data parity verified against the pre-refactor code (max|diff| = 0).
+  Resolves the matrix→list tech-debt item. The pre-existing vestigial
+  `refMat`/`refMat_satu` (a Mathematica-port leftover, assigned but never read)
+  and their `delete_rows`/`designB` scaffolding were deleted in the same pass.
 - **Isotonic latent rank model** (3rd LRA; order-restricted + step Dirichlet,
   beats GTM on fit) — under development in `develop/`; planned as
   `method = "isotonic"` plus deprecation of the current polytomous ordinal

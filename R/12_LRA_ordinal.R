@@ -92,8 +92,6 @@ LRA.ordinal <- function(U,
 
   design0 <- sapply(1:nitems, function(j) sum(ncat[1:j]))
   design1 <- cbind(design0 - ncat + 1, design0)
-  designB0 <- cumsum(ncat - 1)
-  designB1 <- cbind(designB0 - (ncat - 1) + 1, designB0)
 
   # Frequency table of categories
   catfreq999 <- lapply(seq_len(nitems), function(j) table(U$Q[, j]))
@@ -244,8 +242,6 @@ LRA.ordinal <- function(U,
     ## Mstep
     refMatcore_satu <- t(uuMat) %*% rankProf_satu
     refMat111_satu <- design6 %*% refMatcore_satu / design5 %*% refMatcore_satu
-    delete_rows <- design0 - ncat + 1
-    refMat_satu <- refMat111_satu[-delete_rows, ]
     refMat000_satu <- rbind(refMat111_satu[-1, ], refMat111_satu[1, ])
     refMat000_satu[design0, ] <- 0
     catRefMat_satu <- refMat111_satu - refMat000_satu
@@ -284,9 +280,6 @@ LRA.ordinal <- function(U,
     refMat111_satu <- t(apply(refMat111_satu, 1, sort))
   }
 
-  delete_rows <- design0 - ncat + 1
-  refMat_satu <- refMat111_satu[-delete_rows, ]
-
   refMat000_satu <- rbind(refMat111_satu[-1, ], refMat111_satu[1, ])
   refMat000_satu[design0, ] <- 0
 
@@ -311,12 +304,10 @@ LRA.ordinal <- function(U,
   refBox000[, 1:(max(ncat) - 1), ] <- refBox
   catRefBox <- refBox111 - refBox000
 
-  refMat <- matrix(0, nrow = sum(ncat) - nitems, nrank)
   refMat111 <- matrix(0, nrow = sum(ncat), nrank)
   refMat000 <- matrix(0, nrow = sum(ncat), nrank)
   catRefMat <- matrix(0, nrow = sum(ncat), nrank)
   for (i in 1:nitems) {
-    refMat[designB1[i, 1]:designB1[i, 2], ] <- refBox[i, 1:(ncat[i] - 1), ]
     refMat111[design1[i, 1]:design1[i, 2], ] <- refBox111[i, 1:ncat[i], ]
     refMat000[design1[i, 1]:design1[i, 2], ] <- refBox000[i, 1:ncat[i], ]
     catRefMat[design1[i, 1]:design1[i, 2], ] <- catRefBox[i, 1:ncat[i], ]
@@ -346,9 +337,6 @@ LRA.ordinal <- function(U,
     if (mic == 1) {
       refMat111 <- t(apply(refMat111, 1, sort))
     }
-
-    delete_rows <- design0 - ncat + 1
-    refMat <- refMat111[-delete_rows, ]
 
     refMat000 <- rbind(refMat111[2:nrow(refMat111), ], rep(0, nrank))
     refMat000[design0, ] <- 0

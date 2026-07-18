@@ -43,7 +43,7 @@
   because its saturation/restricted reference matrices were laid out on
   a fixed `nitems * max(ncat)` stride. The reference matrices, the
   one-hot design (`uuMat`), and the null-model term now use a ragged
-  `sum(ncat)` layout addressed through the `design`/`designB` index maps,
+  `sum(ncat)` layout addressed through the `design1` index map,
   so mixed category counts are handled directly. On uniform-category
   data the results are numerically identical to before. `ICBR`/`ICRP`
   now carry one row per (item, category) pair, so their row counts vary

@@ -20,6 +20,7 @@ Biclustering(U, ...)
   ncls = 2,
   nfld = 2,
   method = "B",
+  estimation = "isotonic",
   conf = NULL,
   conf_class = NULL,
   mic = FALSE,
@@ -94,6 +95,17 @@ ordinal data)
 \item "R" or "Ranklustering": Ranklustering with ordered class structure
 (default for rated data, where classes are sorted by correct response
 rate)
+}}
+
+\item{estimation}{Estimation method for the Field Reference Profiles under
+Ranklustering (\code{method = "R"}); ignored for plain Biclustering, whose
+classes are unordered:
+\itemize{
+\item "isotonic": order-restricted estimation, imposing the rank ordering by a
+weighted pool-adjacent-violators step in the M-step (default). For the
+default flat prior this is the exact order-restricted MLE (Ayer et al.
+1955).
+\item "GTM": the original filter-based smoothing of Shojima (2012).
 }}
 
 \item{conf}{Confirmatory parameter for pre-specified field assignments. Can be either:

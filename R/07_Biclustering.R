@@ -162,6 +162,14 @@ Biclustering.default <- function(U, na = NULL, Z = NULL, w = NULL, ...) {
 #' @param method Analysis method to use (character string):
 #'   * "B" or "Biclustering": Standard biclustering (default)
 #'   * "R" or "Ranklustering": Ranklustering with ordered class structure
+#' @param estimation Estimation method for the Field Reference Profiles under
+#'   Ranklustering (`method = "R"`); ignored for plain Biclustering, whose
+#'   classes are unordered:
+#'   * "isotonic": order-restricted estimation, imposing the rank ordering by a
+#'     weighted pool-adjacent-violators step in the M-step (default). For the
+#'     default flat prior this is the exact order-restricted MLE (Ayer et al.
+#'     1955).
+#'   * "GTM": the original filter-based smoothing of Shojima (2012).
 #' @param conf Confirmatory parameter for pre-specified field assignments. Can be either:
 #'   * A vector with items and corresponding fields in sequence
 #'   * A field membership profile matrix (items × fields) with 0/1 values
@@ -212,6 +220,7 @@ Biclustering.default <- function(U, na = NULL, Z = NULL, w = NULL, ...) {
 Biclustering.binary <- function(U,
                                 ncls = 2, nfld = 2,
                                 method = "B",
+                                estimation = "isotonic",
                                 conf = NULL,
                                 conf_class = NULL,
                                 mic = FALSE,
@@ -244,6 +253,12 @@ Biclustering.binary <- function(U,
   } else {
     stop("The method must be selected as either Biclustering or Ranklustering.")
   }
+
+  estimation <- match.arg(estimation, c("isotonic", "GTM"))
+  # The isotonic (PAVA) order restriction is meaningful only for the
+  # ordered-rank model (Ranklustering); plain Biclustering classes are
+  # unordered, so the estimation argument is ignored there.
+  use_isotonic <- (model == 2) && (estimation == "isotonic")
 
   # set conf_mat for confirmatory clustering
   if (!is.null(conf)) {
@@ -377,6 +392,9 @@ Biclustering.binary <- function(U,
     if (!is.null(conf_class_mat)) {
       clsmemb <- conf_class_mat
       smoothed_memb <- clsmemb
+    } else if (use_isotonic) {
+      # No filter smoothing; the rank ordering is imposed in the M-step by PAVA.
+      smoothed_memb <- clsmemb
     } else {
       smoothed_memb <- clsmemb %*% Fil
     }
@@ -423,7 +441,16 @@ Biclustering.binary <- function(U,
         PiFR[, ncls] <- 1
       }
     }
-    if (mic) {
+    if (use_isotonic) {
+      # Order restriction: weighted PAVA along the class axis of each field row,
+      # weighted by the per-cell expected counts. This is the exact monotone MLE
+      # under the flat prior (Ayer et al. 1955) and makes the crude `mic` sort
+      # unnecessary.
+      nmat_fr <- cfr + ffr
+      for (f in 1:nfld) {
+        PiFR[f, ] <- pava_up(PiFR[f, ], nmat_fr[f, ])$fitted
+      }
+    } else if (mic) {
       PiFR <- t(apply(PiFR, 1, sort))
     }
     if (any(is.nan(cfr))) {
@@ -519,7 +546,12 @@ Biclustering.binary <- function(U,
   cfr <- t(fldmemb) %*% t(tmp$Z * tmp$U) %*% clsmemb
   ffr <- t(fldmemb) %*% t(tmp$Z * (1 - tmp$U)) %*% clsmemb
   test_log_lik <- sum(cfr * log(PiFR + const) + ffr * log(1 - PiFR + const))
-  nparam <- ifelse(model == 1, ncls * nfld, sum(diag(Fil)) * nfld)
+  if (use_isotonic) {
+    # Shape-restricted df = total number of PAVA blocks across field rows.
+    nparam <- sum(apply(PiFR, 1, function(r) length(unique(round(r, 10)))))
+  } else {
+    nparam <- ifelse(model == 1, ncls * nfld, sum(diag(Fil)) * nfld)
+  }
   FitIndices <- TestFit(tmp$U, tmp$Z, test_log_lik, nparam)
 
   ### Field Analysis
@@ -538,6 +570,7 @@ Biclustering.binary <- function(U,
   ret <- structure(list(
     model = model,
     mic = mic,
+    estimation = if (model == 2) estimation else NA_character_,
     msg = msg,
     converge = converge,
     U = U,

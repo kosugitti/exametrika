@@ -125,8 +125,10 @@ student <- read.csv(
 
 
 ### Setup (Ranklustering)
+# Pinned to estimation = "GTM": the Mathematica reference uses the original
+# filter-based smoothing, not the new isotonic default.
 tmp <- dataFormat(J35S515)
-Bic <- Biclustering(tmp, ncls = 6, nfld = 5, method = "R", mic = TRUE)
+Bic <- Biclustering(tmp, ncls = 6, nfld = 5, method = "R", estimation = "GTM", mic = TRUE)
 
 ### Tests (Ranklustering)
 test_that("Ranklustering Test Fit", {
@@ -315,4 +317,68 @@ test_that("binary conf and conf_class can be combined", {
   est <- apply(res$ClassMembership, 1, which.max)
   expect_equal(as.numeric(res$FieldEstimated), conf_b)
   expect_equal(as.numeric(est), conf_class_b)
+})
+
+### Isotonic (order-restricted) Ranklustering ---------------------
+
+test_that("isotonic is the default estimation for Ranklustering", {
+  res <- Biclustering(J35S515, ncls = 6, nfld = 5, method = "R", verbose = FALSE)
+  expect_equal(res$estimation, "isotonic")
+})
+
+test_that("estimation is ignored (NA) for plain Biclustering", {
+  res <- Biclustering(J35S515, ncls = 6, nfld = 5, method = "B", verbose = FALSE)
+  expect_true(is.na(res$estimation))
+})
+
+test_that("isotonic Ranklustering yields monotone Field Reference Profiles", {
+  res <- Biclustering(J35S515,
+    ncls = 6, nfld = 5, method = "R",
+    estimation = "isotonic", verbose = FALSE
+  )
+  # each field's profile is non-decreasing across ranks
+  expect_true(all(apply(res$FRP, 1, function(r) all(diff(r) >= -1e-9))))
+  # monotone estimation trivially satisfies the ordinal alignment conditions
+  expect_true(res$WOACflg)
+  expect_true(res$SOACflg)
+})
+
+test_that("isotonic Ranklustering beats GTM on the log-likelihood", {
+  gtm <- Biclustering(J35S515,
+    ncls = 6, nfld = 5, method = "R",
+    estimation = "GTM", verbose = FALSE
+  )
+  iso <- Biclustering(J35S515,
+    ncls = 6, nfld = 5, method = "R",
+    estimation = "isotonic", verbose = FALSE
+  )
+  expect_gt(iso$log_lik, gtm$log_lik)
+})
+
+test_that("isotonic df credit matches the PAVA block count vs GTM", {
+  gtm <- Biclustering(J35S515,
+    ncls = 6, nfld = 5, method = "R",
+    estimation = "GTM", verbose = FALSE
+  )
+  iso <- Biclustering(J35S515,
+    ncls = 6, nfld = 5, method = "R",
+    estimation = "isotonic", verbose = FALSE
+  )
+  # TestFit sets model_df = bench_nparm - nparam, with bench_nparm fixed by the
+  # data. So the df difference between two fits equals the nparam difference.
+  nparam_gtm <- sum(diag(create_filter_matrix(6))) * 5 # sum(diag(Fil)) * nfld
+  nparam_iso <- sum(apply(iso$FRP, 1, function(r) length(unique(round(r, 10)))))
+  expect_equal(
+    iso$TestFitIndices$model_df - gtm$TestFitIndices$model_df,
+    nparam_gtm - nparam_iso
+  )
+  # each field uses at most ncls monotone blocks
+  expect_lte(max(apply(iso$FRP, 1, function(r) length(unique(round(r, 10))))), 6)
+})
+
+test_that("estimation argument rejects unknown values", {
+  expect_error(
+    Biclustering(J35S515, ncls = 6, nfld = 5, method = "R", estimation = "bogus"),
+    "should be one of"
+  )
 })

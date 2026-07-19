@@ -36,6 +36,22 @@
 
 ## Improvements
 
+- `Biclustering()` on binary data (`Biclustering.binary`) gains an
+  order-restricted estimation of the Field Reference Profiles under
+  Ranklustering (`method = "R"`), selected by the new `estimation` argument:
+  `"isotonic"` (now the **default**) or `"GTM"` (the original filter-based
+  smoothing of Shojima 2012). Under `"isotonic"` the rank ordering — each
+  field's reference profile monotone non-decreasing across ranks — is imposed
+  directly in the M-step by a weighted PAVA along the class axis (weights are
+  the per-cell expected counts), reusing `pava_up()` from
+  `R/00_isotonic_CORE.R`; for the default flat prior this is the exact
+  order-restricted MLE (Ayer et al. 1955), and the crude `mic` sort is skipped
+  as unnecessary. On typical data it attains a higher likelihood than GTM
+  (e.g. `-6941` vs `-7273` on `J35S515`, `ncls = 6`, `nfld = 5`). The
+  shape-restricted degrees of freedom (total PAVA block count across fields)
+  feed the fit indices. `estimation` is ignored for plain Biclustering
+  (`method = "B"`), whose classes are unordered (`R/07_Biclustering.R`).
+
 - `LRA()` on binary data (`LRA.binary`) gains an order-restricted estimation
   method, `method = "isotonic"`, which is now the **default** (previously
   `"GTM"`). Rather than the GTM filter, the rank ordering — item reference

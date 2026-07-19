@@ -205,6 +205,13 @@ LDB <- function(U, na = NULL, Z = NULL, w = NULL,
     ncls = ncls,
     nfld = nfld,
     method = "R",
+    # Pinned to GTM: LDB's local-dependence estimates are cross-validated
+    # against the Mathematica (GTM-based) reference. Switching the internal
+    # biclustering init to the isotonic default would change LDB's output and
+    # break that reference (Mathematica has no isotonic implementation). A
+    # deliberate isotonic-LDB variant is left for a future, separately validated
+    # change.
+    estimation = "GTM",
     conf = conf,
     verbose = FALSE
   )

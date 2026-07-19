@@ -319,10 +319,19 @@ rated = nominal + correct answer (multiple-choice tests); ordinal = Likert-type 
   Resolves the matrix→list tech-debt item. The pre-existing vestigial
   `refMat`/`refMat_satu` (a Mathematica-port leftover, assigned but never read)
   and their `delete_rows`/`designB` scaffolding were deleted in the same pass.
-- **Isotonic latent rank model** (3rd LRA; order-restricted + step Dirichlet,
-  beats GTM on fit) — under development in `develop/`; planned as
-  `method = "isotonic"` plus deprecation of the current polytomous ordinal
-  variant (memory: project_isotonic_latent_rank)
+- **Isotonic (order-restricted) LRA — IMPLEMENTED, now the default** (commits
+  6866787 binary, ceffdea core, 37f19eb ordinal). New shared core
+  `R/00_isotonic_CORE.R`: `pava_up()` (binary, Ayer 1955) and `iso_dual_map()`
+  (ordinal, Fenchel-dual stochastic-order MAP, El Barmi & Dykstra 1994).
+  `LRA.binary`/`LRA.ordinal` gain `method = "isotonic"` (default; GTM/SOM still
+  selectable), imposing rank ordering in the M-step instead of the GTM filter.
+  Beats GTM/SOM on fit; mixed category counts supported; shape-restricted df
+  (PAVA block / distinct-boundary count) feeds fit indices. Key finding:
+  per-threshold PAVA (L2) is NOT the constrained MLE for polytomous (Q>=3) — the
+  Fenchel-dual (KL) solution is required; PAVA is exact only for binary.
+  Memos updated (`develop/Algorithm_LRA.tex`, `Dykstra_memo_ja.tex`). memory:
+  project_isotonic_latent_rank. Next: apply the same core to Biclustering
+  (07 binary PAVA, 16 ordinal Dykstra).
 - Downstream: ggExametrika v1.1.2 (audit release, ready) will be submitted after
   this version is accepted, so its GRM information plots match the fixed parent
 

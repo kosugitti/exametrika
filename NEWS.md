@@ -65,6 +65,23 @@
   feed the fit indices. `estimation` is ignored for plain Biclustering
   (`method = "B"`), whose classes are unordered (`R/07_Biclustering.R`).
 
+- `Biclustering()` on ordinal data (`Biclustering.ordinal`) gains the same
+  `estimation` argument for Ranklustering (`method = "R"`): `"isotonic"` (now
+  the **default**) or `"GTM"`. Under `"isotonic"` the rank ordering is imposed
+  as a genuine stochastic-order restriction — each field's upper-cumulative
+  (boundary) probabilities are monotone non-decreasing across ranks at every
+  category threshold — solved per field in the M-step by the Fenchel-dual
+  algorithm (El Barmi & Dykstra 1994) via `iso_dual_map()` in
+  `R/00_isotonic_CORE.R`, replacing the independent per-cell boundary MLE and
+  the crude `mic` class relabelling. Unlike the binary case, isotonic does not
+  maximise the likelihood relative to GTM: the (now filter-smoothed) GTM path
+  leaves the field profiles unconstrained and so fits better by violating the
+  order (e.g. only 1 of 5 fields is monotone on `J35S500`), whereas isotonic
+  enforces the order in every field at a modest likelihood cost — this is the
+  intended trade and the point of the method. Shape-restricted df = distinct
+  free boundary levels per field. `estimation` is ignored for plain
+  Biclustering (`method = "B"`) (`R/16_Biclustering_ordinal.R`).
+
 - `LRA()` on binary data (`LRA.binary`) gains an order-restricted estimation
   method, `method = "isotonic"`, which is now the **default** (previously
   `"GTM"`). Rather than the GTM filter, the rank ordering — item reference

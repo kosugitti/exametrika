@@ -5,7 +5,9 @@ library(exametrika)
 # 理論構造: 累積パターン, 5cls × 5fld × 5cat
 # ================================================================
 
-result_ord <- Biclustering(J35S500, ncls = 5, nfld = 5, method = "R", mic = TRUE, maxiter = 200)
+# Pinned to estimation = "GTM": these structural and fit-index snapshots track
+# the filter-based path. The new isotonic default is exercised separately below.
+result_ord <- Biclustering(J35S500, ncls = 5, nfld = 5, method = "R", estimation = "GTM", mic = TRUE, maxiter = 200)
 
 test_that("ordinal Biclustering converges", {
   expect_true(result_ord$converge)
@@ -67,6 +69,68 @@ test_that("ordinal Biclustering fit indices", {
   expect_equal(result_ord$TestFitIndices$RMSEA, 0.0526998, tolerance = 1e-3)
   expect_equal(result_ord$TestFitIndices$AIC, 6720.284, tolerance = 1)
   expect_equal(result_ord$TestFitIndices$BIC, -66683.20, tolerance = 1)
+})
+
+
+# ---- Isotonic (Fenchel-dual, stochastic-order) ordinal Ranklustering --------
+
+result_ord_iso <- Biclustering(J35S500,
+  ncls = 5, nfld = 5, method = "R",
+  estimation = "isotonic", maxiter = 200
+)
+
+test_that("isotonic is the default estimation for ordinal Ranklustering", {
+  res <- Biclustering(J35S500, ncls = 5, nfld = 5, method = "R", maxiter = 200)
+  expect_equal(res$estimation, "isotonic")
+})
+
+test_that("estimation is ignored (NA) for plain ordinal Biclustering", {
+  res <- Biclustering(J35S500, ncls = 5, nfld = 5, method = "B", maxiter = 200)
+  expect_true(is.na(res$estimation))
+})
+
+test_that("isotonic ordinal Biclustering converges and FRP sums to 1", {
+  expect_true(result_ord_iso$converge)
+  expect_equal(dim(result_ord_iso$FRP), c(5, 5, 5))
+  probsum <- apply(result_ord_iso$FRP, c(1, 2), sum)
+  expect_true(all(abs(probsum - 1) < 1e-8))
+})
+
+test_that("isotonic ordinal Biclustering enforces stochastic order in every field", {
+  # For each field, the upper-cumulative (boundary) probability at every
+  # threshold must be non-decreasing across ranks -- this is the genuine
+  # stochastic-order restriction the GTM path does not impose.
+  nfld <- dim(result_ord_iso$FRP)[1]
+  ncls <- dim(result_ord_iso$FRP)[2]
+  maxQ <- dim(result_ord_iso$FRP)[3]
+  worst <- 0
+  for (f in 1:nfld) {
+    S <- t(sapply(1:ncls, function(c) {
+      rev(cumsum(rev(result_ord_iso$FRP[f, c, ])))[-1]
+    })) # ncls x (maxQ-1): P(>= q) per rank
+    worst <- max(worst, max(S[-ncls, , drop = FALSE] - S[-1, , drop = FALSE]))
+  }
+  # violations are bounded by the dual solver tolerance, not exactly zero
+  expect_lt(worst, 1e-3)
+})
+
+test_that("isotonic ordinal expected scores are monotone across ranks", {
+  nfld <- dim(result_ord_iso$FRP)[1]
+  ncls <- dim(result_ord_iso$FRP)[2]
+  maxQ <- dim(result_ord_iso$FRP)[3]
+  for (f in 1:nfld) {
+    esp <- sapply(1:ncls, function(c) sum((1:maxQ) * result_ord_iso$FRP[f, c, ]))
+    expect_true(all(diff(esp) >= -1e-6))
+  }
+  # monotone profiles satisfy the ordinal alignment conditions
+  expect_true(result_ord_iso$WOACflg)
+})
+
+test_that("isotonic ordinal estimation rejects unknown values", {
+  expect_error(
+    Biclustering(J35S500, ncls = 5, nfld = 5, method = "R", estimation = "bogus"),
+    "should be one of"
+  )
 })
 
 

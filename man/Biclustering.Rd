@@ -49,6 +49,7 @@ Biclustering(U, ...)
   ncls = 2,
   nfld = 2,
   method = "B",
+  estimation = "isotonic",
   conf = NULL,
   conf_class = NULL,
   mic = FALSE,
@@ -101,10 +102,12 @@ rate)
 Ranklustering (\code{method = "R"}); ignored for plain Biclustering, whose
 classes are unordered:
 \itemize{
-\item "isotonic": order-restricted estimation, imposing the rank ordering by a
-weighted pool-adjacent-violators step in the M-step (default). For the
-default flat prior this is the exact order-restricted MLE (Ayer et al.
-1955).
+\item "isotonic": order-restricted estimation, imposing the rank ordering
+directly in the M-step (default). For binary data this is a weighted
+pool-adjacent-violators step, which under the default flat prior is the
+exact order-restricted MLE (Ayer et al. 1955); for ordinal data it is
+the stochastic-order-restricted multinomial MAP solved by the
+Fenchel-dual algorithm (El Barmi & Dykstra 1994).
 \item "GTM": the original filter-based smoothing of Shojima (2012).
 }}
 

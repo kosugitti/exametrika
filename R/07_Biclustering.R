@@ -165,10 +165,12 @@ Biclustering.default <- function(U, na = NULL, Z = NULL, w = NULL, ...) {
 #' @param estimation Estimation method for the Field Reference Profiles under
 #'   Ranklustering (`method = "R"`); ignored for plain Biclustering, whose
 #'   classes are unordered:
-#'   * "isotonic": order-restricted estimation, imposing the rank ordering by a
-#'     weighted pool-adjacent-violators step in the M-step (default). For the
-#'     default flat prior this is the exact order-restricted MLE (Ayer et al.
-#'     1955).
+#'   * "isotonic": order-restricted estimation, imposing the rank ordering
+#'     directly in the M-step (default). For binary data this is a weighted
+#'     pool-adjacent-violators step, which under the default flat prior is the
+#'     exact order-restricted MLE (Ayer et al. 1955); for ordinal data it is
+#'     the stochastic-order-restricted multinomial MAP solved by the
+#'     Fenchel-dual algorithm (El Barmi & Dykstra 1994).
 #'   * "GTM": the original filter-based smoothing of Shojima (2012).
 #' @param conf Confirmatory parameter for pre-specified field assignments. Can be either:
 #'   * A vector with items and corresponding fields in sequence

@@ -20,8 +20,11 @@ student <- read.csv(
 
 
 ### Setup
+# Mathematica reference fixtures are for the GTM method (mic = 0);
+# pin method = "GTM" so these keep validating GTM after the default
+# changed to "isotonic".
 tmp <- dataFormat(J15S500, na = -99)
-model <- LRA(tmp, nrank = 6)
+model <- LRA(tmp, nrank = 6, method = "GTM")
 
 ### Tests
 test_that("LRA Test Fit", {
@@ -126,4 +129,35 @@ test_that("LRA Students", {
     as.numeric()
   result <- model$Students[, 8:9] |> as.numeric()
   expect_equal(result, expect, tolerance = 1e-3)
+})
+
+### Isotonic method (default) -------------------------------------------------
+# No Mathematica reference exists for the order-restricted method, so these are
+# structural / internal-consistency checks on the new default path.
+model_iso <- LRA(tmp, nrank = 6, method = "isotonic")
+
+test_that("isotonic is the default method", {
+  model_def <- LRA(tmp, nrank = 6)
+  expect_equal(model_def$method, "isotonic")
+  expect_equal(model_def$IRP, model_iso$IRP)
+})
+
+test_that("isotonic IRP is monotone non-decreasing across ranks", {
+  viol <- apply(model_iso$IRP, 1, function(r) any(diff(r) < -1e-9))
+  expect_false(any(viol))
+})
+
+test_that("isotonic shape-restricted df is 1..nrank per item", {
+  blocks <- apply(model_iso$IRP, 1, function(x) length(unique(round(x, 10))))
+  expect_true(all(blocks >= 1 & blocks <= 6))
+})
+
+test_that("isotonic returns finite fit indices and converges", {
+  expect_true(model_iso$converge)
+  expect_true(is.finite(model_iso$TestFitIndices$CFI))
+  expect_true(is.finite(model_iso$TestFitIndices$RMSEA))
+})
+
+test_that("isotonic attains higher log-likelihood than GTM (same data)", {
+  expect_gt(model_iso$log_lik, model$log_lik)
 })

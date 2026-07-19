@@ -58,7 +58,12 @@ ItemFit <- function(U, Z, ell_A, nparam) {
 
   # dfs
   df_B <- rep(ntotal - 1, testlength)
-  df_A <- rep(ntotal - nparam, testlength)
+  # nparam may be a scalar (shared across items) or a per-item vector
+  # (e.g. shape-restricted block counts from the isotonic core)
+  df_A <- ntotal - nparam
+  if (length(df_A) == 1L) {
+    df_A <- rep(df_A, testlength)
+  }
 
   ItemFitIndices <- calcFitIndices(
     chi_A,

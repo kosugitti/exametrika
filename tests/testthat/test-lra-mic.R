@@ -21,7 +21,8 @@ student <- read.csv(
 
 ### Target
 
-model <- LRA(J15S500, nrank = 6, mic = TRUE)
+# GTMmic1 Mathematica reference: pin method = "GTM" (default is now "isotonic")
+model <- LRA(J15S500, nrank = 6, mic = TRUE, method = "GTM")
 
 ### test
 test_that("LRA Test Fit", {

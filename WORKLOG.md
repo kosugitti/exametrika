@@ -2144,3 +2144,35 @@ isotonic実装(develop/Dykstra_20260714.R)の前処理を12と共有する検討
 - **コミット**: 14d0e7c（R/12+NEWS+CLAUDE+test）をmainへ。develop/はgitignore(未commit・研究スクラッチ)。
 
 **次**: (a)Dykstra開発(順序LRA isotonic)へ復帰＝Dykstra_20260714.RのE-step以降，(b)method="isotonic"分岐は前処理共有(12のsum(ncat)前処理はそのまま流用可能に)，(c)荘島先生への返信(報告書+Dykstraメモ+Algorithm_LRA)は未送。
+
+## 2026-07-19 順序LRA(isotonic) M-step：L2でなくKL(Fenchel双対)が正解と判明・導出/検証/メモ更新
+
+順序LRAの順序射影を詰めた結果、当初計画(L2の二壁Dykstra)が最尤でないと分かり、Fenchel双対(KL)へ全面転換。数値検証済み。
+
+- **核心の発見**: 閾値ごと重み付きPAVA(=生存表へのL2最近点)は、多値(Q≥3)では制約付き最尤とズレる。カテゴリ確率=隣接生存の差で閾値間が尤度上結合するため、閾値独立のL2丸めは尤度を最大化しない。二値(単一閾値)のみAyer(1955)でPAVA=最尤。数値: J15S3810相当の小例(C=3,K=3)でL2 PAVA loglik −203.26 vs 制約付き最尤 −201.49、Δll≈1.77。
+- **当初の勘違い**: 「等重みPAVAは入れ子(壁B)を保存する(20万MCで違反0)」を「PAVAが最尤」と取り違えていた。feasibleと最適は別。単調回帰の順序保存性(固定重み)で壁Bは保たれるが、それは最尤性を意味しない。
+- **正しい手法=Fenchel双対(El Barmi & Dykstra 1994)**: 制約「閾値q・隣接ランク対(c,c+1): π*_jcq≤π*_j(c+1)q」に双対変数θ_jqc≥0。停留条件で主変数が有理形 π_jcq=γ_jcq/(λ_jc+d_jcq)、d_jcq=Σ_{q'≤q}(θ_jq'c−θ_jq'(c-1))、λ_jcは規格化。双対座標上昇: 各(q,c)を巡回し、緩ければθ=0、破れていればπ*_jcq=π*_j(c+1)qまでθを二分法で上げる。入れ子(壁B)はγ>0で自動保持=別射影不要。
+- **KLの向きの罠**: 最初に実装した指数傾けDykstraはKLの向きが逆(min KL(π‖ref)のI-射影)で、−205.71とPAVAより悪化。最尤はmin Σ N_c KL(π̂_c‖π_c)=第2引数版で、射影が指数傾けでなく「(λ+θ)で割る」有理形になるのが正解。
+- **数値検証**: 双対座標上昇 vs nloptr(COBYLA)厳密解を8条件(サイズ3x2〜5x5、α=1/2/4/0.5/ベクトルα、二値K=2含む)で突合、全て max|Δπ|≤2e-7で一致。α任意でも最尤を与える。二値はθが1閾値に縮退=PAVAに一致。
+- **プロトタイプ develop/Dykstra_20260714.R**: E-step(logsumexp)+M-step(rawPi→双対Dykstra→RBRM/RCRM)+EM反復。前処理は混在対応済R/12のsum(ncat)流用。ヘルパ buildPi(有理形+λ二分法)/survOf(生存)を外で定義、while(FLG)+maxiterでパッケージ体裁に。
+- **バグ(私の検証穴)**: nrank=nc=3の正方でしか検証せず、theta[b,r]のb/r取り違えを見逃した。J15S3810(nrank=5≠nc=4)で subscript out of bounds として顕在化。theta=[b,r](境界×ランク対)、S=[r,b]で統一して解消。今後は非正方で検証する。
+- **収束**: 双対座標上昇は線形収束の遅い尻尾(制約が絡むと1本直すと隣が再び微破れ)。実用は最大制約違反<1e-4・maxiter上限のGEM(部分M-step)で十分。1e-10/1e-12は過剰。
+- **メモ更新(コンパイル済)**: (1)Dykstra_memo_ja.tex 108行「L2最近点=制約付き最尤解」の誤同一視を「L2最近点」に訂正＋L2/KL注意書き追加。(2)Algorithm_LRA.tex §4.6以降を、L2二壁Dykstra(誤: 最尤と同一視)からFenchel双対(KL)法に全面書き換え(目的関数/有理形/双対座標上昇/二値縮退/L2二壁は幾何的直感の位置づけ)。
+- **文献**: El Barmi & Dykstra (1994) "Restricted multinomial MLE based upon Fenchel duality", Stat & Prob Letters 21(2):121-130(Elsevier有料・専修図書館経由)。無料併読=Grendár & Špitalský arXiv:1408.5621。
+- **未整合**: Dykstra_memo_ja.tex は今もL2二壁を「手法」として記述(注意書きのみ追加)。Algorithm側がKL双対に確定したので、いずれ「L2は幾何直感」に寄せる。急がない。
+
+**次(step 4 実装)**: (a)双対DykstraのM-stepをR/12に method="isotonic" として畳み込む(前処理はsum(ncat)版流用)、(b)EMのlog_likはlogsumexpでランク周辺化する形に(現プロトタイプは全ランク単純和で誤り・修正中)、(c)Dykstra_memoのL2→幾何直感の整理は後回し。
+
+## 2026-07-19 二値LRA isotonic法 実装(step4a)・R/00_isotonic_CORE.R新設
+
+順序LRAの前段として二値LRAに順序制約(PAVA)版を実装。method="isotonic"を新デフォルト化。
+
+- **新設 R/00_isotonic_CORE.R**: `pava_up(y,w)`(重み付きPAVA・fitted＋nblock返す)、`emclus_isotonic(...)`(フィルタなしEM・M-stepでランク方向の重み付きPAVA・返り値emclus同形＋item_nparam)。
+- **06_LRA.R**: LRA.binaryにmethod="isotonic"追加しデフォルト化。SOM/GTM/isotonicの3分岐。GTM(emclus)/SOM(somclus)は無変更＝共有コア温存(test-lca通過で確認)。
+- **ItemFit(00_ModelFitModule.R)**: nparamをscalar/vector両対応に(`df_A<-ntotal-nparam`; length1ならrep)。後方互換。isotonicのdf＝各項目PAVAブロック数(Meyer-Woodroofe 形状制約回帰)。
+- **理論**: 二値isotonicはbeta=1(既定)で重み付きPAVA＝Ayer(1955)の厳密制約付きMLE。beta≠1はMAP比率に同じ重み付きプール(近似)。単調化はフィルタ→PAVAに置換、E-stepでフィルタ掛けず。
+- **動作(J15S500,nrank=6)**: isotonic log_lik −3735 > GTM −3858 > SOM −3895。IRP全項目ランク単調、dfブロック2-5、CFI/RMSEA有限、47反復収束。
+- **テスト**: GTM Mathematica参照2本(test-lra/test-lra-mic)はmethod="GTM"固定で温存。isotonic構造テスト5本追加(デフォルト確認・単調・df範囲・収束&fit有限・GTM超え)。全通過。
+- NEWS.md追記、roxygen再生成(man/LRA.Rd)。命名はR/規約(classRefMat/postDist/correct_cls)に統一、develop(RCRM系)混入なし。
+
+**次**: 多値LRA(12)へ双対Dykstra移植(同00_isotonic_CORE.Rにbuildpi/survOf/双対ソルバ追加、12にmethod="isotonic")。

@@ -36,6 +36,19 @@
 
 ## Improvements
 
+- `LRA()` on binary data (`LRA.binary`) gains an order-restricted estimation
+  method, `method = "isotonic"`, which is now the **default** (previously
+  `"GTM"`). Rather than the GTM filter, the rank ordering — item reference
+  profiles monotone non-decreasing across ranks — is imposed directly in the
+  M-step by a weighted PAVA down each item column; for the default flat prior
+  (`beta1 = beta2 = 1`) this is the exact order-restricted MLE (Ayer et al.
+  1955). On typical data it attains a higher likelihood than GTM/SOM. The
+  shape-restricted degrees of freedom (per-item PAVA block count) feed the
+  item/test fit indices. `method = "GTM"` and `method = "SOM"` are unchanged
+  and still selectable. New shared internal core `R/00_isotonic_CORE.R`
+  (`pava_up()`, `emclus_isotonic()`); `ItemFit()` now accepts a per-item
+  `nparam` vector in addition to a scalar.
+
 - `LRA()` on ordinal data (`LRA.ordinal`) now supports items with
   differing numbers of response categories. Previously the ordinal
   method assumed every item had the same number of categories and

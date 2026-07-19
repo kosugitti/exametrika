@@ -15,7 +15,7 @@ LRA(U, ...)
 \method{LRA}{binary}(
   U,
   nrank = 2,
-  method = "GTM",
+  method = "isotonic",
   mic = FALSE,
   maxiter = 100,
   BIC.check = FALSE,
@@ -64,7 +64,10 @@ it is converted to the exametrika class with the \code{\link{dataFormat}} functi
 
 \item{nrank}{Number of latent ranks to estimate. Must be between 2 and 20.}
 
-\item{method}{For binary data only. Either "SOM" (Self-Organizing Maps) or "GTM" (Gaussian Topographic Mapping). Default is "GTM".}
+\item{method}{For binary data only. One of "isotonic" (order-restricted EM;
+rank ordering imposed by weighted PAVA in the M-step, no filter),
+"GTM" (Gaussian Topographic Mapping; filter smoothing), or
+"SOM" (Self-Organizing Maps). Default is "isotonic".}
 
 \item{mic}{Logical; if TRUE, forces Item Reference Profiles to be monotonically increasing. Default is FALSE.}
 

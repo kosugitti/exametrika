@@ -330,8 +330,25 @@ rated = nominal + correct answer (multiple-choice tests); ordinal = Likert-type 
   per-threshold PAVA (L2) is NOT the constrained MLE for polytomous (Q>=3) — the
   Fenchel-dual (KL) solution is required; PAVA is exact only for binary.
   Memos updated (`develop/Algorithm_LRA.tex`, `Dykstra_memo_ja.tex`). memory:
-  project_isotonic_latent_rank. Next: apply the same core to Biclustering
-  (07 binary PAVA, 16 ordinal Dykstra).
+  project_isotonic_latent_rank.
+- **Isotonic Biclustering — IMPLEMENTED (commits 2dd38e5 binary, 62778a8 ordinal
+  GTM bug fix, d2b189c ordinal Dykstra)**. `Biclustering.binary`/`.ordinal` gain
+  `estimation = "isotonic"` (default) / `"GTM"` for Ranklustering (`method = "R"`);
+  ignored for plain Biclustering (`method = "B"`, unordered → `estimation` NA).
+  Binary reuses `pava_up()` on the FRP class axis (isotonic loglik −6941 > GTM
+  −7273 on J35S515); ordinal reuses `iso_dual_map()` per field (genuine per-field
+  stochastic order at every threshold). LDB's internal biclustering pinned to
+  `estimation = "GTM"` (keeps its Mathematica cross-validation). Two non-obvious
+  findings: (1) the ordinal Ranklustering **GTM filter was a latent bug** —
+  `smoothed_memb` was computed but never used, so ordinal ranklustering had
+  silently degenerated to plain biclustering + a cosmetic mean-sort; fixed to use
+  `smoothed_memb` like binary/LRA. (2) Unlike binary/LRA, ordinal isotonic
+  **loses to GTM on loglik** (−20962 vs −20776) — correct, because the (fixed) GTM
+  FRP is unconstrained and buys fit by violating the order (1/5 fields ordered)
+  while isotonic enforces it in all 5; the gap is the price of real order. `mic`
+  is now essentially cosmetic (binary: GTM already monotone; ordinal: global
+  class relabel only). memory: project_isotonic_latent_rank. Next (future): rated
+  (13/19) if wanted; A3 paper body.
 - Downstream: ggExametrika v1.1.2 (audit release, ready) will be submitted after
   this version is accepted, so its GRM information plots match the fixed parent
 

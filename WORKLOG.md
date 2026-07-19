@@ -2186,3 +2186,20 @@ isotonic実装(develop/Dykstra_20260714.R)の前処理を12と共有する検討
 - コア(iso_build_pi/iso_surv/iso_dual_map)は先行コミットceffdea。NEWS/roxygen(man/LRA.Rd)更新。
 
 **次**: (a)R CMD check全体、(b)将来: ordinalランクラスタリング(16)・rated(13)へ双対展開、(c)Dykstra_memoのL2→幾何直感の整理。
+
+## 2026-07-19 バイクラスタリングへ isotonic展開(二値PAVA/多値Dykstra)＋多値GTM配線バグ修正
+
+同00_isotonic_CORE.RをBiclusteringへ展開。方針=順序と推定法を別軸に(案A)。順序があるランクラスタリング(method="R")の下位オプションとして`estimation="isotonic"`(新デフォルト)/`"GTM"`を追加。無順序のBiclustering(method="B")では無視(estimationフィールドNA)。
+
+- **二値(07_Biclustering.R, commit 2dd38e5)**: LRA.binaryと同型。isotonic時はフィルタ平滑化`clsmemb%*%Fil`を外し、M-stepでFRP(PiFR)を各フィールド行×クラス軸に重み付きPAVA(重み=cfr+ffr)。micソート不要。df=PAVAブロック総数。J35S515(ncls6,nfld5)で **isotonic loglik −6941 > GTM −7273**、FRP全フィールド単調。LDB内部呼び出しは`estimation="GTM"`固定(Mathematica相互検証を温存・isotonic化すると参照8本落ちる)。テスト=Mathematica参照setup(test-biclustering:129)をGTM固定、isotonic構造テスト9本純増。
+- **多値・段階1 GTM配線バグ修正(16, commit 62778a8)**: `smoothed_memb<-clsmemb%*%Fil`を計算するだけで推定に未使用だったバグ。フィールドE-step(224)とM-step Ufcq(240)が生clsmembを使い、順序バイクラが実質「無順序バイクラ＋mic平均並べ替え」に退化していた。両方をsmoothed_membに(07・12と一致)。model==1はFil=単位で不変。J35S500でRMSEA 0.0533→0.0527・AIC 7288→6720。Mathematica参照は無く自己スナップショットのみ→test-polytomous-biclusteringのfit index snapshot更新。
+- **多値・段階2 isotonic追加(16, commit d2b189c)**: LRA.ordinalと同型を「フィールドごと」に。M-stepでフィールドfごとMcount=Ufcq_prior[f,,](ncls×maxQ)を`iso_dual_map`へ→BCRM[f,,]・BBRM[f,,](iso_surv上側累積)。従来の境界MLE＋mic並べ替えを置換。df=フィールドごと境界distinct値数。result_ordはestimation="GTM"固定、isotonic構造テスト13本純増。
+
+**重要な発見(A3に効く)**:
+- 多値バイクラでは **isotonicはloglikでGTMに負ける**(−20962 vs −20776)。これは正しい。修正後GTMのFRPは無制約(セルごと境界MLE)で、5フィールド中4つで確率的順序を破ることで当てはまりを稼ぐ(順序フィールド1/5)。isotonicは5/5で本物の確率的順序を課す代わりにloglikを払う。「GTMの高い適合は課したい順序を破って得たもの」=順序の対価。二値/LRAでisotonicが勝つのと非対称(多値は複数閾値×複数ランクの制約が強い)。
+- **多値のmic=TRUEは飾り**(セッション前からある既存コード)。クラスを全フィールド合計期待得点で昇順に並べ替えるだけ=WOAC(TRP単調)は達成するがフィールド別確率的順序(SOAC)は課さない。J35S500ではorder()が恒等で完全no-op(GTMとGTM+micのloglikが1桁一致した理由)。二値のmic(各フィールドsort)とは別物。
+- ユーザ最終判断: 二値・多値とも推定法デフォルトはisotonic。多値でloglik負けるのは「本物の順序を出せるのはisotonicだけ、GTMは順序付き競合になっていない」ため妥当。
+
+- **確定**: 全テスト5224 pass/0 fail、R CMD check --as-cran 0E/0W/2NOTE(Days since last update:4のcadence＋ローカルtidy版・両無害)。roxygen(man/Biclustering.Rd)・NEWS更新。07のestimation roxygenは二値Ayer/多値Dykstra両対応に一般化。
+
+**次**: (a)rated(13/19)へ同展開(要否判断)、(b)A3論文本体(方法節=Algorithm_LRA/Dykstraメモ、実データ比較にloglikトレードの図表)、(c)荘島返信(未送)。

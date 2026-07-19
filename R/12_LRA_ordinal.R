@@ -347,7 +347,7 @@ LRA.ordinal <- function(U,
       for (j in 1:nitems) {
         rows_j <- design1[j, 1]:design1[j, 2]
         Mcount <- t(ecount[rows_j, , drop = FALSE]) + (alpha - 1)
-        Pj <- iso_dual_map(Mcount, maxiter = maxiter, tol = 1e-4)
+        Pj <- iso_dual_map(Mcount, maxiter = maxiter, tol = 1e-6)
         catRefMat[rows_j, ] <- t(Pj)
         refMat111[rows_j, ] <- apply(Pj, 1, function(pr) rev(cumsum(rev(pr))))
       }

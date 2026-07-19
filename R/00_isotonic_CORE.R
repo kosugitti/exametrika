@@ -227,24 +227,23 @@ iso_surv <- function(P) {
 #' positive, so no separate projection is needed. For a single boundary
 #' (\eqn{ncat=2}) this reduces to weighted PAVA (Ayer et al. 1955).
 #'
-#' Known limitation: this is a simplified dual coordinate descent, not the full
-#' El Barmi-Dykstra cyclic projection with correction memory. On well-separated
-#' inputs it matches the exact constrained MLE, but on degenerate cases needing
-#' several boundaries to pool simultaneously (e.g. a fully rank-reversed count
-#' matrix) it can stall at a feasible-but-suboptimal point. This does not arise
-#' inside the EM (the ordering is preserved from a score-ordered start), but
-#' should be revisited (add the correction memory) when this core is reused for
-#' biclustering.
+#' Convergence is judged by the per-sweep change in the log-likelihood, NOT by
+#' the residual order violation: each sweep ties the last-processed constraint,
+#' so the violation looks negligible while the multipliers are still drifting
+#' toward the optimum over many sweeps (fully rank-reversed inputs need dozens of
+#' sweeps to pool all boundaries).
 #' @param Mcount (nrank x ncat) expected counts plus Dirichlet pseudocounts.
 #' @param maxiter maximum dual sweeps.
-#' @param tol stop when the maximum remaining order violation is below this.
+#' @param tol stop when the relative change in the log-likelihood between sweeps
+#'   falls below this.
 #' @return (nrank x ncat) order-restricted category-probability matrix.
 #' @noRd
-iso_dual_map <- function(Mcount, maxiter = 100, tol = 1e-4) {
+iso_dual_map <- function(Mcount, maxiter = 100, tol = 1e-7) {
   nrank <- nrow(Mcount)
   nc <- ncol(Mcount)
   theta <- matrix(0, nc - 1, nrank - 1)
   emt <- 0
+  old_loglik <- -Inf
   FLG <- TRUE
   while (FLG) {
     emt <- emt + 1
@@ -276,11 +275,12 @@ iso_dual_map <- function(Mcount, maxiter = 100, tol = 1e-4) {
         }
       }
     }
-    S <- iso_surv(iso_build_pi(Mcount, theta))
-    maxviol <- max(S[-nrank, , drop = FALSE] - S[-1, , drop = FALSE])
-    if (maxviol < tol) {
+    # Convergence on the log-likelihood drift, not the residual violation.
+    loglik <- sum(Mcount * log(pmax(iso_build_pi(Mcount, theta), 1e-300)))
+    if (abs(loglik - old_loglik) <= tol * (abs(loglik) + tol)) {
       FLG <- FALSE
     }
+    old_loglik <- loglik
     if (emt >= maxiter) {
       FLG <- FALSE
     }

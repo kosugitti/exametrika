@@ -98,17 +98,15 @@ test_that("iso_dual_map returns the unconstrained MLE when input is already orde
   expect_equal(P, M / rowSums(M), tolerance = 1e-8)
 })
 
-test_that("iso_dual_map stays feasible and valid under full reversal", {
-  # Fully reversed counts force pooling across both thresholds simultaneously.
-  # The simplified dual coordinate descent is not guaranteed to reach the exact
-  # optimum in this corner case (it can stall at a feasible-but-suboptimal KKT
-  # point; the full El Barmi-Dykstra correction is needed there). This does not
-  # arise inside the EM, where the initialisation keeps the counts ordered.
-  # Here we only assert that the result is feasible and a valid distribution.
+test_that("iso_dual_map pools to the combined MLE under full reversal", {
+  # Fully reversed counts violate the order at every threshold, so the
+  # constrained MLE ties all boundaries -> both ranks collapse to the single
+  # combined-count distribution colSums(M)/sum(M). This is the closed-form
+  # optimum (and the case that exposed a stopping-criterion bug: convergence
+  # must be judged on the likelihood, not the residual violation).
   M <- rbind(c(1, 1, 8), c(8, 1, 1))
-  P <- iso_dual_map(M, tol = 1e-8)
-  expect_true(all(abs(rowSums(P) - 1) < 1e-8))
-  expect_true(all(P > 0))
-  S <- iso_surv(P)
-  expect_true(max(S[-nrow(S), , drop = FALSE] - S[-1, , drop = FALSE]) < 1e-6)
+  P <- iso_dual_map(M)
+  pooled <- colSums(M) / sum(M) # c(0.45, 0.1, 0.45)
+  expect_equal(P[1, ], pooled, tolerance = 1e-5)
+  expect_equal(P[2, ], pooled, tolerance = 1e-5)
 })

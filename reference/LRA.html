@@ -73,7 +73,7 @@ examinees to these ranks based on their response patterns.</p>
 <span><span class="fu">LRA</span><span class="op">(</span></span>
 <span>  <span class="va">U</span>,</span>
 <span>  nrank <span class="op">=</span> <span class="fl">2</span>,</span>
-<span>  method <span class="op">=</span> <span class="st">"GTM"</span>,</span>
+<span>  method <span class="op">=</span> <span class="st">"isotonic"</span>,</span>
 <span>  mic <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  maxiter <span class="op">=</span> <span class="fl">100</span>,</span>
 <span>  BIC.check <span class="op">=</span> <span class="cn">FALSE</span>,</span>
@@ -89,9 +89,11 @@ examinees to these ranks based on their response patterns.</p>
 <span><span class="fu">LRA</span><span class="op">(</span></span>
 <span>  <span class="va">U</span>,</span>
 <span>  nrank <span class="op">=</span> <span class="fl">2</span>,</span>
+<span>  method <span class="op">=</span> <span class="st">"isotonic"</span>,</span>
 <span>  mic <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  maxiter <span class="op">=</span> <span class="fl">100</span>,</span>
 <span>  trapezoidal <span class="op">=</span> <span class="fl">0</span>,</span>
+<span>  alpha <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  eps <span class="op">=</span> <span class="fl">1e-04</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  <span class="va">...</span></span>
@@ -141,7 +143,10 @@ it is converted to the exametrika class with the <code><a href="dataFormat.html"
 
 
 <dt id="arg-method">method<a class="anchor" aria-label="anchor" href="#arg-method"></a></dt>
-<dd><p>For binary data only. Either "SOM" (Self-Organizing Maps) or "GTM" (Gaussian Topographic Mapping). Default is "GTM".</p></dd>
+<dd><p>Estimation method. One of "isotonic" (order-restricted MAP;
+rank ordering imposed in the M-step by the Fenchel-dual stochastic-order
+solver, no filter) or "GTM" (Gaussian Topographic Mapping; filter
+smoothing). Default is "isotonic".</p></dd>
 
 
 <dt id="arg-mic">mic<a class="anchor" aria-label="anchor" href="#arg-mic"></a></dt>
@@ -183,7 +188,14 @@ Default is NULL (fully exploratory).</p></dd>
 <dt id="arg-trapezoidal">trapezoidal<a class="anchor" aria-label="anchor" href="#arg-trapezoidal"></a></dt>
 <dd><p>Specifies the height of both tails when using a trapezoidal
 prior distribution. Must be less than 1/nrank. The default value is 0, which
-results in a uniform prior distribution.</p></dd>
+results in a uniform prior distribution. Used by <code>method = "GTM"</code>.</p></dd>
+
+
+<dt id="arg-alpha">alpha<a class="anchor" aria-label="anchor" href="#arg-alpha"></a></dt>
+<dd><p>Dirichlet concentration for the category probabilities, used by
+<code>method = "isotonic"</code> (the polytomous analogue of the binary
+<code>beta1</code>/<code>beta2</code>). <code>alpha = 1</code> gives the maximum-likelihood
+(flat-prior) estimate. Default is 1.</p></dd>
 
 
 <dt id="arg-eps">eps<a class="anchor" aria-label="anchor" href="#arg-eps"></a></dt>
@@ -366,19 +378,19 @@ partially-credited items or preference scales where response categories have dif
 <span class="r-in"><span><span class="co"># Display the first few rows of student rank membership profiles</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">result.LRA</span><span class="op">$</span><span class="va">Students</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>            Membership 1 Membership 2 Membership 3 Membership 4 Membership 5</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Student001 0.2704649921  0.357479353   0.27632327  0.084988078  0.010069050</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Student002 0.0276546965  0.157616072   0.47438958  0.279914853  0.053715813</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Student003 0.0228189795  0.138860955   0.37884545  0.284817610  0.120794858</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Student004 0.0020140858  0.015608542   0.09629429  0.216973334  0.362406292</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Student005 0.5582996437  0.397431414   0.03841668  0.003365601  0.001443909</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Student006 0.0003866603  0.003168853   0.04801344  0.248329964  0.428747502</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Student001 0.3677662894  0.434091572   0.11058891  0.036872666   0.05068055</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Student002 0.0197536734  0.082316601   0.58176142  0.281540126   0.03462778</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Student003 0.0062820540  0.216416748   0.53609302  0.145636332   0.08059171</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Student004 0.0010014078  0.009064826   0.19851135  0.284268528   0.13509623</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Student005 0.2584603668  0.721793236   0.01379897  0.003748661   0.00207442</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Student006 0.0001302681  0.002082945   0.04646690  0.081667731   0.75534209</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>            Membership 6 Estimate Rank-Up Odds Rank-Down Odds</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Student001 0.0006752546        2    0.7729769      0.7565891</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Student002 0.0067089816        3    0.5900527      0.3322503</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Student003 0.0538621490        3    0.7518042      0.3665372</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Student004 0.3067034562        5    0.8462973      0.5987019</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Student005 0.0010427491        1    0.7118604             NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Student006 0.2713535842        5    0.6328983      0.5791986</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Student001 1.359014e-08        2   0.25475940      0.8472090</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Student002 4.013907e-07        3   0.48394431      0.1414955</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Student003 1.498014e-02        3   0.27166243      0.4036925</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Student004 3.720577e-01        6           NA      0.3631056</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Student005 1.243501e-04        2   0.01911762      0.3580809</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Student006 1.143101e-01        5   0.15133549      0.1081202</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Plot Item Reference Profiles (IRP) for the first 6 items</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">result.LRA</span>, type <span class="op">=</span> <span class="st">"IRP"</span>, items <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">6</span>, nc <span class="op">=</span> <span class="fl">2</span>, nr <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span></span>

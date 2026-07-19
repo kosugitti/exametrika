@@ -60,6 +60,7 @@ in the data by creating a matrix with rows and columns arranged to highlight blo
 <span>  ncls <span class="op">=</span> <span class="fl">2</span>,</span>
 <span>  nfld <span class="op">=</span> <span class="fl">2</span>,</span>
 <span>  method <span class="op">=</span> <span class="st">"B"</span>,</span>
+<span>  estimation <span class="op">=</span> <span class="st">"isotonic"</span>,</span>
 <span>  conf <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  conf_class <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  mic <span class="op">=</span> <span class="cn">FALSE</span>,</span>
@@ -90,6 +91,7 @@ in the data by creating a matrix with rows and columns arranged to highlight blo
 <span>  ncls <span class="op">=</span> <span class="fl">2</span>,</span>
 <span>  nfld <span class="op">=</span> <span class="fl">2</span>,</span>
 <span>  method <span class="op">=</span> <span class="st">"B"</span>,</span>
+<span>  estimation <span class="op">=</span> <span class="st">"isotonic"</span>,</span>
 <span>  conf <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  conf_class <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  mic <span class="op">=</span> <span class="cn">FALSE</span>,</span>
@@ -154,6 +156,19 @@ ordinal data)</p></li>
 <li><p>"R" or "Ranklustering": Ranklustering with ordered class structure
 (default for rated data, where classes are sorted by correct response
 rate)</p></li>
+</ul></dd>
+
+
+<dt id="arg-estimation">estimation<a class="anchor" aria-label="anchor" href="#arg-estimation"></a></dt>
+<dd><p>Estimation method for the Field Reference Profiles under
+Ranklustering (<code>method = "R"</code>); ignored for plain Biclustering, whose
+classes are unordered:</p><ul><li><p>"isotonic": order-restricted estimation, imposing the rank ordering
+directly in the M-step (default). For binary data this is a weighted
+pool-adjacent-violators step, which under the default flat prior is the
+exact order-restricted MLE (Ayer et al. 1955); for ordinal data it is
+the stochastic-order-restricted multinomial MAP solved by the
+Fenchel-dual algorithm (El Barmi &amp; Dykstra 1994).</p></li>
+<li><p>"GTM": the original filter-based smoothing of Shojima (2012).</p></li>
 </ul></dd>
 
 

@@ -4,6 +4,23 @@
 
 ### Bug Fixes
 
+- Fixed
+  [`Biclustering()`](https://kosugitti.github.io/exametrika/reference/Biclustering.md)
+  on ordinal data (`Biclustering.ordinal`) under Ranklustering
+  (`method = "R"`): the GTM neighbour-smoothing filter was computed
+  (`smoothed_memb <- clsmemb %*% Fil`) but never used in estimation —
+  the field E-step and the M-step both consumed the raw, unsmoothed
+  class membership, so ordinal Ranklustering silently reduced to plain
+  Biclustering plus a cosmetic class relabelling by mean score. Both
+  steps now use the smoothed membership, matching `Biclustering.binary`
+  and `LRA.ordinal` (for plain Biclustering the filter is the identity,
+  so results there are unchanged). Fit improves slightly (e.g. RMSEA
+  0.0533 -\> 0.0527, AIC 7288 -\> 6720 on `J35S500`, `ncls = 5`,
+  `nfld = 5`). No Mathematica reference exists for ordinal Biclustering,
+  so the affected regression-snapshot fit indices in
+  `test-polytomous-biclustering.R` were updated
+  (`R/16_Biclustering_ordinal.R`).
+
 - Fixed the GRM item information function
   [`grm_iif()`](https://kosugitti.github.io/exametrika/reference/grm_iif.md).
   The previous implementation deviated from Samejima’s (1969)
@@ -21,6 +38,7 @@
   and consistent with the posterior standard deviations
   (`1/PSD^2 ~ TIF + 1`). Affects `plot(x, type = "IIF")` and
   `plot(x, type = "TIF")` for GRM objects, and downstream ggExametrika.
+
 - Fixed the ability estimates of
   [`GRM()`](https://kosugitti.github.io/exametrika/reference/GRM.md)
   (`EAP`, `MAP`, `PSD`). The posterior over the quadrature grid was
@@ -35,9 +53,93 @@
   accident: `v[NA] <- 1` silently does nothing).
   `ItemFitIndices`/`TestFitIndices` change accordingly, since the
   analysis-model log-likelihood is evaluated at each examinee’s EAP.
+
 - GRM plots (`type = "IRF"`) no longer produce `NA` colors for items
   with more than 8 response categories; the default palette is now
   recycled.
+
+### Improvements
+
+- [`Biclustering()`](https://kosugitti.github.io/exametrika/reference/Biclustering.md)
+  on binary data (`Biclustering.binary`) gains an order-restricted
+  estimation of the Field Reference Profiles under Ranklustering
+  (`method = "R"`), selected by the new `estimation` argument:
+  `"isotonic"` (now the **default**) or `"GTM"` (the original
+  filter-based smoothing of Shojima 2012). Under `"isotonic"` the rank
+  ordering — each field’s reference profile monotone non-decreasing
+  across ranks — is imposed directly in the M-step by a weighted PAVA
+  along the class axis (weights are the per-cell expected counts),
+  reusing `pava_up()` from `R/00_isotonic_CORE.R`; for the default flat
+  prior this is the exact order-restricted MLE (Ayer et al. 1955), and
+  the crude `mic` sort is skipped as unnecessary. On typical data it
+  attains a higher likelihood than GTM (e.g. `-6941` vs `-7273` on
+  `J35S515`, `ncls = 6`, `nfld = 5`). The shape-restricted degrees of
+  freedom (total PAVA block count across fields) feed the fit indices.
+  `estimation` is ignored for plain Biclustering (`method = "B"`), whose
+  classes are unordered (`R/07_Biclustering.R`).
+
+- [`Biclustering()`](https://kosugitti.github.io/exametrika/reference/Biclustering.md)
+  on ordinal data (`Biclustering.ordinal`) gains the same `estimation`
+  argument for Ranklustering (`method = "R"`): `"isotonic"` (now the
+  **default**) or `"GTM"`. Under `"isotonic"` the rank ordering is
+  imposed as a genuine stochastic-order restriction — each field’s
+  upper-cumulative (boundary) probabilities are monotone non-decreasing
+  across ranks at every category threshold — solved per field in the
+  M-step by the Fenchel-dual algorithm (El Barmi & Dykstra 1994) via
+  `iso_dual_map()` in `R/00_isotonic_CORE.R`, replacing the independent
+  per-cell boundary MLE and the crude `mic` class relabelling. Unlike
+  the binary case, isotonic does not maximise the likelihood relative to
+  GTM: the (now filter-smoothed) GTM path leaves the field profiles
+  unconstrained and so fits better by violating the order (e.g. only 1
+  of 5 fields is monotone on `J35S500`), whereas isotonic enforces the
+  order in every field at a modest likelihood cost — this is the
+  intended trade and the point of the method. Shape-restricted df =
+  distinct free boundary levels per field. `estimation` is ignored for
+  plain Biclustering (`method = "B"`) (`R/16_Biclustering_ordinal.R`).
+
+- [`LRA()`](https://kosugitti.github.io/exametrika/reference/LRA.md) on
+  binary data (`LRA.binary`) gains an order-restricted estimation
+  method, `method = "isotonic"`, which is now the **default**
+  (previously `"GTM"`). Rather than the GTM filter, the rank ordering —
+  item reference profiles monotone non-decreasing across ranks — is
+  imposed directly in the M-step by a weighted PAVA down each item
+  column; for the default flat prior (`beta1 = beta2 = 1`) this is the
+  exact order-restricted MLE (Ayer et al. 1955). On typical data it
+  attains a higher likelihood than GTM/SOM. The shape-restricted degrees
+  of freedom (per-item PAVA block count) feed the item/test fit indices.
+  `method = "GTM"` and `method = "SOM"` are unchanged and still
+  selectable. New shared internal core `R/00_isotonic_CORE.R`
+  (`pava_up()`, `emclus_isotonic()`);
+  [`ItemFit()`](https://kosugitti.github.io/exametrika/reference/ItemFit.md)
+  now accepts a per-item `nparam` vector in addition to a scalar.
+
+- [`LRA()`](https://kosugitti.github.io/exametrika/reference/LRA.md) on
+  ordinal data (`LRA.ordinal`) gains an order-restricted estimation
+  method, `method = "isotonic"`, now the **default** (previously the GTM
+  filter). The stochastic-order restriction (item category boundaries
+  monotone across ranks) is solved exactly in the M-step by the
+  Fenchel-dual algorithm (El Barmi & Dykstra 1994) in
+  `R/00_isotonic_CORE.R`, rather than by filter smoothing; a `alpha`
+  argument sets the Dirichlet concentration (the polytomous analogue of
+  binary `beta1`/`beta2`, default 1 = ML). It attains a higher
+  likelihood than GTM on typical data, handles mixed category counts per
+  item, and reports a shape-restricted degrees of freedom (distinct
+  boundary levels per item). `method = "GTM"` is unchanged and still
+  selectable.
+
+- [`LRA()`](https://kosugitti.github.io/exametrika/reference/LRA.md) on
+  ordinal data (`LRA.ordinal`) now supports items with differing numbers
+  of response categories. Previously the ordinal method assumed every
+  item had the same number of categories and raised an error otherwise
+  (directing users to `Biclustering.ordinal`), because its
+  saturation/restricted reference matrices were laid out on a fixed
+  `nitems * max(ncat)` stride. The reference matrices, the one-hot
+  design (`uuMat`), and the null-model term now use a ragged `sum(ncat)`
+  layout addressed through the `design1` index map, so mixed category
+  counts are handled directly. On uniform-category data the results are
+  numerically identical to before. `ICBR`/`ICRP` now carry one row per
+  (item, category) pair, so their row counts vary by item under mixed
+  categories (`R/12_LRA_ordinal.R`).
 
 ## exametrika 1.15.0
 

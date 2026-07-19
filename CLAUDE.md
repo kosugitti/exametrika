@@ -240,8 +240,12 @@ Likert-type ordered ratings.
 - BINET FRPIndex addition
 - LCA.nominal
 - Input data storage method unification (v2.0.0)
-- LRA.ordinal mixed category count support (requires matrix→list
-  refactor)
+- ~~LRA.ordinal mixed category count support (requires matrix→list
+  refactor)~~ — DONE in v1.16.0 (2026-07-18): ragged `sum(ncat)` layout
+  via the `design1` index map;
+  [`stop()`](https://rdrr.io/r/base/stop.html) guard removed;
+  uniform-data parity verified against the pre-refactor implementation.
+  See `NEWS.md` and `test-lra-ordinal.R`.
 
 ## Roadmap
 
@@ -413,10 +417,51 @@ Likert-type ordered ratings.
   - Estimation core (C++ marginal likelihood, analytical gradient)
     audited and confirmed correct — item parameter estimates are
     unaffected.
-- **Isotonic latent rank model** (3rd LRA; order-restricted + step
-  Dirichlet, beats GTM on fit) — under development in `develop/`;
-  planned as `method = "isotonic"` plus deprecation of the current
-  polytomous ordinal variant (memory: project_isotonic_latent_rank)
+- **`LRA.ordinal` mixed category counts (2026-07-18; committed
+  14d0e7c)** — the ordinal method no longer requires equal category
+  counts across items. The saturation/restricted reference matrices,
+  `uuMat`, and the null term were moved from a fixed `nitems*max(ncat)`
+  stride to a ragged `sum(ncat)` layout addressed via the `design1`
+  index map; the [`stop()`](https://rdrr.io/r/base/stop.html) guard is
+  removed. Uniform-data parity verified against the pre-refactor code
+  (max\|diff\| = 0). Resolves the matrix→list tech-debt item. The
+  pre-existing vestigial `refMat`/`refMat_satu` (a Mathematica-port
+  leftover, assigned but never read) and their `delete_rows`/`designB`
+  scaffolding were deleted in the same pass.
+- **Isotonic (order-restricted) LRA — IMPLEMENTED, now the default**
+  (commits 6866787 binary, ceffdea core, 37f19eb ordinal). New shared
+  core `R/00_isotonic_CORE.R`: `pava_up()` (binary, Ayer 1955) and
+  `iso_dual_map()` (ordinal, Fenchel-dual stochastic-order MAP, El Barmi
+  & Dykstra 1994). `LRA.binary`/`LRA.ordinal` gain `method = "isotonic"`
+  (default; GTM/SOM still selectable), imposing rank ordering in the
+  M-step instead of the GTM filter. Beats GTM/SOM on fit; mixed category
+  counts supported; shape-restricted df (PAVA block / distinct-boundary
+  count) feeds fit indices. Key finding: per-threshold PAVA (L2) is NOT
+  the constrained MLE for polytomous (Q\>=3) — the Fenchel-dual (KL)
+  solution is required; PAVA is exact only for binary. Memos updated
+  (`develop/Algorithm_LRA.tex`, `Dykstra_memo_ja.tex`). memory:
+  project_isotonic_latent_rank.
+- **Isotonic Biclustering — IMPLEMENTED (commits 2dd38e5 binary, 62778a8
+  ordinal GTM bug fix, d2b189c ordinal Dykstra)**.
+  `Biclustering.binary`/`.ordinal` gain `estimation = "isotonic"`
+  (default) / `"GTM"` for Ranklustering (`method = "R"`); ignored for
+  plain Biclustering (`method = "B"`, unordered → `estimation` NA).
+  Binary reuses `pava_up()` on the FRP class axis (isotonic loglik −6941
+  \> GTM −7273 on J35S515); ordinal reuses `iso_dual_map()` per field
+  (genuine per-field stochastic order at every threshold). LDB’s
+  internal biclustering pinned to `estimation = "GTM"` (keeps its
+  Mathematica cross-validation). Two non-obvious findings: (1) the
+  ordinal Ranklustering **GTM filter was a latent bug** —
+  `smoothed_memb` was computed but never used, so ordinal ranklustering
+  had silently degenerated to plain biclustering + a cosmetic mean-sort;
+  fixed to use `smoothed_memb` like binary/LRA. (2) Unlike binary/LRA,
+  ordinal isotonic **loses to GTM on loglik** (−20962 vs −20776) —
+  correct, because the (fixed) GTM FRP is unconstrained and buys fit by
+  violating the order (1/5 fields ordered) while isotonic enforces it in
+  all 5; the gap is the price of real order. `mic` is now essentially
+  cosmetic (binary: GTM already monotone; ordinal: global class relabel
+  only). memory: project_isotonic_latent_rank. Next (future): rated
+  (13/19) if wanted; A3 paper body.
 - Downstream: ggExametrika v1.1.2 (audit release, ready) will be
   submitted after this version is accepted, so its GRM information plots
   match the fixed parent

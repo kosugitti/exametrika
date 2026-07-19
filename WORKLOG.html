@@ -1322,6 +1322,118 @@ M10 (E01+E05): +19.8</code></pre>
 <strong>状態</strong>: 報告書(OrderRestrictedLRA_ja.pdf)送付準備済＝<strong>荘島先生の反応待ちが次のゲート</strong>。反応で次目標確定→実装着手。</li>
 </ul></div>
 </div>
+<div class="section level2">
+<h2 id="claudemdからの退避-2026-07-17">CLAUDE.mdからの退避 (2026-07-17)<a class="anchor" aria-label="anchor" href="#claudemd%E3%81%8B%E3%82%89%E3%81%AE%E9%80%80%E9%81%BF-2026-07-17"></a></h2>
+<p>ホーム索引(~/Dropbox/CLAUDE.md)のステータスセル圧縮時の退避(退避時点の全文):</p>
+<p>CRAN版はv1.15.0(2026-07公開済・GitHub Release v1.15.0/Discussions告知も完了)。開発版v1.16.0(8/15目処)=GRM監査修正済(grm_iif正式Samejima式化・EAP/MAP/PSDの和事後→積事後・回帰テスト追加、5137テスト・check 0/0/0、commit&amp;push済)＋アイソトニック潜在ランクモデル(第3のLRA・develop/で開発中→method=“isotonic”新設＋現行多値順序版非推奨化、memory: project_isotonic_latent_rank)。Title変更(issue#32)未着手、v2.0.0多値BNM設計中。R Journal論文は採択・校正対応済。詳細→Git/exametrika/{CLAUDE,WORKLOG}.md</p>
+<div class="section level3">
+<h3 id="id_2026-07-1417-アイソトニック続き荘島承認dykstraメモalgorithm_lraソース読解の訂正順序lra実装着手">2026-07-14〜17 アイソトニック続き：荘島承認・Dykstraメモ・Algorithm_LRA・ソース読解の訂正・順序LRA実装着手<a class="anchor" aria-label="anchor" href="#id_2026-07-1417-%E3%82%A2%E3%82%A4%E3%82%BD%E3%83%88%E3%83%8B%E3%83%83%E3%82%AF%E7%B6%9A%E3%81%8D%E8%8D%98%E5%B3%B6%E6%89%BF%E8%AA%8Ddykstra%E3%83%A1%E3%83%A2algorithm_lra%E3%82%BD%E3%83%BC%E3%82%B9%E8%AA%AD%E8%A7%A3%E3%81%AE%E8%A8%82%E6%AD%A3%E9%A0%86%E5%BA%8Flra%E5%AE%9F%E8%A3%85%E7%9D%80%E6%89%8B"></a></h3>
+<p><strong>荘島先生が方針承認(2026-07-14)</strong>: OrderRestrictedLRA_ja報告書に「文句ナッシング・最高」。表現指摘3点を反映→(1)「大域最適」→「局所解は確認されなかった」(大域解は不可知), (2)「勝つ」→「Isotonicのほうが高い」, (3)§3末にディリクレ→isotonic回帰の機序を1段落追記(対数事後=対数尤度+Σ(α-1)lnπ_jk; α=1で罰則消滅=制約付き最尤=PAVA, α&gt;1で均等罰則)。再コンパイル5p・未定義0。</p>
+<p><strong>多値の順序の課し方=確率的順序で確定(→Dykstra)</strong>: Qの扱いを検討し，平均(間隔尺度cheat)・中央値(非平滑)・最適尺度化(Gifi/MDS=確率モデルを捨てる=SOM/GTMと同じ穴)を却下。順序尺度に忠実かつ凸なのは確率的順序(全閾値でランク単調=first-order stochastic dominance)のみ→これがDykstra。不可能の三角形={確率モデル・ノンパラ・楽な計算}から2つ；確率モデル+ノンパラを守る→Dykstra(計算は軽い)。質量移動再パラメタ化はDykstra回避策だがMCMC寄りで保留。</p>
+<p><strong>Dykstraメモ作成</strong> <code>develop/Dykstra_memo_ja.tex/.pdf</code>(5p): 確率的順序→二重単調→Dykstra=補正メモ付き交互射影を平易に。2つの壁の角の最近点・「補正メモ=(射影前)-(射影後)を足し戻す」・1巡目=素朴/2巡目から補正・数値追跡((-0.5,-0.5)→…→(0,0))・Q=1でPAVA一発に一致(二値の多値一般化)。図 <code>develop/dykstra_fig.tex/.pdf</code>(斜め壁・素朴のドリフト白丸 vs Dykstra青・緑破線=補正で戻る)を§4に埋込。</p>
+<p><strong>Algorithm_LRA.tex作成</strong> <code>develop/</code>(7p): Algorithm_Biclustering.texと同じ表記・流れで二値→名義→順序LRA。LRA=各項目が単独フィールド(M_F=I_J)→f→j置換・E-step2削除。順序M-stepは段差展開でπ*<em>jcq=Σ</em>{k≥q}γ/Σγ(バイクラと同一証明)=各項目・各ランクで規格化するだけ→その後Dykstra補正(集合A=閾値ごとPAVA∩集合B=各行が生存関数)。Q=1でB自明=PAVA一発。</p>
+<p><strong>ソース読解の重要な訂正(2026-07-14)</strong>: <code>R/12_LRA_ordinal.R</code>(順序LRA・荘島)はフィルタをM-stepで実使用(354行 rankProf %*% Fil)→順序はフィルタ(GTM)が作る・空虚でない。<code>R/16_Biclustering_ordinal.R</code>(順序ランクラスタリング・小杉自作)はフィルタsmoothed_memb計算するが出力専用(459行)でM-step不使用→EMは名義,順序はmicが「クラスをtotal_expected≒平均得点順にorder()で並べ替えるだけ」(258-271行)=空虚。<strong>「平均で並べ替え」はランクラスタリング(16)だけ・LRA(12)ではない</strong>。AIレビュー「空虚」はランクラスタリングについて正しい。create_filter_matrix=三重対角平滑化カーネル(自分f0+隣(1-f0)/2)。→置換対象: LRAはフィルタ→単調制約, ランクラスタリング(自作)は名義EM→単調制約M-step(飾りから本物へ・改善大)。</p>
+<p><strong>順序LRA実装着手(殿が自分で書く・私は助言のみ)</strong> <code>develop/Dykstra_20260714.R</code>: 順序LRA isotonic(フィールドなしで多値PAVAが回るか検証目的)。荘島式の得点分位初期化(score分位でnrank群→群ごと経験比率→単調seed)採用。配列軸はJ×C×Q(π_jcq記法に一致・[,,q]スライスが1閾値のJ×C表でPAVAに好適)に統一。デバッグ済: 軸順(J×C×Qなら代入は[j,r,]・[j,,q]でない)・RBRM全ゼロ(YY充填ループ抜け)・UU(ワンホット=どのカテゴリ)vs YY(累積≥=どこまで)。次=E-step。検証すべき核心=閾値独立PAVA後に各ランクの入れ子(生存関数)が保たれるか=Dykstra要否。</p>
+<p><strong>次</strong>: (a)殿が順序LRA E-step以降を書く, (b)荘島先生への返信(修正版報告書+Dykstraメモ+Algorithm_LRA添付・お礼)は未送, (c)develop一式commit未実施, (d)順序ランクラスタリング(16・自作)のPAVA化。</p>
+</div>
+</div>
+<div class="section level2">
+<h2 id="id_2026-07-18-lraordinal-混在カテゴリ対応案1全面ラギッド化v1160本採用コミット">2026-07-18 LRA.ordinal 混在カテゴリ対応（案1・全面ラギッド化）→v1.16.0本採用・コミット<a class="anchor" aria-label="anchor" href="#id_2026-07-18-lraordinal-%E6%B7%B7%E5%9C%A8%E3%82%AB%E3%83%86%E3%82%B4%E3%83%AA%E5%AF%BE%E5%BF%9C%E6%A1%881%E5%85%A8%E9%9D%A2%E3%83%A9%E3%82%AE%E3%83%83%E3%83%89%E5%8C%96v1160%E6%9C%AC%E6%8E%A1%E7%94%A8%E3%82%B3%E3%83%9F%E3%83%83%E3%83%88"></a></h2>
+<p>isotonic実装(develop/Dykstra_20260714.R)の前処理を12と共有する検討から派生し，先に<code>R/12_LRA_ordinal.R</code>を混在カテゴリ対応へ改修（殿が自筆・私は助言と検証）。CLAUDE.md技術負債「LRA.ordinal mixed category count support (requires matrix→list refactor)」を解決。</p>
+<ul><li>
+<strong>背景</strong>: 12は各項目のカテゴリ数が等しい前提。混在だと<code><a href="https://rdrr.io/r/base/stop.html" class="external-link">stop()</a></code>で弾いていた（→Biclustering.ordinalへ誘導）。原因は飽和/制約の参照行列・uuMat・null項が<code>nitems*max(ncat)</code>固定ストライドで，<code>sum(ncat)</code>ベースのdesign行列と混在時に次元衝突するため。</li>
+<li>
+<strong>方針</strong>: 全て<code>sum(ncat)</code>連結（パディングなし・項目ごとncat[j]詰め）に統一。住所録=design1（カテゴリ層sum(ncat)行）とdesignB1（境界層sum(ncat)-nitems行）を<code>ncat</code>確定直後に定義。</li>
+<li>
+<strong>改修点(develop/LRA_ordinal_20260718.R→R/12へ移植)</strong>: (1)design0/design1をncat直後に前倒し＋designB0/designB1新設，(2)<code>design1 &lt;- cbind(design0 - ncat + 1, design0)</code>←旧<code>ncat[1]</code>の均一前提バグ修正（delete_rows 3箇所も<code>design0 - ncat + 1</code>へ統一），(3)uuMatを<code>sum(ncat)</code>列化・<code>UU[, j, 1:ncat[j]]</code>で列ブロック充填（旧<code>as.vector(t(UU[i,,]))</code>のNA混入も解消），(4)ref_mat・catRefMat_satu・refMat/refMat111/refMat000/catRefMatをdesign1/designB1オフセット＋RHS<code>1:ncat[i]</code>スライスで充填，(5)null_itemllを<code>matrix(unlist(catfreq),ncol=ncat)</code>（均一前提）から項目ごとsapplyへ，(6)<code><a href="https://rdrr.io/r/base/stop.html" class="external-link">stop()</a></code>ガード撤去。</li>
+<li>
+<strong>境界シフト</strong>（<code>rbind(refMat111[-1,],..)</code>＋<code>[design0,]&lt;-0</code>）はdesign0が各項目末尾を正しく指すのでラギッドのまま不変で正しい＝触らず。</li>
+<li>
+<strong>検証</strong>: (a)均一パリティ=本家12とJ15S3810(nrank=5,mic=T)でICBR/ICRP/Students/TRP/null&amp;modelLL/CFI全て<code>max|diff|=0</code>，(b)混在=J15S3810の奇数項目を3→2併合(ncat 3/4交互)で本家はstop・12は完走，ICRP行数=sum(ncat)=52・項目ごと=ncat[j]・カテゴリ確率項目内和1・入れ子整合(null≤model≤飽和)・CFI/RMSEA有限。</li>
+<li>
+<strong>飽和モデルmaxiter</strong>: 混在で「Reached max iterations」が出るが飽和EMの収束の甘さ（元12からの性質・このデータで顕在化）で値は正しい方向。ラギッド化とは無関係。</li>
+<li>
+<strong>dead code削除</strong>: <code>refMat</code>・<code>refMat_satu</code>は代入のみで一度も参照されない完全な未使用変数（Mathematica移植の名残）。殿指示で削除実施。付随して<code>delete_rows</code>(3組)・<code>designB0</code>/<code>designB1</code>(refMat専用に新設していた境界住所録)も全てdeadになり除去。<code>refBox</code>はrefBox111/000の材料なので残す。削除後もMathematica参照値テスト全通過＝出力不変を確認。delete_rowsのsapply潜在バグ(混在で行列化)はこのdead codeにしか流れていなかった。</li>
+<li>
+<strong>テスト</strong>: <code>test-lra-ordinal.R</code>末尾に混在5テスト追加（データが実際混在・エラーなくLRAordinal返す・ICRP/ICBR行数ラギッド・確率項目内和1・入れ子LL整合）。全通過。</li>
+<li>
+<strong>ドキュメント</strong>: NEWS.md 1.16.0の## Improvementsに記載。CLAUDE.md技術負債を解決済みに更新。roxygen不変・man再生成不要・man内に均一制約記述なし。</li>
+<li>
+<strong>コミット</strong>: 14d0e7c（R/12+NEWS+CLAUDE+test）をmainへ。develop/はgitignore(未commit・研究スクラッチ)。</li>
+</ul><p><strong>次</strong>: (a)Dykstra開発(順序LRA isotonic)へ復帰＝Dykstra_20260714.RのE-step以降，(b)method=“isotonic”分岐は前処理共有(12のsum(ncat)前処理はそのまま流用可能に)，(c)荘島先生への返信(報告書+Dykstraメモ+Algorithm_LRA)は未送。</p>
+</div>
+<div class="section level2">
+<h2 id="id_2026-07-19-順序lraisotonic-m-stepl2でなくklfenchel双対が正解と判明導出検証メモ更新">2026-07-19 順序LRA(isotonic) M-step：L2でなくKL(Fenchel双対)が正解と判明・導出/検証/メモ更新<a class="anchor" aria-label="anchor" href="#id_2026-07-19-%E9%A0%86%E5%BA%8Flraisotonic-m-stepl2%E3%81%A7%E3%81%AA%E3%81%8Fklfenchel%E5%8F%8C%E5%AF%BE%E3%81%8C%E6%AD%A3%E8%A7%A3%E3%81%A8%E5%88%A4%E6%98%8E%E5%B0%8E%E5%87%BA%E6%A4%9C%E8%A8%BC%E3%83%A1%E3%83%A2%E6%9B%B4%E6%96%B0"></a></h2>
+<p>順序LRAの順序射影を詰めた結果、当初計画(L2の二壁Dykstra)が最尤でないと分かり、Fenchel双対(KL)へ全面転換。数値検証済み。</p>
+<ul><li>
+<strong>核心の発見</strong>: 閾値ごと重み付きPAVA(=生存表へのL2最近点)は、多値(Q≥3)では制約付き最尤とズレる。カテゴリ確率=隣接生存の差で閾値間が尤度上結合するため、閾値独立のL2丸めは尤度を最大化しない。二値(単一閾値)のみAyer(1955)でPAVA=最尤。数値: J15S3810相当の小例(C=3,K=3)でL2 PAVA loglik −203.26 vs 制約付き最尤 −201.49、Δll≈1.77。</li>
+<li>
+<strong>当初の勘違い</strong>: 「等重みPAVAは入れ子(壁B)を保存する(20万MCで違反0)」を「PAVAが最尤」と取り違えていた。feasibleと最適は別。単調回帰の順序保存性(固定重み)で壁Bは保たれるが、それは最尤性を意味しない。</li>
+<li>
+<strong>正しい手法=Fenchel双対(El Barmi &amp; Dykstra 1994)</strong>: 制約「閾値q・隣接ランク対(c,c+1): π*_jcq≤π<em><em>j(c+1)q」に双対変数θ_jqc≥0。停留条件で主変数が有理形 π_jcq=γ_jcq/(λ_jc+d_jcq)、d_jcq=Σ</em>{q’≤q}(θ_jq’c−θ_jq’(c-1))、λ_jcは規格化。双対座標上昇: 各(q,c)を巡回し、緩ければθ=0、破れていればπ</em>_jcq=π*_j(c+1)qまでθを二分法で上げる。入れ子(壁B)はγ&gt;0で自動保持=別射影不要。</li>
+<li>
+<strong>KLの向きの罠</strong>: 最初に実装した指数傾けDykstraはKLの向きが逆(min KL(π‖ref)のI-射影)で、−205.71とPAVAより悪化。最尤はmin Σ N_c KL(π̂_c‖π_c)=第2引数版で、射影が指数傾けでなく「(λ+θ)で割る」有理形になるのが正解。</li>
+<li>
+<strong>数値検証</strong>: 双対座標上昇 vs nloptr(COBYLA)厳密解を8条件(サイズ3x2〜5x5、α=1/2/4/0.5/ベクトルα、二値K=2含む)で突合、全て max|Δπ|≤2e-7で一致。α任意でも最尤を与える。二値はθが1閾値に縮退=PAVAに一致。</li>
+<li>
+<strong>プロトタイプ develop/Dykstra_20260714.R</strong>: E-step(logsumexp)+M-step(rawPi→双対Dykstra→RBRM/RCRM)+EM反復。前処理は混在対応済R/12のsum(ncat)流用。ヘルパ buildPi(有理形+λ二分法)/survOf(生存)を外で定義、while(FLG)+maxiterでパッケージ体裁に。</li>
+<li>
+<strong>バグ(私の検証穴)</strong>: nrank=nc=3の正方でしか検証せず、theta[b,r]のb/r取り違えを見逃した。J15S3810(nrank=5≠nc=4)で subscript out of bounds として顕在化。theta=<a href="%E5%A2%83%E7%95%8C%C3%97%E3%83%A9%E3%83%B3%E3%82%AF%E5%AF%BE">b,r</a>、S=[r,b]で統一して解消。今後は非正方で検証する。</li>
+<li>
+<strong>収束</strong>: 双対座標上昇は線形収束の遅い尻尾(制約が絡むと1本直すと隣が再び微破れ)。実用は最大制約違反&lt;1e-4・maxiter上限のGEM(部分M-step)で十分。1e-10/1e-12は過剰。</li>
+<li>
+<strong>メモ更新(コンパイル済)</strong>: (1)Dykstra_memo_ja.tex 108行「L2最近点=制約付き最尤解」の誤同一視を「L2最近点」に訂正＋L2/KL注意書き追加。(2)Algorithm_LRA.tex §4.6以降を、L2二壁Dykstra(誤: 最尤と同一視)からFenchel双対(KL)法に全面書き換え(目的関数/有理形/双対座標上昇/二値縮退/L2二壁は幾何的直感の位置づけ)。</li>
+<li>
+<strong>文献</strong>: El Barmi &amp; Dykstra (1994) “Restricted multinomial MLE based upon Fenchel duality”, Stat &amp; Prob Letters 21(2):121-130(Elsevier有料・専修図書館経由)。無料併読=Grendár &amp; Špitalský arXiv:1408.5621。</li>
+<li>
+<strong>未整合</strong>: Dykstra_memo_ja.tex は今もL2二壁を「手法」として記述(注意書きのみ追加)。Algorithm側がKL双対に確定したので、いずれ「L2は幾何直感」に寄せる。急がない。</li>
+</ul><p><strong>次(step 4 実装)</strong>: (a)双対DykstraのM-stepをR/12に method=“isotonic” として畳み込む(前処理はsum(ncat)版流用)、(b)EMのlog_likはlogsumexpでランク周辺化する形に(現プロトタイプは全ランク単純和で誤り・修正中)、(c)Dykstra_memoのL2→幾何直感の整理は後回し。</p>
+</div>
+<div class="section level2">
+<h2 id="id_2026-07-19-二値lra-isotonic法-実装step4ar00_isotonic_corer新設">2026-07-19 二値LRA isotonic法 実装(step4a)・R/00_isotonic_CORE.R新設<a class="anchor" aria-label="anchor" href="#id_2026-07-19-%E4%BA%8C%E5%80%A4lra-isotonic%E6%B3%95-%E5%AE%9F%E8%A3%85step4ar00_isotonic_corer%E6%96%B0%E8%A8%AD"></a></h2>
+<p>順序LRAの前段として二値LRAに順序制約(PAVA)版を実装。method=“isotonic”を新デフォルト化。</p>
+<ul><li>
+<strong>新設 R/00_isotonic_CORE.R</strong>: <code>pava_up(y,w)</code>(重み付きPAVA・fitted＋nblock返す)、<code>emclus_isotonic(...)</code>(フィルタなしEM・M-stepでランク方向の重み付きPAVA・返り値emclus同形＋item_nparam)。</li>
+<li>
+<strong>06_LRA.R</strong>: LRA.binaryにmethod=“isotonic”追加しデフォルト化。SOM/GTM/isotonicの3分岐。GTM(emclus)/SOM(somclus)は無変更＝共有コア温存(test-lca通過で確認)。</li>
+<li>
+<strong>ItemFit(00_ModelFitModule.R)</strong>: nparamをscalar/vector両対応に(<code>df_A&lt;-ntotal-nparam</code>; length1ならrep)。後方互換。isotonicのdf＝各項目PAVAブロック数(Meyer-Woodroofe 形状制約回帰)。</li>
+<li>
+<strong>理論</strong>: 二値isotonicはbeta=1(既定)で重み付きPAVA＝Ayer(1955)の厳密制約付きMLE。beta≠1はMAP比率に同じ重み付きプール(近似)。単調化はフィルタ→PAVAに置換、E-stepでフィルタ掛けず。</li>
+<li>
+<strong>動作(J15S500,nrank=6)</strong>: isotonic log_lik −3735 &gt; GTM −3858 &gt; SOM −3895。IRP全項目ランク単調、dfブロック2-5、CFI/RMSEA有限、47反復収束。</li>
+<li>
+<strong>テスト</strong>: GTM Mathematica参照2本(test-lra/test-lra-mic)はmethod=“GTM”固定で温存。isotonic構造テスト5本追加(デフォルト確認・単調・df範囲・収束&amp;fit有限・GTM超え)。全通過。</li>
+<li>NEWS.md追記、roxygen再生成(man/LRA.Rd)。命名はR/規約(classRefMat/postDist/correct_cls)に統一、develop(RCRM系)混入なし。</li>
+</ul><p><strong>次</strong>: 多値LRA(12)へ双対Dykstra移植(同00_isotonic_CORE.Rにbuildpi/survOf/双対ソルバ追加、12にmethod=“isotonic”)。</p>
+</div>
+<div class="section level2">
+<h2 id="id_2026-07-19-多値順序lra12-isotonic法-実装step4b双対dykstraをm-stepに統合">2026-07-19 多値順序LRA(12) isotonic法 実装(step4b)・双対DykstraをM-stepに統合<a class="anchor" aria-label="anchor" href="#id_2026-07-19-%E5%A4%9A%E5%80%A4%E9%A0%86%E5%BA%8Flra12-isotonic%E6%B3%95-%E5%AE%9F%E8%A3%85step4b%E5%8F%8C%E5%AF%BEdykstra%E3%82%92m-step%E3%81%AB%E7%B5%B1%E5%90%88"></a></h2>
+<ul><li>
+<strong>12_LRA_ordinal.R</strong>: LRA.ordinalに<code>method="isotonic"</code>(新デフォルト)と<code>alpha</code>追加。M-stepとitemdfをmethod分岐、E-step・飽和モデル・結果部は共有。isotonic M-step＝フィルタなし、<code>ecount=t(uuMat)%*%rankProf</code>を項目ごとに<code>iso_dual_map</code>へ、catRefMat/refMat111を有理形から構築。混在カテゴリは項目ごとncatで自然対応。</li>
+<li>
+<strong>df</strong>: isotonicは「各項目の境界distinct値数」(Meyer-Woodroofe)。<code>itemdf=(ncat-1)*nitems - item_free</code>。GTMは従来式(フィルタtrace)。飽和モデルのnitems群を基準にGTMと同構造。</li>
+<li>
+<strong>動作(J15S3810,nrank=5)</strong>: isotonic 2秒・3反復収束、ICRP和1・ICBRランク単調・CFI/RMSEA有限、model_log_like −37792 &gt; GTM −38207(当てはまり良い)。</li>
+<li>
+<strong>テスト</strong>: GTM Mathematica参照はmethod=“GTM”固定で温存、混在テストはisotonicデフォルトで通過、isotonic構造テスト5本追加(デフォルト確認・ICBR単調・ICRP和1・収束&amp;fit有限・GTM超え)。test-lra-ordinal全通過。</li>
+<li>コア(iso_build_pi/iso_surv/iso_dual_map)は先行コミットceffdea。NEWS/roxygen(man/LRA.Rd)更新。</li>
+</ul><p><strong>次</strong>: (a)R CMD check全体、(b)将来: ordinalランクラスタリング(16)・rated(13)へ双対展開、(c)Dykstra_memoのL2→幾何直感の整理。</p>
+</div>
+<div class="section level2">
+<h2 id="id_2026-07-19-バイクラスタリングへ-isotonic展開二値pava多値dykstra多値gtm配線バグ修正">2026-07-19 バイクラスタリングへ isotonic展開(二値PAVA/多値Dykstra)＋多値GTM配線バグ修正<a class="anchor" aria-label="anchor" href="#id_2026-07-19-%E3%83%90%E3%82%A4%E3%82%AF%E3%83%A9%E3%82%B9%E3%82%BF%E3%83%AA%E3%83%B3%E3%82%B0%E3%81%B8-isotonic%E5%B1%95%E9%96%8B%E4%BA%8C%E5%80%A4pava%E5%A4%9A%E5%80%A4dykstra%E5%A4%9A%E5%80%A4gtm%E9%85%8D%E7%B7%9A%E3%83%90%E3%82%B0%E4%BF%AE%E6%AD%A3"></a></h2>
+<p>同00_isotonic_CORE.RをBiclusteringへ展開。方針=順序と推定法を別軸に(案A)。順序があるランクラスタリング(method=“R”)の下位オプションとして<code>estimation="isotonic"</code>(新デフォルト)/<code>"GTM"</code>を追加。無順序のBiclustering(method=“B”)では無視(estimationフィールドNA)。</p>
+<ul><li>
+<strong>二値(07_Biclustering.R, commit 2dd38e5)</strong>: LRA.binaryと同型。isotonic時はフィルタ平滑化<code>clsmemb%*%Fil</code>を外し、M-stepでFRP(PiFR)を各フィールド行×クラス軸に重み付きPAVA(重み=cfr+ffr)。micソート不要。df=PAVAブロック総数。J35S515(ncls6,nfld5)で <strong>isotonic loglik −6941 &gt; GTM −7273</strong>、FRP全フィールド単調。LDB内部呼び出しは<code>estimation="GTM"</code>固定(Mathematica相互検証を温存・isotonic化すると参照8本落ちる)。テスト=Mathematica参照setup(test-biclustering:129)をGTM固定、isotonic構造テスト9本純増。</li>
+<li>
+<strong>多値・段階1 GTM配線バグ修正(16, commit 62778a8)</strong>: <code>smoothed_memb&lt;-clsmemb%*%Fil</code>を計算するだけで推定に未使用だったバグ。フィールドE-step(224)とM-step Ufcq(240)が生clsmembを使い、順序バイクラが実質「無順序バイクラ＋mic平均並べ替え」に退化していた。両方をsmoothed_membに(07・12と一致)。model==1はFil=単位で不変。J35S500でRMSEA 0.0533→0.0527・AIC 7288→6720。Mathematica参照は無く自己スナップショットのみ→test-polytomous-biclusteringのfit index snapshot更新。</li>
+<li>
+<strong>多値・段階2 isotonic追加(16, commit d2b189c)</strong>: LRA.ordinalと同型を「フィールドごと」に。M-stepでフィールドfごとMcount=Ufcq_prior<a href="ncls%C3%97maxQ">f,,</a>を<code>iso_dual_map</code>へ→BCRM[f,,]・BBRM<a href="iso_surv%E4%B8%8A%E5%81%B4%E7%B4%AF%E7%A9%8D">f,,</a>。従来の境界MLE＋mic並べ替えを置換。df=フィールドごと境界distinct値数。result_ordはestimation=“GTM”固定、isotonic構造テスト13本純増。</li>
+</ul><p><strong>重要な発見(A3に効く)</strong>: - 多値バイクラでは <strong>isotonicはloglikでGTMに負ける</strong>(−20962 vs −20776)。これは正しい。修正後GTMのFRPは無制約(セルごと境界MLE)で、5フィールド中4つで確率的順序を破ることで当てはまりを稼ぐ(順序フィールド1/5)。isotonicは5/5で本物の確率的順序を課す代わりにloglikを払う。「GTMの高い適合は課したい順序を破って得たもの」=順序の対価。二値/LRAでisotonicが勝つのと非対称(多値は複数閾値×複数ランクの制約が強い)。 - <strong>多値のmic=TRUEは飾り</strong>(セッション前からある既存コード)。クラスを全フィールド合計期待得点で昇順に並べ替えるだけ=WOAC(TRP単調)は達成するがフィールド別確率的順序(SOAC)は課さない。J35S500ではorder()が恒等で完全no-op(GTMとGTM+micのloglikが1桁一致した理由)。二値のmic(各フィールドsort)とは別物。 - ユーザ最終判断: 二値・多値とも推定法デフォルトはisotonic。多値でloglik負けるのは「本物の順序を出せるのはisotonicだけ、GTMは順序付き競合になっていない」ため妥当。</p>
+<ul><li>
+<strong>確定</strong>: 全テスト5224 pass/0 fail、R CMD check –as-cran 0E/0W/2NOTE(Days since last update:4のcadence＋ローカルtidy版・両無害)。roxygen(man/Biclustering.Rd)・NEWS更新。07のestimation roxygenは二値Ayer/多値Dykstra両対応に一般化。</li>
+</ul><p><strong>次</strong>: (a)rated(13/19)へ同展開(要否判断)、(b)A3論文本体(方法節=Algorithm_LRA/Dykstraメモ、実データ比較にloglikトレードの図表)、(c)荘島返信(未送)。</p>
+</div>
 </div>
 
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

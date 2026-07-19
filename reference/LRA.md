@@ -28,7 +28,7 @@ LRA(U, na = NULL, Z = NULL, w = NULL, ...)
 LRA(
   U,
   nrank = 2,
-  method = "GTM",
+  method = "isotonic",
   mic = FALSE,
   maxiter = 100,
   BIC.check = FALSE,
@@ -44,9 +44,11 @@ LRA(
 LRA(
   U,
   nrank = 2,
+  method = "isotonic",
   mic = FALSE,
   maxiter = 100,
   trapezoidal = 0,
+  alpha = 1,
   eps = 1e-04,
   verbose = FALSE,
   ...
@@ -98,8 +100,10 @@ LRA(
 
 - method:
 
-  For binary data only. Either "SOM" (Self-Organizing Maps) or "GTM"
-  (Gaussian Topographic Mapping). Default is "GTM".
+  Estimation method. One of "isotonic" (order-restricted MAP; rank
+  ordering imposed in the M-step by the Fenchel-dual stochastic-order
+  solver, no filter) or "GTM" (Gaussian Topographic Mapping; filter
+  smoothing). Default is "isotonic".
 
 - mic:
 
@@ -146,7 +150,14 @@ LRA(
 
   Specifies the height of both tails when using a trapezoidal prior
   distribution. Must be less than 1/nrank. The default value is 0, which
-  results in a uniform prior distribution.
+  results in a uniform prior distribution. Used by `method = "GTM"`.
+
+- alpha:
+
+  Dirichlet concentration for the category probabilities, used by
+  `method = "isotonic"` (the polytomous analogue of the binary
+  `beta1`/`beta2`). `alpha = 1` gives the maximum-likelihood
+  (flat-prior) estimate. Default is 1.
 
 - eps:
 
@@ -387,19 +398,19 @@ result.LRA <- LRA(J15S500, nrank = 6)
 # Display the first few rows of student rank membership profiles
 head(result.LRA$Students)
 #>            Membership 1 Membership 2 Membership 3 Membership 4 Membership 5
-#> Student001 0.2704649921  0.357479353   0.27632327  0.084988078  0.010069050
-#> Student002 0.0276546965  0.157616072   0.47438958  0.279914853  0.053715813
-#> Student003 0.0228189795  0.138860955   0.37884545  0.284817610  0.120794858
-#> Student004 0.0020140858  0.015608542   0.09629429  0.216973334  0.362406292
-#> Student005 0.5582996437  0.397431414   0.03841668  0.003365601  0.001443909
-#> Student006 0.0003866603  0.003168853   0.04801344  0.248329964  0.428747502
+#> Student001 0.3677662894  0.434091572   0.11058891  0.036872666   0.05068055
+#> Student002 0.0197536734  0.082316601   0.58176142  0.281540126   0.03462778
+#> Student003 0.0062820540  0.216416748   0.53609302  0.145636332   0.08059171
+#> Student004 0.0010014078  0.009064826   0.19851135  0.284268528   0.13509623
+#> Student005 0.2584603668  0.721793236   0.01379897  0.003748661   0.00207442
+#> Student006 0.0001302681  0.002082945   0.04646690  0.081667731   0.75534209
 #>            Membership 6 Estimate Rank-Up Odds Rank-Down Odds
-#> Student001 0.0006752546        2    0.7729769      0.7565891
-#> Student002 0.0067089816        3    0.5900527      0.3322503
-#> Student003 0.0538621490        3    0.7518042      0.3665372
-#> Student004 0.3067034562        5    0.8462973      0.5987019
-#> Student005 0.0010427491        1    0.7118604             NA
-#> Student006 0.2713535842        5    0.6328983      0.5791986
+#> Student001 1.359014e-08        2   0.25475940      0.8472090
+#> Student002 4.013907e-07        3   0.48394431      0.1414955
+#> Student003 1.498014e-02        3   0.27166243      0.4036925
+#> Student004 3.720577e-01        6           NA      0.3631056
+#> Student005 1.243501e-04        2   0.01911762      0.3580809
+#> Student006 1.143101e-01        5   0.15133549      0.1081202
 
 # Plot Item Reference Profiles (IRP) for the first 6 items
 plot(result.LRA, type = "IRP", items = 1:6, nc = 2, nr = 3)

@@ -218,10 +218,14 @@ Biclustering.ordinal <- function(U,
     }
 
     ## Mjf <- Pi, Msc
+    # Use the (filter-)smoothed class membership, matching Biclustering.binary
+    # and LRA.ordinal. For plain Biclustering (model 1) Fil is the identity so
+    # smoothed_memb == clsmemb; for Ranklustering (model 2) this applies the GTM
+    # neighbour smoothing that induces the rank ordering.
     tmpH <- matrix(0, nrow = nitems, ncol = nfld)
     for (q in 1:maxQ) {
       log_probs <- matrix(log_delta[, , q], nrow = nfld, ncol = ncls)
-      tmpH <- tmpH + (t(ZU[, , q]) %*% clsmemb) %*% t(log_probs)
+      tmpH <- tmpH + (t(ZU[, , q]) %*% smoothed_memb) %*% t(log_probs)
     }
 
     minllsr <- do.call(pmin.int, as.data.frame(tmpH))
@@ -237,7 +241,7 @@ Biclustering.ordinal <- function(U,
     Ufcq <- array(0, dim = c(nfld, ncls, maxQ))
     cUfcq <- array(0, dim = c(nfld, ncls, maxQ))
     for (q in 1:maxQ) {
-      Ufcq[, , q] <- (t(fldmemb) %*% t(ZU[, , q])) %*% clsmemb
+      Ufcq[, , q] <- (t(fldmemb) %*% t(ZU[, , q])) %*% smoothed_memb
     }
     # Apply Dirichlet prior (alpha parameter)
     Ufcq_prior <- Ufcq + alpha - 1

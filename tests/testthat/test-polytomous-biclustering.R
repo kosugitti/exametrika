@@ -60,9 +60,13 @@ test_that("ordinal Biclustering field/class counts", {
 })
 
 test_that("ordinal Biclustering fit indices", {
-  expect_equal(result_ord$TestFitIndices$RMSEA, 0.0533156, tolerance = 1e-3)
-  expect_equal(result_ord$TestFitIndices$AIC, 7287.635, tolerance = 1)
-  expect_equal(result_ord$TestFitIndices$BIC, -66115.85, tolerance = 1)
+  # Values updated when the GTM filter smoothing was wired into the ordinal
+  # Ranklustering M-step (previously the smoothed membership was computed but
+  # never used in estimation). No Mathematica reference exists for ordinal
+  # Biclustering; these are regression snapshots of the fixed GTM path.
+  expect_equal(result_ord$TestFitIndices$RMSEA, 0.0526998, tolerance = 1e-3)
+  expect_equal(result_ord$TestFitIndices$AIC, 6720.284, tolerance = 1)
+  expect_equal(result_ord$TestFitIndices$BIC, -66683.20, tolerance = 1)
 })
 
 

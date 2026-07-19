@@ -2,6 +2,19 @@
 
 ## Bug Fixes
 
+- Fixed `Biclustering()` on ordinal data (`Biclustering.ordinal`) under
+  Ranklustering (`method = "R"`): the GTM neighbour-smoothing filter was
+  computed (`smoothed_memb <- clsmemb %*% Fil`) but never used in estimation —
+  the field E-step and the M-step both consumed the raw, unsmoothed class
+  membership, so ordinal Ranklustering silently reduced to plain Biclustering
+  plus a cosmetic class relabelling by mean score. Both steps now use the
+  smoothed membership, matching `Biclustering.binary` and `LRA.ordinal` (for
+  plain Biclustering the filter is the identity, so results there are
+  unchanged). Fit improves slightly (e.g. RMSEA 0.0533 -> 0.0527, AIC
+  7288 -> 6720 on `J35S500`, `ncls = 5`, `nfld = 5`). No Mathematica reference
+  exists for ordinal Biclustering, so the affected regression-snapshot fit
+  indices in `test-polytomous-biclustering.R` were updated (`R/16_Biclustering_ordinal.R`).
+
 - Fixed the GRM item information function `grm_iif()`. The previous
   implementation deviated from Samejima's (1969) information in four
   ways: the denominator used the cumulative (boundary) probability

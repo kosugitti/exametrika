@@ -226,6 +226,15 @@ iso_surv <- function(P) {
 #' valid distribution) is automatic from the rational form when counts are
 #' positive, so no separate projection is needed. For a single boundary
 #' (\eqn{ncat=2}) this reduces to weighted PAVA (Ayer et al. 1955).
+#'
+#' Known limitation: this is a simplified dual coordinate descent, not the full
+#' El Barmi-Dykstra cyclic projection with correction memory. On well-separated
+#' inputs it matches the exact constrained MLE, but on degenerate cases needing
+#' several boundaries to pool simultaneously (e.g. a fully rank-reversed count
+#' matrix) it can stall at a feasible-but-suboptimal point. This does not arise
+#' inside the EM (the ordering is preserved from a score-ordered start), but
+#' should be revisited (add the correction memory) when this core is reused for
+#' biclustering.
 #' @param Mcount (nrank x ncat) expected counts plus Dirichlet pseudocounts.
 #' @param maxiter maximum dual sweeps.
 #' @param tol stop when the maximum remaining order violation is below this.

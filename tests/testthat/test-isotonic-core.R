@@ -56,3 +56,59 @@ test_that("iso_dual_map reduces to weighted PAVA for binary (ncat = 2)", {
   ref <- pava_up(M[, 2] / rowSums(M), rowSums(M))$fitted
   expect_equal(P[, 2], ref, tolerance = 1e-6)
 })
+
+### Theory-value checks (independent of Mathematica/GTM) -----------------------
+
+test_that("pava_up equals base-R isoreg (unweighted)", {
+  set.seed(3)
+  for (n in c(1, 2, 5, 20)) {
+    y <- runif(n)
+    expect_equal(pava_up(y)$fitted, isoreg(y)$yf, tolerance = 1e-12)
+  }
+})
+
+test_that("weighted pava_up equals isoreg on weight-replicated data", {
+  y <- c(0.9, 0.2, 0.5, 0.3)
+  w <- c(2, 3, 1, 4)
+  expect_equal(
+    rep(pava_up(y, w)$fitted, w),
+    isoreg(rep(y, w))$yf,
+    tolerance = 1e-12
+  )
+})
+
+test_that("pava_up leaves an already-monotone vector unchanged", {
+  y <- c(0.1, 0.1, 0.4, 0.7, 0.9)
+  res <- pava_up(y, w = c(3, 1, 2, 5, 1))
+  expect_equal(res$fitted, y, tolerance = 1e-12)
+  expect_equal(res$nblock, 5)
+})
+
+test_that("pava_up preserves the weighted mean", {
+  set.seed(5)
+  y <- runif(10)
+  w <- sample(1:6, 10, replace = TRUE)
+  expect_equal(sum(w * pava_up(y, w)$fitted), sum(w * y), tolerance = 1e-10)
+})
+
+test_that("iso_dual_map returns the unconstrained MLE when input is already ordered", {
+  # rank 1 concentrated on low categories, rank 2 on high -> order already holds
+  M <- rbind(c(8, 1, 1), c(1, 1, 8))
+  P <- iso_dual_map(M, tol = 1e-10)
+  expect_equal(P, M / rowSums(M), tolerance = 1e-8)
+})
+
+test_that("iso_dual_map stays feasible and valid under full reversal", {
+  # Fully reversed counts force pooling across both thresholds simultaneously.
+  # The simplified dual coordinate descent is not guaranteed to reach the exact
+  # optimum in this corner case (it can stall at a feasible-but-suboptimal KKT
+  # point; the full El Barmi-Dykstra correction is needed there). This does not
+  # arise inside the EM, where the initialisation keeps the counts ordered.
+  # Here we only assert that the result is feasible and a valid distribution.
+  M <- rbind(c(1, 1, 8), c(8, 1, 1))
+  P <- iso_dual_map(M, tol = 1e-8)
+  expect_true(all(abs(rowSums(P) - 1) < 1e-8))
+  expect_true(all(P > 0))
+  S <- iso_surv(P)
+  expect_true(max(S[-nrow(S), , drop = FALSE] - S[-1, , drop = FALSE]) < 1e-6)
+})

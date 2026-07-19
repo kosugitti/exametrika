@@ -147,3 +147,134 @@ emclus_isotonic <- function(U, Z, ncls, beta1, beta2, maxiter = 100, mic = FALSE
   )
   return(ret)
 }
+
+
+#' @title Category probabilities from dual multipliers (ordinal isotonic)
+#' @description
+#' Internal helper for the order-restricted ordinal M-step. Builds the
+#' (nrank x ncat) category-probability matrix from the Fenchel dual variables
+#' \code{theta} via the rational stationarity form
+#' \eqn{\pi_{ck} = M_{ck} / (\lambda_c + d_{ck})}, with the per-rank normalizer
+#' \eqn{\lambda_c} solved so each row sums to one.
+#' @param Mcount (nrank x ncat) expected counts plus Dirichlet pseudocounts
+#'   (\eqn{U_{ck} + \alpha_{ck} - 1}).
+#' @param theta ((ncat-1) x (nrank-1)) non-negative dual multipliers, one per
+#'   (boundary, adjacent-rank-pair).
+#' @return (nrank x ncat) category-probability matrix.
+#' @noRd
+iso_build_pi <- function(Mcount, theta) {
+  nrank <- nrow(Mcount)
+  nc <- ncol(Mcount)
+  P <- matrix(0, nrank, nc)
+  for (r in 1:nrank) {
+    if (r <= nrank - 1) {
+      tl <- theta[, r]
+    } else {
+      tl <- rep(0, nc - 1)
+    }
+    if (r >= 2) {
+      tu <- theta[, r - 1]
+    } else {
+      tu <- rep(0, nc - 1)
+    }
+    d <- c(0, cumsum(tl - tu))
+    lo <- -min(d) + 1e-12
+    hi <- lo + 1
+    while (sum(Mcount[r, ] / (hi + d)) > 1) {
+      hi <- lo + (hi - lo) * 2
+    }
+    while (hi - lo > 1e-10) {
+      mid <- (lo + hi) / 2
+      if (sum(Mcount[r, ] / (mid + d)) > 1) {
+        lo <- mid
+      } else {
+        hi <- mid
+      }
+    }
+    P[r, ] <- Mcount[r, ] / ((lo + hi) / 2 + d)
+  }
+  P
+}
+
+
+#' @title Upper-cumulative (boundary) probabilities from category probabilities
+#' @description
+#' Internal helper. Converts a (nrank x ncat) category-probability matrix to the
+#' (nrank x (ncat-1)) boundary matrix \eqn{S_{cb} = P(\ge \text{category } b+1)}.
+#' @param P (nrank x ncat) category-probability matrix.
+#' @return (nrank x (ncat-1)) boundary (upper-cumulative) matrix.
+#' @noRd
+iso_surv <- function(P) {
+  nrank <- nrow(P)
+  nc <- ncol(P)
+  S <- matrix(0, nrank, nc - 1)
+  for (r in 1:nrank) {
+    cum <- rev(cumsum(rev(P[r, ])))
+    S[r, ] <- cum[-1]
+  }
+  S
+}
+
+
+#' @title Order-restricted MAP for one ordinal item (Fenchel dual)
+#' @description
+#' Solves the stochastic-order-restricted multinomial MAP for a single item's
+#' expected-count matrix by dual coordinate ascent (El Barmi & Dykstra 1994).
+#' Each constraint (boundary \eqn{b}, adjacent rank pair \eqn{(c,c+1)}:
+#' \eqn{S_{cb} \le S_{c+1,b}}) carries a non-negative dual multiplier, cyclically
+#' raised until its boundary ties (or left at zero if slack). Nesting (each row a
+#' valid distribution) is automatic from the rational form when counts are
+#' positive, so no separate projection is needed. For a single boundary
+#' (\eqn{ncat=2}) this reduces to weighted PAVA (Ayer et al. 1955).
+#' @param Mcount (nrank x ncat) expected counts plus Dirichlet pseudocounts.
+#' @param maxiter maximum dual sweeps.
+#' @param tol stop when the maximum remaining order violation is below this.
+#' @return (nrank x ncat) order-restricted category-probability matrix.
+#' @noRd
+iso_dual_map <- function(Mcount, maxiter = 100, tol = 1e-4) {
+  nrank <- nrow(Mcount)
+  nc <- ncol(Mcount)
+  theta <- matrix(0, nc - 1, nrank - 1)
+  emt <- 0
+  FLG <- TRUE
+  while (FLG) {
+    emt <- emt + 1
+    for (b in 1:(nc - 1)) {
+      for (r in 1:(nrank - 1)) {
+        theta[b, r] <- 0
+        S <- iso_surv(iso_build_pi(Mcount, theta))
+        if (S[r, b] - S[r + 1, b] > 1e-12) {
+          lo <- 0
+          hi <- 1
+          theta[b, r] <- hi
+          S <- iso_surv(iso_build_pi(Mcount, theta))
+          while (S[r, b] - S[r + 1, b] > 0 && hi < 1e8) {
+            hi <- hi * 2
+            theta[b, r] <- hi
+            S <- iso_surv(iso_build_pi(Mcount, theta))
+          }
+          while (hi - lo > 1e-10) {
+            mid <- (lo + hi) / 2
+            theta[b, r] <- mid
+            S <- iso_surv(iso_build_pi(Mcount, theta))
+            if (S[r, b] - S[r + 1, b] > 0) {
+              lo <- mid
+            } else {
+              hi <- mid
+            }
+          }
+          theta[b, r] <- (lo + hi) / 2
+        }
+      }
+    }
+    S <- iso_surv(iso_build_pi(Mcount, theta))
+    maxviol <- max(S[-nrank, , drop = FALSE] - S[-1, , drop = FALSE])
+    if (maxviol < tol) {
+      FLG <- FALSE
+    }
+    if (emt >= maxiter) {
+      FLG <- FALSE
+    }
+  }
+  iso_build_pi(Mcount, theta)
+}

@@ -47,7 +47,9 @@ TesFit3 <- read.csv(
 )
 
 
-result <- LRA(J15S3810, mic = TRUE, nrank = 3)
+# Mathematica reference fixtures are for the GTM method; pin method = "GTM"
+# (the default is now "isotonic").
+result <- LRA(J15S3810, mic = TRUE, nrank = 3, method = "GTM")
 
 test_that("Test Info", {
   expect <- testReport[, 2] |>
@@ -230,4 +232,43 @@ test_that("Mixed categories: nested log-likelihood ordering holds", {
   expect_lte(tf$model_log_like, tf$bench_log_like)
   expect_true(is.finite(tf$CFI))
   expect_true(is.finite(tf$RMSEA))
+})
+
+### Isotonic method (default) -------------------------------------------------
+# No Mathematica reference exists for the order-restricted method; structural
+# checks on the new default path (uniform-category data, J15S3810).
+result_iso <- LRA(J15S3810, nrank = 3)
+
+test_that("isotonic is the default ordinal method", {
+  expect_equal(result_iso$method, "isotonic")
+})
+
+test_that("isotonic ICBR is monotone non-decreasing across ranks", {
+  icbr <- as.matrix(result_iso$ICBR[, grep("rank", names(result_iso$ICBR))])
+  viol <- apply(icbr, 1, function(r) any(diff(r) < -1e-4))
+  expect_false(any(viol))
+})
+
+test_that("isotonic ICRP category probabilities sum to 1 per item/rank", {
+  probs <- as.matrix(result_iso$ICRP[, grep("rank", names(result_iso$ICRP))])
+  sums <- tapply(
+    seq_len(nrow(result_iso$ICRP)), result_iso$ICRP$ItemLabel,
+    function(ix) colSums(probs[ix, , drop = FALSE])
+  )
+  expect_equal(unlist(sums), rep(1, length(unlist(sums))),
+    tolerance = 1e-6, ignore_attr = TRUE
+  )
+})
+
+test_that("isotonic converges and returns finite fit indices", {
+  expect_true(result_iso$converge)
+  expect_true(is.finite(result_iso$TestFitIndices$CFI))
+  expect_true(is.finite(result_iso$TestFitIndices$RMSEA))
+})
+
+test_that("isotonic attains higher model log-likelihood than GTM", {
+  expect_gt(
+    result_iso$TestFitIndices$model_log_like,
+    result$TestFitIndices$model_log_like
+  )
 })

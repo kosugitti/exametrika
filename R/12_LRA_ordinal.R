@@ -3,9 +3,17 @@
 #' \code{LRA.ordinal} analyzes ordered categorical data with multiple thresholds,
 #' such as Likert-scale responses or graded items.
 #'
+#' @param method Estimation method. One of "isotonic" (order-restricted MAP;
+#'   rank ordering imposed in the M-step by the Fenchel-dual stochastic-order
+#'   solver, no filter) or "GTM" (Gaussian Topographic Mapping; filter
+#'   smoothing). Default is "isotonic".
+#' @param alpha Dirichlet concentration for the category probabilities, used by
+#'   \code{method = "isotonic"} (the polytomous analogue of the binary
+#'   \code{beta1}/\code{beta2}). \code{alpha = 1} gives the maximum-likelihood
+#'   (flat-prior) estimate. Default is 1.
 #' @param trapezoidal Specifies the height of both tails when using a trapezoidal
 #' prior distribution. Must be less than 1/nrank. The default value is 0, which
-#' results in a uniform prior distribution.
+#' results in a uniform prior distribution. Used by \code{method = "GTM"}.
 #' @param eps Convergence threshold for parameter updates. Default is 1e-4.
 #'
 #' @return
@@ -47,11 +55,18 @@
 #'
 LRA.ordinal <- function(U,
                         nrank = 2,
+                        method = "isotonic",
                         mic = FALSE,
                         maxiter = 100,
                         trapezoidal = 0,
+                        alpha = 1,
                         eps = 1e-4,
                         verbose = FALSE, ...) {
+  ## check method
+  if (method != "isotonic" & method != "GTM") {
+    stop("The method must be either 'isotonic' or 'GTM'.")
+  }
+
   ## check trapezoidal prior
   if (trapezoidal > 0) {
     if (trapezoidal > 1 / nrank) {
@@ -326,21 +341,33 @@ LRA.ordinal <- function(U,
     denom <- rowSums(nume)
     rankProf <- nume / denom
 
-    # Filtering
-    refMatcore <- t(uuMat) %*% rankProf %*% Fil
-    refMat111 <- design6 %*% refMatcore / design5 %*% refMatcore
+    if (method == "isotonic") {
+      # Order-restricted MAP per item (Fenchel dual; no filter)
+      ecount <- t(uuMat) %*% rankProf
+      for (j in 1:nitems) {
+        rows_j <- design1[j, 1]:design1[j, 2]
+        Mcount <- t(ecount[rows_j, , drop = FALSE]) + (alpha - 1)
+        Pj <- iso_dual_map(Mcount, maxiter = maxiter, tol = 1e-4)
+        catRefMat[rows_j, ] <- t(Pj)
+        refMat111[rows_j, ] <- apply(Pj, 1, function(pr) rev(cumsum(rev(pr))))
+      }
+    } else {
+      # GTM: filter smoothing
+      refMatcore <- t(uuMat) %*% rankProf %*% Fil
+      refMat111 <- design6 %*% refMatcore / design5 %*% refMatcore
 
-    if (sum(refMat111[1, ]) > sum(refMat111[nrank, ])) {
-      refMat111 <- refMat111[, ncol(refMat111):1]
+      if (sum(refMat111[1, ]) > sum(refMat111[nrank, ])) {
+        refMat111 <- refMat111[, ncol(refMat111):1]
+      }
+
+      if (mic == 1) {
+        refMat111 <- t(apply(refMat111, 1, sort))
+      }
+
+      refMat000 <- rbind(refMat111[2:nrow(refMat111), ], rep(0, nrank))
+      refMat000[design0, ] <- 0
+      catRefMat <- refMat111 - refMat000
     }
-
-    if (mic == 1) {
-      refMat111 <- t(apply(refMat111, 1, sort))
-    }
-
-    refMat000 <- rbind(refMat111[2:nrow(refMat111), ], rep(0, nrank))
-    refMat000[design0, ] <- 0
-    catRefMat <- refMat111 - refMat000
 
     log_lik <- sum(rankProf * log(nume))
     ij_log_lik <- log_lik / nitems / nobs
@@ -432,7 +459,19 @@ LRA.ordinal <- function(U,
 
   # Fit Indices -----------------------------------------------------
 
-  itemdf <- (ncat - 1) * (nitems - sum(diag(Fil)))
+  if (method == "isotonic") {
+    # shape-restricted df per item: number of distinct boundary values
+    # (ties from rank pooling / adjacent-category equality reduce the count).
+    # Benchmark has nitems saturated groups per threshold, so the model df is
+    # (ncat - 1) * nitems minus the free (distinct) boundary levels.
+    item_free <- sapply(1:nitems, function(j) {
+      rows_j <- (design1[j, 1] + 1):design1[j, 2]
+      length(unique(round(as.vector(refMat111[rows_j, , drop = FALSE]), 10)))
+    })
+    itemdf <- (ncat - 1) * nitems - item_free
+  } else {
+    itemdf <- (ncat - 1) * (nitems - sum(diag(Fil)))
+  }
   testdf <- sum(itemdf)
   null_itemdf <- (ncat - 1) * (nitems - 1)
   null_testdf <- sum(null_itemdf)
@@ -527,6 +566,7 @@ LRA.ordinal <- function(U,
 
   ret <- structure(list(
     U = U,
+    method = method,
     mic = mic,
     testlength = NCOL(U$Q),
     msg = "Rank",

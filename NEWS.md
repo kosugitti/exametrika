@@ -49,6 +49,17 @@
   (`pava_up()`, `emclus_isotonic()`); `ItemFit()` now accepts a per-item
   `nparam` vector in addition to a scalar.
 
+- `LRA()` on ordinal data (`LRA.ordinal`) gains an order-restricted estimation
+  method, `method = "isotonic"`, now the **default** (previously the GTM
+  filter). The stochastic-order restriction (item category boundaries monotone
+  across ranks) is solved exactly in the M-step by the Fenchel-dual algorithm
+  (El Barmi & Dykstra 1994) in `R/00_isotonic_CORE.R`, rather than by filter
+  smoothing; a `alpha` argument sets the Dirichlet concentration (the
+  polytomous analogue of binary `beta1`/`beta2`, default 1 = ML). It attains a
+  higher likelihood than GTM on typical data, handles mixed category counts
+  per item, and reports a shape-restricted degrees of freedom (distinct
+  boundary levels per item). `method = "GTM"` is unchanged and still selectable.
+
 - `LRA()` on ordinal data (`LRA.ordinal`) now supports items with
   differing numbers of response categories. Previously the ordinal
   method assumed every item had the same number of categories and

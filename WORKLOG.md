@@ -2176,3 +2176,13 @@ isotonic実装(develop/Dykstra_20260714.R)の前処理を12と共有する検討
 - NEWS.md追記、roxygen再生成(man/LRA.Rd)。命名はR/規約(classRefMat/postDist/correct_cls)に統一、develop(RCRM系)混入なし。
 
 **次**: 多値LRA(12)へ双対Dykstra移植(同00_isotonic_CORE.Rにbuildpi/survOf/双対ソルバ追加、12にmethod="isotonic")。
+
+## 2026-07-19 多値順序LRA(12) isotonic法 実装(step4b)・双対DykstraをM-stepに統合
+
+- **12_LRA_ordinal.R**: LRA.ordinalに`method="isotonic"`(新デフォルト)と`alpha`追加。M-stepとitemdfをmethod分岐、E-step・飽和モデル・結果部は共有。isotonic M-step＝フィルタなし、`ecount=t(uuMat)%*%rankProf`を項目ごとに`iso_dual_map`へ、catRefMat/refMat111を有理形から構築。混在カテゴリは項目ごとncatで自然対応。
+- **df**: isotonicは「各項目の境界distinct値数」(Meyer-Woodroofe)。`itemdf=(ncat-1)*nitems - item_free`。GTMは従来式(フィルタtrace)。飽和モデルのnitems群を基準にGTMと同構造。
+- **動作(J15S3810,nrank=5)**: isotonic 2秒・3反復収束、ICRP和1・ICBRランク単調・CFI/RMSEA有限、model_log_like −37792 > GTM −38207(当てはまり良い)。
+- **テスト**: GTM Mathematica参照はmethod="GTM"固定で温存、混在テストはisotonicデフォルトで通過、isotonic構造テスト5本追加(デフォルト確認・ICBR単調・ICRP和1・収束&fit有限・GTM超え)。test-lra-ordinal全通過。
+- コア(iso_build_pi/iso_surv/iso_dual_map)は先行コミットceffdea。NEWS/roxygen(man/LRA.Rd)更新。
+
+**次**: (a)R CMD check全体、(b)将来: ordinalランクラスタリング(16)・rated(13)へ双対展開、(c)Dykstra_memoのL2→幾何直感の整理。

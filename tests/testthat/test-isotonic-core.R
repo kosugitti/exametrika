@@ -30,7 +30,7 @@ test_that("iso_dual_map returns a valid, order-restricted category matrix", {
   expect_true(all(abs(rowSums(P) - 1) < 1e-8))
   expect_true(all(P > 0))
   # stochastic order: each boundary column non-decreasing across ranks
-  S <- iso_surv(P)
+  S <- iso_upper_cum(P)
   expect_true(max(S[-nrow(S), , drop = FALSE] - S[-1, , drop = FALSE]) < 1e-6)
   # nesting: each row's boundary is non-increasing across thresholds
   expect_true(all(apply(S, 1, function(r) all(diff(r) <= 1e-9))))

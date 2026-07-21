@@ -31,7 +31,7 @@ pava_up <- function(y, w = rep(1, length(y))) {
       i <- i + 1
     }
   }
-  list(fitted = rep(val, len), nblock = length(val))
+  return(list(fitted = rep(val, len), nblock = length(val)))
 }
 
 
@@ -168,16 +168,16 @@ iso_build_pi <- function(Mcount, theta) {
   P <- matrix(0, nrank, nc)
   for (r in 1:nrank) {
     if (r <= nrank - 1) {
-      tl <- theta[, r]
+      theta_lower <- theta[, r]
     } else {
-      tl <- rep(0, nc - 1)
+      theta_lower <- rep(0, nc - 1)
     }
     if (r >= 2) {
-      tu <- theta[, r - 1]
+      theta_upper <- theta[, r - 1]
     } else {
-      tu <- rep(0, nc - 1)
+      theta_upper <- rep(0, nc - 1)
     }
-    d <- c(0, cumsum(tl - tu))
+    d <- c(0, cumsum(theta_lower - theta_upper))
     lo <- -min(d) + 1e-12
     hi <- lo + 1
     while (sum(Mcount[r, ] / (hi + d)) > 1) {
@@ -193,7 +193,7 @@ iso_build_pi <- function(Mcount, theta) {
     }
     P[r, ] <- Mcount[r, ] / ((lo + hi) / 2 + d)
   }
-  P
+  return(P)
 }
 
 
@@ -204,7 +204,7 @@ iso_build_pi <- function(Mcount, theta) {
 #' @param P (nrank x ncat) category-probability matrix.
 #' @return (nrank x (ncat-1)) boundary (upper-cumulative) matrix.
 #' @noRd
-iso_surv <- function(P) {
+iso_upper_cum <- function(P) {
   nrank <- nrow(P)
   nc <- ncol(P)
   S <- matrix(0, nrank, nc - 1)
@@ -212,7 +212,7 @@ iso_surv <- function(P) {
     cum <- rev(cumsum(rev(P[r, ])))
     S[r, ] <- cum[-1]
   }
-  S
+  return(S)
 }
 
 
@@ -250,21 +250,21 @@ iso_dual_map <- function(Mcount, maxiter = 100, tol = 1e-7) {
     for (b in 1:(nc - 1)) {
       for (r in 1:(nrank - 1)) {
         theta[b, r] <- 0
-        S <- iso_surv(iso_build_pi(Mcount, theta))
+        S <- iso_upper_cum(iso_build_pi(Mcount, theta))
         if (S[r, b] - S[r + 1, b] > 1e-12) {
           lo <- 0
           hi <- 1
           theta[b, r] <- hi
-          S <- iso_surv(iso_build_pi(Mcount, theta))
+          S <- iso_upper_cum(iso_build_pi(Mcount, theta))
           while (S[r, b] - S[r + 1, b] > 0 && hi < 1e8) {
             hi <- hi * 2
             theta[b, r] <- hi
-            S <- iso_surv(iso_build_pi(Mcount, theta))
+            S <- iso_upper_cum(iso_build_pi(Mcount, theta))
           }
           while (hi - lo > 1e-10) {
             mid <- (lo + hi) / 2
             theta[b, r] <- mid
-            S <- iso_surv(iso_build_pi(Mcount, theta))
+            S <- iso_upper_cum(iso_build_pi(Mcount, theta))
             if (S[r, b] - S[r + 1, b] > 0) {
               lo <- mid
             } else {
@@ -285,5 +285,5 @@ iso_dual_map <- function(Mcount, maxiter = 100, tol = 1e-7) {
       FLG <- FALSE
     }
   }
-  iso_build_pi(Mcount, theta)
+  return(iso_build_pi(Mcount, theta))
 }

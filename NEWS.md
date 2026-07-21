@@ -47,6 +47,13 @@
   with more than 8 response categories; the default palette is now
   recycled.
 
+## Internal (no user-visible behavior change)
+
+- Renamed the internal helper `iso_surv()` in `R/00_isotonic_CORE.R` to
+  `iso_upper_cum()`. It computes the upper-cumulative (boundary) probabilities
+  `S_cb = P(>= category b+1)`; the old name suggested a survival function,
+  which is not the concept being used here.
+
 ## Improvements
 
 - `Biclustering()` on binary data (`Biclustering.binary`) gains an

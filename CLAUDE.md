@@ -349,6 +349,26 @@ rated = nominal + correct answer (multiple-choice tests); ordinal = Likert-type 
   is now essentially cosmetic (binary: GTM already monotone; ordinal: global
   class relabel only). memory: project_isotonic_latent_rank. Next (future): rated
   (13/19) if wanted; A3 paper body.
+- **Isotonic core naming cleanup (2026-07-20/21, uncommitted at time of writing)** —
+  internal-only, no API change: `iso_surv()` → `iso_upper_cum()` (it returns the
+  upper-cumulative boundary matrix, not a survival function), and `tl`/`tu` →
+  `theta_lower`/`theta_upper` inside `iso_build_pi()` (they hold the multiplier of
+  the pair where the rank is the lower / upper member, not a threshold). All four
+  functions in `R/00_isotonic_CORE.R` now return via explicit `return()` — house
+  style from now on, no implicit returns (memory: feedback_r_explicit_return).
+  `NEWS.md` has an Internal entry. Call sites: `R/16_Biclustering_ordinal.R:273`,
+  `tests/testthat/test-isotonic-core.R:33`.
+- **`develop/Algorithm_LRA.tex` rewritten (2026-07-20/21)** — the Fenchel-dual
+  derivation is now step-by-step (expansion of `T` to `d` including the
+  sum-order swap, Lagrange-multiplier primer, λ bisection, a hand-checkable
+  `C=2, Q=3` worked example). Two new TikZ figures: `fig_isotonic_terrace.tex`
+  (the `C × Q` terrace, minimum in front, `π*_{jc1}=1` as a full lid) and
+  `fig_isotonic_pool.tex` (rank-axis cross-section, before/after the push).
+  Citations moved to biblatex-jpa2 against `~/Dropbox/myBiber.bib` (five entries
+  added; `develop/myBiber.bib` is a symlink). This memo is the draft of the A3
+  method section. See `WORKLOG.md` (2026-07-20〜21) for the notation decisions
+  (the `b`-for-cut-index experiment was tried and reverted) and for the two
+  substantive corrections recorded there.
 - Downstream: ggExametrika v1.1.2 (audit release, ready) will be submitted after
   this version is accepted, so its GRM information plots match the fixed parent
 

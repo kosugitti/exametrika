@@ -270,7 +270,7 @@ Biclustering.ordinal <- function(U,
         Pf <- iso_dual_map(Mcount, maxiter = maxiter, tol = 1e-6)
         BCRM[f, , ] <- Pf
         BBRM[f, , 1] <- 1
-        BBRM[f, , 2:maxQ] <- iso_surv(Pf)
+        BBRM[f, , 2:maxQ] <- iso_upper_cum(Pf)
         BBRM[f, , maxQ + 1] <- 0
       }
     } else {

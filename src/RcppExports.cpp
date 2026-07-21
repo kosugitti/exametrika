@@ -107,6 +107,43 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// iso_build_pi_cpp
+NumericMatrix iso_build_pi_cpp(NumericMatrix Mcount, NumericMatrix theta);
+RcppExport SEXP _exametrika_iso_build_pi_cpp(SEXP McountSEXP, SEXP thetaSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericMatrix >::type Mcount(McountSEXP);
+    Rcpp::traits::input_parameter< NumericMatrix >::type theta(thetaSEXP);
+    rcpp_result_gen = Rcpp::wrap(iso_build_pi_cpp(Mcount, theta));
+    return rcpp_result_gen;
+END_RCPP
+}
+// iso_upper_cum_cpp
+NumericMatrix iso_upper_cum_cpp(NumericMatrix P);
+RcppExport SEXP _exametrika_iso_upper_cum_cpp(SEXP PSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericMatrix >::type P(PSEXP);
+    rcpp_result_gen = Rcpp::wrap(iso_upper_cum_cpp(P));
+    return rcpp_result_gen;
+END_RCPP
+}
+// iso_dual_map_cpp
+List iso_dual_map_cpp(NumericMatrix Mcount, int maxiter, double tol, bool fast);
+RcppExport SEXP _exametrika_iso_dual_map_cpp(SEXP McountSEXP, SEXP maxiterSEXP, SEXP tolSEXP, SEXP fastSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericMatrix >::type Mcount(McountSEXP);
+    Rcpp::traits::input_parameter< int >::type maxiter(maxiterSEXP);
+    Rcpp::traits::input_parameter< double >::type tol(tolSEXP);
+    Rcpp::traits::input_parameter< bool >::type fast(fastSEXP);
+    rcpp_result_gen = Rcpp::wrap(iso_dual_map_cpp(Mcount, maxiter, tol, fast));
+    return rcpp_result_gen;
+END_RCPP
+}
 // qBiNormal_cpp
 double qBiNormal_cpp(double a, double b, double rho);
 RcppExport SEXP _exametrika_qBiNormal_cpp(SEXP aSEXP, SEXP bSEXP, SEXP rhoSEXP) {
@@ -164,6 +201,9 @@ static const R_CallMethodDef CallEntries[] = {
     {"_exametrika_score_function_numerical_grm", (DL_FUNC) &_exametrika_score_function_numerical_grm, 3},
     {"_exametrika_compare_gradients_grm", (DL_FUNC) &_exametrika_compare_gradients_grm, 3},
     {"_exametrika_irm_gibbs_core_cpp", (DL_FUNC) &_exametrika_irm_gibbs_core_cpp, 11},
+    {"_exametrika_iso_build_pi_cpp", (DL_FUNC) &_exametrika_iso_build_pi_cpp, 2},
+    {"_exametrika_iso_upper_cum_cpp", (DL_FUNC) &_exametrika_iso_upper_cum_cpp, 1},
+    {"_exametrika_iso_dual_map_cpp", (DL_FUNC) &_exametrika_iso_dual_map_cpp, 4},
     {"_exametrika_qBiNormal_cpp", (DL_FUNC) &_exametrika_qBiNormal_cpp, 3},
     {"_exametrika_polychoric_likelihood_cpp", (DL_FUNC) &_exametrika_polychoric_likelihood_cpp, 2},
     {"_exametrika_polychoric_cpp", (DL_FUNC) &_exametrika_polychoric_cpp, 2},

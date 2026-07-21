@@ -29,6 +29,18 @@ irm_gibbs_core_cpp <- function(Uq_vec, Uq_dim, Z, cls01_init, fld01_init, gamma_
     .Call(`_exametrika_irm_gibbs_core_cpp`, Uq_vec, Uq_dim, Z, cls01_init, fld01_init, gamma_c, gamma_f, alpha_vec_R, max_iter, stable_limit, verbose)
 }
 
+iso_build_pi_cpp <- function(Mcount, theta) {
+    .Call(`_exametrika_iso_build_pi_cpp`, Mcount, theta)
+}
+
+iso_upper_cum_cpp <- function(P) {
+    .Call(`_exametrika_iso_upper_cum_cpp`, P)
+}
+
+iso_dual_map_cpp <- function(Mcount, maxiter = 100L, tol = 1e-7, fast = TRUE) {
+    .Call(`_exametrika_iso_dual_map_cpp`, Mcount, maxiter, tol, fast)
+}
+
 qBiNormal_cpp <- function(a, b, rho) {
     .Call(`_exametrika_qBiNormal_cpp`, a, b, rho)
 }

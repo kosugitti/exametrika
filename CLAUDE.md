@@ -187,6 +187,22 @@ rated = nominal + correct answer (multiple-choice tests); ordinal = Likert-type 
 - BINET FRPIndex addition
 - LCA.nominal
 - Input data storage method unification (v2.0.0)
+- **Order-restricted IRM (estimate the number of *ordered* classes)** — the missing
+  cell in the design grid: `Biclustering`/`Ranklustering` cover "class count given",
+  `Biclustering_IRM` covers "class count estimated, unordered", and nothing covers
+  "class count estimated, ordered". Order cannot be bolted onto the current sampler:
+  collapsing π relies on Dirichlet-multinomial conjugacy, and the truncated Dirichlet
+  over the order-restricted region has no closed-form normalizer; more fundamentally
+  the CRP is exchangeable over blocks, so ordering is meaningless under it. The
+  asymmetry that matters: fields have no order (keep the CRP there), only the class
+  side needs replacing — with an ordered partition prior (contiguous blocks on a
+  latent continuum, class count = change-point count, splits/merges restricted to
+  adjacent classes, mirroring PAVA's adjacent pooling). Research-scale; revisit with
+  Shojima after the A3 submission. Interim workaround for A3: over-specify the class
+  count and let the order constraint pool adjacent ranks (`df` already counts the
+  surviving distinct levels) — a diagnostic, not an estimator, since it stays
+  dependent on the specified count and leaves tied classes unidentified in the
+  membership matrix. memory: project_exametrika_future (item 6).
 - ~~LRA.ordinal mixed category count support (requires matrix→list refactor)~~
   — DONE in v1.16.0 (2026-07-18): ragged `sum(ncat)` layout via the `design1`
   index map; `stop()` guard removed; uniform-data parity verified against the

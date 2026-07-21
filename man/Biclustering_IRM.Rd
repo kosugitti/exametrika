@@ -120,9 +120,15 @@ on the current state of the random number generator.}
 \item{alpha}{Dirichlet distribution concentration parameter for the prior density of
 field reference probabilities (rated/nominal IRM). Must be positive. The default is 1.}
 
-\item{mic}{Logical; if TRUE, forces Field Reference Profiles to be monotonically
-increasing across classes (ordinal IRM only). Default is FALSE, matching
-\code{LRA} and \code{Biclustering} for ordinal data.}
+\item{mic}{Logical; if TRUE, relabels the classes in ascending order of their
+total expected score, summed over all fields (ordinal IRM only). Default is
+FALSE. Note that this is a cosmetic reordering of class labels: it makes the
+Test Reference Profile monotone (WOAC) but does not impose the per-field
+stochastic order (SOAC), and it leaves the estimates themselves unchanged.
+IRM classes come from a CRP prior and are exchangeable, so there is no rank
+axis for an order restriction to act on; use ordinal Ranklustering
+(\code{Biclustering(method = "R", estimation = "isotonic")}) when a genuine
+order restriction is wanted.}
 }
 \value{
 An object of class "exametrika" containing the IRM results.

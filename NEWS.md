@@ -47,6 +47,30 @@
   with more than 8 response categories; the default palette is now
   recycled.
 
+## Performance
+
+- The order-restricted M-step for ordinal data is now implemented in C++
+  (`src/isotonic_core.cpp`). `LRA.ordinal(method = "isotonic")` and
+  `Biclustering.ordinal(estimation = "isotonic")` call it through the same
+  internal `iso_dual_map()` entry point as before, so results are unchanged --
+  the port follows the R original's arithmetic operation for operation and
+  agrees with it exactly (`expect_identical`), not merely to a tolerance. It
+  additionally exploits the fact that raising one dual multiplier
+  `theta[c, q]` can only change ranks `c` and `c+1`, so the inner bisection
+  rebuilds two rows rather than the whole table.
+
+  Measured on the dual solver alone: 111x (3 ranks x 3 categories), 289x
+  (12 x 7), 509x (20 x 6; 274s -> 0.54s). At the model level, where the
+  remaining EM machinery is still R, `Biclustering(J35S500, ncls = 6,
+  nfld = 5, method = "R", estimation = "isotonic")` drops from 265s to 11s
+  (same 125 EM cycles, same log-likelihood and BIC to the digit).
+
+  This matters because the ordinal isotonic path was the slowest thing in the
+  package and effectively ruled out large simulation studies. The pure-R
+  implementation is kept as `iso_dual_map_ref()` (internal, unexported) purely
+  so the test suite can check the two against each other and so the algorithm
+  stays readable.
+
 ## Internal (no user-visible behavior change)
 
 - Renamed the internal helper `iso_surv()` in `R/00_isotonic_CORE.R` to

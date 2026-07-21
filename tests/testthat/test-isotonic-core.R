@@ -110,3 +110,38 @@ test_that("iso_dual_map pools to the combined MLE under full reversal", {
   expect_equal(P[1, ], pooled, tolerance = 1e-5)
   expect_equal(P[2, ], pooled, tolerance = 1e-5)
 })
+
+test_that("the C++ iso_dual_map reproduces the R reference exactly", {
+  # iso_dual_map() dispatches to src/isotonic_core.cpp; iso_dual_map_ref() is
+  # the pure-R original. The C++ port follows the same arithmetic operation for
+  # operation and only skips rebuilding rows that a given multiplier cannot
+  # touch, so the two must agree to the bit, not merely to a tolerance.
+  cases <- list(
+    rbind(c(1, 1, 8), c(8, 1, 1)), # full reversal, all boundaries pooled
+    rbind(c(5, 25, 20), c(20, 5, 25)), # one boundary violated, one slack
+    rbind(c(8, 1, 1), c(1, 1, 8)), # already ordered -> theta stays 0
+    rbind(c(3, 4, 5), c(4, 4, 4), c(5, 4, 3)), # 3 ranks
+    rbind(c(2, 2, 2, 2), c(1, 3, 3, 1), c(4, 1, 1, 4)) # 4 categories
+  )
+  for (M in cases) {
+    expect_identical(
+      iso_dual_map(M, maxiter = 200, tol = 1e-8),
+      iso_dual_map_ref(M, maxiter = 200, tol = 1e-8)
+    )
+  }
+})
+
+test_that("the C++ solution is a valid order-restricted solution on a larger table", {
+  # Size where the R reference is too slow to run in the test suite (~270s),
+  # so check the properties directly instead of against the reference.
+  set.seed(20260721)
+  M <- matrix(stats::runif(120, 1, 100), nrow = 20, ncol = 6)
+  P <- iso_dual_map(M, maxiter = 200, tol = 1e-7)
+  expect_equal(rowSums(P), rep(1, 20), tolerance = 1e-8)
+  expect_true(all(P > 0))
+  S <- iso_upper_cum(P)
+  # Ranks must be non-decreasing at every boundary. The dual is stopped on the
+  # log-likelihood (a GEM step inside EM), so allow the small residual slack
+  # that partial optimisation leaves behind.
+  expect_lt(max(S[-nrow(S), , drop = FALSE] - S[-1, , drop = FALSE]), 1e-3)
+})

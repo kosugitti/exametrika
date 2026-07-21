@@ -182,6 +182,9 @@ rated = nominal + correct answer (multiple-choice tests); ordinal = Likert-type 
   renames; note `conf` is also used by LCA/LRA for test equating)
 - IRM Gibbs C++ phase 2: replace R-level `sample.int`/`rmultinom` calls with an
   RNG-order-compatible pure C++ implementation (~1.5-2x headroom)
+- EM E-step C++ acceleration for the polytomous models: now the dominant cost
+  once the isotonic dual solver moved to C++ (the solver is 100-500x faster but
+  the model-level gain is only ~25x, and the difference is the R-level E-step)
 - BNM/LDLRA GA/PBIL acceleration: write in C++ at the same time as the polytomous BNM
   implementation, not before
 - BINET FRPIndex addition
@@ -385,6 +388,21 @@ rated = nominal + correct answer (multiple-choice tests); ordinal = Likert-type 
   method section. See `WORKLOG.md` (2026-07-20〜21) for the notation decisions
   (the `b`-for-cut-index experiment was tried and reverted) and for the two
   substantive corrections recorded there.
+- **Ordinal isotonic dual solver moved to C++ (2026-07-21, commit 4f51bd2)** —
+  `src/isotonic_core.cpp`. The solver has a *nested* bisection (outer: raise each
+  theta until its constraint ties; inner: solve lambda for the row sum), which is
+  the shape R is worst at, hence the size of the win. The port also uses the fact
+  that raising `theta[c, q]` can only change ranks `c` and `c+1`, so the inner
+  bisection rebuilds two rows instead of the whole table. Results are unchanged
+  and agree with the R original *exactly* (`expect_identical`, not a tolerance).
+  Solver alone: 111x / 289x / 509x (3x3, 12x7, 20x6; the last is 274s -> 0.54s).
+  Model level: `Biclustering(J35S500, ncls = 6, nfld = 5, method = "R",
+  estimation = "isotonic")` 265s -> 11s, same EM cycle count and fit indices.
+  The gap between 100-500x and 25x is the E-step and friends, still in R — that
+  is now the bottleneck. The pure-R version survives as `iso_dual_map_ref()`
+  (internal, unexported) for the equivalence test and for readability. This
+  unblocks large simulation studies: the ordinal isotonic path was previously
+  the slowest thing in the package.
 - Downstream: ggExametrika v1.1.2 (audit release, ready) will be submitted after
   this version is accepted, so its GRM information plots match the fixed parent
 

@@ -182,11 +182,57 @@ rated = nominal + correct answer (multiple-choice tests); ordinal = Likert-type 
   renames; note `conf` is also used by LCA/LRA for test equating)
 - IRM Gibbs C++ phase 2: replace R-level `sample.int`/`rmultinom` calls with an
   RNG-order-compatible pure C++ implementation (~1.5-2x headroom)
-- EM E-step C++ acceleration for the polytomous models: now the dominant cost
-  once the isotonic dual solver moved to C++ (the solver is 100-500x faster but
-  the model-level gain is only ~25x, and the difference is the R-level E-step)
+- Further speedup of the ordinal isotonic path, if ever needed, must target the
+  dual solver itself or the number of times it is called — NOT the E-step.
+  Profiling `Biclustering(J35S500, ncls = 6, nfld = 5, method = "R",
+  estimation = "isotonic")` after the C++ port puts 96% of self time still
+  inside `iso_dual_map_cpp` and under 1% in all of the R code combined. The
+  effective speedup on this workload is ~50x rather than the 500x measured on a
+  single large table, because the model solves a small (ncls x ncat) table once
+  per field per EM cycle (here 5 x 125 = 625 calls), so per-call overhead
+  matters more than raw throughput. Inside the solver the cost is the two
+  nested bisections: both run to `hi - lo > 1e-10` from an initial width of 1,
+  i.e. ~34 halvings each, and the outer one re-runs the inner one every step,
+  so settling one theta costs ~2,300 `build_row` evaluations. A safeguarded
+  Newton step for lambda would cut 34 to ~5 (~6x), and the same trick on the
+  outer search might reach 10-20x overall — but that is a much smaller prize
+  than the port itself just delivered, and Newton needs divergence handling at
+  the boundary. Deliberately deferred (2026-07-21): revisit only if a
+  simulation run turns out to be time-bound.
 - BNM/LDLRA GA/PBIL acceleration: write in C++ at the same time as the polytomous BNM
-  implementation, not before
+  implementation, not before. **Profiled 2026-07-21 — the search itself is not the
+  cost, so aim at what it calls:**
+  - `BNM_GA` / `BNM_PBIL`: ~93% of self time is igraph round-trips
+    (`08A_BNM.R:12,147,169` — `graph_from_adjacency_matrix` /
+    `as_adjacency_matrix` / `is_dag` / `is_connected`), rebuilt per candidate.
+    The GA/PBIL code itself is under 4%. Fix is not C++ at all: do the cycle and
+    connectivity checks directly on the adjacency matrix and stop round-tripping
+    through igraph.
+  - `LDLRA_PBIL`: **done 2026-07-21.** The subject x item x class triple loop
+    that filled `pat01` was ~79% of self time; the parent set does not depend on
+    the subject, so the binary encoding is now one matrix product per
+    (item, class) instead of one scalar computation per (subject, item, class).
+    `LDLRA_PBIL(J15S500, ncls = 3, population = 20, maxGeneration = 20)` 15.3s
+    -> 3.8s; the loop itself is 42x. Verified `identical()` against the old code
+    on ragged parent sets with missing responses, and `test-ldlra.R` (Mathematica
+    references) unchanged. Profiling afterwards shows no remaining hot spot
+    (largest is 18%, the rest spread thin), so stop here.
+  - Trap worth remembering: missing responses are coded `-1` in `U`, so the
+    indicator must be `(U == 1) %*% w`. A plain `U %*% w` subtracts the weight
+    for every missing parent response and corrupts the index silently.
+- **Drop the igraph dependency (v2.0.0)** — surveyed 2026-07-21. Only four calls
+  are real graph algorithms (`is_dag` x2, `is_connected` x2, in `08A_BNM.R:170-171`
+  and `11_BINET.R:282-283`); on the item counts these models use, a Kahn-style
+  cycle check and a union-find/BFS weak-connectivity check on the adjacency
+  matrix are cheaper than constructing the igraph object at all — and that
+  construction is ~93% of `BNM_GA`/`BNM_PBIL` self time because it is redone per
+  candidate. The remaining 23 calls are format round-trips
+  (`graph_from_adjacency_matrix` x10, `graph_from_data_frame` x7,
+  `as_adjacency_matrix` x3, `as_data_frame` x3) that plain matrix/data.frame code
+  replaces. Two things make this v2.0.0 rather than now: `LDLRA`/`LDB`/`BINET`
+  return igraph objects in `g_list`, and `R/00_print_network.R` draws with
+  `plot.igraph()` + `layout_on_grid()`. Both are user-visible, so removing them
+  is a breaking change and needs a replacement drawing path.
 - BINET FRPIndex addition
 - LCA.nominal
 - Input data storage method unification (v2.0.0)

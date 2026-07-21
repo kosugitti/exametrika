@@ -43,19 +43,27 @@ LD_param_est <- function(tmp, adj_list, classRefMat, ncls, smoothpost, beta1 = 2
   refmat <- array(replicate(npapat, classRefMat), dim = c(testlength, ncls, npapat))
 
   ### SxJxRxPattern
+  # The parent-response pattern index is a big-endian binary encoding of the
+  # parent items' responses (first parent = most significant bit), offset by 1.
+  # The parent set does not depend on the subject, so the encoding is done once
+  # per (item, class) for all subjects at once rather than subject by subject:
+  # a (nobs x nparent) indicator times a weight vector. Missing responses are
+  # coded -1 in U, so the indicator has to be `U == 1`, matching the original
+  # `which(... == 1)` (a plain `U %*% w` would subtract the weight instead).
   pat01 <- array(0, dim = c(nobs, testlength, ncls, npapat))
-  for (s in 1:nobs) {
-    for (j in 1:testlength) {
-      for (cls in 1:ncls) {
-        if (parent[[cls]][[j]][[1]] == "") {
-          # No parents
-          pos <- 1
-        } else {
-          pos.tmp <- tmp$U[s, parent[[cls]][[j]]]
-          pos <- sum(2^(which(rev(pos.tmp) == 1) - 1)) + 1
-        }
-        pat01[s, j, cls, pos] <- 1
+  u_is1 <- tmp$U == 1
+  subject_idx <- seq_len(nobs)
+  for (j in 1:testlength) {
+    for (cls in 1:ncls) {
+      pa <- parent[[cls]][[j]]
+      if (pa[[1]] == "") {
+        # No parents
+        pos <- rep.int(1L, nobs)
+      } else {
+        weights <- 2^((length(pa) - 1):0)
+        pos <- as.vector(u_is1[, pa, drop = FALSE] %*% weights) + 1
       }
+      pat01[cbind(subject_idx, j, cls, pos)] <- 1
     }
   }
 

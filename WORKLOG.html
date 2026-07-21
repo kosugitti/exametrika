@@ -1434,6 +1434,205 @@ M10 (E01+E05): +19.8</code></pre>
 <strong>確定</strong>: 全テスト5224 pass/0 fail、R CMD check –as-cran 0E/0W/2NOTE(Days since last update:4のcadence＋ローカルtidy版・両無害)。roxygen(man/Biclustering.Rd)・NEWS更新。07のestimation roxygenは二値Ayer/多値Dykstra両対応に一般化。</li>
 </ul><p><strong>次</strong>: (a)rated(13/19)へ同展開(要否判断)、(b)A3論文本体(方法節=Algorithm_LRA/Dykstraメモ、実データ比較にloglikトレードの図表)、(c)荘島返信(未送)。</p>
 </div>
+<div class="section level2">
+<h2 id="id_2026-07-2021-algorithm_lraメモの全面書き直しfenchel双対の導出を自力で追える形に命名整理">2026-07-20〜21 Algorithm_LRAメモの全面書き直し(Fenchel双対の導出を自力で追える形に)＋命名整理<a class="anchor" aria-label="anchor" href="#id_2026-07-2021-algorithm_lra%E3%83%A1%E3%83%A2%E3%81%AE%E5%85%A8%E9%9D%A2%E6%9B%B8%E3%81%8D%E7%9B%B4%E3%81%97fenchel%E5%8F%8C%E5%AF%BE%E3%81%AE%E5%B0%8E%E5%87%BA%E3%82%92%E8%87%AA%E5%8A%9B%E3%81%A7%E8%BF%BD%E3%81%88%E3%82%8B%E5%BD%A2%E3%81%AB%E5%91%BD%E5%90%8D%E6%95%B4%E7%90%86"></a></h2>
+<p>ユーザが「アルゴリズムを自分で理解したい」として対話で導出を一段ずつ追い、最終的に <code>develop/Algorithm_LRA.tex</code> をユーザ自身が書き直した。コード側は命名の微修正のみ。</p>
+<div class="section level3">
+<h3 id="コードr00_isotonic_corer">コード(R/00_isotonic_CORE.R)<a class="anchor" aria-label="anchor" href="#%E3%82%B3%E3%83%BC%E3%83%89r00_isotonic_corer"></a></h3>
+<ul><li>
+<code>iso_surv()</code> → <strong><code>iso_upper_cum()</code></strong> にリネーム。中身も docstring も上側累積 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>S</mi><mrow><mi>c</mi><mi>b</mi></mrow></msub><mo>=</mo><mi>P</mi><mo stretchy="false" form="prefix">(</mo><mo>≥</mo><mi>b</mi><mo>+</mo><mn>1</mn><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">S_{cb}=P(\ge b+1)</annotation></semantics></math> であり、生存関数ではない(ユーザ指摘「生存という語は使わない」)。 呼び出し元は <code>16_Biclustering_ordinal.R:273</code> と <code>test-isotonic-core.R:33</code>。内部関数 (<code>@noRd</code>)なのでAPI影響なし。NEWS.mdにInternalセクションを追加。</li>
+<li>
+<code>iso_build_pi()</code> 内の <code>tl</code>/<code>tu</code> → <strong><code>theta_lower</code>/<code>theta_upper</code></strong>。threshold ではなく 「自分が下側/上側の当事者である対の乗数」の意。</li>
+<li>4関数すべてに明示的 <code><a href="https://rdrr.io/r/base/function.html" class="external-link">return()</a></code>(ユーザが自ら加筆。以後Rコードは暗黙の戻り値を書かない → memory: feedback_r_explicit_return)。</li>
+<li>test-isotonic-core.R 22件 pass。</li>
+</ul></div>
+<div class="section level3">
+<h3 id="メモdevelopalgorithm_lratex">メモ(develop/Algorithm_LRA.tex)<a class="anchor" aria-label="anchor" href="#%E3%83%A1%E3%83%A2developalgorithm_lratex"></a></h3>
+<p>対話で判明した「詰まりどころ」を全部埋める構成に。主な決定と経緯:</p>
+<ul><li>
+<strong>記号</strong>: 一度カテゴリ番号 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>q</mi><annotation encoding="application/x-tex">q</annotation></semantics></math> と「切れ目番号 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>b</mi><annotation encoding="application/x-tex">b</annotation></semantics></math>」を分ける案を実装したが、ユーザの 手描き図(IMG_0627)で「<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>b</mi><annotation encoding="application/x-tex">b</annotation></semantics></math> の位置はここか?」と破綻が露呈し<strong>全面撤回</strong>。<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msubsup><mi>π</mi><mrow><mi>j</mi><mi>c</mi><mi>q</mi></mrow><mo>*</mo></msubsup><mo>=</mo><mi>P</mi><mo stretchy="false" form="prefix">(</mo><mo>≥</mo><mi>q</mi><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">\pi^\ast_{jcq}=P(\ge q)</annotation></semantics></math> はカテゴリ番号 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>q</mi><annotation encoding="application/x-tex">q</annotation></semantics></math> で添字づけるのが自然で、切れ目という別対象を立てる必要はなかった。 和のダミーは <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>k</mi><annotation encoding="application/x-tex">k</annotation></semantics></math>。「閾値」の語もGRMの困難度と紛れるため排除。</li>
+<li>
+<strong><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>θ</mi><annotation encoding="application/x-tex">\theta</annotation></semantics></math> の添字順</strong>をユーザ判断で <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>θ</mi><mrow><mi>j</mi><mi>c</mi><mi>q</mi></mrow></msub><annotation encoding="application/x-tex">\theta_{jcq}</annotation></semantics></math>(項目・<strong>隣接ランク対</strong>・カテゴリ)に統一。 第2添字がランクでなく対の番号(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>1</mn><mi>.</mi><mi>.</mi><mi>C</mi><mo>−</mo><mn>1</mn></mrow><annotation encoding="application/x-tex">1..C-1</annotation></semantics></math>)である点が最大の誤読ポイントだったので本文に明記。</li>
+<li>
+<strong>展開を省略しない</strong>: <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>T</mi><mo>=</mo><mo>∑</mo><mi>θ</mi><mo stretchy="false" form="prefix">(</mo><msubsup><mi>π</mi><mi>c</mi><mo>*</mo></msubsup><mo>−</mo><msubsup><mi>π</mi><mrow><mi>c</mi><mo>+</mo><mn>1</mn></mrow><mo>*</mo></msubsup><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">T=\sum\theta(\pi^\ast_c-\pi^\ast_{c+1})</annotation></semantics></math> から <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>d</mi><mrow><mi>j</mi><mi>c</mi><mi>q</mi></mrow></msub><mo>=</mo><msubsup><mo>∑</mo><mrow><mi>k</mi><mo>=</mo><mn>2</mn></mrow><mi>q</mi></msubsup><mo stretchy="false" form="prefix">(</mo><msub><mi>θ</mi><mrow><mi>j</mi><mi>c</mi><mi>k</mi></mrow></msub><mo>−</mo><msub><mi>θ</mi><mrow><mi>j</mi><mi>c</mi><mo stretchy="false" form="prefix">(</mo><mi>k</mi><mo>−</mo><mn>1</mn><mo stretchy="false" form="postfix">)</mo></mrow></msub><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">d_{jcq}=\sum_{k=2}^q(\theta_{jck}-\theta_{jc(k-1)})</annotation></semantics></math> までを、(1)<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>π</mi><mo>*</mo></msup><annotation encoding="application/x-tex">\pi^\ast</annotation></semantics></math>を<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>π</mi><annotation encoding="application/x-tex">\pi</annotation></semantics></math>に開く (2)<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>c</mi><mo>′</mo></msup><mo>=</mo><mi>c</mi><mo>+</mo><mn>1</mn></mrow><annotation encoding="application/x-tex">c'=c+1</annotation></semantics></math>で添字を揃え境界<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>θ</mi><mrow><mi>j</mi><mi>c</mi><mn>0</mn></mrow></msub><mo>=</mo><msub><mi>θ</mi><mrow><mi>j</mi><mi>C</mi><mi>q</mi></mrow></msub><mo>=</mo><mn>0</mn></mrow><annotation encoding="application/x-tex">\theta_{jc0}=\theta_{jCq}=0</annotation></semantics></math>を使う (3)<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>q</mi><annotation encoding="application/x-tex">q</annotation></semantics></math>と<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>k</mi><annotation encoding="application/x-tex">k</annotation></semantics></math>の和を入れ替える (4)<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>d</mi><annotation encoding="application/x-tex">d</annotation></semantics></math>と命名、の4段で明示。(3)がforループの入れ替えである旨をユーザが文で表現。</li>
+<li>
+<strong>ラグランジュ乗数の説明を追加</strong>(ユーザ「ラグランジュ乗数がわかってない」)。等式制約の <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>λ</mi><mrow><mi>j</mi><mi>c</mi></mrow></msub><annotation encoding="application/x-tex">\lambda_{jc}</annotation></semantics></math>(符号自由・影の価格)と不等式制約の <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>θ</mi><mrow><mi>j</mi><mi>c</mi><mi>q</mi></mrow></msub><mo>≥</mo><mn>0</mn></mrow><annotation encoding="application/x-tex">\theta_{jcq}\ge0</annotation></semantics></math>(片側の壁・相補スラック) を区別。<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>θ</mi><mo>&lt;</mo><mn>0</mn></mrow><annotation encoding="application/x-tex">\theta&lt;0</annotation></semantics></math> は存在しない(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>θ</mi><mo>≥</mo><mn>0</mn></mrow><annotation encoding="application/x-tex">\theta\ge0</annotation></semantics></math>がKKTの一部。逆転は解に残らず必ずタイになる)。</li>
+<li>
+<strong><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>λ</mi><annotation encoding="application/x-tex">\lambda</annotation></semantics></math> の二分探索</strong>を手順箱に。上限は <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mo>∑</mo><mi>q</mi></msub><mi>γ</mi></mrow><annotation encoding="application/x-tex">\sum_q\gamma</annotation></semantics></math> を試し <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>f</mi><mo>&gt;</mo><mn>1</mn></mrow><annotation encoding="application/x-tex">f&gt;1</annotation></semantics></math> なら倍々に広げる (<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>d</mi><annotation encoding="application/x-tex">d</annotation></semantics></math>に大きな負成分があると <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo>∑</mo><mi>γ</mi></mrow><annotation encoding="application/x-tex">\sum\gamma</annotation></semantics></math> が下限 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>−</mi><mrow><mi mathvariant="normal">min</mi><mo>⁡</mo></mrow><mi>d</mi></mrow><annotation encoding="application/x-tex">-\min d</annotation></semantics></math> を下回り区間が空になるため。 実装が倍々にしている理由)。</li>
+<li>
+<strong>数値例</strong>(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>C</mi><mo>=</mo><mn>2</mn><mo>,</mo><mi>Q</mi><mo>=</mo><mn>3</mn></mrow><annotation encoding="application/x-tex">C=2,Q=3</annotation></semantics></math>、度数 (5,25,20)/(20,5,25))を新設し、<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>v</mi><mo>=</mo><mn>0.75</mn></mrow><annotation encoding="application/x-tex">v=0.75</annotation></semantics></math>、<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>λ</mi><mo>=</mo><mo stretchy="false" form="prefix">(</mo><mn>20</mn><mo>,</mo><mn>80</mn><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">\lambda=(20,80)</annotation></semantics></math>、 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>θ</mi><mrow><mi>j</mi><mn>12</mn></mrow></msub><mo>=</mo><mn>40</mn></mrow><annotation encoding="application/x-tex">\theta_{j12}=40</annotation></semantics></math> を手計算で追える形に。<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>λ</mi><mn>1</mn></msub><mo>+</mo><msub><mi>λ</mi><mn>2</mn></msub></mrow><annotation encoding="application/x-tex">\lambda_1+\lambda_2</annotation></semantics></math> を2通りに書いて <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>θ</mi><annotation encoding="application/x-tex">\theta</annotation></semantics></math> を 消去する解き方。<strong>タイの水準が度数プール値 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false" form="prefix">(</mo><mn>45</mn><mo>+</mo><mn>30</mn><mo stretchy="false" form="postfix">)</mo><mi>/</mi><mo stretchy="false" form="prefix">(</mo><mn>50</mn><mo>+</mo><mn>50</mn><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">(45+30)/(50+50)</annotation></semantics></math> に一致する</strong>のは、制約1本なら 多項尤度が二項部分と条件付き多項部分に分解し制約が二項部分にしか触れないため。</li>
+<li>
+<strong>図2枚を新規作成</strong>:
+<ul><li>
+<code>develop/fig_isotonic_terrace.tex</code> — <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>C</mi><mo>×</mo><mi>Q</mi></mrow><annotation encoding="application/x-tex">C\times Q</annotation></semantics></math>格子上の階段面。ランク方向は登り(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>θ</mi><annotation encoding="application/x-tex">\theta</annotation></semantics></math>で 課す)、カテゴリ方向は下り(上側累積の定義から自動)。<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msubsup><mi>π</mi><mrow><mi>j</mi><mi>c</mi><mn>1</mn></mrow><mo>*</mo></msubsup><mo>=</mo><mn>1</mn></mrow><annotation encoding="application/x-tex">\pi^\ast_{jc1}=1</annotation></semantics></math>は全面を覆う天板。 ユーザの手描き(IMG_0628/0629)に合わせ<strong>最小値が手前</strong>に来る投影に変更。</li>
+<li>
+<code>develop/fig_isotonic_pool.tex</code> — 上の地形のランク軸断面。押し込み前後2枚。数値例に対応。</li>
+<li>注釈ノードは格子座標でなく画面座標で直接置く(重なり調整のため)。TikZの<code>at \PT{}{}{}</code>は パーサが<code>(</code>を要求するので <code>\path \PT{...} node[...]</code> と書く必要がある(ハマりどころ)。</li>
+</ul></li>
+<li>
+<strong>引用をjpa2化</strong>。<code>~/Dropbox/myBiber.bib</code> に elbarmi1994 / dykstra1983 / barlow1972 / robertson1988 / rockafellar1970 を追加(ayer1955は既存)。<code>develop/myBiber.bib</code>はDropbox 実体へのsymlink。DOIのはみ出しも解消。<strong>Fenchel双対の出典はDykstraではなくFenchel(1949)</strong>、 整備はRockafellar(1970)、多項尤度への応用がEl Barmi &amp; Dykstra(1994)という三層。</li>
+<li>
+<code>\procbox</code>(fbox+minipage)を<code>tcolorbox</code>環境に置換。</li>
+</ul></div>
+<div class="section level3">
+<h3 id="判明した誤りユーザの理解と私の説明の両方">判明した誤り(ユーザの理解と私の説明の両方)<a class="anchor" aria-label="anchor" href="#%E5%88%A4%E6%98%8E%E3%81%97%E3%81%9F%E8%AA%A4%E3%82%8A%E3%83%A6%E3%83%BC%E3%82%B6%E3%81%AE%E7%90%86%E8%A7%A3%E3%81%A8%E7%A7%81%E3%81%AE%E8%AA%AC%E6%98%8E%E3%81%AE%E4%B8%A1%E6%96%B9"></a></h3>
+<ul><li>私の「<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>θ</mi><annotation encoding="application/x-tex">\theta</annotation></semantics></math> はカテゴリ方向に一切干渉しない」は<strong>誤り</strong>。<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>θ</mi><annotation encoding="application/x-tex">\theta</annotation></semantics></math> はカテゴリ方向の値を 動かす(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>q</mi><annotation encoding="application/x-tex">q</annotation></semantics></math>以上の分母にだけ入り、行和1のため配分が変わる)。保たれるのは<strong>単調性</strong>のほうで、 それは <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>π</mi><mo>&gt;</mo><mn>0</mn></mrow><annotation encoding="application/x-tex">\pi&gt;0</annotation></semantics></math>(有理形で分子正・分母正)から従い <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>θ</mi><annotation encoding="application/x-tex">\theta</annotation></semantics></math> に依存しない。数値例でも <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>θ</mi><mrow><mi>j</mi><mn>13</mn></mrow></msub><mo>=</mo><mn>0</mn></mrow><annotation encoding="application/x-tex">\theta_{j13}=0</annotation></semantics></math>なのに <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>q</mi><mo>=</mo><mn>3</mn></mrow><annotation encoding="application/x-tex">q=3</annotation></semantics></math> の上側累積が <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>0.40</mn><mo>→</mo><mn>0.3333</mn></mrow><annotation encoding="application/x-tex">0.40\to0.3333</annotation></semantics></math>、<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>0.50</mn><mo>→</mo><mn>0.6250</mn></mrow><annotation encoding="application/x-tex">0.50\to0.6250</annotation></semantics></math> と動く (<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>λ</mi><annotation encoding="application/x-tex">\lambda</annotation></semantics></math> 経由)。閾値ごとPAVAはここを動かさないので分岐し、この例で <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi mathvariant="normal">Δ</mi><mi>l</mi><mi>l</mi><mo>=</mo><mn>2.83</mn></mrow><annotation encoding="application/x-tex">\Delta ll=2.83</annotation></semantics></math>。</li>
+<li>ユーザ手描き図(IMG_0632)でランク方向の段差に <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>θ</mi><annotation encoding="application/x-tex">\theta</annotation></semantics></math> とラベルされていたのは逆。段差が 見えている=余裕あり=<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>θ</mi><mo>=</mo><mn>0</mn></mrow><annotation encoding="application/x-tex">\theta=0</annotation></semantics></math>、平ら=<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>θ</mi><mo>&gt;</mo><mn>0</mn></mrow><annotation encoding="application/x-tex">\theta&gt;0</annotation></semantics></math>(相補スラック)。</li>
+</ul></div>
+<div class="section level3">
+<h3 id="検算スクリプト">検算スクリプト<a class="anchor" aria-label="anchor" href="#%E6%A4%9C%E7%AE%97%E3%82%B9%E3%82%AF%E3%83%AA%E3%83%97%E3%83%88"></a></h3>
+<p><code>scratchpad/ex23.R</code>(未移動)。iso_dual_map vs 閾値ごとPAVAをloglikで比較。完全逆転例では 両者一致、<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>q</mi><mo>=</mo><mn>2</mn></mrow><annotation encoding="application/x-tex">q=2</annotation></semantics></math>のみ違反の例で <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi mathvariant="normal">Δ</mi><mi>l</mi><mi>l</mi><mo>=</mo><mn>2.83</mn></mrow><annotation encoding="application/x-tex">\Delta ll=2.83</annotation></semantics></math>。develop/へ移すかは未判断。</p>
+<p><strong>次</strong>: (a)メモの通読は完了(誤植・記号不統一10件を指摘しユーザが修正済)、(b)A3本文へ 方法節として移植、(c)rated(13/19)展開の要否判断、(d)図1をAsymptoteで描き直す案(視点を パラメータ化できる)は保留。</p>
+</div>
+</div>
+<div class="section level2">
+<h2 id="id_2026-07-21-isotonic対応の棚卸しgridsearchirm順序制約でランク数は決まるかの検証">2026-07-21 isotonic対応の棚卸し(GridSearch/IRM)＋「順序制約でランク数は決まるか」の検証<a class="anchor" aria-label="anchor" href="#id_2026-07-21-isotonic%E5%AF%BE%E5%BF%9C%E3%81%AE%E6%A3%9A%E5%8D%B8%E3%81%97gridsearchirm%E9%A0%86%E5%BA%8F%E5%88%B6%E7%B4%84%E3%81%A7%E3%83%A9%E3%83%B3%E3%82%AF%E6%95%B0%E3%81%AF%E6%B1%BA%E3%81%BE%E3%82%8B%E3%81%8B%E3%81%AE%E6%A4%9C%E8%A8%BC"></a></h2>
+<p>A3再分析へ進む前の確認。isotonic化がどこまで行き渡っているかの棚卸しと、 そこから出た設計上の空白の検討。</p>
+<div class="section level3">
+<h3 id="棚卸しの結果">棚卸しの結果<a class="anchor" aria-label="anchor" href="#%E6%A3%9A%E5%8D%B8%E3%81%97%E3%81%AE%E7%B5%90%E6%9E%9C"></a></h3>
+<ul><li>
+<strong>GridSearch: 対応済み・手当て不要</strong>。<code>...</code> を <code>do.call(fun, args_list)</code> で流すだけの ラッパーで、<code>estimation="isotonic"</code> はそのまま届く。実測確認 (<code>GridSearch(J35S515, max_ncls=4, max_nfld=3, fun="Biclustering", method="R", estimation="isotonic")</code> → <code>optimal_result$estimation == "isotonic"</code>)。</li>
+<li>
+<strong>IRM: 未対応。ただし設計上そもそも軸が無い</strong>。<code>Biclustering_IRM.*</code> に <code>method</code> 引数は 無く、バイクラ側の <code>method="B"/"R"</code>(無順序/順序)に相当する対が存在しない。18番の M-stepは今も無制約の累積正規化(<code>rev(cumsum(rev(Ufcq_prior[f,cc,])))</code>)のまま。</li>
+<li>
+<strong>18番の <code>mic</code> は16番と同型の飾り</strong>。全フィールド合計期待得点でクラスを昇順に 並べ替えるだけで、SOACは課さず推定値も変わらない。roxygenが「forces FRP to be monotonically increasing」と実態に反していたので実態に合わせて書き直した(既定FALSEなので 実害は無かった)。v2.0.0で16/18の両方をdeprecate候補。</li>
+</ul></div>
+<div class="section level3">
+<h3 id="設計上の空白右下のセル">設計上の空白（右下のセル）<a class="anchor" aria-label="anchor" href="#%E8%A8%AD%E8%A8%88%E4%B8%8A%E3%81%AE%E7%A9%BA%E7%99%BD%E5%8F%B3%E4%B8%8B%E3%81%AE%E3%82%BB%E3%83%AB"></a></h3>
+<pre><code>                  無順序                順序あり
+クラス数を指定    Biclustering(B)       Ranklustering(R, estimation=isotonic)
+クラス数を推定    Biclustering_IRM      ← 空白</code></pre>
+<p><strong>今のIRMに順序が入らない理由は2つ重なっている</strong>: (1)崩壊型Gibbsが壊れる。πを積分消去 できるのはディリクレ・多項共役ゆえで、確率的順序を課すと定義域が順序制約領域になり、 切り取られたディリクレの正規化定数に閉じた形が無い(θの双対で数値的に解いた対象そのもの)。 (2)CRPはブロックについて交換可能で、ブロックに順番の概念が無い。順序を課す=交換可能性を 捨てる=事前分布の取り替え。<strong>非対称性が鍵</strong>: フィールドに順序は無い(CRPが正しい)。 順序が要るのはクラス側だけなので、「IRMを作り直す」のではなく「フィールド側はCRPのまま、 クラス側だけ別機構」が正しい切り分け。</p>
+<p>案A(クラス側だけ非崩壊にしπを明示サンプリング)=手間の割に新しい物語が無く非推奨。 案B(CRPを順序つき分割事前へ。被験者を潜在連続体に並べクラスを連続区間とし、クラス数の 不定性=変化点の個数。分割・併合は隣接クラス間のみ=PAVAの隣接プールと同じ構造)=本命。 案C(過剰指定してから順序制約に潰させる)=当面の運用案として検証した(下記)。 <strong>ユーザ判断: 「案Bがいる、案Cがいけてもいずれいる」。将来のexametrika機能。</strong> memory: project_exametrika_future 項目6 に設計を記録。</p>
+</div>
+<div class="section level3">
+<h3 id="検証-案cは成立するかj35s500-ordinal-isotonic-nfld5">検証: 案Cは成立するか(J35S500 ordinal isotonic, nfld=5)<a class="anchor" aria-label="anchor" href="#%E6%A4%9C%E8%A8%BC-%E6%A1%88c%E3%81%AF%E6%88%90%E7%AB%8B%E3%81%99%E3%82%8B%E3%81%8Bj35s500-ordinal-isotonic-nfld5"></a></h3>
+<p>クラス数を振って「実効水準数が頭打ちになるか」を見た。<strong>結論: 案Cはランク数の推定法に ならない。診断としても成立しない。</strong></p>
+<p>第1回(完全併合で数える)。実効水準数が指定クラス数と完全に一致(4→4, 6→6, 8→8, 10→10, 12→12)。フィールド別も同じ。<strong>完全併合はゼロ</strong>。ただしこの測り方は厳しすぎた。制約は (フィールド, 隣接クラス対, 閾値)の1つずつに立つのでアクティブになるのは特定の閾値だけで、 プロファイル全体の一致は起きにくい事象。</p>
+<p>第2回(閾値レベルでアクティブな制約を数える)。</p>
+<pre><code> ncls 制約数 アクティブ  割合 収束      loglik        BIC  フィールド別
+    4       60          5   0.083   yes    -20990.0   -66315.7  1 1 1 1 1
+    6      100         14   0.140    no    -20602.0   -66868.0  3 2 2 3 4
+    8      140         10   0.071   yes    -20594.1   -66641.5  1 2 2 2 3
+   10      180         22   0.122   yes    -20559.4   -66462.4  3 6 4 5 4
+   12      220         19   0.086   yes    -20536.5   -66284.5  3 2 6 4 4</code></pre>
+<p>制約は遊んでいない(7〜14%でθ&gt;0)。しかし<strong>その割合はクラス数を増やしてもほぼ一定で、 飽和の兆候が無い</strong>。クラス数を増やせば制約の本数も増え、タイになる本数も比例して増える だけ。完全併合がゼロなので「実効水準数」という量がそもそも定義できない。→案Bが要る、 というユーザの判断がこの1例では裏付けられた。</p>
+<p><strong>副産物(A3に使える)</strong>: 「アクティブ率」は順序制約がどれだけ働いているかの指標として 使える。isotonic側=制約の何%で順序を強制されたか、GTM側=何箇所で順序を破っているか、を 並べれば「GTMの高い適合は課したい順序を破って得たもの」がフィールド数の数え上げより 細かい粒度で示せる(J35S500なら制約60〜220本という母数がある)。</p>
+<p><strong>非収束問題の追試(maxiter=2000, ncls=4〜8を1刻み)</strong>:</p>
+<pre><code> ncls n_cycle 収束 制約数 アクティブ 完全併合      loglik        BIC
+    4       5    yes       60          5        0    -20990.0   -66315.7   (1秒)
+    5       7    yes       80          6        0    -20964.4   -66242.6   (5秒)
+    6     125    yes      100         14        0    -20602.0   -66868.0   (265秒)
+    7      26    yes      120         12        0    -20603.1   -66741.5   (85秒)
+    8       6    yes      140         10        0    -20594.1   -66641.5   (30秒)</code></pre>
+<p><strong>前回の数字は使える</strong>。ncls=6は125反復で収束(既定100では25足りなかっただけ)、loglikもBICも 表示桁で前回と完全一致。BIC最小はncls=6のままで、今度は収束済み。完全併合は全条件0のままで 案Cの結論も不変。<strong>ただし2点気になる</strong>: (1)反復数が条件で極端に違う(5,7,125,26,6)。 BIC最小のncls=6だけ265秒と桁違いに遅い=平坦な領域か境界近くの解。(2)<strong>loglikがクラス数に ついて単調でない</strong>(6:−20602.0 → 7:−20603.1)。原理的には増えるはずなのでEMの局所解。差は1.1 と小さいが尤度面が凸凹している証拠。</p>
+<p><strong>A3の運用ルールにすべきこと</strong>: (a)<code>maxiter</code>既定100は足りない。実データはもっと大きいので 余裕を見る。収束フラグを必ず確認し非収束なら採用しない。(b)局所解があるので初期値を変えた 複数回実行が要る。1回の実行のBICでクラス数を選ぶのは危険。</p>
+<p><strong>Rの落とし穴(2回踏んだ)</strong>: <code>TestFitIndices</code> の列名は <code>BIC</code>/<code>AIC</code>/<code>CAIC</code> で <code>model_BIC</code> は存在しない。存在しない要素を <code>sprintf</code> に渡すと長さ0→<code>character(0)</code> が 返り、<code>cat</code> は何も出力せず<strong>エラーも警告も出ない</strong>。表のヘッダだけ出て中身が空になる。 検算スクリプトでは <code>flush(stdout())</code> と併せて要注意。</p>
+<p>スクリプト: <code>scratchpad/eff_rank.R</code>(完全併合版) / <code>eff_rank2.R</code>(閾値レベル版) / <code>eff_rank3.R</code>(maxiter=2000版)。develop/へ移すかは未判断。</p>
+</div>
+<div class="section level3">
+<h3 id="a3の構成確認再分析の範囲を切る前段">A3の構成確認（再分析の範囲を切る前段）<a class="anchor" aria-label="anchor" href="#a3%E3%81%AE%E6%A7%8B%E6%88%90%E7%A2%BA%E8%AA%8D%E5%86%8D%E5%88%86%E6%9E%90%E3%81%AE%E7%AF%84%E5%9B%B2%E3%82%92%E5%88%87%E3%82%8B%E5%89%8D%E6%AE%B5"></a></h3>
+<p>A3は「多値バイクラスタリング論文」で、§2=多値バイクラスタリング(名義/順序/択一・クラス数 指定)、§3=構造推定と適合度評価(名義IRM/順序・択一IRM)、§4=数値例、§5=総合考察。 <strong>§4.4実データ適用は「3つの公開データセットに多値IRMを適用する」</strong>(bfi/MSPS/SAT12)。 実データの主役はIRM側。</p>
+<p><strong>私の当初の懸念は的外れだった</strong>: 「A3の一撃(MSPS F=4復元)は7/19に直した配線バグの影響下 かもしれない」は誤り。F=4は順序IRM(<code>18_Biclustering_ordinal_IRM.R</code>)が返した値で、バグは <code>16_Biclustering_ordinal.R</code>(ランクラスタリング)のもの。系統が別なので一撃は無事。 <strong>影響を受けうるのは図4-5</strong>(フィールドを4分割に固定し潜在ランクを6に集約した順序 バイクラスタリングのFCRP)のみ、しかも<code>method="R"</code>で回していた場合に限る (<code>method="B"</code>ならフィルタは単位行列で無関係)。要スクリプト確認。</p>
+<p><strong>より大きな論点が2つ見つかった</strong>: 1. <strong>用語</strong>: 本文はIRMの出力を「18潜在ランク」と呼びアレイ図から順序勾配を読んでいるが、 IRMのクラスはCRPで交換可能=順序を持たない。並んで見えるのは並べ替えの結果。査読で 「これはランクか、順序を持たないクラスを事後に並べただけか」と問われうる。今日の議論 (設計格子の右下が空白)がこの弱点の理論的裏づけになる。 2. <strong>§2.3の記述</strong>: 「分子が減少するので π*_{fc1}≥…≥π*_{fcQ} が自動的に成立。この構造的 保証により推定後の単調性を確保する追加処理や制約は不要」と書いてある。正しいが、保証 されているのは<strong>カテゴリ方向だけ</strong>。ランク方向は保証されない=AIレビューが「平均で 並べ替える順序版は空虚」と刺した箇所そのもの。順序核をisotonicに差し替える=§2.3を 書き換えるということ。材料は <code>Algorithm_LRA.tex</code> に揃っている。</p>
+<p><strong>次</strong>: (a)A3原稿の図表・数値を「IRMなので影響なし/ランクラスタリングなので再実行/記述の 書き換え」の3つに仕分ける(再実行範囲の確定)、(b)図4-5のスクリプトでmethodを確認、 (c)A3実データの再実行(maxiter十分大・複数初期値・収束確認を運用ルールに)、 (d)案Bは A3投稿後に荘島先生と設計を詰める。</p>
+</div>
+</div>
+<div class="section level2">
+<h2 id="id_2026-07-21-順序isotonicの双対ソルバをc化-commit-4f51bd2">2026-07-21 順序isotonicの双対ソルバをC++化 (commit 4f51bd2)<a class="anchor" aria-label="anchor" href="#id_2026-07-21-%E9%A0%86%E5%BA%8Fisotonic%E3%81%AE%E5%8F%8C%E5%AF%BE%E3%82%BD%E3%83%AB%E3%83%90%E3%82%92c%E5%8C%96-commit-4f51bd2"></a></h2>
+<p>ユーザ「C++実装は効きそうか？developでやってみて、数値がRと合うか、スピードがどれほど 改善されるか、確認してみたい」→ 試作で桁違いの改善が出たのでそのまま本体へ組み込み。</p>
+<div class="section level3">
+<h3 id="なぜ効いたか">なぜ効いたか<a class="anchor" aria-label="anchor" href="#%E3%81%AA%E3%81%9C%E5%8A%B9%E3%81%84%E3%81%9F%E3%81%8B"></a></h3>
+<p><code>iso_dual_map</code> は<strong>二分探索が二重</strong>になっている。外側は各 θ を制約がタイになるまで上げる 探索、内側は行和1を満たす λ の探索。しかも内側は θ を1回動かすたびに走る。R が最も苦手な 形(スカラ演算の深いループ)だったので、C++ 化の効きしろが大きかった。</p>
+<p>加えて<strong>アルゴリズム的な改善</strong>を1つ入れた。θ(b,r) を動かしても影響を受けるのはランク r と r+1 の2行だけ(第2添字は隣接ランク対の番号)。R版は毎回 <code>iso_build_pi</code> で全行を作り直して いたので、内側の二分探索を2行だけの再構築にした。規模が大きいほど効く。</p>
+</div>
+<div class="section level3">
+<h3 id="実測">実測<a class="anchor" aria-label="anchor" href="#%E5%AE%9F%E6%B8%AC"></a></h3>
+<p>数値は<strong>厳密一致</strong>(許容誤差ではなくビット一致)。演算順序まで揃えて移植した。</p>
+<pre><code>ケース                max|P差|(忠実移植) max|P差|(高速版)     R秒     C++秒    倍率
+小(C=3,Q=3)逆転           0.000e+00      0.000e+00      0.222    0.002    111.0
+例(C=2,Q=3)               0.000e+00      0.000e+00      0.014    0.000       -
+中(C=6,Q=5)乱数           0.000e+00      0.000e+00      1.667    0.009    185.2
+大(C=12,Q=7)乱数          0.000e+00      0.000e+00     17.336    0.060    288.9
+大(C=20,Q=6)乱数          0.000e+00      0.000e+00    273.727    0.538    508.8</code></pre>
+<p>モデル関数レベル(J35S500 ordinal isotonic, nfld=5)。EM 反復数も適合度も完全に同じ。</p>
+<pre><code>ncls=6   265秒 -&gt; 11.2秒 (24x)  n_cycle=125  loglik −20602.0  BIC −66868.0
+ncls=8    30秒 -&gt;  1.1秒 (27x)  n_cycle=6    loglik −20594.1  BIC −66641.5
+LRA.ordinal J15S3810 nrank=5: 4.0秒  loglik −37791.8 (7/18の記録 −37792 と一致)</code></pre>
+<p><strong>コア単体100-500x に対しモデルレベルは25x</strong>。差の分は E-step など R のまま残っている 部分で、<strong>次のボトルネックはそこ</strong>。さらに速くするなら E-step を狙う。</p>
+</div>
+<div class="section level3">
+<h3 id="構成">構成<a class="anchor" aria-label="anchor" href="#%E6%A7%8B%E6%88%90"></a></h3>
+<ul><li>
+<code>src/isotonic_core.cpp</code> 新設。<code>iso_build_pi_cpp</code> / <code>iso_upper_cum_cpp</code> / <code>iso_dual_map_cpp(Mcount, maxiter, tol, fast)</code> をエクスポート。<code>fast=FALSE</code> は 忠実移植(全行再構築)で、検証用に残してある。</li>
+<li>
+<code>R/00_isotonic_CORE.R</code>: 従来のR実装を <strong><code>iso_dual_map_ref()</code></strong> にリネームして参照実装 として残置(@noRd・非公開)。新しい <code>iso_dual_map()</code> は C++ を呼ぶだけのラッパで、署名も 返り値も不変。呼び出し側(<code>12_LRA_ordinal.R:350</code>, <code>16_Biclustering_ordinal.R:270</code>)は無変更。</li>
+<li>テスト2本追加。(1)5つの行列で <code>iso_dual_map()</code> と <code>iso_dual_map_ref()</code> を <strong><code>expect_identical</code></strong> で比較。(2)R参照が遅すぎて回せない大きさ(20ランク×6カテゴリ)で 行和1・正値性・ランク方向の単調性を直接確認(GEM打ち切りの残差スラック 1e-3 を許容)。</li>
+<li>roxygen再生成で <code>man/Biclustering_IRM.Rd</code> も更新(micの記述修正ぶん)。DESCRIPTION の roxygen2 8.0.0 churn は commit 前に <code>git checkout</code> で戻した(既定の手順どおり)。</li>
+</ul><p><strong>確認</strong>: 全テスト <strong>5232 pass / 0 fail</strong>(既存スナップショットは1つも動かず＝数値一致の 裏付け)。<code>R CMD check --as-cran</code> は <strong>0 error / 0 warning / 2 NOTE</strong> (Days since last update: 6 と ローカルの HTML Tidy が古い。どちらも無害)。</p>
+</div>
+<div class="section level3">
+<h3 id="これが何を変えるか">これが何を変えるか<a class="anchor" aria-label="anchor" href="#%E3%81%93%E3%82%8C%E3%81%8C%E4%BD%95%E3%82%92%E5%A4%89%E3%81%88%E3%82%8B%E3%81%8B"></a></h3>
+<p>順序 isotonic はパッケージ最遅で、<strong>大規模シミュレーションの足枷</strong>だった。旧Phase 3の 実測は小条件(100名×15項目)でグリッドサーチ1回あたり B 3.6秒 / R 3.1秒 / IRM 0.5秒。 isotonic を素のRで回すと桁で膨らんで非現実的だったが、C++化で同じオーダーに戻る目処が 立った。243条件×200試行のやり直しが視野に入る。<strong>ただし要実測</strong>(memory: feedback_simulation_calibration = 小データからの線形外挿は外れる)。</p>
+<p><strong>次</strong>: (a)代表条件で per-trial 時間を実測してシミュレーション規模を見積もる、 (b)MSPSグリッドサーチ(ncls 2-15 × nfld 2-10)はC++版で再実行中・結果待ち。</p>
+</div>
+</div>
+<div class="section level2">
+<h2 id="id_2026-07-21-プロファイリングで当て推量を2つ潰すldlraのベクトル化-commit-ca9fe6c">2026-07-21 プロファイリングで当て推量を2つ潰す＋LDLRAのベクトル化 (commit ca9fe6c)<a class="anchor" aria-label="anchor" href="#id_2026-07-21-%E3%83%97%E3%83%AD%E3%83%95%E3%82%A1%E3%82%A4%E3%83%AA%E3%83%B3%E3%82%B0%E3%81%A7%E5%BD%93%E3%81%A6%E6%8E%A8%E9%87%8F%E3%82%922%E3%81%A4%E6%BD%B0%E3%81%99ldlra%E3%81%AE%E3%83%99%E3%82%AF%E3%83%88%E3%83%AB%E5%8C%96-commit-ca9fe6c"></a></h2>
+<p>ユーザ「E stepのC++化、そんなのやれとは言ってないけど、効果ありそう？」で測ったところ <strong>私の見立てが外れていた</strong>。以後、最適化は必ず測ってから。</p>
+<div class="section level3">
+<h3 id="訂正1-e-stepはボトルネックではない">訂正1: E-stepはボトルネックではない<a class="anchor" aria-label="anchor" href="#%E8%A8%82%E6%AD%A31-e-step%E3%81%AF%E3%83%9C%E3%83%88%E3%83%AB%E3%83%8D%E3%83%83%E3%82%AF%E3%81%A7%E3%81%AF%E3%81%AA%E3%81%84"></a></h3>
+<p>C++移植後の <code>Biclustering(J35S500, ncls=6, nfld=5, method="R", estimation="isotonic")</code> を Rprof(line.profiling) にかけると、</p>
+<pre><code>RcppExports.R#41            5.525秒  96.0%   ← iso_dual_map_cpp の .Call
+16_Biclustering_ordinal.R    合計     &lt;1%</code></pre>
+<p><strong>移植後も96%がソルバの中</strong>。R側は全部合わせて1%未満。私は「ソルバ200倍」を仮定した Amdahl逆算から「残り88%がE-step」と書いたが、仮定が誤り。このワークロードの実効倍率は <strong>50倍弱</strong>で、理由は<strong>小さい表を大量に呼ぶ</strong>から(1フィールドあたり6×6の表を 5フィールド×125反復＝625回)。単発の大きい表で出た509倍は、ここでは出ない。 → Future Work の「E-step C++化」を削除し、「速くしたいならソルバ自体か呼び出し回数。 E-stepではない」と実測つきで書き換え。</p>
+<p><strong>ソルバ内部の内訳(理屈)</strong>: 二重の二分探索がどちらも <code>hi-lo &gt; 1e-10</code> を初期幅1から やるので <strong>各34回</strong>、外側1反復ごとに内側が丸ごと走るので θ を1個決めるのに build_row が <strong>約2,300回</strong>。λ にニュートン法を入れれば34→5で約6倍、外側にも同じ工夫で10-20倍は 狙えるが、いま50倍を取った直後にしては割に合わない(発散時のフォールバックも要る)。 <strong>意図的に見送り</strong>。シミュレーションが時間で詰まったら戻る。</p>
+</div>
+<div class="section level3">
+<h3 id="訂正2-gapbil-も探索そのものは遅くない">訂正2: GA/PBIL も探索そのものは遅くない<a class="anchor" aria-label="anchor" href="#%E8%A8%82%E6%AD%A32-gapbil-%E3%82%82%E6%8E%A2%E7%B4%A2%E3%81%9D%E3%81%AE%E3%82%82%E3%81%AE%E3%81%AF%E9%81%85%E3%81%8F%E3%81%AA%E3%81%84"></a></h3>
+<pre><code>BNM_PBIL J5S10 pop20 gen30 (0.955秒)
+  08A_BNM.R#147 34.6% / #169 32.5% / #12 25.7%   ← 全部 igraph 変換
+  08C_BNM_GA.R  3.7%                              ← GA/PBIL 本体はここだけ
+BNM_GA   J5S10 (0.23秒)   #169 47.8% / #147 45.7% = 93%
+LDLRA_PBIL J15S500 (15.3秒) 09_LDLRA.R#55 50.7% / #54 28.3% / #50 5.4%
+  09B_LDLRA_GA.R 0.8%                             ← GA 本体</code></pre>
+<p>BNMは<strong>隣接行列⇔igraphオブジェクトの往復が93%</strong>。候補解ごとに作り直している。 判定内容(閉路なし・弱連結)自体は項目数5-15なら隣接行列のまま数行で書ける。 → Future Work の「GA/PBIL を C++ 化」は的外れ。<strong>呼ばれている側</strong>を狙う。</p>
+</div>
+<div class="section level3">
+<h3 id="ldlraのベクトル化実施">LDLRAのベクトル化(実施)<a class="anchor" aria-label="anchor" href="#ldlra%E3%81%AE%E3%83%99%E3%82%AF%E3%83%88%E3%83%AB%E5%8C%96%E5%AE%9F%E6%96%BD"></a></h3>
+<p><code>09_LDLRA.R</code> の <code>pat01</code> を埋める三重ループ(S×J×C=22,500回)。中身は親項目の回答を 2進数とみなして整数に直す処理で、<strong>親集合は被験者に依存しない</strong>のに被験者ごとに 引き直していた。(項目,クラス)ごとに全被験者を一度に処理する形へ。</p>
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># 旧: for(s) for(j) for(cls) { pos &lt;- sum(2^(which(rev(U[s,pa])==1)-1))+1; pat01[s,j,cls,pos] &lt;- 1 }</span></span>
+<span><span class="co"># 新: u_is1 &lt;- tmp$U == 1</span></span>
+<span><span class="co">#     for(j) for(cls) { pos &lt;- as.vector(u_is1[, pa, drop=FALSE] %*% 2^((k-1):0)) + 1</span></span>
+<span><span class="co">#                       pat01[cbind(subject_idx, j, cls, pos)] &lt;- 1 }</span></span></code></pre></div>
+<p><strong>罠</strong>: 欠測は <code>U</code> に <code>-1</code> で残る。元コードは <code>which(...==1)</code> なので -1 は 0 扱い。 素直に <code>U %*% w</code> にすると <strong>-1 が重みごと引かれて静かに壊れる</strong>。指標 <code>(U==1)</code> に してから積を取ること。コミットメッセージにも明記した。</p>
+<p><strong>結果</strong>: <code>LDLRA_PBIL(J15S500, ncls=3, population=20, maxGeneration=20)</code> <strong>15.3秒→3.8秒(4x)</strong>。 当該ループ単体は <strong>42倍</strong>。検証=旧新を切り出して欠測混じり・親数まちまちで <code>identical=TRUE</code>、 <code>test-ldlra.R</code> 14件(Mathematica参照)そのまま pass、全テスト5232 pass。 <strong>再プロファイルすると突出箇所は消えた</strong>(最大18%、あとは分散)。ここで止めるのが妥当。</p>
+</div>
+<div class="section level3">
+<h3 id="igraph脱却をv200項目として登録">igraph脱却をv2.0.0項目として登録<a class="anchor" aria-label="anchor" href="#igraph%E8%84%B1%E5%8D%B4%E3%82%92v200%E9%A0%85%E7%9B%AE%E3%81%A8%E3%81%97%E3%81%A6%E7%99%BB%E9%8C%B2"></a></h3>
+<p>棚卸し結果: 本当にアルゴリズムなのは <code>is_dag</code>×2 と <code>is_connected</code>×2 の<strong>4呼び出しだけ</strong> (08A_BNM.R:170-171, 11_BINET.R:282-283)。残り23は形式変換の往復 (<code>graph_from_adjacency_matrix</code>×10 / <code>graph_from_data_frame</code>×7 / <code>as_adjacency_matrix</code>×3 / <code>as_data_frame</code>×3)。<strong>v2.0.0送りにする理由は2つ</strong>: LDLRA/LDB/BINET が <code>g_list</code> に igraph オブジェクトを返していること、 <code>R/00_print_network.R</code> が <code>plot.igraph()</code> + <code>layout_on_grid()</code> で描画していること。 どちらもユーザに見えるので破壊的変更で、描画の代替も要る。</p>
+</div>
+<div class="section level3">
+<h3 id="mspsグリッドサーチの結果-ncls-2-15--nfld-2-10-isotonic-maxiter2000">MSPSグリッドサーチの結果 (ncls 2-15 × nfld 2-10, isotonic, maxiter=2000)<a class="anchor" aria-label="anchor" href="#msps%E3%82%B0%E3%83%AA%E3%83%83%E3%83%89%E3%82%B5%E3%83%BC%E3%83%81%E3%81%AE%E7%B5%90%E6%9E%9C-ncls-2-15--nfld-2-10-isotonic-maxiter2000"></a></h3>
+<p>C++版で2.43時間・126セル全収束(NAなし)。<strong>警告35件</strong>(中身未取得。次は <code>withCallingHandlers</code> で拾う。空クラスタ関連と推測)。</p>
+<pre><code>最小BIC: ncls=15, nfld=2 (−70977.7)
+各 ncls 行での最良 nfld:
+  2→3   3→4   4→4   5→4   6→3   7→2   8→2
+  9→2  10→2  11→2  12→2  13→2  14→2  15→2</code></pre>
+<ul><li>
+<strong>F=4は出るが条件つき</strong>。クラス数3・4・5のときだけ nfld=4、6で3、<strong>7以降はずっと2</strong>。 下位尺度数の復元はクラス数を小さく取ったときに限る現象だった。</li>
+<li>
+<strong>フィールド数はクラス数に依存する</strong>(はっきり出た)。二段構え(フィールドを固定して からランクを推定)を採るなら、どのクラス数で固定したかで答が変わる。手続きの正当化が要る。</li>
+<li>
+<strong>BICは両端に張り付く</strong>。クラスは探索上限15で最小、フィールドは下限2で最小。 「クラスは多く、フィールドは少なく」を選び続けて止まらない。</li>
+<li>
+<strong>BICはクラス方向に単調でない</strong>(nfld=2列: 9→−70789.7, 10→−70578.5悪化, 11→−70915.4改善, …, 15→−70977.7)。最小15と11の差は62でこの振れ幅の中。 <strong>「最小BICの位置」は信用できない</strong>。初期値を変えた複数回実行が要る。</li>
+</ul><p><strong>A3への含意</strong>: 一撃にこだわらない判断(ユーザ 2026-07-21「方法論論文はシミュレーションが 大事で、実データもできますよ、くらいでええ。実データが理論的フィールド数を出さないことは あり得る話で考察のしどころ」)が結果的に正しかった。順序isotonic+BICでF=4は特定のクラス数 でしか出ず、前面に出すとクラス数の選び方依存だと突かれる。 <strong>むしろ面白いのは IRM と BIC が逆方向を向いていること</strong>。IRMは高解像度選好で bfi F=14 / SAT12 F=28。BICはフィールドを最小の2へ潰す。同じデータで構造推定の基準が 正反対に振れる。§3のCRP濃度とフィールド過剰選択の議論と対になる。考察としてはこちらが強い。</p>
+<p><strong>計算コストの数字</strong>: 126セルで2.43時間＝1セル平均70秒(C++化後、MSPS 821×20)。 旧シミュのグリッド範囲は 2≤C≤20, 2≤F≤20 の <strong>361セル</strong>で、これを48,600試行ぶんは このデータサイズでは不可能。ただしシミュのデータはずっと小さい(例 100×15)ので単純換算は できない。<strong>設計を決めてから代表条件で実測</strong>すること ([[feedback_simulation_calibration]] 小データからの線形外挿は外れる)。</p>
+<p><strong>次</strong>: (a)A3の主張と腕(データ型×手法×基準)の設計を決める、(b)決めたら代表条件で per-trial時間を実測してシミュレーション規模を確定、(c)BNMのigraph除去はv2.0.0で 多値BNM実装と同時。</p>
+</div>
+</div>
 </div>
 
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

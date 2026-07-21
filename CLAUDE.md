@@ -235,11 +235,87 @@ Likert-type ordered ratings.
 - IRM Gibbs C++ phase 2: replace R-level `sample.int`/`rmultinom` calls
   with an RNG-order-compatible pure C++ implementation (~1.5-2x
   headroom)
+- Further speedup of the ordinal isotonic path, if ever needed, must
+  target the dual solver itself or the number of times it is called —
+  NOT the E-step. Profiling
+  `Biclustering(J35S500, ncls = 6, nfld = 5, method = "R", estimation = "isotonic")`
+  after the C++ port puts 96% of self time still inside
+  `iso_dual_map_cpp` and under 1% in all of the R code combined. The
+  effective speedup on this workload is ~50x rather than the 500x
+  measured on a single large table, because the model solves a small
+  (ncls x ncat) table once per field per EM cycle (here 5 x 125 = 625
+  calls), so per-call overhead matters more than raw throughput. Inside
+  the solver the cost is the two nested bisections: both run to
+  `hi - lo > 1e-10` from an initial width of 1, i.e. ~34 halvings each,
+  and the outer one re-runs the inner one every step, so settling one
+  theta costs ~2,300 `build_row` evaluations. A safeguarded Newton step
+  for lambda would cut 34 to ~5 (~6x), and the same trick on the outer
+  search might reach 10-20x overall — but that is a much smaller prize
+  than the port itself just delivered, and Newton needs divergence
+  handling at the boundary. Deliberately deferred (2026-07-21): revisit
+  only if a simulation run turns out to be time-bound.
 - BNM/LDLRA GA/PBIL acceleration: write in C++ at the same time as the
-  polytomous BNM implementation, not before
+  polytomous BNM implementation, not before. **Profiled 2026-07-21 — the
+  search itself is not the cost, so aim at what it calls:**
+  - `BNM_GA` / `BNM_PBIL`: ~93% of self time is igraph round-trips
+    (`08A_BNM.R:12,147,169` — `graph_from_adjacency_matrix` /
+    `as_adjacency_matrix` / `is_dag` / `is_connected`), rebuilt per
+    candidate. The GA/PBIL code itself is under 4%. Fix is not C++ at
+    all: do the cycle and connectivity checks directly on the adjacency
+    matrix and stop round-tripping through igraph.
+  - `LDLRA_PBIL`: **done 2026-07-21.** The subject x item x class triple
+    loop that filled `pat01` was ~79% of self time; the parent set does
+    not depend on the subject, so the binary encoding is now one matrix
+    product per (item, class) instead of one scalar computation per
+    (subject, item, class).
+    `LDLRA_PBIL(J15S500, ncls = 3, population = 20, maxGeneration = 20)`
+    15.3s -\> 3.8s; the loop itself is 42x. Verified
+    [`identical()`](https://rdrr.io/r/base/identical.html) against the
+    old code on ragged parent sets with missing responses, and
+    `test-ldlra.R` (Mathematica references) unchanged. Profiling
+    afterwards shows no remaining hot spot (largest is 18%, the rest
+    spread thin), so stop here.
+  - Trap worth remembering: missing responses are coded `-1` in `U`, so
+    the indicator must be `(U == 1) %*% w`. A plain `U %*% w` subtracts
+    the weight for every missing parent response and corrupts the index
+    silently.
+- **Drop the igraph dependency (v2.0.0)** — surveyed 2026-07-21. Only
+  four calls are real graph algorithms (`is_dag` x2, `is_connected` x2,
+  in `08A_BNM.R:170-171` and `11_BINET.R:282-283`); on the item counts
+  these models use, a Kahn-style cycle check and a union-find/BFS
+  weak-connectivity check on the adjacency matrix are cheaper than
+  constructing the igraph object at all — and that construction is ~93%
+  of `BNM_GA`/`BNM_PBIL` self time because it is redone per candidate.
+  The remaining 23 calls are format round-trips
+  (`graph_from_adjacency_matrix` x10, `graph_from_data_frame` x7,
+  `as_adjacency_matrix` x3, `as_data_frame` x3) that plain
+  matrix/data.frame code replaces. Two things make this v2.0.0 rather
+  than now: `LDLRA`/`LDB`/`BINET` return igraph objects in `g_list`, and
+  `R/00_print_network.R` draws with `plot.igraph()` +
+  `layout_on_grid()`. Both are user-visible, so removing them is a
+  breaking change and needs a replacement drawing path.
 - BINET FRPIndex addition
 - LCA.nominal
 - Input data storage method unification (v2.0.0)
+- **Order-restricted IRM (estimate the number of *ordered* classes)** —
+  the missing cell in the design grid: `Biclustering`/`Ranklustering`
+  cover “class count given”, `Biclustering_IRM` covers “class count
+  estimated, unordered”, and nothing covers “class count estimated,
+  ordered”. Order cannot be bolted onto the current sampler: collapsing
+  π relies on Dirichlet-multinomial conjugacy, and the truncated
+  Dirichlet over the order-restricted region has no closed-form
+  normalizer; more fundamentally the CRP is exchangeable over blocks, so
+  ordering is meaningless under it. The asymmetry that matters: fields
+  have no order (keep the CRP there), only the class side needs
+  replacing — with an ordered partition prior (contiguous blocks on a
+  latent continuum, class count = change-point count, splits/merges
+  restricted to adjacent classes, mirroring PAVA’s adjacent pooling).
+  Research-scale; revisit with Shojima after the A3 submission. Interim
+  workaround for A3: over-specify the class count and let the order
+  constraint pool adjacent ranks (`df` already counts the surviving
+  distinct levels) — a diagnostic, not an estimator, since it stays
+  dependent on the specified count and leaves tied classes unidentified
+  in the membership matrix. memory: project_exametrika_future (item 6).
 - ~~LRA.ordinal mixed category count support (requires matrix→list
   refactor)~~ — DONE in v1.16.0 (2026-07-18): ragged `sum(ncat)` layout
   via the `design1` index map;
@@ -462,6 +538,47 @@ Likert-type ordered ratings.
   cosmetic (binary: GTM already monotone; ordinal: global class relabel
   only). memory: project_isotonic_latent_rank. Next (future): rated
   (13/19) if wanted; A3 paper body.
+- **Isotonic core naming cleanup (2026-07-20/21, uncommitted at time of
+  writing)** — internal-only, no API change: `iso_surv()` →
+  `iso_upper_cum()` (it returns the upper-cumulative boundary matrix,
+  not a survival function), and `tl`/`tu` → `theta_lower`/`theta_upper`
+  inside `iso_build_pi()` (they hold the multiplier of the pair where
+  the rank is the lower / upper member, not a threshold). All four
+  functions in `R/00_isotonic_CORE.R` now return via explicit
+  [`return()`](https://rdrr.io/r/base/function.html) — house style from
+  now on, no implicit returns (memory: feedback_r_explicit_return).
+  `NEWS.md` has an Internal entry. Call sites:
+  `R/16_Biclustering_ordinal.R:273`,
+  `tests/testthat/test-isotonic-core.R:33`.
+- **`develop/Algorithm_LRA.tex` rewritten (2026-07-20/21)** — the
+  Fenchel-dual derivation is now step-by-step (expansion of `T` to `d`
+  including the sum-order swap, Lagrange-multiplier primer, λ bisection,
+  a hand-checkable `C=2, Q=3` worked example). Two new TikZ figures:
+  `fig_isotonic_terrace.tex` (the `C × Q` terrace, minimum in front,
+  `π*_{jc1}=1` as a full lid) and `fig_isotonic_pool.tex` (rank-axis
+  cross-section, before/after the push). Citations moved to
+  biblatex-jpa2 against `~/Dropbox/myBiber.bib` (five entries added;
+  `develop/myBiber.bib` is a symlink). This memo is the draft of the A3
+  method section. See `WORKLOG.md` (2026-07-20〜21) for the notation
+  decisions (the `b`-for-cut-index experiment was tried and reverted)
+  and for the two substantive corrections recorded there.
+- **Ordinal isotonic dual solver moved to C++ (2026-07-21, commit
+  4f51bd2)** — `src/isotonic_core.cpp`. The solver has a *nested*
+  bisection (outer: raise each theta until its constraint ties; inner:
+  solve lambda for the row sum), which is the shape R is worst at, hence
+  the size of the win. The port also uses the fact that raising
+  `theta[c, q]` can only change ranks `c` and `c+1`, so the inner
+  bisection rebuilds two rows instead of the whole table. Results are
+  unchanged and agree with the R original *exactly* (`expect_identical`,
+  not a tolerance). Solver alone: 111x / 289x / 509x (3x3, 12x7, 20x6;
+  the last is 274s -\> 0.54s). Model level:
+  `Biclustering(J35S500, ncls = 6, nfld = 5, method = "R", estimation = "isotonic")`
+  265s -\> 11s, same EM cycle count and fit indices. The gap between
+  100-500x and 25x is the E-step and friends, still in R — that is now
+  the bottleneck. The pure-R version survives as `iso_dual_map_ref()`
+  (internal, unexported) for the equivalence test and for readability.
+  This unblocks large simulation studies: the ordinal isotonic path was
+  previously the slowest thing in the package.
 - Downstream: ggExametrika v1.1.2 (audit release, ready) will be
   submitted after this version is accepted, so its GRM information plots
   match the fixed parent

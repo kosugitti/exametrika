@@ -13,15 +13,120 @@ fill_adj <- function(g, ItemLabel) {
   adj <- matrix(0, ncol = testlength, nrow = testlength)
   colnames(adj) <- rownames(adj) <- ItemLabel
   tmp_col_names <- colnames(tmp_adj)
-  for (col_name in colnames(adj)) {
-    if (col_name %in% tmp_col_names) {
-      for (tmp_col in tmp_col_names) {
-        adj[tmp_col, col_name] <- tmp_adj[tmp_col, col_name]
-      }
-    }
-  }
+  common_cols <- intersect(colnames(adj), tmp_col_names)
+  adj[tmp_col_names, common_cols] <- tmp_adj[, common_cols, drop = FALSE]
   adj <- adj[sort(rownames(adj)), sort(colnames(adj))]
   return(adj)
+}
+
+#' @title Parent-response pattern counts for BNM
+#' @description
+#' Shared counting kernel for `BNM()` and the GA/PBIL fitness path. For each
+#' item, the responses of its parent items are encoded as a big-endian binary
+#' pattern index (first parent in adjacency row order = most significant bit,
+#' offset by 1), and the (smoothed-free) correct/incorrect counts are
+#' aggregated per (item, pattern). The parent set does not depend on the
+#' subject, so the encoding is one matrix product per item instead of one
+#' scalar computation per (subject, item). Missing responses are coded -1 in
+#' `U`, so the indicator must be `U == 1` (a plain `U %*% w` would subtract
+#' the weight instead). The correct-count aggregation deliberately reproduces
+#' the historical `colSums(tmp$U * PIRP_array)` semantics by summing raw `U`
+#' values (including -1 for missing) within each pattern.
+#' @param tmp exametrika-formatted data
+#' @param adj adjacency matrix, rows/cols aligned with the columns of `tmp$U`
+#' @return list with `n1`/`n0` (item x pattern count matrices),
+#' `item_pattern_max`, and `npa` (parents per item)
+#' @noRd
+BNM_pirp_counts <- function(tmp, adj) {
+  testlength <- ncol(adj)
+  nobs <- NROW(tmp$U)
+  npa <- colSums(adj)
+  item_pattern_max <- 2^max(npa)
+
+  u_is1 <- tmp$U == 1
+  incorrect <- tmp$Z * (1 - tmp$U)
+  n_PIRP_1 <- matrix(0, nrow = testlength, ncol = item_pattern_max)
+  n_PIRP_0 <- matrix(0, nrow = testlength, ncol = item_pattern_max)
+  for (j in 1:testlength) {
+    pa <- which(adj[, j] == 1)
+    if (length(pa) == 0) {
+      pos <- rep.int(1L, nobs)
+    } else {
+      weights <- 2^((length(pa) - 1):0)
+      pos <- as.vector(u_is1[, pa, drop = FALSE] %*% weights) + 1
+    }
+    agg <- rowsum(cbind(tmp$U[, j], incorrect[, j]), pos)
+    idx <- as.integer(rownames(agg))
+    n_PIRP_1[j, idx] <- agg[, 1]
+    n_PIRP_0[j, idx] <- agg[, 2]
+  }
+  return(list(
+    n1 = n_PIRP_1, n0 = n_PIRP_0,
+    item_pattern_max = item_pattern_max, npa = npa
+  ))
+}
+
+#' @title Benchmark-model statistics for BIC-only fitness evaluation
+#' @description
+#' Precomputes the benchmark-model log-likelihood and parameter count exactly
+#' as `TestFit()` does. These depend only on the data, not on the candidate
+#' graph, so the GA/PBIL loops compute them once and reuse them for every
+#' candidate instead of re-running the full `TestFit()`.
+#' @param U response matrix (`tmp$U`)
+#' @param Z missing indicator matrix (`tmp$Z`)
+#' @return list with `ell_B` and `bench_nparm`
+#' @noRd
+BNM_bench_stats <- function(U, Z) {
+  nitem <- NCOL(U)
+  nobs <- NROW(U)
+  const <- exp(-nitem)
+  total <- rowSums(Z * U)
+  totalList <- sort(unique(total))
+  totalDist <- as.vector(table(total))
+  ntotal <- length(totalList)
+  MsG <- matrix(0, ncol = nobs, nrow = ntotal)
+  for (i in 1:nobs) {
+    MsG[which(total[i] == totalList), i] <- 1
+  }
+  U1gj <- MsG %*% (Z * U)
+  U0gj <- replicate(nitem, totalDist, simplify = "matrix") - U1gj
+  PjG <- U1gj / totalDist
+  ell_B <- sum(colSums(U1gj * log(PjG + const) + U0gj * log(1 - PjG + const)))
+  return(list(ell_B = ell_B, bench_nparm = ntotal * nitem))
+}
+
+#' @title BIC-only fitness kernel for BNM structure search
+#' @description
+#' Computes the BIC of a candidate adjacency matrix without any of `BNM()`'s
+#' output construction (CCRR table, igraph objects, DAG checks — GA/PBIL
+#' candidates live on the upper triangle, so they are always simple DAGs).
+#' Reproduces `BNM()`'s numbers exactly: the adjacency matrix is sorted by
+#' label first (as `fill_adj()` does), and the BIC expression matches
+#' `calcFitIndices()` term by term with the cached benchmark statistics.
+#' @param tmp exametrika-formatted data
+#' @param adj candidate adjacency matrix with item labels as dimnames
+#' @param bench cached result of `BNM_bench_stats()`
+#' @param beta1 Beta prior parameter 1
+#' @param beta2 Beta prior parameter 2
+#' @return BIC value (identical to `BNM(...)$TestFitIndices$BIC`)
+#' @noRd
+BNM_fit_BIC <- function(tmp, adj, bench, beta1 = 1, beta2 = 1) {
+  adj <- adj[sort(rownames(adj)), sort(colnames(adj))]
+  testlength <- ncol(adj)
+  nobs <- NROW(tmp$U)
+
+  counts <- BNM_pirp_counts(tmp, adj)
+  denom0 <- sign(counts$n1 + counts$n0)
+  param <- beta_posterior_mode(counts$n1, counts$n0 + counts$n1, beta1, beta2)
+
+  const <- pmin(exp(-testlength), 1e-10)
+  bounded <- pmax(pmin((param * denom0 + const), 1 - const), const)
+  model_loglike <- sum(counts$n1 * log(bounded) + counts$n0 * log(1 - bounded), na.rm = TRUE)
+  model_nparam <- sum(denom0)
+
+  chi_A <- 2 * (bench$ell_B - model_loglike)
+  df_A <- bench$bench_nparm - model_nparam
+  return(chi_A - df_A * log(nobs))
 }
 
 #' @title Posterior-mode correct-response rate under a Beta(beta1, beta2) prior
@@ -173,46 +278,14 @@ BNM <- function(U, na = NULL, Z = NULL, w = NULL,
   cdag <- dag * connectedFLG
 
   # Initialize
-  npa <- colSums(adj)
-
-  pir <- lapply(1:length(npa), function(i) {
-    if (npa[i] > 0) {
-      mat <- as.matrix(tmp$U[, adj[, i] == 1])
-      colnames(mat) <- colnames(tmp$U)[adj[, i] == 1]
-      return(mat)
-    } else {
-      mat <- as.matrix(rep(0, nobs))
-      colnames(mat) <- "No Parents"
-      return(mat)
-    }
-  })
-
-  PIRP_mat <- matrix(nrow = nobs, ncol = testlength)
-  for (s in 1:nobs) {
-    for (j in 1:testlength) {
-      # For each element of the matrix, calculate the decimal value from
-      # the binary representation represented by the row of the pir list
-      # at the corresponding index rev() reverses the binary vector,
-      # which() identifies the indices of 1s,
-      # and sum(2^(indices - 1)) converts binary to decimal
-      PIRP_mat[s, j] <- sum(2^(which(rev(pir[[j]][s, ]) == 1) - 1)) + 1
-    }
-  }
-
-  item_pattern_max <- 2^max(npa)
-  PIRP_array <- array(0, dim = c(nobs, testlength, item_pattern_max))
-  for (s in 1:nobs) {
-    for (j in 1:testlength) {
-      PIRP_array[s, j, PIRP_mat[s, j]] <- 1
-    }
-  }
-
-  n_PIRP_1 <- matrix(nrow = testlength, ncol = item_pattern_max)
-  n_PIRP_0 <- matrix(nrow = testlength, ncol = item_pattern_max)
-  for (i in 1:item_pattern_max) {
-    n_PIRP_1[, i] <- colSums(tmp$U * PIRP_array[, , i])
-    n_PIRP_0[, i] <- colSums(tmp$Z * (1 - tmp$U) * PIRP_array[, , i])
-  }
+  # Parent-response pattern counts: the per-(subject, item) binary encoding
+  # and the one-hot PIRP array are replaced by one matrix product and one
+  # rowsum() per item inside BNM_pirp_counts() — same numbers, no S x J loop.
+  counts <- BNM_pirp_counts(tmp, adj)
+  npa <- counts$npa
+  item_pattern_max <- counts$item_pattern_max
+  n_PIRP_1 <- counts$n1
+  n_PIRP_0 <- counts$n0
 
   denom0 <- sign(n_PIRP_1 + n_PIRP_0)
 
@@ -241,10 +314,14 @@ BNM <- function(U, na = NULL, Z = NULL, w = NULL,
   colnames(CCRR_table) <- c("Child Item", "N of Parents", "Parent Items", "PIRP", "Conditional CRR")
   CCRR_table[, 1] <- rep(tmp$ItemLabel, item_ptn)
   CCRR_table[, 2] <- rep(colSums(adj), item_ptn)
-  parent_items <- lapply(pir, function(mat) {
-    paste(colnames(mat), collapse = ", ")
-  })
-  CCRR_table[, 3] <- rep(unlist(parent_items), item_ptn)
+  parent_items <- vapply(1:testlength, function(j) {
+    pa <- which(adj[, j] == 1)
+    if (length(pa) == 0) {
+      return("No Parents")
+    }
+    return(paste(colnames(tmp$U)[pa], collapse = ", "))
+  }, character(1))
+  CCRR_table[, 3] <- rep(parent_items, item_ptn)
 
   CCRR_table[, 4] <- unlist(sapply(colSums(adj), BitRespPtn))
 

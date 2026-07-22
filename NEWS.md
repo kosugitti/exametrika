@@ -49,6 +49,37 @@
 
 ## Performance
 
+- The BNM/LDLRA structure-search functions (`BNM_GA()`, `BNM_PBIL()`,
+  `LDLRA_PBIL()`) no longer rebuild the full model output per candidate.
+  Fitness evaluation now goes through BIC-only internal kernels
+  (`BNM_fit_BIC()` for BNM, `LD_param_est(fit_only = TRUE)` for LDLRA) that
+  skip the output-table construction, the igraph round-trips and DAG checks
+  (GA/PBIL candidates live on the upper triangle, so they are always simple
+  DAGs), and the per-candidate benchmark-model recomputation inside
+  `TestFit()` — the benchmark statistics depend only on the data and are now
+  computed once per run (`BNM_bench_stats()`). Results are unchanged and
+  agree with the previous implementation exactly (`identical()`, same seeds:
+  `BNM_GA` all three crossover types, `BNM_PBIL` estimate 1/4, `LDLRA_PBIL`).
+  Measured: `BNM_PBIL(J35S515, population = 20, maxGeneration = 15)`
+  14.8s -> 0.7s (~22x); `LDLRA_PBIL(J15S500, ncls = 3, population = 20,
+  maxGeneration = 20)` 3.8s -> 1.1s (a further ~3.5x on top of the earlier
+  PIRP vectorisation, ~14x cumulative from the original 15.3s).
+
+- `BNM()`'s parent-response pattern (PIRP) counting is vectorised: the
+  per-(subject, item) binary encoding and the subject x item x pattern
+  one-hot array are replaced by one matrix product and one `rowsum()` per
+  item (shared helper `BNM_pirp_counts()`, also used by the fitness kernel).
+  `fill_adj()`'s element-wise double loop is replaced by a single indexed
+  assignment. Same numbers, no `S x J` loop, and much less memory on large
+  samples. Profiling after the change shows no remaining hot spot in the
+  GA/PBIL path (the largest self-time item is `rowsum()`'s internal
+  bookkeeping at ~16%), so C++ is not warranted here; the package-level
+  next bottleneck remains the `emclus()` E-step.
+
+- `BNM_GA(crossover = 2)` no longer rebuilds the two-point crossover
+  candidate cut-point matrix (`combn(gene_length, 2)` filtered) per child
+  per generation; it is built once per run. RNG draw order is unchanged.
+
 - The order-restricted M-step for ordinal data is now implemented in C++
   (`src/isotonic_core.cpp`). `LRA.ordinal(method = "isotonic")` and
   `Biclustering.ordinal(estimation = "isotonic")` call it through the same

@@ -112,6 +112,23 @@ BNM_GA <- function(U, na = NULL, Z = NULL, w = NULL,
   GA_FLG <- TRUE
   generation <- 0
 
+  # Benchmark-model statistics depend only on the data, and every candidate
+  # graph is an upper-triangular simple DAG, so fitness evaluation uses the
+  # BIC-only kernel instead of the full BNM() (which rebuilds output tables
+  # and igraph objects per candidate).
+  bench <- BNM_bench_stats(tmp$U, tmp$Z)
+
+  # Two-point crossover: the candidate cut-point pairs depend only on
+  # gene_length, so build them once instead of per child per generation.
+  if (crossover == 2) {
+    combinations <- combn(1:gene_length, 2)
+    # Filter out combinations where the two numbers are adjacent
+    combinations <- combinations[, abs(combinations[1, ] - combinations[2, ]) > 1]
+    # Exclude combinations that start with 1 and 9
+    combinations <- combinations[, combinations[1, ] != 1]
+    combinations <- combinations[, combinations[2, ] != (gene_length)]
+  }
+
   # simple GA -------------------------------------------------------
 
   while (GA_FLG) {
@@ -128,8 +145,7 @@ BNM_GA <- function(U, na = NULL, Z = NULL, w = NULL,
       # make adj from genes
       adj[upper.tri(adj)] <- gene_list[i, ]
       # Fitness
-      ret <- BNM(tmp, adj_matrix = adj)
-      fitness[i] <- ret$TestFitIndices$BIC
+      fitness[i] <- BNM_fit_BIC(tmp, adj, bench)
     }
 
     # Termination check
@@ -169,13 +185,7 @@ BNM_GA <- function(U, na = NULL, Z = NULL, w = NULL,
       parent2 <- new_gene_list[parents_num[2], ]
       # CrossOver
       if (crossover == 2) {
-        # two-points crossover
-        combinations <- combn(1:gene_length, 2)
-        # Filter out combinations where the two numbers are adjacent
-        combinations <- combinations[, abs(combinations[1, ] - combinations[2, ]) > 1]
-        # Exclude combinations that start with 1 and 9
-        combinations <- combinations[, combinations[1, ] != 1]
-        combinations <- combinations[, combinations[2, ] != (gene_length)]
+        # two-points crossover (candidate cut points prebuilt before the loop)
         cut_off <- combinations[, sample(1:ncol(combinations), size = 1)]
         child <- c(
           parent1[1:(cut_off[1] - 1)],
@@ -363,6 +373,9 @@ BNM_PBIL <- function(U, na = NULL, Z = NULL, w = NULL,
   }
   best_individual <- adj_t[1, ]
 
+  # Benchmark-model statistics depend only on the data; see BNM_GA.
+  bench <- BNM_bench_stats(tmp$U, tmp$Z)
+
 
   # PBIL GA ---------------------------------------------------------
   while (GA_FLG) {
@@ -393,8 +406,7 @@ BNM_PBIL <- function(U, na = NULL, Z = NULL, w = NULL,
       }
       adj[upper.tri(adj)] <- adj_t[i, ]
       # Fitness
-      ret <- BNM(tmp, adj_matrix = adj)
-      fitness[i] <- ret$TestFitIndices$BIC
+      fitness[i] <- BNM_fit_BIC(tmp, adj, bench)
     }
     sort_list <- order(fitness)
     adj_t <- adj_t[sort_list, ]

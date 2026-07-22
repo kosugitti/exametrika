@@ -11,8 +11,17 @@
 #' @param beta2 Beta distribution parameter 2 for prior density. Default is 2.
 #' Unlike the other network models (which default to 1), the default of 2
 #' follows the original Mathematica implementation of LDLRA.
+#' @param fit_only If TRUE, return only the BIC (list with element `BIC`),
+#' skipping the posterior distribution, IRP, and full TestFit construction.
+#' Used by the LDLRA_PBIL fitness loop, where only the BIC is consumed.
+#' Requires `bench`.
+#' @param bench Cached benchmark-model statistics from `BNM_bench_stats()`,
+#' consumed only when `fit_only = TRUE`. They depend only on the data, so the
+#' structure-search loop computes them once instead of re-running `TestFit()`
+#' per candidate.
 #'
-LD_param_est <- function(tmp, adj_list, classRefMat, ncls, smoothpost, beta1 = 2, beta2 = 2) {
+LD_param_est <- function(tmp, adj_list, classRefMat, ncls, smoothpost, beta1 = 2, beta2 = 2,
+                         fit_only = FALSE, bench = NULL) {
   testlength <- NCOL(tmp$U)
   nobs <- NROW(tmp$U)
 
@@ -101,6 +110,17 @@ LD_param_est <- function(tmp, adj_list, classRefMat, ncls, smoothpost, beta1 = 2
   item_ell <- n_correct * log(refmat + const) + n_incorrect * log(1 - refmat + const)
   item_ell <- rowSums(apply(item_ell, 1:2, sum))
   test_ell <- sum(item_ell)
+
+  # Fitness-only path: the PBIL loop consumes nothing but the BIC, so skip
+  # the posterior-distribution / IRP blocks (the largest arrays in this
+  # function) and compute the BIC directly from the cached benchmark
+  # statistics — term by term the same expression as calcFitIndices().
+  if (fit_only) {
+    model_nparam <- sum(apply(sign(n_correct + n_incorrect), 1:2, sum))
+    chi_A <- 2 * (bench$ell_B - test_ell)
+    df_A <- bench$bench_nparm - model_nparam
+    return(list(BIC = chi_A - df_A * log(nobs)))
+  }
 
   refmat_expanded <- array(rep(refmat, nobs), dim = c(testlength, ncls, npapat, nobs))
   term1 <- aperm(U_expanded * pat01, perm = c(2, 3, 4, 1)) * log(refmat_expanded + const)

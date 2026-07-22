@@ -169,6 +169,11 @@ LDLRA_PBIL <- function(U, na = NULL, Z = NULL, w = NULL,
   ret.emclus <- emclus(tmp$U, tmp$Z, ncls, Fil = filmat, beta1 = beta1, beta2 = beta2)
   smoothpost <- ret.emclus$postDist %*% filmat
 
+  # Benchmark-model statistics depend only on the data, so compute them once
+  # and let LD_param_est(fit_only = TRUE) return the BIC without rebuilding
+  # the posterior distribution / IRP / TestFit per candidate.
+  bench <- BNM_bench_stats(tmp$U, tmp$Z)
+
   fitness <- numeric(population)
 
   limit_count <- 0
@@ -192,8 +197,10 @@ LDLRA_PBIL <- function(U, na = NULL, Z = NULL, w = NULL,
       adj_list[[j]] <- adj
     }
     # fitness
-    ret.LDparam <- LD_param_est(tmp, adj_list, ret.emclus$classRefMat, ncls, smoothpost, beta1, beta2)
-    fitness[i] <- ret.LDparam$FitIndices$BIC
+    ret.LDparam <- LD_param_est(tmp, adj_list, ret.emclus$classRefMat, ncls, smoothpost, beta1, beta2,
+      fit_only = TRUE, bench = bench
+    )
+    fitness[i] <- ret.LDparam$BIC
   }
 
   sort_list <- order(fitness)
@@ -218,14 +225,16 @@ LDLRA_PBIL <- function(U, na = NULL, Z = NULL, w = NULL,
           adj_list[[j]] <- adj
         }
         # fitness
-        ret.LDparam <- LD_param_est(tmp, adj_list, ret.emclus$classRefMat, ncls, smoothpost, beta1, beta2)
+        ret.LDparam <- LD_param_est(tmp, adj_list, ret.emclus$classRefMat, ncls, smoothpost, beta1, beta2,
+          fit_only = TRUE, bench = bench
+        )
         if (verbose) {
           message(
             sprintf(
               "\n%-80s",
               paste0(
                 "Gen ", generation, " ID.", i,
-                " BIC ", format(round(ret.LDparam$FitIndices$BIC, 3), nsmall = 3),
+                " BIC ", format(round(ret.LDparam$BIC, 3), nsmall = 3),
                 " BEST ", format(round(bestfit, 3), nsmall = 3),
                 " limit count ", limit_count
               )
@@ -233,7 +242,7 @@ LDLRA_PBIL <- function(U, na = NULL, Z = NULL, w = NULL,
             appendLF = FALSE
           )
         }
-        fitness[i] <- ret.LDparam$FitIndices$BIC
+        fitness[i] <- ret.LDparam$BIC
       }
     }
 

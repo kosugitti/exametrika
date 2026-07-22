@@ -11,7 +11,9 @@ LD_param_est(
   ncls,
   smoothpost,
   beta1 = 2,
-  beta2 = 2
+  beta2 = 2,
+  fit_only = FALSE,
+  bench = NULL
 )
 }
 \arguments{
@@ -30,6 +32,16 @@ LD_param_est(
 \item{beta2}{Beta distribution parameter 2 for prior density. Default is 2.
 Unlike the other network models (which default to 1), the default of 2
 follows the original Mathematica implementation of LDLRA.}
+
+\item{fit_only}{If TRUE, return only the BIC (list with element \code{BIC}),
+skipping the posterior distribution, IRP, and full TestFit construction.
+Used by the LDLRA_PBIL fitness loop, where only the BIC is consumed.
+Requires \code{bench}.}
+
+\item{bench}{Cached benchmark-model statistics from \code{BNM_bench_stats()},
+consumed only when \code{fit_only = TRUE}. They depend only on the data, so the
+structure-search loop computes them once instead of re-running \code{TestFit()}
+per candidate.}
 }
 \description{
 A function that extracts only the estimation of graph parameters

@@ -50,7 +50,9 @@ after the rank estimation is completed.</p>
 <span>  <span class="va">ncls</span>,</span>
 <span>  <span class="va">smoothpost</span>,</span>
 <span>  beta1 <span class="op">=</span> <span class="fl">2</span>,</span>
-<span>  beta2 <span class="op">=</span> <span class="fl">2</span></span>
+<span>  beta2 <span class="op">=</span> <span class="fl">2</span>,</span>
+<span>  fit_only <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  bench <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -86,6 +88,20 @@ after the rank estimation is completed.</p>
 <dd><p>Beta distribution parameter 2 for prior density. Default is 2.
 Unlike the other network models (which default to 1), the default of 2
 follows the original Mathematica implementation of LDLRA.</p></dd>
+
+
+<dt id="arg-fit-only">fit_only<a class="anchor" aria-label="anchor" href="#arg-fit-only"></a></dt>
+<dd><p>If TRUE, return only the BIC (list with element <code>BIC</code>),
+skipping the posterior distribution, IRP, and full TestFit construction.
+Used by the LDLRA_PBIL fitness loop, where only the BIC is consumed.
+Requires <code>bench</code>.</p></dd>
+
+
+<dt id="arg-bench">bench<a class="anchor" aria-label="anchor" href="#arg-bench"></a></dt>
+<dd><p>Cached benchmark-model statistics from <code>BNM_bench_stats()</code>,
+consumed only when <code>fit_only = TRUE</code>. They depend only on the data, so the
+structure-search loop computes them once instead of re-running <code><a href="TestFit.html">TestFit()</a></code>
+per candidate.</p></dd>
 
 </dl></div>
 

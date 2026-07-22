@@ -1633,6 +1633,33 @@ LDLRA_PBIL J15S500 (15.3秒) 09_LDLRA.R#55 50.7% / #54 28.3% / #50 5.4%
 <p><strong>次</strong>: (a)A3の主張と腕(データ型×手法×基準)の設計を決める、(b)決めたら代表条件で per-trial時間を実測してシミュレーション規模を確定、(c)BNMのigraph除去はv2.0.0で 多値BNM実装と同時。</p>
 </div>
 </div>
+<div class="section level2">
+<h2 id="id_2026-07-22">2026-07-22<a class="anchor" aria-label="anchor" href="#id_2026-07-22"></a></h2>
+<div class="section level3">
+<h3 id="bnmldlra構造探索gapbilの高速化-commit-aeb1f2b">BNM/LDLRA構造探索(GA/PBIL)の高速化 (commit aeb1f2b)<a class="anchor" aria-label="anchor" href="#bnmldlra%E6%A7%8B%E9%80%A0%E6%8E%A2%E7%B4%A2gapbil%E3%81%AE%E9%AB%98%E9%80%9F%E5%8C%96-commit-aeb1f2b"></a></h3>
+<p>前日のプロファイル結論「探索でなく呼び先が重い」に基づく実装。C++なしのR内整理のみ。</p>
+<ul><li>
+<strong>fitness評価のBIC専用カーネル化</strong>: <code>BNM_GA</code>/<code>BNM_PBIL</code>/<code>LDLRA_PBIL</code> は候補ごとに フルの <code><a href="reference/BNM.html">BNM()</a></code>/<code><a href="reference/LD_param_est.html">LD_param_est()</a></code> を呼んでいた（CCRR_table・sprintf・igraphオブジェクト・ DAG検査・TestFitのベンチマークモデル再計算まで毎回）。GA/PBILの候補は上三角行列 ゆえ常に単純DAGなので検査自体が不要。新設:
+<ul><li>
+<code>BNM_bench_stats()</code> — TestFitのベンチマーク統計（ell_B, bench_nparm）はデータのみ 依存なのでループ外で1回。</li>
+<li>
+<code>BNM_fit_BIC()</code> — adjをラベルソート（fill_adjと同じ）→ カウント → loglik/nparam → BICを calcFitIndices と項ごとに同式で直算。</li>
+<li>
+<code>LD_param_est(fit_only = TRUE, bench = )</code> — test_ell/model_nparam 算出後に即return。 postdist/irp の4次元配列ブロック（S×J×C×npapat数本）を丸ごとスキップ。</li>
+</ul></li>
+<li>
+<strong>BNMのPIRP集計ベクトル化</strong> (<code>BNM_pirp_counts()</code>): 被験者×項目の二重ループ （rev/which、プロファイルで約60%）と S×J×2^npa one-hot配列を、項目ごとの 行列積＋<code><a href="https://rdrr.io/r/base/rowsum.html" class="external-link">rowsum()</a></code> に置換。LDLRAで確立した手筋の移植。罠も同じ=欠測は-1なので 指標は <code>(U == 1) %*% w</code> 必須。なお歴史的セマンティクス <code>colSums(tmp$U * PIRP_array)</code> は欠測セルの-1がn_PIRP_1に混入する仕様で、 これも忠実に再現した（rowsumで生のUを合計）。挙動変更はしない。</li>
+<li>
+<strong>fill_adj()</strong>: 要素単位の二重ループ→一発のインデックス代入。</li>
+<li>
+<strong>BNM_GA(crossover=2)</strong>: <code>combn(gene_length, 2)</code>＋フィルタを子個体ごと→ラン1回に 巻き上げ（J=35でgene_length=595、約17万列の行列を毎回作っていた）。RNG消費順は不変。</li>
+</ul><p><strong>計測</strong>: <code>BNM_PBIL(J35S515, pop=20, gen=15)</code> <strong>14.8s→0.68s(22x)</strong>、 <code>LDLRA_PBIL(J15S500, ncls=3, pop=20, gen=20)</code> 3.8s→<strong>1.08s</strong>（7/21のPIRPベクトル化と 累積で元の15.3sから<strong>14x</strong>）。</p>
+<p><strong>検証</strong>: 編集前HEADで基準値RDSを採取→編集後に同一seed・同一引数の9ケース （BNM×2データ、BNM_GA交叉0/1/2、BNM_PBIL estimate1/4、LDLRA、LDLRA_PBIL）を 全フィールド <code><a href="https://rdrr.io/r/base/identical.html" class="external-link">identical()</a></code> 一致。カウントが整数でBIC式も項ごとに同一なのでFPも厳密一致。 全テスト5232 pass、roxygen警告0、R CMD check（vignetteスキップ起因の警告のみ）。</p>
+<p><strong>再プロファイル</strong>: 改良後は突出箇所なし（最大は rowsum 内部の unique/sort で16%）。 <strong>C++化は不要と判断</strong>。パッケージ全体の次のボトルネックは既知のとおり emclus E-step。</p>
+<p><strong>LDB/BINETも精査したが対象外</strong>: どちらも探索ループ内で呼ばれない一発もの。 LDBの被験者×クラス×フィールド三重ループ(10_LDB.R:251-259)と4次元aperm/apply連鎖は 同じ手筋で直せるが優先度低。BINETは小さいループのみ。</p>
+<p><strong>引き継ぎ</strong>: 変更はcommit aeb1f2bでpush済み。NEWS.md Performanceに3項目記載済み。 BNMのn_PIRP_1に欠測-1が混入する歴史的仕様は将来の挙動監査候補 （BNM_pirp_counts()のroxygenコメントに明記済み）。</p>
+</div>
+</div>
 </div>
 
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

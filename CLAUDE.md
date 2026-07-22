@@ -254,15 +254,32 @@ Likert-type ordered ratings.
   than the port itself just delivered, and Newton needs divergence
   handling at the boundary. Deliberately deferred (2026-07-21): revisit
   only if a simulation run turns out to be time-bound.
-- BNM/LDLRA GA/PBIL acceleration: write in C++ at the same time as the
-  polytomous BNM implementation, not before. **Profiled 2026-07-21 — the
-  search itself is not the cost, so aim at what it calls:**
-  - `BNM_GA` / `BNM_PBIL`: ~93% of self time is igraph round-trips
-    (`08A_BNM.R:12,147,169` — `graph_from_adjacency_matrix` /
-    `as_adjacency_matrix` / `is_dag` / `is_connected`), rebuilt per
-    candidate. The GA/PBIL code itself is under 4%. Fix is not C++ at
-    all: do the cycle and connectivity checks directly on the adjacency
-    matrix and stop round-tripping through igraph.
+- BNM/LDLRA GA/PBIL acceleration: **DONE 2026-07-22 (commit aeb1f2b), no
+  C++ needed.** Fitness evaluation goes through BIC-only kernels instead
+  of the full model constructors:
+  - `BNM_GA` / `BNM_PBIL`: **done 2026-07-22.** Per-candidate
+    [`BNM()`](https://kosugitti.github.io/exametrika/reference/BNM.md)
+    calls (output tables, igraph round-trips, DAG checks, TestFit
+    benchmark recomputation) replaced by `BNM_fit_BIC()` + once-per-run
+    `BNM_bench_stats()`; upper-triangular candidates are always simple
+    DAGs so no checks are needed in the loop.
+    [`BNM()`](https://kosugitti.github.io/exametrika/reference/BNM.md)’s
+    own PIRP counting vectorised into `BNM_pirp_counts()` (one matrix
+    product + one [`rowsum()`](https://rdrr.io/r/base/rowsum.html) per
+    item; note it faithfully reproduces the historical
+    `colSums(tmp$U * PIRP_array)` semantics, where missing responses
+    coded -1 leak into `n_PIRP_1` — a behavior-audit candidate, flagged
+    in the roxygen comment). `fill_adj()` double loop → single indexed
+    assignment; `combn` in two-point crossover hoisted out of the loop.
+    `BNM_PBIL(J35S515, pop = 20, gen = 15)` 14.8s -\> 0.68s (~22x);
+    `LDLRA_PBIL` further 3.8s -\> 1.08s via
+    `LD_param_est(fit_only = TRUE)` (skips the postdist/irp 4-d array
+    blocks). All verified
+    [`identical()`](https://rdrr.io/r/base/identical.html) against the
+    previous implementation on same seeds (9 cases incl. all
+    crossover/estimate variants); 5232 tests pass. Post-change profiling
+    shows no hot spot (max 16%, `rowsum` internals) — the package-level
+    next bottleneck remains the `emclus()` E-step.
   - `LDLRA_PBIL`: **done 2026-07-21.** The subject x item x class triple
     loop that filled `pat01` was ~79% of self time; the parent set does
     not depend on the subject, so the binary encoding is now one matrix
@@ -579,6 +596,17 @@ Likert-type ordered ratings.
   (internal, unexported) for the equivalence test and for readability.
   This unblocks large simulation studies: the ordinal isotonic path was
   previously the slowest thing in the package.
+- **BNM/LDLRA structure search sped up (2026-07-22, commit aeb1f2b)** —
+  [`BNM_GA()`](https://kosugitti.github.io/exametrika/reference/BNM_GA.md)/[`BNM_PBIL()`](https://kosugitti.github.io/exametrika/reference/BNM_PBIL.md)/[`LDLRA_PBIL()`](https://kosugitti.github.io/exametrika/reference/LDLRA_PBIL.md)
+  fitness evaluation moved to BIC-only kernels (`BNM_fit_BIC()`,
+  `LD_param_est(fit_only = TRUE)`) with once-per-run benchmark
+  statistics (`BNM_bench_stats()`);
+  [`BNM()`](https://kosugitti.github.io/exametrika/reference/BNM.md)’s
+  PIRP counting vectorised (`BNM_pirp_counts()`). `BNM_PBIL(J35S515)`
+  ~22x, `LDLRA_PBIL` ~14x cumulative. Results
+  [`identical()`](https://rdrr.io/r/base/identical.html) to the previous
+  implementation. Details under “Known Technical Debt” and in `NEWS.md`
+  / `WORKLOG.md`.
 - Downstream: ggExametrika v1.1.2 (audit release, ready) will be
   submitted after this version is accepted, so its GRM information plots
   match the fixed parent

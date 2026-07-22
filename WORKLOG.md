@@ -2913,3 +2913,64 @@ F=28。BICはフィールドを最小の2へ潰す。同じデータで構造推
 (a)A3の主張と腕(データ型×手法×基準)の設計を決める、(b)決めたら代表条件で
 per-trial時間を実測してシミュレーション規模を確定、(c)BNMのigraph除去はv2.0.0で
 多値BNM実装と同時。
+
+## 2026-07-22
+
+### BNM/LDLRA構造探索(GA/PBIL)の高速化 (commit aeb1f2b)
+
+前日のプロファイル結論「探索でなく呼び先が重い」に基づく実装。C++なしのR内整理のみ。
+
+- **fitness評価のBIC専用カーネル化**: `BNM_GA`/`BNM_PBIL`/`LDLRA_PBIL`
+  は候補ごとに フルの
+  [`BNM()`](https://kosugitti.github.io/exametrika/reference/BNM.md)/[`LD_param_est()`](https://kosugitti.github.io/exametrika/reference/LD_param_est.md)
+  を呼んでいた（CCRR_table・sprintf・igraphオブジェクト・
+  DAG検査・TestFitのベンチマークモデル再計算まで毎回）。GA/PBILの候補は上三角行列
+  ゆえ常に単純DAGなので検査自体が不要。新設:
+  - `BNM_bench_stats()` — TestFitのベンチマーク統計（ell_B,
+    bench_nparm）はデータのみ 依存なのでループ外で1回。
+  - `BNM_fit_BIC()` — adjをラベルソート（fill_adjと同じ）→ カウント →
+    loglik/nparam → BICを calcFitIndices と項ごとに同式で直算。
+  - `LD_param_est(fit_only = TRUE, bench = )` — test_ell/model_nparam
+    算出後に即return。 postdist/irp
+    の4次元配列ブロック（S×J×C×npapat数本）を丸ごとスキップ。
+- **BNMのPIRP集計ベクトル化** (`BNM_pirp_counts()`):
+  被験者×項目の二重ループ （rev/which、プロファイルで約60%）と S×J×2^npa
+  one-hot配列を、項目ごとの
+  行列積＋[`rowsum()`](https://rdrr.io/r/base/rowsum.html)
+  に置換。LDLRAで確立した手筋の移植。罠も同じ=欠測は-1なので 指標は
+  `(U == 1) %*% w` 必須。なお歴史的セマンティクス
+  `colSums(tmp$U * PIRP_array)`
+  は欠測セルの-1がn_PIRP_1に混入する仕様で、
+  これも忠実に再現した（rowsumで生のUを合計）。挙動変更はしない。
+- **fill_adj()**: 要素単位の二重ループ→一発のインデックス代入。
+- **BNM_GA(crossover=2)**:
+  `combn(gene_length, 2)`＋フィルタを子個体ごと→ラン1回に
+  巻き上げ（J=35でgene_length=595、約17万列の行列を毎回作っていた）。RNG消費順は不変。
+
+**計測**: `BNM_PBIL(J35S515, pop=20, gen=15)` **14.8s→0.68s(22x)**、
+`LDLRA_PBIL(J15S500, ncls=3, pop=20, gen=20)`
+3.8s→**1.08s**（7/21のPIRPベクトル化と 累積で元の15.3sから**14x**）。
+
+**検証**:
+編集前HEADで基準値RDSを採取→編集後に同一seed・同一引数の9ケース
+（BNM×2データ、BNM_GA交叉0/1/2、BNM_PBIL
+estimate1/4、LDLRA、LDLRA_PBIL）を 全フィールド
+[`identical()`](https://rdrr.io/r/base/identical.html)
+一致。カウントが整数でBIC式も項ごとに同一なのでFPも厳密一致。
+全テスト5232 pass、roxygen警告0、R CMD
+check（vignetteスキップ起因の警告のみ）。
+
+**再プロファイル**: 改良後は突出箇所なし（最大は rowsum 内部の
+unique/sort で16%）。
+**C++化は不要と判断**。パッケージ全体の次のボトルネックは既知のとおり
+emclus E-step。
+
+**LDB/BINETも精査したが対象外**:
+どちらも探索ループ内で呼ばれない一発もの。
+LDBの被験者×クラス×フィールド三重ループ(10_LDB.R:251-259)と4次元aperm/apply連鎖は
+同じ手筋で直せるが優先度低。BINETは小さいループのみ。
+
+**引き継ぎ**: 変更はcommit aeb1f2bでpush済み。NEWS.md
+Performanceに3項目記載済み。
+BNMのn_PIRP_1に欠測-1が混入する歴史的仕様は将来の挙動監査候補
+（BNM_pirp_counts()のroxygenコメントに明記済み）。

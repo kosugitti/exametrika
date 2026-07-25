@@ -245,7 +245,12 @@ rated = nominal + correct answer (multiple-choice tests); ordinal = Likert-type 
   `plot.igraph()` + `layout_on_grid()`. Both are user-visible, so removing them
   is a breaking change and needs a replacement drawing path.
 - BINET FRPIndex addition
-- LCA.nominal
+- LCA.nominal — 仕様確定済み(EMエンジン `00_EMclus_nominal.R` のみ存在，本体未実装)。
+  適合度は飽和モデルを作らず $M_2$(Maydeu-Olivares & Joe 2006)で出す方針。設計メモは
+  `develop/Algorithm_M2.tex`(2026-07-25に全節レビュー完了・14p)。実装順は LCA.nominal 本体
+  → $M_2$(二値2PLで mirt の `M2(fit, type = "M2")` と数値一致を取ってから名義へ。mirtはGPL
+  なので参照実行のみ・コード取り込み不可)。`calcFitIndices()` に流し込めば NFI 以下は出るが
+  `bench_log_like` だけは対応物がなく NA。
 - Input data storage method unification (v2.0.0)
 - **Order-restricted IRM (estimate the number of *ordered* classes)** — the missing
   cell in the design grid: `Biclustering`/`Ranklustering` cover "class count given",

@@ -5,7 +5,7 @@
 `exametrika` is an R package for Test Data Engineering based on Shojima (2022, ISBN:978-9811699856).
 It provides psychometric analysis tools: CTT, IRT, GRM, LCA, LRA, Biclustering, BNM, LDLRA, LDB, BINET.
 
-- **Current version**: 1.16.0 (dev, targeting CRAN submission 2026-08-15)
+- **Current version**: 2.0.0 (dev; CRAN submission early September 2026, after the A3 simulation)
 - **CRAN version**: 1.15.0 (accepted/published 2026-07)
 - **GitHub Release**: v1.15.0 (2026-07-15, latest) / v1.14.0 (2026-06-14)
 - **License**: MIT
@@ -285,7 +285,9 @@ rated = nominal + correct answer (multiple-choice tests); ordinal = Likert-type 
   agrees to full double precision. Guard trap: `emt > 0` is not enough — on the second
   pass `oldtestell` is still `-Infinity` and `Infinity <= Infinity` is TRUE; use
   `NumberQ[oldtestell]` / `is.finite(old_test_log_lik)`.
-- LCA.nominal / LCA.rated — **DONE 2026-07-26** (`R/05_LCA.R`). What remains is $M_2$.
+- LCA.nominal / LCA.rated / $M_2$ — **DONE 2026-07-26** (`R/05_LCA.R`, `R/24_M2.R`).
+  What remains is extending $M_2$ to Biclustering (field-shared Jacobian) and LRA, which the
+  A3 simulation wants so that all three arms carry the statistic.
   適合度は飽和モデルを作らず $M_2$(Maydeu-Olivares & Joe 2006)で出す方針。設計メモは
   `develop/Algorithm_M2.tex`(14p)，試作は `develop/20260725_M2_prototype.R`(メモの数値例を
   完全再現・$\Xi$ をモンテカルロ検証済み・J20S600 で1秒未満)。次は二値2PLで mirt の
@@ -420,7 +422,7 @@ rated = nominal + correct answer (multiple-choice tests); ordinal = Likert-type 
   cost, not the tests.
 - See `WORKLOG.md` (2026-07-01) and `.claude/CLAUDE.md` for full detail
 
-### v1.16.0 (dev, targeting CRAN submission 2026-08-15)
+### v2.0.0 (dev; renamed from 1.16.0 on 2026-07-26, see below)
 - **GRM bug fixes (2026-07-16 audit; committed f3d9557; see NEWS.md)**:
   - `grm_iif()` rewritten to the correct Samejima (1969) item information on the
     logistic metric used by estimation (old code: cumulative-probability
@@ -519,19 +521,43 @@ rated = nominal + correct answer (multiple-choice tests); ordinal = Likert-type 
 - Downstream: ggExametrika v1.1.2 (audit release, ready) will be submitted after
   this version is accepted, so its GRM information plots match the fixed parent
 
-### v2.0.0 (breaking changes, in design)
-- **Polytomous BNM (StepReg / StepBNM, case C)** — DAG-given fit only; structure learning deferred to v2.1+.
-  - Case C: `P(Y ≤ q | X = x) = Φ(τ_q − μ_x)` with monotone `μ_1 ≤ ... ≤ μ_Q`
-  - β_caseC = bsp_moX × D (where D = number of category gaps), matches brms `mo()` (Bürkner-Charpentier 2020)
-  - Additive parents only (interactions out of scope for v2.0.0)
-  - Model fit indices `M_0`/`M_t`/`M_s` with AIC/BIC/CAIC/NFI/CFI/RMSEA
-  - "ξ map" + "StepReg/StepBNM" naming established 2026-05-12/13
-  - Validated on お遍路さん dataset (2026-05-09): DAG full reversal ΔAIC = +17 (clearer than J15S3810 ΔAIC = ±5)
-- Structure learning (Glasso skeleton → ξ direction → case C fit) is deferred to v2.1+
-- Remove deprecated functions and field names (`IRM()`, `StrLearningGA_BNM()`, `Nclass`, `Nfield`, etc.)
-- Drop backward-compatible aliases
-- Downstream packages (ggExametrika, shinyExametrika) must complete snake_case migration first
-- CRAN cadence note: per `feedback_cran_submit_cadence.md`, allow ≥1 month from v1.13.1 acceptance (2026-05-18) before submitting v2.0.0 — target 2026-06-18 or later.
+### Version policy (decided 2026-07-26)
+
+The development line was renumbered 1.16.0 -> **2.0.0**. The EM convergence fix
+changes the estimates every EM-based model produces: same code, same data, different
+numbers, and no longer the numbers printed in Shojima (2022). That is a heavier
+break than an API change, and a minor bump would have understated it. Since a major
+bump was happening anyway, the deprecation removals ride along — break once.
+
+**In 2.0.0** (see the section above for what is already done):
+- EM convergence fix (breaking numerics), `LCA.nominal` / `LCA.rated`, IRT speedup
+- $M_2$ (limited-information fit) — shared with the A3 paper, so the paper's numbers
+  and the package's numbers come from one implementation
+- Remove deprecated functions and field names (`IRM()`, `StrLearningGA_BNM()`,
+  `Nclass`, `Nfield`, `N_Cycle`, `LogLik`, ...) and the backward-compatible aliases.
+  Downstream cost measured 2026-07-26: 7 occurrences in ggExametrika, 11 in
+  shinyExametrika. Both are mechanical renames; update and submit in lockstep.
+- Timing: after the A3 simulation, early September 2026. The 1.15.0 submission was
+  2026-07-15 and acceptance followed within days, so the >= 1 month cadence
+  (`feedback_cran_submit_cadence`) is clear from mid-August onward — the date is set
+  by the simulation and the paper, not by CRAN.
+
+**Deliberately NOT in 2.0.0** — each was in the old v2.0.0 plan and is decoupled so
+that the release is not held hostage to design work:
+- **Polytomous BNM (StepReg / StepBNM, case C)** -> v2.1.0. Additive, not breaking.
+  DAG-given fit only; structure learning later still.
+  - Case C: `P(Y <= q | X = x) = Phi(tau_q - mu_x)` with monotone `mu_1 <= ... <= mu_Q`
+  - beta_caseC = bsp_moX x D (D = number of category gaps), matches brms `mo()`
+    (Bürkner-Charpentier 2020)
+  - Additive parents only; fit indices `M_0`/`M_t`/`M_s` with AIC/BIC/CAIC/NFI/CFI/RMSEA
+  - "xi map" + "StepReg/StepBNM" naming established 2026-05-12/13
+  - Validated on お遍路さん (2026-05-09): DAG full reversal dAIC = +17 (clearer than
+    J15S3810 dAIC = ±5)
+- Structure learning (Glasso skeleton -> xi direction -> case C fit) -> v2.2+
+- **Drop the igraph dependency** -> a later major. `LDLRA`/`LDB`/`BINET` return igraph
+  objects in `g_list` and `R/00_print_network.R` draws with `plot.igraph()`, so it needs
+  a replacement drawing path first (survey under Known Technical Debt).
+- Input data storage unification
 
 ### Long-term
 1. Resolve nobs handling discrepancy (TODO items above)

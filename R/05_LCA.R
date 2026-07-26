@@ -352,6 +352,9 @@ LCA.nominal <- function(U, ncls = 2, na = NULL, Z = NULL, w = NULL, maxiter = 10
     converge = fit$converge,
     categories = ncat,
     ItemLabel = tmp$ItemLabel,
+    # kept so that M2() can be computed after the fact, as Biclustering does
+    Q = tmp$Q,
+    Z = tmp$Z,
     ICRP = ICRP,
     LCD = as.vector(LCD),
     CMD = as.vector(CMD),
@@ -442,6 +445,8 @@ LCA.rated <- function(U, ncls = 2, na = NULL, Z = NULL, w = NULL, maxiter = 1000
     converge = ret_nom$converge,
     categories = ncat,
     ItemLabel = tmp$ItemLabel,
+    Q = tmp$Q,
+    Z = tmp$Z,
     CA = CA,
     IRP = IRP,
     TRP = TRP,

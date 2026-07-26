@@ -74,6 +74,17 @@ print.exametrika <- function(x, digits = 3, ...) {
     LCA = print_lca_case(x, digits),
     nominalLCA = print_nominal_lca_case(x, digits),
     ratedLCA = print_rated_lca_case(x, digits),
+    M2 = {
+      cat("Limited-information goodness-of-fit (M2)\n")
+      cat(sprintf("M2 = %.3f, df = %d, p = %.4f\n", x$M2, x$df, x$p))
+      cat(sprintf("margins = %d, parameters = %d, rank of Jacobian = %d\n",
+                  x$m, x$n_param, x$rank_delta))
+      if (x$rank_delta < x$n_param) {
+        cat(sprintf(
+          "  (the Jacobian is %d short of the parameter count: the class space can be rotated\n   without changing the margins, so df counts the rank, not the parameters)\n",
+          x$n_param - x$rank_delta))
+      }
+    },
     LRA = print_lra_case(x, digits),
     LRAordinal = print_lra_ordinal_case(x, digits),
     LRArated = print_lra_rated_case(x, digits),

@@ -1,4 +1,10 @@
-# exametrika 1.16.0 (development, targeting CRAN 2026-08-15)
+# exametrika 2.0.0 (development; renamed from 1.16.0 on 2026-07-26)
+
+The version number was raised to 2.0.0 because the EM convergence fix below
+changes the estimates of every EM-based model: the same code on the same data
+now returns different numbers, and no longer the numbers printed in Shojima
+(2022). A minor bump would have understated that. The deprecation removals
+planned for 2.0.0 ride along, so that the break happens once.
 
 ## Bug Fixes
 
@@ -169,6 +175,34 @@
   which is not the concept being used here.
 
 ## Improvements
+
+- **New: `M2()`, the limited-information goodness-of-fit statistic** of
+  Maydeu-Olivares & Joe (2005, 2006), for `LCA.nominal` and `LCA.rated`. It tests
+  whether the model reproduces the item-pair cross tables. The reference point is
+  the saturated model of the first- and second-order margins rather than of the
+  full response-pattern table, so no benchmark log-likelihood is needed — which is
+  exactly what nominal data lacks. The analogy that usually lands: an SEM
+  chi-square does not test the whole multivariate distribution, only whether the
+  model reproduces the covariance matrix; `M2()` is the categorical counterpart,
+  with cross tables in place of the covariance matrix.
+
+  Two things worth knowing. The degrees of freedom are `m - rank(Delta)`, not
+  `m - n_param`: with the class proportions fixed at `1/C`, the second-order
+  margins see the class deviations only through their Gram matrix, which is
+  invariant to rotations of the class space, so the Jacobian loses
+  `(ncls - 1)(ncls - 2) / 2` of its rank and the parameters are not identified
+  from bivariate margins once `ncls >= 3` (the margins themselves still are, so
+  the statistic is well defined). And the statistic is only interpretable for a
+  maximum likelihood fit — not for filter-based (GTM) estimation, which is a
+  regularisation rather than an MLE, nor for order-restricted estimation, whose
+  limiting distribution is a mixture of chi-squares.
+
+  Cost is dominated by the Cholesky factorisation of a dense `m x m` matrix:
+  20 items with 5 categories is `m = 3120` and well under a second; 50 items is
+  `m = 19800`, 2.9 GB and around 20 seconds.
+
+  `LCA.nominal()` and `LCA.rated()` now keep `Q` and `Z` in the returned object,
+  as `Biclustering()` already did, so `M2()` can be computed after the fact.
 
 - **New: `LCA()` supports nominal data** (`LCA.nominal`). The model is a finite
   mixture of product-multinomial distributions — one free category distribution

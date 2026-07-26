@@ -242,3 +242,90 @@ test_that("rated LCA prints and plots", {
     expect_silent(plot(rated_model, type = ty, items = 1:2, students = 1:2, nc = 1, nr = 2))
   }
 })
+
+### M2 ----------------------------------------------------------------------
+
+test_that("M2 reproduces the worked example of the design memo", {
+  # Independence model = LCA with a single class: J = 3, Q = 2, S = 100.
+  # develop/Algorithm_M2.tex gives M2 = 5.52778, df = 3, p = 0.13699, with
+  # Xi and Delta written out by hand.
+  rho <- c(.5, .4, .6)
+  profile <- array(0, dim = c(3, 1, 2))
+  profile[, 1, 1] <- rho
+  profile[, 1, 2] <- 1 - rho
+  p_vec <- c(.5, .4, .6, .25, .32, .26)
+  out <- exametrika:::m2_core(profile, ncat = rep(2, 3), nobs = 100, p_vec = p_vec)
+  expect_equal(out$M2, 5.52778, tolerance = 1e-5)
+  expect_equal(out$df, 3)
+  expect_equal(out$p, 0.13699, tolerance = 1e-4)
+  expect_equal(out$m, 6)
+  expect_equal(out$rank_delta, 3)
+
+  # the margin covariance of the memo, to the last printed digit
+  idx <- exametrika:::m2_margin_index(rep(2, 3))
+  A <- exametrika:::m2_class_products(profile, idx)
+  Xi <- exametrika:::m2_xi(profile, A, idx)
+  Xi_memo <- matrix(c(
+    .25, 0, 0, .10, .15, 0,
+    0, .24, 0, .12, 0, .144,
+    0, 0, .24, 0, .12, .096,
+    .10, .12, 0, .16, .06, .072,
+    .15, 0, .12, .06, .21, .048,
+    0, .144, .096, .072, .048, .1824
+  ), nrow = 6, byrow = TRUE)
+  expect_equal(unname(Xi), Xi_memo, tolerance = 1e-12)
+
+  # and the Jacobian
+  Delta <- exametrika:::m2_delta(profile, idx, rep(2, 3))
+  Delta_memo <- matrix(c(
+    1, 0, 0, 0, 1, 0, 0, 0, 1,
+    .4, .5, 0, .6, 0, .5, 0, .6, .4
+  ), nrow = 6, byrow = TRUE)
+  expect_equal(unname(Delta), Delta_memo, tolerance = 1e-12)
+})
+
+test_that("M2 is zero when the data match the model exactly", {
+  profile <- array(0, dim = c(4, 2, 3))
+  set.seed(9)
+  for (j in 1:4) {
+    for (cl in 1:2) {
+      v <- runif(3, .5, 2)
+      profile[j, cl, ] <- v / sum(v)
+    }
+  }
+  idx <- exametrika:::m2_margin_index(rep(3, 4))
+  A <- exametrika:::m2_class_products(profile, idx)
+  out <- exametrika:::m2_core(profile, rep(3, 4),
+    nobs = 500,
+    p_vec = exametrika:::m2_pi(A)
+  )
+  expect_lt(out$M2, 1e-16)
+})
+
+test_that("the Jacobian loses rank as (ncls - 1)(ncls - 2) / 2", {
+  # With the class proportions fixed, the second-order margins see the class
+  # deviations only through their Gram matrix, which is invariant to rotations
+  # of the (ncls - 1)-dimensional class space.
+  dat <- dataFormat(J20S600, response.type = "nominal")
+  for (k in 2:4) {
+    fit <- LCA(dat, ncls = k)
+    r <- M2(fit, verbose = FALSE)
+    expect_equal(r$n_param - r$rank_delta, (k - 1) * (k - 2) / 2)
+    expect_equal(r$df, r$m - r$rank_delta)
+  }
+})
+
+test_that("M2 works from a fitted LCA and prints", {
+  dat <- dataFormat(J20S600, response.type = "nominal")
+  fit <- LCA(dat, ncls = 3)
+  r <- M2(fit, verbose = FALSE)
+  expect_true(inherits(r, "M2"))
+  expect_true(is.finite(r$M2) && r$M2 > 0)
+  expect_equal(r$m, sum(dat$categories - 1) +
+    sum(outer(dat$categories - 1, dat$categories - 1)[upper.tri(diag(ncol(dat$Q)))]))
+  expect_output(print(r), "Limited-information")
+  # rated data goes through the same path
+  expect_true(inherits(M2(LCA(J21S300, ncls = 2), verbose = FALSE), "M2"))
+  # models without a maximum likelihood fit of this kind are refused
+  expect_error(M2(LCA(J15S500, ncls = 3)), "available for models fitted")
+})

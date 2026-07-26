@@ -18,7 +18,7 @@ LCA(U, ...)
   na = NULL,
   Z = NULL,
   w = NULL,
-  maxiter = 100,
+  maxiter = 1000,
   verbose = FALSE,
   beta1 = 1,
   beta2 = 1,
@@ -32,7 +32,7 @@ LCA(U, ...)
   na = NULL,
   Z = NULL,
   w = NULL,
-  maxiter = 100,
+  maxiter = 1000,
   verbose = FALSE,
   alpha = 1,
   ...
@@ -44,7 +44,7 @@ LCA(U, ...)
   na = NULL,
   Z = NULL,
   w = NULL,
-  maxiter = 100,
+  maxiter = 1000,
   verbose = FALSE,
   alpha = 1,
   ...
@@ -65,7 +65,7 @@ observed responses, while 0 indicates missing data.}
 
 \item{ncls}{Number of latent classes to identify (between 2 and 20). Default is 2.}
 
-\item{maxiter}{Maximum number of EM algorithm iterations. Default is 100.}
+\item{maxiter}{Maximum number of EM algorithm iterations. Default is 1000.}
 
 \item{verbose}{Logical; if TRUE, displays progress during estimation. Default is FALSE.}
 

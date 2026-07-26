@@ -38,7 +38,7 @@ Biclustering(U, ...)
   conf = NULL,
   conf_class = NULL,
   mic = FALSE,
-  maxiter = 100,
+  maxiter = 1000,
   verbose = FALSE,
   alpha = 1,
   ...
@@ -53,7 +53,7 @@ Biclustering(U, ...)
   conf = NULL,
   conf_class = NULL,
   mic = FALSE,
-  maxiter = 100,
+  maxiter = 1000,
   verbose = FALSE,
   alpha = 1,
   ...

@@ -1,0 +1,362 @@
+# Limited-information goodness-of-fit statistic M2
+# (Maydeu-Olivares & Joe, 2005, 2006)
+#
+# Design memo: develop/Algorithm_M2.tex
+#
+# What the statistic tests: whether the model reproduces the univariate and
+# bivariate margins -- the item-pair cross tables. The reference point is the
+# saturated model of the 2nd-order margins, not of the full response-pattern
+# table, so no benchmark log-likelihood is needed. That is what makes it usable
+# for nominal data, where the full table is almost all empty cells and the
+# saturated model is not informative.
+#
+# Formulation: exametrika's LCA does not estimate the class proportions; every
+# class carries the same implicit prior 1/C (Shojima 2022, p. 160). Hence
+#   pi_j(q)      = (1/C) sum_c rho_{jq|c}
+#   pi_jj'(q,q') = (1/C) sum_c rho_{jq|c} rho_{j'q'|c}
+# and the parameters are the category profiles alone, t = C * sum_j (Q_j - 1).
+
+#' @title Margin bookkeeping for M2
+#' @description
+#' A margin is one or two (item, category) pairs. The last category of each item
+#' is dropped as the baseline; M2 is invariant to that choice. Singles come
+#' first, then pairs, and every other matrix in the computation follows this
+#' ordering.
+#' @param ncat integer vector of category counts, one per item
+#' @return list with `single`, `pair`, padded `items`/`cats`, and the total `m`
+#' @noRd
+m2_margin_index <- function(ncat) {
+  nitems <- length(ncat)
+  free <- lapply(seq_len(nitems), function(j) seq_len(ncat[j] - 1L))
+
+  single <- do.call(rbind, lapply(seq_len(nitems), function(j) {
+    cbind(item = j, cat = free[[j]])
+  }))
+
+  pair <- list()
+  for (j in seq_len(nitems - 1L)) {
+    for (jp in seq(j + 1L, nitems)) {
+      grid <- expand.grid(q = free[[j]], qp = free[[jp]])
+      pair[[length(pair) + 1L]] <- cbind(
+        item1 = j, cat1 = grid$q, item2 = jp, cat2 = grid$qp
+      )
+    }
+  }
+  pair <- do.call(rbind, pair)
+
+  items <- rbind(cbind(single[, "item"], NA_integer_), pair[, c("item1", "item2")])
+  cats <- rbind(cbind(single[, "cat"], NA_integer_), pair[, c("cat1", "cat2")])
+
+  return(list(
+    single = single, pair = pair, items = items, cats = cats,
+    m = nrow(single) + nrow(pair)
+  ))
+}
+
+#' @title Per-margin, per-class product of category probabilities
+#' @param profile items x classes x categories array
+#' @param idx output of \code{m2_margin_index()}
+#' @return m x ncls matrix, `A[k, c]` = product over the margin's pairs of rho
+#' @noRd
+m2_class_products <- function(profile, idx) {
+  ncls <- dim(profile)[2]
+  pick <- function(j, q) {
+    return(matrix(profile[cbind(
+      rep(j, ncls), rep(seq_len(ncls), each = length(j)), rep(q, ncls)
+    )], nrow = length(j), ncol = ncls))
+  }
+  A_single <- pick(idx$single[, "item"], idx$single[, "cat"])
+  A_pair <- pick(idx$pair[, "item1"], idx$pair[, "cat1"]) *
+    pick(idx$pair[, "item2"], idx$pair[, "cat2"])
+  return(rbind(A_single, A_pair))
+}
+
+#' @title Model-implied margins
+#' @param A output of \code{m2_class_products()}
+#' @noRd
+m2_pi <- function(A) {
+  return(rowMeans(A)) # (1/C) sum_c
+}
+
+#' @title Asymptotic covariance of the margin proportions
+#' @description
+#' `Xi[a, b] = pi_{a union b} - pi_a pi_b`. For disjoint item sets the union
+#' probability is `(1/C) sum_c A[a,c] A[b,c]`, i.e. one matrix product for the
+#' whole table. Overlapping item sets need two corrections, and both are
+#' necessary: two categories of the same item cannot co-occur (0) and a repeated
+#' category must not be squared (divide the duplicated factor out). Margins built
+#' on the *same* item pair share two items, which the per-item pass cannot fix
+#' on its own -- such a block is diagonal.
+#' @param profile items x classes x categories array
+#' @param A output of \code{m2_class_products()}
+#' @param idx output of \code{m2_margin_index()}
+#' @noRd
+m2_xi <- function(profile, A, idx) {
+  ncls <- ncol(A)
+  joint <- tcrossprod(A) / ncls
+  items <- idx$items
+  cats <- idx$cats
+  nitems <- dim(profile)[1]
+
+  for (j in seq_len(nitems)) {
+    ks <- which(items[, 1] == j | items[, 2] == j)
+    if (length(ks) < 2) next
+    catj <- ifelse(items[ks, 1] == j, cats[ks, 1], cats[ks, 2])
+    rho_j <- matrix(profile[cbind(
+      j, rep(seq_len(ncls), each = length(ks)), rep(catj, ncls)
+    )], nrow = length(ks), ncol = ncls)
+    Aks <- A[ks, , drop = FALSE]
+    val <- ((Aks / rho_j) %*% t(Aks)) / ncls
+    val[!outer(catj, catj, "==")] <- 0
+    joint[ks, ks] <- val
+  }
+
+  pi_vec <- m2_pi(A)
+
+  n1 <- nrow(idx$single)
+  block_key <- paste(idx$pair[, "item1"], idx$pair[, "item2"])
+  for (b in unique(block_key)) {
+    ks <- n1 + which(block_key == b)
+    joint[ks, ks] <- diag(pi_vec[ks], nrow = length(ks))
+  }
+
+  return(joint - outer(pi_vec, pi_vec))
+}
+
+#' @title Parameter index for M2
+#' @description Order is (item, category, class) with class fastest.
+#' @noRd
+m2_par_index <- function(ncat, ncls) {
+  return(do.call(rbind, lapply(seq_along(ncat), function(j) {
+    g <- expand.grid(cls = seq_len(ncls), cat = seq_len(ncat[j] - 1L))
+    data.frame(item = j, cat = g$cat, cls = g$cls)
+  })))
+}
+
+#' @title Jacobian of the margins with respect to the parameters
+#' @description
+#' With the class proportions fixed at 1/C the parameters are the category
+#' profiles alone, so two derivatives cover every margin. The sum-to-one
+#' constraint does not appear because the baseline category is dropped.
+#' @noRd
+m2_delta <- function(profile, idx, ncat) {
+  ncls <- dim(profile)[2]
+  par_index <- m2_par_index(ncat, ncls)
+  Delta <- matrix(0, nrow = idx$m, ncol = nrow(par_index))
+  key <- paste(par_index$item, par_index$cat)
+
+  n1 <- nrow(idx$single)
+  for (k in seq_len(n1)) {
+    cols <- which(key == paste(idx$single[k, "item"], idx$single[k, "cat"]))
+    Delta[k, cols] <- 1 / ncls
+  }
+  for (k in seq_len(nrow(idx$pair))) {
+    j <- idx$pair[k, "item1"]
+    q <- idx$pair[k, "cat1"]
+    jp <- idx$pair[k, "item2"]
+    qp <- idx$pair[k, "cat2"]
+    Delta[n1 + k, which(key == paste(j, q))] <- profile[jp, , qp] / ncls
+    Delta[n1 + k, which(key == paste(jp, qp))] <- profile[j, , q] / ncls
+  }
+  return(Delta)
+}
+
+#' @title Observed margins
+#' @noRd
+m2_p_obs <- function(Q, Z, idx) {
+  nobs <- nrow(Q)
+  QZ <- Q
+  QZ[Z == 0] <- NA
+  p_single <- vapply(seq_len(nrow(idx$single)), function(k) {
+    j <- idx$single[k, "item"]
+    return(sum(QZ[, j] == idx$single[k, "cat"], na.rm = TRUE) / nobs)
+  }, numeric(1))
+  p_pair <- vapply(seq_len(nrow(idx$pair)), function(k) {
+    j <- idx$pair[k, "item1"]
+    jp <- idx$pair[k, "item2"]
+    return(sum(QZ[, j] == idx$pair[k, "cat1"] & QZ[, jp] == idx$pair[k, "cat2"],
+      na.rm = TRUE
+    ) / nobs)
+  }, numeric(1))
+  return(c(p_single, p_pair))
+}
+
+#' @title Core of the M2 computation
+#' @description
+#' Works in the \eqn{\Xi^{-1/2}} coordinates, where the parameter-estimation
+#' correction is an orthogonal projection onto the column space of the Jacobian.
+#' Two reasons not to invert \eqn{\Delta' \Xi^{-1} \Delta} directly: it is a
+#' Cholesky solve plus an SVD rather than an explicit inverse, and it survives a
+#' rank-deficient Jacobian. The latter is not hypothetical -- with the class
+#' proportions fixed, the second-order margins see the class deviations only
+#' through their Gram matrix, so any rotation of the (C-1)-dimensional class
+#' space leaves them unchanged and rank(Delta) = t - (C-1)(C-2)/2. The
+#' parameters are then not identified from bivariate margins once C >= 3, while
+#' the margins themselves, and hence the projection, still are.
+#' @noRd
+m2_core <- function(profile, ncat, nobs, Q = NULL, Z = NULL, p_vec = NULL) {
+  idx <- m2_margin_index(ncat)
+  A <- m2_class_products(profile, idx)
+  pi_vec <- m2_pi(A)
+  if (is.null(p_vec)) {
+    p_vec <- m2_p_obs(Q, Z, idx)
+  }
+  e <- p_vec - pi_vec
+  Xi <- m2_xi(profile, A, idx)
+  Delta <- m2_delta(profile, idx, ncat)
+
+  L <- chol(Xi) # Xi = L'L, L upper triangular
+  e_tilde <- backsolve(L, e, transpose = TRUE)
+  B <- backsolve(L, Delta, transpose = TRUE)
+  sv <- svd(B)
+  rank_delta <- sum(sv$d > max(dim(B)) * .Machine$double.eps * sv$d[1])
+  U_r <- sv$u[, seq_len(rank_delta), drop = FALSE]
+  resid <- e_tilde - U_r %*% crossprod(U_r, e_tilde)
+
+  stat <- nobs * sum(resid^2)
+  df <- idx$m - rank_delta
+  return(list(
+    M2 = stat, df = df, p = stats::pchisq(stat, df, lower.tail = FALSE),
+    m = idx$m, n_param = ncol(Delta), rank_delta = rank_delta,
+    residual = e
+  ))
+}
+
+#' @title Limited-information goodness-of-fit statistic (M2)
+#' @description
+#' Tests whether a fitted model reproduces the item-pair cross tables. The
+#' reference point is the saturated model of the first- and second-order
+#' margins, not of the full response-pattern table, so no benchmark
+#' log-likelihood is required. That is what makes the statistic usable for
+#' nominal data, where nearly every response pattern is unique and the
+#' full-information chi-square does not follow its nominal distribution
+#' (Collins et al., 1993).
+#'
+#' The analogy that usually lands: the chi-square of a structural equation model
+#' does not test the whole multivariate distribution, only whether the model
+#' reproduces the covariance matrix. \eqn{M_2} is the categorical counterpart,
+#' with the cross tables in place of the covariance matrix.
+#'
+#' @param x A fitted model object of class "exametrika".
+#' @param ... Additional arguments passed to methods.
+#'
+#' @return An object of class "exametrika" and "M2" containing:
+#' \describe{
+#'  \item{M2}{The statistic.}
+#'  \item{df}{Degrees of freedom, \code{m - rank(Delta)}. Note that this is not
+#'    \code{m - n_param}: see \code{rank_delta}.}
+#'  \item{p}{Upper tail probability of the chi-square distribution with \code{df}
+#'    degrees of freedom.}
+#'  \item{m}{Number of margins used, \code{sum(Q_j - 1) + sum_{j<j'}
+#'    (Q_j - 1)(Q_j' - 1)}.}
+#'  \item{n_param}{Number of model parameters, \code{ncls * sum(ncat - 1)}. The
+#'    class proportions are not estimated in this formulation, so they are not
+#'    counted.}
+#'  \item{rank_delta}{Rank of the Jacobian. For \code{ncls >= 3} it falls short
+#'    of \code{n_param} by \code{(ncls - 1)(ncls - 2) / 2}, because the
+#'    second-order margins determine the class deviations only through their
+#'    Gram matrix, which is invariant to rotations of the class space.}
+#' }
+#'
+#' @details
+#' The statistic is interpretable only when the estimator is the maximum
+#' likelihood estimator of the fitted model, since the asymptotics require the
+#' margin residual to be orthogonal to the Jacobian. That holds for
+#' \code{LCA.nominal} and \code{LCA.rated}, which are fitted by EM. It does not
+#' hold for filter-based estimation (GTM), which is a regularisation rather than
+#' a maximum likelihood estimator, nor for order-restricted estimation, whose
+#' limiting distribution is a mixture of chi-squares rather than a single one.
+#'
+#' The degrees of freedom here are orders of magnitude smaller than in a
+#' full-information test, so an RMSEA computed from \eqn{M_2} is not comparable
+#' with a full-information RMSEA and the conventional cutoffs do not carry over.
+#'
+#' Cost: the margin covariance is a dense \code{m x m} matrix and the Cholesky
+#' factorisation dominates. With 20 items and 5 categories \code{m} is 3,120
+#' (74 MB, well under a second); with 50 items it is 19,800 (2.9 GB, around 20
+#' seconds). A message reports the size before the work starts when \code{m} is
+#' large.
+#'
+#' @references
+#' Maydeu-Olivares, A., & Joe, H. (2005). Limited- and full-information
+#' estimation and goodness-of-fit testing in 2^n contingency tables: A unified
+#' framework. Journal of the American Statistical Association, 100(471),
+#' 1009-1020.
+#'
+#' Maydeu-Olivares, A., & Joe, H. (2006). Limited information goodness-of-fit
+#' testing in multidimensional contingency tables. Psychometrika, 71(4),
+#' 713-732.
+#'
+#' Collins, L. M., Fidler, P. L., Wugalter, S. E., & Long, J. D. (1993). Goodness-of-fit
+#' testing for latent class models. Multivariate Behavioral Research, 28(3), 375-389.
+#'
+#' @examples
+#' \donttest{
+#' dat <- dataFormat(J20S600, response.type = "nominal")
+#' fit <- LCA(dat, ncls = 3)
+#' M2(fit)
+#' }
+#'
+#' @export
+M2 <- function(x, ...) {
+  UseMethod("M2")
+}
+
+#' @rdname M2
+#' @export
+M2.default <- function(x, ...) {
+  stop(
+    "M2() is available for models fitted by maximum likelihood on polytomous ",
+    "data: currently LCA() on nominal or rated data."
+  )
+}
+
+#' @rdname M2
+#' @param verbose Logical; if TRUE (default), reports the size of the margin
+#'   covariance matrix before computing it when that matrix is large.
+#' @export
+M2.nominalLCA <- function(x, verbose = TRUE, ...) {
+  return(m2_from_lca(x, verbose = verbose))
+}
+
+#' @rdname M2
+#' @export
+M2.ratedLCA <- function(x, verbose = TRUE, ...) {
+  return(m2_from_lca(x, verbose = verbose))
+}
+
+#' @title Shared body of the LCA M2 methods
+#' @noRd
+m2_from_lca <- function(x, verbose = TRUE) {
+  if (is.null(x$Q) || is.null(x$Z)) {
+    stop(
+      "The fitted object does not carry the response data needed by M2(). ",
+      "Refit with the current version of the package."
+    )
+  }
+  ncat <- as.vector(x$categories)
+  ncls <- x$n_class
+  nitems <- length(ncat)
+
+  # rebuild the profile array from ICRP (items x classes x categories)
+  profile <- array(0, dim = c(nitems, ncls, max(ncat)))
+  offset <- c(0, cumsum(ncat)[-nitems])
+  cols <- paste0("class", seq_len(ncls))
+  for (j in seq_len(nitems)) {
+    profile[j, , seq_len(ncat[j])] <- t(as.matrix(
+      x$ICRP[offset[j] + seq_len(ncat[j]), cols]
+    ))
+  }
+
+  m <- sum(ncat - 1) + sum(outer(ncat - 1, ncat - 1)[upper.tri(diag(nitems))])
+  if (verbose && m > 5000) {
+    message(sprintf(
+      "M2: %d margins; the covariance matrix is %.1f GB and its factorisation dominates the cost.",
+      m, m^2 * 8 / 1024^3
+    ))
+  }
+
+  out <- m2_core(profile, ncat, nobs = x$nobs, Q = x$Q, Z = x$Z)
+  out$n_class <- ncls
+  return(structure(out, class = c("exametrika", "M2")))
+}

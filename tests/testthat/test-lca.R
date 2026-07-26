@@ -329,3 +329,43 @@ test_that("M2 works from a fitted LCA and prints", {
   # models without a maximum likelihood fit of this kind are refused
   expect_error(M2(LCA(J15S500, ncls = 3)), "available for models fitted")
 })
+
+test_that("add_M2 attaches margin-based fit indices without touching the others", {
+  dat <- dataFormat(J20S600, response.type = "nominal")
+  fit <- LCA(dat, ncls = 3)
+  fit2 <- add_M2(fit, verbose = FALSE)
+
+  # the response-pattern indices are untouched
+  expect_equal(fit2$TestFitIndices, fit$TestFitIndices)
+  expect_true(inherits(fit2$TestFitIndicesM2, "ModelFitM2"))
+
+  m <- fit2$TestFitIndicesM2
+  # the statistic matches a direct call
+  expect_equal(m$M2, M2(fit, verbose = FALSE)$M2)
+  # the baseline is the independence model: it reproduces the first-order
+  # margins, so its degrees of freedom are exactly the second-order cells
+  ncat <- as.vector(dat$categories)
+  expect_equal(m$df_null, m$n_margin - sum(ncat - 1))
+  # a model with classes must fit the cross tables better than independence
+  expect_lt(m$M2, m$M2_null)
+  # incremental indices only; information criteria stay on the likelihood side
+  expect_true(all(is.finite(c(m$NFI, m$RFI, m$IFI, m$TLI, m$CFI, m$RMSEA))))
+  expect_null(m$AIC)
+})
+
+test_that("print shows both worlds of fit indices, and either alone", {
+  dat <- dataFormat(J20S600, response.type = "nominal")
+  fit <- add_M2(LCA(dat, ncls = 3), verbose = FALSE)
+  expect_output(print(fit), "Response-pattern based")
+  expect_output(print(fit), "Margin based")
+  expect_output(print(fit, fit_indices = "margin"), "Margin based")
+  out <- capture.output(print(fit, fit_indices = "pattern"))
+  expect_false(any(grepl("Margin based", out)))
+  # before add_M2 the margin block is simply absent
+  bare <- LCA(dat, ncls = 2)
+  expect_output(print(bare, fit_indices = "margin"), "Call add_M2")
+})
+
+test_that("add_M2 refuses models it cannot handle", {
+  expect_error(add_M2(LCA(J15S500, ncls = 3)), "available for models fitted")
+})

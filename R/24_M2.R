@@ -247,8 +247,9 @@ m2_core <- function(profile, ncat, nobs, Q = NULL, Z = NULL, p_vec = NULL) {
 #'    \code{m - n_param}: see \code{rank_delta}.}
 #'  \item{p}{Upper tail probability of the chi-square distribution with \code{df}
 #'    degrees of freedom.}
-#'  \item{m}{Number of margins used, \code{sum(Q_j - 1) + sum_{j<j'}
-#'    (Q_j - 1)(Q_j' - 1)}.}
+#'  \item{m}{Number of margins used: the free categories of every item, plus one
+#'    entry for each combination of a free category of one item with a free
+#'    category of another.}
 #'  \item{n_param}{Number of model parameters, \code{ncls * sum(ncat - 1)}. The
 #'    class proportions are not estimated in this formulation, so they are not
 #'    counted.}
@@ -359,4 +360,124 @@ m2_from_lca <- function(x, verbose = TRUE) {
   out <- m2_core(profile, ncat, nobs = x$nobs, Q = x$Q, Z = x$Z)
   out$n_class <- ncls
   return(structure(out, class = c("exametrika", "M2")))
+}
+
+#' @title Margin-based fit indices from M2
+#' @description
+#' Builds the usual incremental fit indices from two margin-based chi-squares:
+#' the fitted model's M2 and the independence model's. They must not be mixed
+#' with the response-pattern chi-squares that `TestFitIndices` carries -- the two
+#' live in different worlds and a ratio of one to the other is not defensible
+#' (Shojima, personal communication, 2026-07-26). Hence a separate object.
+#'
+#' The baseline is the independence model, which reproduces the observed
+#' first-order margins and throws away every association, so all of its misfit
+#' lands in the second-order margins and the indices read as "the share of the
+#' inter-item association that the model accounts for". A stricter baseline (say
+#' uniform first-order margins) is possible but changes what the indices mean.
+#'
+#' AIC/BIC/CAIC are deliberately left out. `calcFitIndices()` would happily
+#' produce chi-square based ones, but the package already reports
+#' likelihood-based information criteria for these models, and two different
+#' AICs under one name invites exactly the confusion this separation is meant to
+#' avoid.
+#' @noRd
+m2_fit_indices <- function(m2_model, m2_null, nobs) {
+  idx <- calcFitIndices(
+    chi_A = m2_model$M2, chi_B = m2_null$M2,
+    df_A = m2_model$df, df_B = m2_null$df, nobs = nobs
+  )
+  return(structure(
+    list(
+      M2 = m2_model$M2, df = m2_model$df, p = m2_model$p,
+      M2_null = m2_null$M2, df_null = m2_null$df,
+      n_margin = m2_model$m,
+      NFI = idx$NFI, RFI = idx$RFI, IFI = idx$IFI,
+      TLI = idx$TLI, CFI = idx$CFI, RMSEA = idx$RMSEA
+    ),
+    class = c("exametrika", "ModelFitM2")
+  ))
+}
+
+#' @title The independence model in the form m2_core() expects
+#' @description
+#' One class whose category probabilities are the observed marginal ones. With a
+#' single class there is no rotational indeterminacy, so its Jacobian has full
+#' column rank and df_null = m - sum(ncat - 1), which is exactly the number of
+#' second-order margin cells.
+#' @noRd
+m2_null_profile <- function(Q, Z, ncat) {
+  nitems <- length(ncat)
+  profile <- array(0, dim = c(nitems, 1, max(ncat)))
+  for (j in seq_len(nitems)) {
+    obs <- Q[Z[, j] == 1, j]
+    for (q in seq_len(ncat[j])) {
+      profile[j, 1, q] <- sum(obs == q) / length(obs)
+    }
+  }
+  return(profile)
+}
+
+#' @title Attach the margin-based fit indices to a fitted model
+#' @description
+#' Computes \code{\link{M2}} for the model and for the independence baseline, and
+#' returns the fitted object with a \code{TestFitIndicesM2} component added. The
+#' print method then shows the response-pattern indices and the margin-based ones
+#' side by side.
+#'
+#' This is a separate step rather than part of the fit because it is expensive:
+#' the cost is the Cholesky factorisation of a dense matrix whose size grows with
+#' the square of the item count (see \code{\link{M2}}).
+#'
+#' @param x A fitted model object of class "exametrika".
+#' @param ... Additional arguments passed to methods.
+#'
+#' @return The fitted object with \code{TestFitIndicesM2} added.
+#'
+#' @examples
+#' \donttest{
+#' dat <- dataFormat(J20S600, response.type = "nominal")
+#' fit <- LCA(dat, ncls = 3)
+#' fit <- add_M2(fit)
+#' fit
+#' print(fit, fit_indices = "margin")
+#' }
+#'
+#' @export
+add_M2 <- function(x, ...) {
+  UseMethod("add_M2")
+}
+
+#' @rdname add_M2
+#' @export
+add_M2.default <- function(x, ...) {
+  stop(
+    "add_M2() is available for models fitted by maximum likelihood on ",
+    "polytomous data: currently LCA() on nominal or rated data."
+  )
+}
+
+#' @rdname add_M2
+#' @param verbose Logical; if TRUE (default), reports the size of the margin
+#'   covariance matrix before computing it when that matrix is large.
+#' @export
+add_M2.nominalLCA <- function(x, verbose = TRUE, ...) {
+  return(add_m2_to_lca(x, verbose = verbose))
+}
+
+#' @rdname add_M2
+#' @export
+add_M2.ratedLCA <- function(x, verbose = TRUE, ...) {
+  return(add_m2_to_lca(x, verbose = verbose))
+}
+
+#' @title Shared body of the add_M2 methods
+#' @noRd
+add_m2_to_lca <- function(x, verbose = TRUE) {
+  fitted <- m2_from_lca(x, verbose = verbose)
+  ncat <- as.vector(x$categories)
+  null_profile <- m2_null_profile(x$Q, x$Z, ncat)
+  null_fit <- m2_core(null_profile, ncat, nobs = x$nobs, Q = x$Q, Z = x$Z)
+  x$TestFitIndicesM2 <- m2_fit_indices(fitted, null_fit, x$nobs)
+  return(x)
 }

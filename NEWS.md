@@ -204,6 +204,30 @@ planned for 2.0.0 ride along, so that the break happens once.
   `LCA.nominal()` and `LCA.rated()` now keep `Q` and `Z` in the returned object,
   as `Biclustering()` already did, so `M2()` can be computed after the fact.
 
+- **New: `add_M2()` and a second set of fit indices.** `fit <- add_M2(fit)`
+  computes `M2` for the model and for the independence baseline and attaches
+  `TestFitIndicesM2`: NFI, RFI, IFI, TLI, CFI and RMSEA built entirely from
+  margin-based chi-squares. `print()` then shows the response-pattern indices and
+  the margin-based ones as two labelled blocks, and takes `fit_indices =
+  "both" | "pattern" | "margin"` to show one alone.
+
+  They are kept apart on purpose. The response-pattern chi-square is a likelihood
+  ratio against the saturated model; `M2` is a quadratic form in margin
+  residuals. Combining one with the other inside a single index — a ratio of a
+  pattern chi-square to a margin chi-square, say — has no defensible reading
+  (Shojima, personal communication, 2026-07-26). Within the margin block both
+  the model and the baseline statistic are `M2`, so the indices are internally
+  consistent.
+
+  For the same reason the margin block carries no AIC/BIC/CAIC. Those need a
+  log-likelihood: `chi_sq - 2 df` works on the pattern side only because that
+  chi-square *is* a likelihood ratio, and `M2` is not. The likelihood-based
+  information criteria these models already report are the ones to use.
+
+  This is a separate call rather than part of the fit because the cost grows with
+  the square of the item count; for nominal data it is also the only route to an
+  absolute fit statistic at all, since no saturated model can be formed.
+
 - **New: `LCA()` supports nominal data** (`LCA.nominal`). The model is a finite
   mixture of product-multinomial distributions — one free category distribution
   per item within each latent class, with no ordering imposed on the classes or

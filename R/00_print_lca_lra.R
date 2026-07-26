@@ -6,7 +6,7 @@
 
 #' @title Print helper: ratedLCA
 #' @noRd
-print_rated_lca_case <- function(x, digits) {
+print_rated_lca_case <- function(x, digits, fit_indices = "both") {
   cat("\nItem Reference Profile\n")
   print(x$IRP, digits = digits)
   cat("\nTest Profile\n")
@@ -26,16 +26,25 @@ print_rated_lca_case <- function(x, digits) {
   y <- t(as.data.frame(y))
   colnames(y) <- "value"
   print(round(y, digits))
-  cat("\nNominal layer (all categories)\n")
-  y <- unclass(x$TestFitIndicesNominal)
-  y <- t(as.data.frame(y))
-  colnames(y) <- "value"
-  print(round(y, digits))
+  if (fit_indices %in% c("both", "pattern")) {
+    cat("\nNominal layer (all categories), response-pattern based\n")
+    y <- unclass(x$TestFitIndicesNominal)
+    y <- t(as.data.frame(y))
+    colnames(y) <- "value"
+    print(round(y, digits))
+  }
+  if (fit_indices %in% c("both", "margin") && !is.null(x$TestFitIndicesM2)) {
+    cat("\nNominal layer (all categories), margin based (M2)\n")
+    y <- unclass(x$TestFitIndicesM2)
+    y <- t(as.data.frame(y))
+    colnames(y) <- "value"
+    print(round(y, digits))
+  }
 }
 
 #' @title Print helper: nominalLCA
 #' @noRd
-print_nominal_lca_case <- function(x, digits) {
+print_nominal_lca_case <- function(x, digits, fit_indices = "both") {
   cat("\nItem Category Reference Profile\n")
   print(x$ICRP, digits = digits)
   cat("\nTest Profile\n")
@@ -49,10 +58,42 @@ print_nominal_lca_case <- function(x, digits) {
   cat("\nModel Fit Indices\n")
   cat(paste("Number of Latent class:", x$n_class))
   cat(paste("\nNumber of EM cycle:", x$n_cycle, "\n"))
-  y <- unclass(x$TestFitIndices)
-  y <- t(as.data.frame(y))
-  colnames(y) <- "value"
-  print(round(y, digits))
+  print_fit_two_worlds(x, digits, fit_indices)
+}
+
+#' @title Print the response-pattern and margin-based fit indices
+#' @description
+#' The two must not be mixed into one set of indices -- they are built from
+#' chi-squares that live in different worlds (see \code{\link{M2}}) -- so they
+#' are shown as two blocks. The margin-based block appears only after
+#' \code{add_M2()} has been called, since it is expensive to compute.
+#' @noRd
+print_fit_two_worlds <- function(x, digits, fit_indices = c("both", "pattern", "margin")) {
+  fit_indices <- match.arg(fit_indices)
+  has_margin <- !is.null(x$TestFitIndicesM2)
+
+  if (fit_indices %in% c("both", "pattern")) {
+    if (has_margin || fit_indices == "both") {
+      cat("\nResponse-pattern based\n")
+    }
+    y <- unclass(x$TestFitIndices)
+    y <- t(as.data.frame(y))
+    colnames(y) <- "value"
+    print(round(y, digits))
+  }
+
+  if (fit_indices %in% c("both", "margin")) {
+    if (has_margin) {
+      cat("\nMargin based (M2)\n")
+      y <- unclass(x$TestFitIndicesM2)
+      y <- t(as.data.frame(y))
+      colnames(y) <- "value"
+      print(round(y, digits))
+    } else if (fit_indices == "margin") {
+      cat("\nMargin based (M2): not computed. Call add_M2() first.\n")
+    }
+  }
+  return(invisible(NULL))
 }
 
 #' @title Print helper: LCA

@@ -31,8 +31,9 @@ An object of class "exametrika" and "M2" containing:
 \code{m - n_param}: see \code{rank_delta}.}
 \item{p}{Upper tail probability of the chi-square distribution with \code{df}
 degrees of freedom.}
-\item{m}{Number of margins used, \code{sum(Q_j - 1) + sum_{j<j'}
-   (Q_j - 1)(Q_j' - 1)}.}
+\item{m}{Number of margins used: the free categories of every item, plus one
+entry for each combination of a free category of one item with a free
+category of another.}
 \item{n_param}{Number of model parameters, \code{ncls * sum(ncat - 1)}. The
 class proportions are not estimated in this formulation, so they are not
 counted.}

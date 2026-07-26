@@ -2,6 +2,65 @@
 
 ## Bug Fixes
 
+- **EM convergence was declared far too early, and on short tests after a single
+  cycle.** This affects every EM-based model and is the largest behavioural
+  change in this release: estimates move, and they no longer reproduce the
+  numbers printed in Shojima (2022). Three separate defects, all inherited
+  faithfully from the reference Mathematica implementation:
+
+  1. *The starting value.* `test_log_lik` was initialised to `-1 / exp(-J)`,
+     i.e. `-exp(J)`, meant to sit below any attainable log-likelihood. For a
+     short test with many respondents it does not: J = 6 gives -403 against a
+     real log-likelihood near -3900. The first cycle then looked like a
+     decrease, the "likelihood went down" guard fired, and the loop exited
+     after one iteration -- while reporting `converge = TRUE`. Measured:
+     binary `LCA()` on 6 items x 1000 respondents stopped at 1 cycle;
+     `Biclustering()` on the bundled `J5S1000` stopped at 1 cycle. Tests never
+     caught it because every Mathematica-referenced dataset has J >= 15, where
+     `exp(J)` is safely below the log-likelihood. Now `-Inf`, with the
+     comparison skipped on the first pass.
+
+  2. *The monitored quantity.* The criterion watched the expected log-posterior
+     `Q(theta_t | theta_{t-1})` (Shojima 2022, eqs. 5.11-5.12), not the
+     observed-data log-likelihood. EM guarantees the latter increases; the
+     former conditions on a moving point and need not. On 6-item data it does
+     decrease at the second cycle (-3869.26 -> -3922.42), firing the guard on a
+     healthy iteration. `LCA()` (binary/nominal/rated), `LRA()` (isotonic and
+     GTM) and `LDLRA()` now monitor the observed-data log-likelihood, computed
+     by log-sum-exp. `LCA.nominal()`'s reported `log_lik` is therefore now a
+     proper marginal likelihood, which also makes its AIC/BIC the textbook
+     quantities. Biclustering keeps its original monitored quantity
+     deliberately -- a two-sided mixture has no single obvious observed-data
+     likelihood -- so only its starting value and tolerance changed.
+
+  3. *The tolerance.* A relative `1e-4` on a value of order 1e3 is a threshold
+     of ~0.4 nats, so EM stopped well short of convergence. `J15S500` with 5
+     classes ran 73 cycles to an observed log-likelihood of -4121.53, where a
+     properly converged run reaches -4118.16 in 440. The tolerance is now
+     `1e-8` for the EM engines, matching what the nominal engines and `GRM()`
+     already used, and `maxiter` defaults rise from 100 to 1000 (largest
+     observed requirement across the bundled data: 685 cycles, 0.25s). `IRT()`
+     uses `1e-6`: each of its cycles runs one `optim()` per item, so extra
+     cycles cost real time, and the attainable accuracy is bounded by
+     `optim()`'s own `reltol` anyway.
+
+  Effect on the published example (`LCA(J15S500, ncls = 5)`): 73 cycles -> 337,
+  and the class reference matrix of the book's Table 5.1 changes in the second
+  decimal (Item 1: .519 .700 .764 .856 .860 -> .590 .662 .772 .853 .884). The
+  Mathematica implementation in `develop/mtmk15forVer13/` was corrected in step
+  and agrees with R to full double precision (-3651.903821773122 against
+  -3651.9038217731227); the reference fixtures under
+  `tests/testthat/fixtures/mathematica_reference/` were regenerated from it.
+
+- **`IRT()` is substantially faster.** The M-step objective is the hot spot of
+  the whole fit (80% of self time). It evaluated the response function twice
+  per call where once suffices and used `ifelse()` on scalars; `optim()` was
+  also called without a gradient, so L-BFGS-B approximated one by finite
+  differences at a cost of one extra objective evaluation per parameter per
+  step. An analytic gradient is now supplied. `IRT(J35S515, model = 2)`:
+  1.55s -> 0.34s at the new tolerance, faster than the 0.63s the old, looser
+  tolerance took. Estimates are unchanged to 5e-6.
+
 - Fixed `Biclustering()` on ordinal data (`Biclustering.ordinal`) under
   Ranklustering (`method = "R"`): the GTM neighbour-smoothing filter was
   computed (`smoothed_memb <- clsmemb %*% Fil`) but never used in estimation —
@@ -110,6 +169,53 @@
   which is not the concept being used here.
 
 ## Improvements
+
+- **New: `LCA()` supports nominal data** (`LCA.nominal`). The model is a finite
+  mixture of product-multinomial distributions — one free category distribution
+  per item within each latent class, with no ordering imposed on the classes or
+  on the categories. Category counts may differ across items. Estimation runs
+  through the shared EM engine `emclus_nominal()`; the new `alpha` argument sets
+  a Dirichlet prior on the category profiles (default 1, i.e. the plain
+  multinomial MLE). The returned object carries `ICRP` (Item Category Reference
+  Profile: one row per item-category, one column per class), `LCD`, `CMD` and
+  `Students`, and prints and plots (`type = "ICRP"`, `"LCD"`, `"CMP"`). The
+  `"ICRP"` plot uses grouped bars rather than lines across classes, because
+  neither axis is ordered.
+
+  As in `Biclustering.nominal`, no benchmark (saturated) model is fitted — with
+  many items and categories nearly every response pattern is unique — so only
+  AIC, BIC and CAIC are reported and the chi-square based indices are NA. Note
+  that these follow the `-2 log L + k` convention, unlike the chi-square based
+  AIC/BIC/CAIC on the binary path; they are not comparable across response
+  types. Class sizes are not free parameters in this formulation (every class
+  carries the same implicit prior, as in `emclus()` for binary data), so the
+  parameter count is `ncls * sum(ncat - 1)`.
+
+- **New: `LCA()` supports rated data** (`LCA.rated`), i.e. multiple-choice items
+  with an answer key. Estimation is the nominal one — `LCA.nominal()` is called
+  internally — and the key is then used to recover the quantities that need a
+  correct answer: `IRP[j, c]` is the model-implied probability of the keyed
+  category `rho[j, CA[j] | c]`, and `TRP` is its weighted item sum. Fit is
+  reported in two layers: `TestFitIndices` from correct/incorrect responses
+  (chi-square based, comparable with binary `LCA`) and `TestFitIndicesNominal`
+  from the internal nominal fit (AIC/BIC/CAIC). Full category probabilities
+  remain in `ICRP` for distractor analysis. Unlike `Biclustering.rated`, the
+  classes are **not** sorted by correct response rate: latent classes carry no
+  order, and sorting them would imply one.
+
+- Ordered rating data passed to `LCA()` is now analysed with the nominal model
+  after a message, instead of stopping: latent classes carry no order, so the
+  category ordering has nothing to attach to. Use `LRA()` when the ordering
+  should be respected. Symmetrically, nominal data passed to `LRA()` is handed
+  to `LCA.nominal()` with a message (a rank ordering is not defined without
+  ordered categories); an `nrank` argument is carried over as `ncls`.
+
+- `LCA()` is now an S3 generic dispatching on response type, matching
+  `LRA()` and `Biclustering()`. The former function body is unchanged and
+  now lives in `LCA.binary()`; `LCA.default()` formats raw input with
+  `dataFormat()` and routes it. Binary results are bit-identical to 1.15.0 and
+  non-binary input still raises the same error. This is the wiring for the
+  forthcoming `LCA.nominal()`.
 
 - `Biclustering()` on binary data (`Biclustering.binary`) gains an
   order-restricted estimation of the Field Reference Profiles under

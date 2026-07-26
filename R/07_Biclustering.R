@@ -321,10 +321,15 @@ Biclustering.binary <- function(U,
   }
 
   ### Algorithm
-  test_log_lik <- -1 / const
-  old_test_log_lik <- -2 / const
+  # -Inf, not -1/const = -exp(J): the old sentinel sits above the real
+  # log-likelihood on short tests with many respondents, which ended the
+  # loop after one cycle while reporting convergence. The first pass skips
+  # the comparison instead (emt == 0).
+  test_log_lik <- -Inf
+  old_test_log_lik <- -Inf
   emt <- 0
-  maxemt <- 100
+  # Raised from 100 with the tolerance tightened to 1e-8 (see NEWS).
+  maxemt <- 1000
 
   fld0 <- pmin(ceiling(1:testlength / (testlength / nfld)), nfld)
   crr_order <- order(crr(tmp), decreasing = TRUE)
@@ -364,7 +369,7 @@ Biclustering.binary <- function(U,
   FLG <- TRUE
   converge <- TRUE
   while (FLG) {
-    if (test_log_lik - old_test_log_lik < 1e-4 * abs(old_test_log_lik)) {
+    if (emt > 0 && test_log_lik - old_test_log_lik < 1e-8 * abs(old_test_log_lik)) {
       FLG <- FALSE
       break
     }

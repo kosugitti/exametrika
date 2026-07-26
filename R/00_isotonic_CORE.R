@@ -63,12 +63,18 @@ pava_up <- function(y, w = rep(1, length(y))) {
 #'   plus \code{item_nparam}.
 #' @noRd
 emclus_isotonic <- function(U, Z, ncls, beta1, beta2, maxiter = 100, mic = FALSE,
-                            verbose = FALSE, conf = NULL) {
+                            verbose = FALSE, conf = NULL, tol = 1e-8) {
   # Initialize
   testlength <- NCOL(U)
   const <- exp(-testlength)
-  test_log_lik <- -1 / const
-  old_test_log_lik <- -2 / const
+  # The starting value must be below any attainable log-likelihood. The old
+  # sentinel -1/const = -exp(J) is not: for a short test with many
+  # respondents it sits ABOVE the real log-likelihood, so the first cycle
+  # looked like a decrease and the loop exited after one iteration while
+  # still reporting convergence. -Inf is unconditionally below, and the
+  # comparisons are skipped on the first pass instead.
+  test_log_lik <- -Inf
+  old_test_log_lik <- -Inf
   classRefMat <- matrix(rep(1:ncls / (ncls + 1), testlength), ncol = testlength)
 
   # Prepare confirmatory constraints
@@ -110,7 +116,14 @@ emclus_isotonic <- function(U, Z, ncls, beta1, beta2, maxiter = 100, mic = FALSE
     }
 
     item_log_lik <- colSums(correct_cls * log(classRefMat + const) + incorrect_cls * log(1 - classRefMat + const))
-    test_log_lik <- sum(item_log_lik)
+    # Observed-data log-likelihood, for the same reason as in emclus(): the
+    # expected log-posterior is not monotone across cycles, so a decrease in it
+    # is not evidence of trouble.
+    llmat_new <- U %*% t(log(classRefMat + const)) +
+      (Z * (1 - U)) %*% t(log(1 - classRefMat + const))
+    row_max <- apply(llmat_new, 1, max)
+    test_log_lik <- sum(row_max + log(rowSums(exp(llmat_new - row_max)))) -
+      NROW(U) * log(ncls)
     if (verbose) {
       message(
         sprintf(
@@ -120,12 +133,14 @@ emclus_isotonic <- function(U, Z, ncls, beta1, beta2, maxiter = 100, mic = FALSE
         appendLF = FALSE
       )
     }
-    if (test_log_lik - old_test_log_lik <= 0) {
-      classRefMat <- old_classRefMat
-      FLG <- FALSE
-    }
-    if ((test_log_lik - old_test_log_lik) <= 0.0001 * abs(old_test_log_lik)) {
-      FLG <- FALSE
+    if (is.finite(old_test_log_lik)) {
+      if (test_log_lik - old_test_log_lik <= 0) {
+        classRefMat <- old_classRefMat
+        FLG <- FALSE
+      }
+      if ((test_log_lik - old_test_log_lik) <= tol * abs(old_test_log_lik)) {
+        FLG <- FALSE
+      }
     }
     if (emt == maxiter) {
       message("\nReached the maximum number of iterations.")

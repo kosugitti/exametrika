@@ -21,12 +21,18 @@
 #' @noRd
 
 emclus <- function(U, Z, ncls, Fil, beta1, beta2, maxiter = 100, mic = FALSE,
-                   verbose = FALSE, conf = NULL) {
+                   verbose = FALSE, conf = NULL, tol = 1e-8) {
   # Initialize
   testlength <- NCOL(U)
   const <- exp(-testlength)
-  test_log_lik <- -1 / const
-  old_test_log_lik <- -2 / const
+  # The starting value must be below any attainable log-likelihood. The old
+  # sentinel -1/const = -exp(J) is not: for a short test with many
+  # respondents it sits ABOVE the real log-likelihood, so the first cycle
+  # looked like a decrease and the loop exited after one iteration while
+  # still reporting convergence. -Inf is unconditionally below, and the
+  # comparisons are skipped on the first pass instead.
+  test_log_lik <- -Inf
+  old_test_log_lik <- -Inf
   item_log_lik <- rep(test_log_lik / testlength, testlength)
   classRefMat <- matrix(rep(1:ncls / (ncls + 1), testlength), ncol = testlength)
 
@@ -67,7 +73,19 @@ emclus <- function(U, Z, ncls, Fil, beta1, beta2, maxiter = 100, mic = FALSE,
     }
 
     item_log_lik <- colSums(correct_cls * log(classRefMat + const) + incorrect_cls * log(1 - classRefMat + const))
-    test_log_lik <- sum(item_log_lik)
+    # Convergence is judged on the OBSERVED-data log-likelihood
+    #   sum_s log sum_c (1/C) prod_j p_cj^u (1-p_cj)^(1-u),
+    # which is the quantity EM is guaranteed to increase. The expected
+    # log-posterior that Shojima (2022, eq. 5.11-5.12) monitors instead is
+    # Q(theta_t | theta_{t-1}), whose successive values condition on a moving
+    # point and therefore need not increase; on short tests it does decrease,
+    # and the "decreased -> revert and stop" rule then fires on a healthy
+    # iteration. See NEWS for the numerical consequences.
+    llmat_new <- U %*% t(log(classRefMat + const)) +
+      (Z * (1 - U)) %*% t(log(1 - classRefMat + const))
+    row_max <- apply(llmat_new, 1, max)
+    test_log_lik <- sum(row_max + log(rowSums(exp(llmat_new - row_max)))) -
+      NROW(U) * log(ncls)
     if (verbose) {
       message(
         sprintf(
@@ -79,12 +97,14 @@ emclus <- function(U, Z, ncls, Fil, beta1, beta2, maxiter = 100, mic = FALSE,
         appendLF = FALSE
       )
     }
-    if (test_log_lik - old_test_log_lik <= 0) {
-      classRefMat <- old_classRefMat
-      FLG <- FALSE
-    }
-    if ((test_log_lik - old_test_log_lik) <= 0.0001 * abs(old_test_log_lik)) {
-      FLG <- FALSE
+    if (is.finite(old_test_log_lik)) {
+      if (test_log_lik - old_test_log_lik <= 0) {
+        classRefMat <- old_classRefMat
+        FLG <- FALSE
+      }
+      if ((test_log_lik - old_test_log_lik) <= tol * abs(old_test_log_lik)) {
+        FLG <- FALSE
+      }
     }
     if (emt == maxiter) {
       message("\nReached the maximum number of iterations.")

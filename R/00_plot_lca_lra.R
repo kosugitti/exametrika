@@ -96,7 +96,7 @@ plot_common_profiles <- function(x, type, value, plotItemID, plotStudentID, test
       add = TRUE
     )
     par(mar = c(5, 4, 4, 4) + 0.1)
-    if (value == "LCA" | value == "IRM" | value == "BINET") {
+    if (value == "LCA" | value == "ratedLCA" | value == "IRM" | value == "BINET") {
       target <- x$LCD
     } else if (value == "LRA" | value == "LDLRA" | value == "LDB") {
       target <- x$LRD
@@ -157,7 +157,7 @@ plot_common_profiles <- function(x, type, value, plotItemID, plotStudentID, test
       add = TRUE
     )
     par(mar = c(5, 4, 4, 4) + 0.1)
-    if (value == "LCA" | value == "BINET") {
+    if (value == "LCA" | value == "nominalLCA" | value == "ratedLCA" | value == "BINET") {
       target1 <- x$LCD
       target2 <- x$CMD
     } else if (value == "Biclustering" | value == "ordinalBiclustering" | value == "nominalBiclustering" |
@@ -288,6 +288,38 @@ score_rank_plot <- function(x, dots = list()) {
     dots
   )
   call_plot(graphics::axis, list(side = 1, at = 1:ncol(score_rank_matrix)), dots)
+}
+
+#' Item Category Reference Profile plot for nominal LCA
+#'
+#' Both axes are unordered here — the classes carry no order and neither do the
+#' categories — so the profiles are drawn as grouped bars rather than as lines
+#' across classes, which would suggest a trend that the model does not claim.
+#' @noRd
+plot_nominal_icrp <- function(x, plotItemID, dots = list()) {
+  label <- x$ItemLabel[plotItemID]
+  ncls <- x$n_class
+  for (i in seq_along(label)) {
+    slice <- x$ICRP[x$ICRP$ItemLabel == label[i], paste0("class", 1:ncls)]
+    # rows are categories, columns are classes; barplot wants the transpose so
+    # that each category becomes a group of class bars
+    height <- t(as.matrix(slice))
+    colnames(height) <- seq_len(ncol(height))
+    call_plot(
+      graphics::barplot,
+      list(
+        height = height,
+        beside = TRUE,
+        ylim = c(0, 1),
+        xlab = "Category",
+        ylab = "Probability",
+        main = label[i],
+        legend.text = paste("Class", 1:ncls),
+        args.legend = list(x = "topright", bty = "n", cex = 0.7)
+      ),
+      dots
+    )
+  }
 }
 
 #' ICRP / ICBR plot

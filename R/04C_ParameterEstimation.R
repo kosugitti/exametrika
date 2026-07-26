@@ -17,6 +17,48 @@ asymprior <- function(c, alp, bet) {
   (alp - 1) * log(c) + (bet - 1) * log(1 - c)
 }
 
+#' @title Analytic gradient of the M-step objective
+#' @description
+#' Supplied to \code{optim()} so that L-BFGS-B stops approximating the gradient
+#' by finite differences, which costs one extra objective evaluation per
+#' parameter per step. The objective is the hot spot of the whole IRT fit.
+#' @param lambda item parameter vector
+#' @param model 2, 3 or 4 PL
+#' @param qjtrue expected correct counts per quadrature point
+#' @param qjfalse expected incorrect counts per quadrature point
+#' @param quadrature quadrature points
+#' @noRd
+gradient_function_IRT <- function(lambda, model, qjtrue, qjfalse, quadrature) {
+  a <- lambda[1]
+  b <- lambda[2]
+  c <- if (model > 2) lambda[3] else 0
+  d <- if (model > 3) lambda[4] else 1
+
+  # logistic part L, so that p = c + (d - c) L
+  L <- 1 / (1 + exp(-a * (quadrature - b)))
+  p <- c + (d - c) * L
+  # d/dp of the expected log-likelihood, one entry per quadrature point
+  w <- qjtrue / p - qjfalse / (1 - p)
+  LL1 <- L * (1 - L)
+
+  g <- numeric(model)
+  # slope prior: -(log a - m)^2 / (2 s^2) - log a - log s, with m = 0, s = 0.5
+  a_safe <- max(a, 1e-15)
+  g[1] <- sum(w * (d - c) * LL1 * (quadrature - b)) +
+    (-(log(a_safe) - 0) / 0.5^2 - 1) / a_safe
+  # location prior: -(b / 2)^2 / 2
+  g[2] <- sum(w * (d - c) * LL1 * (-a)) - b / 4
+  if (model >= 3) {
+    # asymprior(c, 2, 5) = (2 - 1) log c + (5 - 1) log(1 - c)
+    g[3] <- sum(w * (1 - L)) + 1 / c - 4 / (1 - c)
+  }
+  if (model == 4) {
+    # asymprior(d, 10, 2) = 9 log d + 1 log(1 - d)
+    g[4] <- sum(w * L) + 9 / d - 1 / (1 - d)
+  }
+  return(g)
+}
+
 #' @title Log-likelihood function used in the Maximization Step (M-Step).
 #' @param model 2,3,or 4 PL
 #' @param lambda item parameter vector
@@ -27,13 +69,14 @@ asymprior <- function(c, alp, bet) {
 objective_function_IRT <- function(lambda, model, qjtrue, qjfalse, quadrature) {
   a <- lambda[1]
   b <- lambda[2]
-  c <- ifelse(model > 2, lambda[3], 0)
-  d <- ifelse(model > 3, lambda[4], 1)
+  # if(), not ifelse(): these are scalars, and this function is the hot spot of
+  # the whole IRT fit (optim calls it once per finite-difference step).
+  c <- if (model > 2) lambda[3] else 0
+  d <- if (model > 3) lambda[4] else 1
 
-  exloglike <- sum(
-    qjtrue * log(LogisticModel(a = a, b = b, c = c, d = d, theta = quadrature)) +
-      qjfalse * log(1 - LogisticModel(a = a, b = b, c = c, d = d, theta = quadrature))
-  )
+  # One evaluation of the response function, not two.
+  p <- LogisticModel(a = a, b = b, c = c, d = d, theta = quadrature)
+  exloglike <- sum(qjtrue * log(p) + qjfalse * log(1 - p))
 
   exloglike <- exloglike - ((b / 2)^2 / 2) + slopeprior(a, 0, 0.5)
 
@@ -217,18 +260,25 @@ IRT <- function(U, model = 2, na = NULL, Z = NULL, w = NULL, verbose = FALSE) {
   paramset <- matrix(c(slope, loc, loasym, upasym), ncol = 4)
   quadrature <- seq(-3.2, 3.2, 0.4)
   const <- exp(-testlength)
-  loglike <- -1 / const
-  oldloglike <- -2 / const
+  # -Inf rather than -1/const; see the note in emclus() on the old sentinel
+  # sitting above the real log-likelihood for short tests.
+  loglike <- -Inf
+  oldloglike <- -Inf
   itemloglike <- rep(loglike / testlength, testlength)
 
   # EM algorithm
   emt <- 0
-  maxemt <- 25
+  # Raised from 25 with the tolerance tightened to 1e-8 (see NEWS).
+  maxemt <- 200
   FLG <- TRUE
   itemloglike <- array(NA, testlength)
 
   while (FLG) {
-    if (abs(loglike - oldloglike) < 0.00001 * abs(oldloglike)) {
+    # 1e-6 rather than the 1e-8 used by the EM engines elsewhere: each cycle
+    # here runs one optim() per item, so the extra cycles cost real time
+    # (J35S515: 0.6s -> 4.9s at 1e-8), and the attainable accuracy is
+    # anyway bounded by optim()'s own reltol.
+    if (emt > 0 && abs(loglike - oldloglike) < 1e-6 * abs(oldloglike)) {
       FLG <- FALSE
     }
     emt <- emt + 1
@@ -295,6 +345,7 @@ IRT <- function(U, model = 2, na = NULL, Z = NULL, w = NULL, verbose = FALSE) {
               method = "L-BFGS-B",
               lower = lowers,
               upper = uppers,
+              gr = gradient_function_IRT,
               control = list(fnscale = -1, factr = 1e-10),
               ### args for objective_function_IRT
               model = model,

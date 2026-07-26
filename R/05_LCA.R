@@ -11,7 +11,7 @@
 #' observed responses, while 0 indicates missing data.
 #' @param w Item weight vector specifying the relative importance of each item.
 #' @param na Values to be treated as missing values.
-#' @param maxiter Maximum number of EM algorithm iterations. Default is 100.
+#' @param maxiter Maximum number of EM algorithm iterations. Default is 1000.
 #' @param verbose Logical; if TRUE, displays progress during estimation. Default is FALSE.
 #' @param beta1 Beta distribution parameter 1 for prior density of class reference matrix. Default is 1.
 #' @param beta2 Beta distribution parameter 2 for prior density of class reference matrix. Default is 1.
@@ -108,8 +108,44 @@
 #' }
 #'
 #' @export
-LCA <- function(U, ncls = 2, na = NULL, Z = NULL, w = NULL, maxiter = 100,
-                verbose = FALSE, beta1 = 1, beta2 = 1, conf = NULL) {
+LCA <- function(U, ...) {
+  UseMethod("LCA")
+}
+
+#' @rdname LCA
+#' @param ... Additional arguments passed to specific methods.
+#'
+#' @export
+LCA.default <- function(U, na = NULL, Z = NULL, w = NULL, ...) {
+  if (inherits(U, "exametrika")) {
+    if (U$response.type == "binary") {
+      return(LCA.binary(U, ...))
+    } else if (U$response.type == "nominal") {
+      return(LCA.nominal(U, ...))
+    } else if (U$response.type == "rated") {
+      return(LCA.rated(U, ...))
+    } else if (U$response.type == "ordinal") {
+      # Latent classes carry no order, so the category order cannot enter the
+      # model: estimation is the nominal one. Say so rather than silently
+      # treating ordered ratings as unordered labels.
+      message(
+        "Latent classes are unordered, so the category order is not used in ",
+        "estimation; the model fitted is the nominal one. ",
+        "Use LRA() if the ordering should be respected."
+      )
+      return(LCA.nominal(U, ...))
+    }
+    response_type_error(U$response.type, "LCA")
+  }
+
+  U <- dataFormat(U, na = na, Z = Z, w = w)
+  return(LCA(U, ...))
+}
+
+#' @rdname LCA
+#' @export
+LCA.binary <- function(U, ncls = 2, na = NULL, Z = NULL, w = NULL, maxiter = 1000,
+                       verbose = FALSE, beta1 = 1, beta2 = 1, conf = NULL, ...) {
   # data format
   if (!inherits(U, "exametrika")) {
     tmp <- dataFormat(data = U, na = na, Z = Z, w = w)
@@ -177,5 +213,250 @@ LCA <- function(U, ncls = 2, na = NULL, Z = NULL, w = NULL, maxiter = 100,
     Nclass = ncls,
     N_Cycle = fit$iter
   ), class = c("exametrika", "LCA"))
+  return(ret)
+}
+
+#' @rdname LCA
+#' @param alpha Dirichlet prior parameter for the category profiles
+#'   (nominal data only). Default 1, which leaves the M-step at the plain
+#'   multinomial MLE.
+#'
+#' @details
+#' For nominal data the model is a finite mixture of product-multinomial
+#' distributions: every latent class carries an independent category
+#' distribution for each item, and no ordering is imposed on the classes or on
+#' the categories. Category counts may differ across items.
+#'
+#' Ordered rating data is routed to this method as well, because unordered
+#' latent classes give the category order nothing to attach to. Use
+#' \code{\link{LRA}} when the ordering should be respected.
+#'
+#' No benchmark (saturated) model is fitted, for the same reason as in
+#' \code{Biclustering.nominal}: with many items and categories nearly every
+#' response pattern is unique, so the saturated log-likelihood is not
+#' informative. Only AIC, BIC and CAIC are reported; the chi-square based
+#' indices are NA.
+#'
+#' @export
+LCA.nominal <- function(U, ncls = 2, na = NULL, Z = NULL, w = NULL, maxiter = 1000,
+                        verbose = FALSE, alpha = 1, ...) {
+  # data format
+  if (!inherits(U, "exametrika")) {
+    tmp <- dataFormat(data = U, na = na, Z = Z, w = w)
+  } else {
+    tmp <- U
+  }
+
+  if (!tmp$response.type %in% c("nominal", "ordinal")) {
+    response_type_error(tmp$response.type, "LCA")
+  }
+
+  if (ncls < 2 | ncls > 20) {
+    stop("Please set the number of classes to a number between 2 and less than 20.")
+  }
+
+  tmp$Q <- remap_category_codes(tmp$Q)
+  nobs <- NROW(tmp$Q)
+  nitems <- NCOL(tmp$Q)
+  ncat <- as.vector(tmp$categories)
+  const <- exp(-nitems)
+
+  fit <- emclus_nominal(tmp$Q, tmp$Z, ncls,
+    ncat = ncat, alpha = alpha,
+    maxiter = maxiter, verbose = verbose
+  )
+
+  ## Returns
+  #### Class Information
+  clsNum <- apply(fit$clsmemb, 1, which.max)
+  bMax <- matrix(rep(apply(fit$clsmemb, 1, max), ncls), ncol = ncls)
+  cls01 <- sign(fit$clsmemb - bMax) + 1
+  LCD <- colSums(cls01)
+  CMD <- colSums(fit$clsmemb)
+  StudentClass <- cbind(fit$clsmemb, clsNum)
+  colnames(StudentClass) <- c(paste("Membership", 1:ncls), "Estimate")
+  rownames(StudentClass) <- tmp$ID
+
+  ### Item Information
+  # profile is items x classes x max(ncat) with the slots beyond an item's own
+  # category count held at zero; flatten to the ragged sum(ncat) layout so that
+  # items with different category counts line up with their labels.
+  idx <- do.call(rbind, lapply(seq_len(nitems), function(j) {
+    cbind(j, seq_len(ncat[j]))
+  }))
+  cat_probs <- t(vapply(
+    seq_len(nrow(idx)),
+    function(r) fit$profile[idx[r, 1], , idx[r, 2]],
+    numeric(ncls)
+  ))
+  ICRP <- as.data.frame(cat_probs)
+  colnames(ICRP) <- paste0("class", 1:ncls)
+  ICRP <- cbind(
+    ItemLabel = rep(tmp$ItemLabel, ncat),
+    CategoryLabel = unlist(tmp$CategoryLabel),
+    ICRP
+  )
+
+  ### Model Fit
+  # Null model: each item's marginal category distribution, ignoring classes.
+  maxQ <- max(ncat)
+  Uq <- array(0, dim = c(nobs, nitems, maxQ))
+  valid <- as.vector(tmp$Z) == 1
+  Uq[cbind(
+    rep(seq_len(nobs), times = nitems)[valid],
+    rep(seq_len(nitems), each = nobs)[valid],
+    as.vector(tmp$Q)[valid]
+  )] <- 1
+  ZU <- Uq * as.vector(tmp$Z)
+  ZU_col_sums <- colSums(ZU, dims = 1)
+  NullFRQ <- ZU_col_sums / colSums(tmp$Z)
+  ell_N <- sum(ZU_col_sums * log(NullFRQ + const))
+
+  # Class sizes are not free parameters in this formulation (the E-step gives
+  # every class the same implicit prior, as in emclus() for binary data), so
+  # the count is the category profiles alone.
+  nparam <- ncls * sum(ncat - 1)
+  testell <- fit$log_lik
+  AIC <- -2 * testell + 2 * nparam
+  CAIC <- -2 * testell + nparam * (log(nobs) + 1)
+  BIC <- -2 * testell + nparam * log(nobs)
+
+  FitIndices <- structure(
+    list(
+      model_log_like = testell,
+      bench_log_like = NA,
+      null_log_like = ell_N,
+      model_Chi_sq = NA,
+      null_Chi_sq = NA,
+      model_df = NA,
+      null_df = NA,
+      NFI = NA,
+      RFI = NA,
+      IFI = NA,
+      TLI = NA,
+      CFI = NA,
+      RMSEA = NA,
+      AIC = AIC,
+      CAIC = CAIC,
+      BIC = BIC
+    ),
+    class = c("exametrika", "ModelFit")
+  )
+
+  ret <- structure(list(
+    msg = "Class",
+    testlength = nitems,
+    nobs = nobs,
+    n_class = ncls,
+    n_cycle = fit$iter,
+    converge = fit$converge,
+    categories = ncat,
+    ItemLabel = tmp$ItemLabel,
+    ICRP = ICRP,
+    LCD = as.vector(LCD),
+    CMD = as.vector(CMD),
+    Students = StudentClass,
+    TestFitIndices = FitIndices,
+    log_lik = testell,
+    # Deprecated fields (for backward compatibility)
+    Nclass = ncls,
+    N_Cycle = fit$iter,
+    LogLik = testell
+  ), class = c("exametrika", "nominalLCA"))
+  return(ret)
+}
+
+#' @rdname LCA
+#' @details
+#' For rated data (multiple-choice items with a key) the estimation is the
+#' nominal one — \code{LCA.rated} calls \code{LCA.nominal} internally — and the
+#' key is used afterwards to recover the quantities that need a notion of a
+#' correct answer. The Item Reference Profile is the model-implied probability
+#' of the keyed category, \code{IRP[j, c] = rho[j, CA[j] | c]}, and the Test
+#' Reference Profile is its weighted item sum. Unlike
+#' \code{\link{Biclustering}} on rated data, the classes are not sorted by
+#' correct response rate: latent classes carry no order, and sorting them would
+#' suggest one.
+#'
+#' Two layers of fit are reported. \code{TestFitIndices} is the binary layer,
+#' built from correct/incorrect responses under the class-membership-weighted
+#' correct probabilities, so it carries the usual chi-square based indices and
+#' is comparable with binary \code{LCA}. \code{TestFitIndicesNominal} is the
+#' nominal layer taken from the internal fit, with AIC/BIC/CAIC only. The full
+#' category probabilities stay in \code{ICRP} for distractor analysis.
+#'
+#' @export
+LCA.rated <- function(U, ncls = 2, na = NULL, Z = NULL, w = NULL, maxiter = 1000,
+                      verbose = FALSE, alpha = 1, ...) {
+  # data format
+  if (!inherits(U, "exametrika")) {
+    tmp <- dataFormat(data = U, na = na, Z = Z, w = w)
+  } else {
+    tmp <- U
+  }
+
+  if (tmp$response.type != "rated") {
+    response_type_error(tmp$response.type, "LCA")
+  }
+
+  # --- Step 1: estimate as nominal ---------------------------------------
+  # Reuse the already-formatted object instead of re-running dataFormat, as
+  # Biclustering.rated does.
+  dat_nom <- tmp
+  dat_nom$response.type <- "nominal"
+  ret_nom <- LCA.nominal(dat_nom,
+    ncls = ncls, maxiter = maxiter,
+    verbose = verbose, alpha = alpha, ...
+  )
+
+  nobs <- NROW(tmp$Q)
+  nitems <- NCOL(tmp$Q)
+  const <- exp(-nitems)
+  ncat <- as.vector(tmp$categories)
+  CA <- as.vector(tmp$CA)
+
+  # --- Step 2: correct-category probabilities ----------------------------
+  # ICRP holds one row per (item, category) in item-major order, so the row of
+  # item j's keyed category is the offset of item j plus CA[j].
+  offset <- c(0, cumsum(ncat)[-nitems])
+  key_rows <- offset + CA
+  IRP <- as.matrix(ret_nom$ICRP[key_rows, paste0("class", 1:ncls), drop = FALSE])
+  rownames(IRP) <- tmp$ItemLabel
+  colnames(IRP) <- paste0("IRP", 1:ncls)
+
+  TRP <- as.vector(t(IRP) %*% tmp$w)
+
+  # --- Step 3: binary layer of fit ---------------------------------------
+  clsmemb <- ret_nom$Students[, 1:ncls, drop = FALSE]
+  P_correct <- clsmemb %*% t(IRP)
+  ell_binary <- sum(tmp$Z * (tmp$U * log(pmax(P_correct, const)) +
+    (1 - tmp$U) * log(pmax(1 - P_correct, const))))
+  FitIndices <- TestFit(tmp$U, tmp$Z, ell_binary, nitems * ncls)
+
+  ret <- structure(list(
+    msg = "Class",
+    testlength = nitems,
+    nobs = nobs,
+    n_class = ncls,
+    n_cycle = ret_nom$n_cycle,
+    converge = ret_nom$converge,
+    categories = ncat,
+    ItemLabel = tmp$ItemLabel,
+    CA = CA,
+    IRP = IRP,
+    TRP = TRP,
+    ICRP = ret_nom$ICRP,
+    LCD = ret_nom$LCD,
+    CMD = ret_nom$CMD,
+    Students = ret_nom$Students,
+    TestFitIndices = FitIndices,
+    TestFitIndicesNominal = ret_nom$TestFitIndices,
+    log_lik = ell_binary,
+    log_lik_nominal = ret_nom$log_lik,
+    # Deprecated fields (for backward compatibility)
+    Nclass = ncls,
+    N_Cycle = ret_nom$n_cycle,
+    LogLik = ell_binary
+  ), class = c("exametrika", "ratedLCA"))
   return(ret)
 }

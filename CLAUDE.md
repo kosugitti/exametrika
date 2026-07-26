@@ -143,11 +143,30 @@ docs/                # .gitignore'd (removed from repo); pkgdown site deployed t
 
 | | binary | ordinal | rated | nominal |
 |---|---|---|---|---|
-| LRA | yes | yes | yes | — |
+| LCA | yes | via nominal | yes | yes |
+| LRA | yes | yes | yes | n/a |
 | Biclustering | yes | yes | yes | yes |
-| IRM | yes | yes | — | yes |
+| IRM | yes | yes | n/a | yes |
 
 rated = nominal + correct answer (multiple-choice tests); ordinal = Likert-type ordered ratings.
+
+"n/a" means **not applicable**, not unimplemented (decided 2026-07-22):
+- `LRA.nominal` cannot exist. A rank ordering has to be anchored in the category
+  ordering (higher ranks favour higher categories); nominal labels give it nothing
+  to attach to. Nominal data passed to `LRA()` is handed to `LCA.nominal()` with a
+  message. The same argument rules out the isotonic estimator for nominal data:
+  its constraint lives on cumulative probabilities `P(>= q)`, and ">= q" needs
+  ordered categories to mean anything.
+- "via nominal" (LCA, ordinal): latent classes carry no order, so the category
+  ordering has nothing to attach to either — estimation *is* the nominal one, and
+  `LCA()` says so before delegating. A genuinely ordinal LCA would have to put the
+  order inside the category profiles (see Future Work); it is not a wrapper.
+- `LCA.rated` calls `LCA.nominal()` and adds the correct-answer post-processing:
+  `IRP[j, c] = rho[j, CA[j] | c]` (model-implied, not the empirical class-assignment
+  rate `Biclustering.rated` uses), `TRP` as its weighted item sum, and a binary layer
+  of fit indices alongside the nominal one. It does NOT sort classes by correct rate
+  the way `Biclustering.rated` does — LCA classes are unordered, and sorting would
+  imply otherwise.
 
 ## Known Technical Debt
 
@@ -245,12 +264,37 @@ rated = nominal + correct answer (multiple-choice tests); ordinal = Likert-type 
   `plot.igraph()` + `layout_on_grid()`. Both are user-visible, so removing them
   is a breaking change and needs a replacement drawing path.
 - BINET FRPIndex addition
-- LCA.nominal — 仕様確定済み(EMエンジン `00_EMclus_nominal.R` のみ存在，本体未実装)。
+- Ordinal LCA with unordered classes (a real model, not a wrapper) — categories carry
+  order while classes do not, so the order has to enter through the category profiles
+  themselves: a unimodality restriction per class, or a class-specific location under a
+  cumulative link. Not to be confused with routing ordinal data to `LCA.nominal` (which
+  is what we do now, and which ignores the order). Revisit alongside the v2.0.0
+  polytomous BNM, where the cumulative link is already on the table.
+- **EM convergence criterion (fixed 2026-07-26, breaking)** — the criterion inherited
+  from Shojima's Mathematica had three defects: the sentinel `-exp(J)` sits *above*
+  the log-likelihood on short tests (EM exited after one cycle reporting
+  `converge = TRUE`); the monitored quantity was the expected log-posterior
+  `Q(theta_t|theta_{t-1})`, which is not monotone (the book's eq. 5.11 states
+  monotonicity for the observed-data log-posterior but the formula given computes the
+  expected one); and the relative tolerance `1e-4` on a value of order 1e3 stopped EM
+  ~0.4 nats short. Now: observed-data log-likelihood, `-Inf` sentinel with the first
+  pass skipped, `tol = 1e-8`, `maxiter` 1000 — in `emclus()`, `emclus_isotonic()`,
+  `emclus_nominal()`. Biclustering (07/15/16) got only the sentinel and tolerance
+  (a two-sided mixture has no single observed-data likelihood); `IRT()` uses 1e-6
+  (one `optim()` per item per cycle). The Mathematica side was corrected in step and
+  agrees to full double precision. Guard trap: `emt > 0` is not enough — on the second
+  pass `oldtestell` is still `-Infinity` and `Infinity <= Infinity` is TRUE; use
+  `NumberQ[oldtestell]` / `is.finite(old_test_log_lik)`.
+- LCA.nominal / LCA.rated — **DONE 2026-07-26** (`R/05_LCA.R`). What remains is $M_2$.
   適合度は飽和モデルを作らず $M_2$(Maydeu-Olivares & Joe 2006)で出す方針。設計メモは
-  `develop/Algorithm_M2.tex`(2026-07-25に全節レビュー完了・14p)。実装順は LCA.nominal 本体
-  → $M_2$(二値2PLで mirt の `M2(fit, type = "M2")` と数値一致を取ってから名義へ。mirtはGPL
-  なので参照実行のみ・コード取り込み不可)。`calcFitIndices()` に流し込めば NFI 以下は出るが
-  `bench_log_like` だけは対応物がなく NA。
+  `develop/Algorithm_M2.tex`(14p)，試作は `develop/20260725_M2_prototype.R`(メモの数値例を
+  完全再現・$\Xi$ をモンテカルロ検証済み・J20S600 で1秒未満)。次は二値2PLで mirt の
+  `M2(fit, type = "M2")` と突合してから名義へ(mirtはGPLなので参照実行のみ・取り込み不可)。
+  `calcFitIndices()` に流し込めば NFI 以下は出るが `bench_log_like` だけは NA。
+  **要注意2点**: (a) 混合比は推定しない($\gamma_c \equiv 1/C$)ので $t = C\sum_j(Q_j-1)$，
+  $\Delta$ に $\gamma$ 列はない。(b) その定式化では 2次マージンがクラス偏差行列のグラム行列に
+  しか依存せず，$\Delta$ が $(C-1)(C-2)/2$ だけランク落ちする($C\ge3$ で母数が2次マージンから
+  識別されない)。自由度は $m-\mathrm{rank}(\Delta)$ を使い，射影はSVDで作る。
 - Input data storage method unification (v2.0.0)
 - **Order-restricted IRM (estimate the number of *ordered* classes)** — the missing
   cell in the design grid: `Biclustering`/`Ranklustering` cover "class count given",

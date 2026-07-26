@@ -4,6 +4,57 @@
 # no logic changed, only moved into named functions called from the
 # print.exametrika() switch() in R/00_exametrikaPrint.R.
 
+#' @title Print helper: ratedLCA
+#' @noRd
+print_rated_lca_case <- function(x, digits) {
+  cat("\nItem Reference Profile\n")
+  print(x$IRP, digits = digits)
+  cat("\nTest Profile\n")
+  y <- rbind(x$TRP, x$LCD, x$CMD)
+  rownames(y) <- c(
+    "Test Reference Profile",
+    "Latent Class Ditribution",
+    "Class Membership Distribution"
+  )
+  colnames(y) <- paste("Class", 1:x$n_class)
+  print(round(y, digits))
+  cat("\nModel Fit Indices\n")
+  cat(paste("Number of Latent class:", x$n_class))
+  cat(paste("\nNumber of EM cycle:", x$n_cycle, "\n"))
+  cat("Binary layer (correct / incorrect)\n")
+  y <- unclass(x$TestFitIndices)
+  y <- t(as.data.frame(y))
+  colnames(y) <- "value"
+  print(round(y, digits))
+  cat("\nNominal layer (all categories)\n")
+  y <- unclass(x$TestFitIndicesNominal)
+  y <- t(as.data.frame(y))
+  colnames(y) <- "value"
+  print(round(y, digits))
+}
+
+#' @title Print helper: nominalLCA
+#' @noRd
+print_nominal_lca_case <- function(x, digits) {
+  cat("\nItem Category Reference Profile\n")
+  print(x$ICRP, digits = digits)
+  cat("\nTest Profile\n")
+  y <- rbind(x$LCD, x$CMD)
+  rownames(y) <- c(
+    "Latent Class Ditribution",
+    "Class Membership Distribution"
+  )
+  colnames(y) <- paste("Class", 1:x$n_class)
+  print(round(y, digits))
+  cat("\nModel Fit Indices\n")
+  cat(paste("Number of Latent class:", x$n_class))
+  cat(paste("\nNumber of EM cycle:", x$n_cycle, "\n"))
+  y <- unclass(x$TestFitIndices)
+  y <- t(as.data.frame(y))
+  colnames(y) <- "value"
+  print(round(y, digits))
+}
+
 #' @title Print helper: LCA
 #' @noRd
 print_lca_case <- function(x, digits) {

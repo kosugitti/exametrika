@@ -57,6 +57,24 @@ LRA.default <- function(U, na = NULL, Z = NULL, w = NULL, ...) {
       return(LRA.ordinal(U, ...))
     } else if (U$response.type == "rated") {
       return(LRA.rated(U, ...))
+    } else if (U$response.type == "nominal") {
+      # A rank ordering has to come from somewhere: in LRA it comes from the
+      # categories being ordered (higher ranks favour higher categories).
+      # Nominal categories give it nothing to attach to, so the model is not
+      # defined here -- hand the data to its unordered counterpart instead of
+      # stopping.
+      message(
+        "Latent ranks require ordered categories, so they are not defined for ",
+        "nominal data; analysing it with LCA() instead."
+      )
+      # nrank is the LRA spelling of the same argument; carry it over rather
+      # than letting it disappear into ... and silently leaving ncls at 2.
+      args <- list(...)
+      if (!is.null(args$nrank)) {
+        args$ncls <- args$nrank
+        args$nrank <- NULL
+      }
+      return(do.call(LCA.nominal, c(list(U), args)))
     } else {
       response_type_error(U$response.type, "LRA")
     }
@@ -77,7 +95,7 @@ LRA.default <- function(U, na = NULL, Z = NULL, w = NULL, ...) {
 #'   "GTM" (Gaussian Topographic Mapping; filter smoothing), or
 #'   "SOM" (Self-Organizing Maps). Default is "isotonic".
 #' @param mic Logical; if TRUE, forces Item Reference Profiles to be monotonically increasing. Default is FALSE.
-#' @param maxiter Maximum number of iterations for estimation. Default is 100.
+#' @param maxiter Maximum number of iterations for estimation. Default is 1000.
 #' @param BIC.check For binary data with SOM method only. If TRUE, convergence is checked using BIC values. Default is FALSE.
 #' @param seed For binary data with SOM method only. Random seed for reproducibility.
 #' @param verbose Logical; if TRUE, displays detailed progress during estimation. Default is FALSE.
@@ -119,7 +137,7 @@ LRA.binary <- function(U,
                        nrank = 2,
                        method = "isotonic",
                        mic = FALSE,
-                       maxiter = 100,
+                       maxiter = 1000,
                        BIC.check = FALSE,
                        seed = NULL,
                        verbose = FALSE,

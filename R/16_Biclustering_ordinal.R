@@ -26,7 +26,7 @@ Biclustering.ordinal <- function(U,
                                  conf = NULL,
                                  conf_class = NULL,
                                  mic = FALSE,
-                                 maxiter = 100,
+                                 maxiter = 1000,
                                  verbose = FALSE,
                                  alpha = 1, ...) {
   tmp <- U
@@ -34,8 +34,12 @@ Biclustering.ordinal <- function(U,
   nobs <- NROW(tmp$Q)
   nitems <- NCOL(tmp$Q)
   const <- exp(-nitems)
-  test_log_lik <- -1 / const
-  old_test_log_lik <- -2 / const
+  # -Inf, not -1/const = -exp(J): the old sentinel sits above the real
+  # log-likelihood on short tests with many respondents, which ended the
+  # loop after one cycle while reporting convergence. The first pass skips
+  # the comparison instead (emt == 0).
+  test_log_lik <- -Inf
+  old_test_log_lik <- -Inf
   emt <- 0
   maxemt <- maxiter
   ncat <- as.vector(tmp$categories)
@@ -180,8 +184,8 @@ Biclustering.ordinal <- function(U,
   converge <- TRUE
   FLG <- TRUE
   while (FLG) {
-    if (!is.finite(test_log_lik) ||
-      test_log_lik - old_test_log_lik < 1e-8 * abs(old_test_log_lik)) {
+    if (emt > 0 && (!is.finite(test_log_lik) ||
+      test_log_lik - old_test_log_lik < 1e-8 * abs(old_test_log_lik))) {
       if (!is.finite(test_log_lik)) converge <- FALSE
       FLG <- FALSE
       break

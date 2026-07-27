@@ -49,6 +49,22 @@ planned for 2.0.0 ride along, so that the break happens once.
   the strength of the pin depends on the test length looks unintended and is
   being reviewed separately.
 
+- **`M2()` says how much memory it needs, and refuses a size the machine cannot
+  hold.** The margin covariance is a dense `m x m` matrix and `m` grows with the
+  *square* of the test length: 35 items over 5 categories is 0.7 GB, 40 items is
+  1.2 GB, 72 items is 32 GB. Allocating tens of gigabytes unannounced is not
+  something a user can recover from -- the operating system kills the process,
+  taking the session and everything in it -- so `M2()` and `add_M2()` now report
+  the size before starting whenever the computation needs 2 GB or more, and stop
+  with an explicit error when the projected peak exceeds four fifths of physical
+  memory. No question is asked: a prompt would have to be limited to
+  `interactive()` to keep scripts and `R CMD check` from waiting on input, which
+  would make the behaviour depend on how the code was started.
+
+  `options(exametrika.m2_max_gb = )` replaces the memory-derived ceiling with an
+  explicit one, and `Inf` removes the check for anyone who wants the old
+  behaviour back.
+
 - **`M2()` on a rank-deficient margin covariance is roughly 300x faster.** When
   the Cholesky factorisation of `Xi` fails, the fallback was an
   eigendecomposition -- an order of magnitude more arithmetic than the

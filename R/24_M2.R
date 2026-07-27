@@ -432,6 +432,7 @@ m2_from_lca <- function(x, verbose = TRUE, gc = TRUE) {
   ncat <- as.vector(x$categories)
   ncls <- x$n_class
   nitems <- length(ncat)
+  m2_report_size(ncat, verbose)
 
   # rebuild the profile array from ICRP (items x classes x categories)
   profile <- array(0, dim = c(nitems, ncls, max(ncat)))
@@ -612,7 +613,7 @@ add_m2_to_biclustering <- function(x, verbose = TRUE, gc = TRUE) {
 #' structure enters it.
 #' @noRd
 m2_indices_from <- function(fitted, Q, Z, ncat, nobs, verbose) {
-  if (verbose && m2_report_size(ncat, verbose = FALSE) > 5000) {
+  if (m2_report_size(ncat, verbose = FALSE) > 5000 && verbose) {
     message("M2: computing the statistic for the independence baseline ...")
   }
   null_profile <- m2_null_profile(Q, Z, ncat)
@@ -627,7 +628,7 @@ add_m2_to_lca <- function(x, verbose = TRUE, gc = TRUE) {
   # Two statistics are needed, the model's and the baseline's, and they cannot
   # share a covariance matrix -- each is computed under its own model. On a long
   # test that is a wait worth narrating.
-  talk <- verbose && m2_report_size(ncat, verbose = FALSE) > 5000
+  talk <- m2_report_size(ncat, verbose = FALSE) > 5000 && verbose
 
   if (talk) message("M2: computing the statistic for the fitted model ...")
   fitted <- m2_from_lca(x, verbose = verbose, gc = FALSE)
@@ -783,15 +784,107 @@ m2_release <- function(gc) {
 
 #' @title Report the size of the margin covariance before building it
 #' @noRd
+#' @title Physical memory of this machine, in GB
+#' @description
+#' Returns `NA` wherever the answer cannot be had portably, and every caller
+#' treats `NA` as "no opinion" rather than as a small number. Total rather than
+#' available memory: it is the figure that can be read reliably on both
+#' platforms, and it is the right one for deciding that a computation cannot
+#' possibly fit.
+#' @return numeric, GB, or `NA_real_`
+#' @noRd
+m2_machine_ram_gb <- function() {
+  os <- Sys.info()[["sysname"]]
+  return(tryCatch(
+    {
+      if (identical(os, "Linux")) {
+        line <- grep("^MemTotal:", readLines("/proc/meminfo", warn = FALSE),
+          value = TRUE
+        )[1]
+        as.numeric(sub("^MemTotal:\\s*([0-9]+)\\s*kB.*$", "\\1", line)) / 1024^2
+      } else if (identical(os, "Darwin")) {
+        as.numeric(system("sysctl -n hw.memsize", intern = TRUE)) / 1024^3
+      } else {
+        NA_real_
+      }
+    },
+    error = function(e) NA_real_,
+    warning = function(w) NA_real_
+  ))
+}
+
+#' @title Decide whether an M2 computation of this size should go ahead
+#' @description
+#' Two tiers, because the situations differ in kind:
+#'
+#' * **Beyond the machine.** The projected peak exceeds four fifths of physical
+#'   memory, so the process would be killed by the operating system rather than
+#'   by R, taking the session and everything in it. That is refused outright: an
+#'   error leaves the user's work intact, which being killed does not. Four
+#'   fifths rather than all of it because nothing else on the machine stops
+#'   needing memory while this runs.
+#' * **Large, but it fits.** Reported once, and then it runs. No question is
+#'   asked: a prompt would have to be confined to `interactive()` to keep
+#'   scripts and `R CMD check` from waiting on input, which makes the behaviour
+#'   depend on how the code was started -- worse than simply saying the size.
+#'
+#' `options(exametrika.m2_max_gb = )` replaces the memory-derived ceiling with
+#' an explicit one; `Inf` removes the check.
+#' @param m number of margins
+#' @param nitems number of items, for the message
+#' @param verbose whether to report a size worth mentioning
+#' @noRd
+m2_size_gate <- function(m, nitems, verbose) {
+  xi_gb <- m^2 * 8 / 1024^3
+  peak_gb <- xi_gb * 2.5
+  size_note <- sprintf(
+    "%d items give %d margins: the margin covariance is %.1f GB and the whole computation needs about %.1f GB",
+    nitems, m, xi_gb, peak_gb
+  )
+
+  max_gb <- getOption("exametrika.m2_max_gb", NULL)
+  ram_gb <- m2_machine_ram_gb()
+  if (is.null(max_gb)) {
+    max_gb <- if (is.na(ram_gb)) Inf else ram_gb * 0.8
+    hard_reason <- sprintf("this machine has %.0f GB", ram_gb)
+  } else {
+    hard_reason <- "the limit set in options(exametrika.m2_max_gb)"
+  }
+
+  if (is.finite(max_gb) && peak_gb > max_gb) {
+    stop(sprintf(
+      paste0(
+        "M2() cannot run at this size: %s, and %s. The cost grows with the ",
+        "square of the test length, so this is a wall rather than a slow run. ",
+        "Raise it with options(exametrika.m2_max_gb = %.0f) only if the memory ",
+        "is really there -- exceeding it is not a slow computation but a killed ",
+        "session."
+      ),
+      size_note, hard_reason, ceiling(peak_gb)
+    ), call. = FALSE)
+  }
+
+  # Below this, saying anything is just noise: it is the size at which the wait
+  # becomes long enough that a user would want to have been told.
+  if (verbose && peak_gb >= 2) {
+    message(sprintf("M2: %s.", size_note))
+  }
+  return(invisible(TRUE))
+}
+
+#' @title Size bookkeeping for M2
+#' @description
+#' Counts the margins and hands the decision to \code{m2_size_gate()}. Every
+#' entry point calls this before allocating anything, so the gate sees the size
+#' while the memory is still free.
+#' @param ncat integer vector of category counts, one per item
+#' @param verbose whether to report the size when it is worth mentioning
+#' @return the number of margins, invisibly
+#' @noRd
 m2_report_size <- function(ncat, verbose) {
   nitems <- length(ncat)
   m <- sum(ncat - 1) + sum(outer(ncat - 1, ncat - 1)[upper.tri(diag(nitems))])
-  if (verbose && m > 5000) {
-    message(sprintf(
-      "M2: %d margins; the covariance matrix is %.1f GB and its factorisation dominates the cost.",
-      m, m^2 * 8 / 1024^3
-    ))
-  }
+  m2_size_gate(m, nitems, verbose)
   return(invisible(m))
 }
 

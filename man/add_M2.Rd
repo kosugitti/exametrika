@@ -5,6 +5,9 @@
 \alias{add_M2.default}
 \alias{add_M2.nominalLCA}
 \alias{add_M2.ratedLCA}
+\alias{add_M2.LRAordinal}
+\alias{add_M2.ordinalBiclustering}
+\alias{add_M2.nominalBiclustering}
 \title{Attach the margin-based fit indices to a fitted model}
 \usage{
 add_M2(x, ...)
@@ -14,6 +17,12 @@ add_M2(x, ...)
 \method{add_M2}{nominalLCA}(x, verbose = TRUE, gc = TRUE, ...)
 
 \method{add_M2}{ratedLCA}(x, verbose = TRUE, gc = TRUE, ...)
+
+\method{add_M2}{LRAordinal}(x, verbose = TRUE, gc = TRUE, ...)
+
+\method{add_M2}{ordinalBiclustering}(x, verbose = TRUE, gc = TRUE, ...)
+
+\method{add_M2}{nominalBiclustering}(x, verbose = TRUE, gc = TRUE, ...)
 }
 \arguments{
 \item{x}{A fitted model object of class "exametrika".}

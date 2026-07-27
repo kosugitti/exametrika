@@ -244,6 +244,20 @@ planned for 2.0.0 ride along, so that the break happens once.
   filter-based (GTM) and order-restricted estimation the statistic is
   descriptive: recorded, not tested.
 
+- `add_M2()` covers `LRA()` on ordinal data and `Biclustering()` on ordinal or
+  nominal data as well, so any of them can carry both sets of fit indices. For
+  ordinal data the response-pattern indices are complete — a saturated model
+  exists — so two full sets stand side by side, which is precisely where keeping
+  them apart matters.
+
+  Where the reference distribution does not hold, the margin block says so, and
+  names the reason that applies rather than issuing a generic warning: the field
+  partition is taken as given (any biclustering), the order restriction can bind
+  so the limit is a mixture of chi-squares (isotonic), filter smoothing is a
+  regularisation rather than a maximum likelihood estimator (GTM). A nominal LCA
+  gets no such line, being an honest maximum likelihood fit. The numbers are
+  still worth reading as description; the p value is not a test.
+
 - `M2()` and `add_M2()` take `gc = TRUE`, which releases the workspace before
   returning. The margin covariance and its factor are the largest objects the
   package allocates and R otherwise keeps the block. Interactive use wants this;

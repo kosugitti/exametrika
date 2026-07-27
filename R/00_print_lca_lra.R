@@ -61,6 +61,25 @@ print_nominal_lca_case <- function(x, digits, fit_indices = "both") {
   print_fit_two_worlds(x, digits, fit_indices)
 }
 
+#' @title Print the margin-based block
+#' @description
+#' The caveat, when there is one, is printed rather than stored silently: these
+#' numbers are still worth reading as description, but the p value is not a test
+#' unless the fit was by maximum likelihood.
+#' @noRd
+print_margin_block <- function(m2, digits) {
+  cat("\nMargin based (M2)\n")
+  caveat <- m2$caveat
+  m2$caveat <- NULL
+  y <- t(as.data.frame(unclass(m2)))
+  colnames(y) <- "value"
+  print(round(y, digits))
+  if (!is.null(caveat) && !is.na(caveat)) {
+    cat("  ", caveat, "\n", sep = "")
+  }
+  return(invisible(NULL))
+}
+
 #' @title Print the response-pattern and margin-based fit indices
 #' @description
 #' The two must not be mixed into one set of indices -- they are built from
@@ -84,11 +103,7 @@ print_fit_two_worlds <- function(x, digits, fit_indices = c("both", "pattern", "
 
   if (fit_indices %in% c("both", "margin")) {
     if (has_margin) {
-      cat("\nMargin based (M2)\n")
-      y <- unclass(x$TestFitIndicesM2)
-      y <- t(as.data.frame(y))
-      colnames(y) <- "value"
-      print(round(y, digits))
+      print_margin_block(x$TestFitIndicesM2, digits)
     } else if (fit_indices == "margin") {
       cat("\nMargin based (M2): not computed. Call add_M2() first.\n")
     }
@@ -158,7 +173,7 @@ print_lra_case <- function(x, digits) {
 
 #' @title Print helper: LRAordinal
 #' @noRd
-print_lra_ordinal_case <- function(x, digits) {
+print_lra_ordinal_case <- function(x, digits, fit_indices = "both") {
   if (x$mic) {
     cat("\n Monotonic increasing IRP option is TRUE.\n")
   }
@@ -186,6 +201,9 @@ print_lra_ordinal_case <- function(x, digits) {
   y <- t(as.data.frame(y))
   colnames(y) <- "value"
   print(round(y, digits))
+  if (!is.null(x$TestFitIndicesM2) && fit_indices %in% c("both", "margin")) {
+    print_margin_block(x$TestFitIndicesM2, digits)
+  }
 }
 
 #' @title Print helper: LRArated

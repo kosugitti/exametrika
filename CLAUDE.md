@@ -285,9 +285,14 @@ rated = nominal + correct answer (multiple-choice tests); ordinal = Likert-type 
   agrees to full double precision. Guard trap: `emt > 0` is not enough — on the second
   pass `oldtestell` is still `-Infinity` and `Infinity <= Infinity` is TRUE; use
   `NumberQ[oldtestell]` / `is.finite(old_test_log_lik)`.
-- LCA.nominal / LCA.rated / $M_2$ — **DONE 2026-07-26** (`R/05_LCA.R`, `R/24_M2.R`).
-  What remains is extending $M_2$ to Biclustering (field-shared Jacobian) and LRA, which the
-  A3 simulation wants so that all three arms carry the statistic.
+- LCA.nominal / LCA.rated / $M_2$ — **DONE 2026-07-26/27** (`R/05_LCA.R`, `R/24_M2.R`).
+  `M2()` covers LCA (nominal, rated), LRA (ordinal) and Biclustering (ordinal, nominal), so the
+  three arms of the A3 simulation share one scale; `add_M2()` attaches margin-based fit indices.
+  **Everything lives in `R/24_M2.R`** — the model files were not touched, since S3 dispatches on
+  the fitted object's class. Two rules to remember: response-pattern and margin-based indices are
+  never combined (their chi-squares are a likelihood ratio and a quadratic form respectively), and
+  the reference distribution only holds for a maximum likelihood fit, so GTM and order-restricted
+  arms record the statistic without testing it.
   適合度は飽和モデルを作らず $M_2$(Maydeu-Olivares & Joe 2006)で出す方針。設計メモは
   `develop/Algorithm_M2.tex`(14p)，試作は `develop/20260725_M2_prototype.R`(メモの数値例を
   完全再現・$\Xi$ をモンテカルロ検証済み・J20S600 で1秒未満)。次は二値2PLで mirt の

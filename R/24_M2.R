@@ -377,6 +377,7 @@ m2_from_lca <- function(x, verbose = TRUE, gc = TRUE) {
 
   out <- m2_core(profile, ncat, nobs = x$nobs, Q = x$Q, Z = x$Z)
   out$n_class <- ncls
+  out$caveat <- NA_character_
   m2_release(gc)
   return(structure(out, class = c("exametrika", "M2")))
 }
@@ -412,7 +413,8 @@ m2_fit_indices <- function(m2_model, m2_null, nobs) {
       M2_null = m2_null$M2, df_null = m2_null$df,
       n_margin = m2_model$m,
       NFI = idx$NFI, RFI = idx$RFI, IFI = idx$IFI,
-      TLI = idx$TLI, CFI = idx$CFI, RMSEA = idx$RMSEA
+      TLI = idx$TLI, CFI = idx$CFI, RMSEA = idx$RMSEA,
+      caveat = m2_model$caveat
     ),
     class = c("exametrika", "ModelFitM2")
   ))
@@ -490,6 +492,56 @@ add_M2.nominalLCA <- function(x, verbose = TRUE, gc = TRUE, ...) {
 #' @export
 add_M2.ratedLCA <- function(x, verbose = TRUE, gc = TRUE, ...) {
   return(add_m2_to_lca(x, verbose = verbose, gc = gc))
+}
+
+#' @rdname add_M2
+#' @export
+add_M2.LRAordinal <- function(x, verbose = TRUE, gc = TRUE, ...) {
+  dat <- x$U
+  x$TestFitIndicesM2 <- m2_indices_from(
+    M2(x, verbose = verbose, gc = FALSE), dat$Q, dat$Z,
+    as.vector(dat$categories), x$nobs, verbose
+  )
+  m2_release(gc)
+  return(x)
+}
+
+#' @rdname add_M2
+#' @export
+add_M2.ordinalBiclustering <- function(x, verbose = TRUE, gc = TRUE, ...) {
+  return(add_m2_to_biclustering(x, verbose = verbose, gc = gc))
+}
+
+#' @rdname add_M2
+#' @export
+add_M2.nominalBiclustering <- function(x, verbose = TRUE, gc = TRUE, ...) {
+  return(add_m2_to_biclustering(x, verbose = verbose, gc = gc))
+}
+
+#' @title add_M2 for a biclustering fit
+#' @noRd
+add_m2_to_biclustering <- function(x, verbose = TRUE, gc = TRUE) {
+  ncat <- apply(x$Q * (x$Z == 1), 2, max)
+  x$TestFitIndicesM2 <- m2_indices_from(
+    M2(x, verbose = verbose, gc = FALSE), x$Q, x$Z, ncat, x$nobs, verbose
+  )
+  m2_release(gc)
+  return(x)
+}
+
+#' @title Build the margin-based indices given the model's statistic
+#' @description
+#' The baseline is the same for every model family: the independence model,
+#' fitted to the same data. It has one class, so nothing about the model's own
+#' structure enters it.
+#' @noRd
+m2_indices_from <- function(fitted, Q, Z, ncat, nobs, verbose) {
+  if (verbose && m2_report_size(ncat, verbose = FALSE) > 5000) {
+    message("M2: computing the statistic for the independence baseline ...")
+  }
+  null_profile <- m2_null_profile(Q, Z, ncat)
+  null_fit <- m2_core(null_profile, ncat, nobs = nobs, Q = Q, Z = Z)
+  return(m2_fit_indices(fitted, null_fit, nobs))
 }
 
 #' @title Shared body of the add_M2 methods
@@ -605,6 +657,37 @@ m2_profile_from_icrp <- function(icrp, ncat, ncls, prefix) {
   return(profile)
 }
 
+#' @title Why the reference distribution may not hold for this fit
+#' @description
+#' The chi-square distribution of M2 assumes the parameters were estimated by
+#' maximum likelihood, so that the margin residual is orthogonal to the
+#' Jacobian. Three ways of failing that assumption show up in this package, and
+#' each gets its own sentence rather than a generic warning, because the reader
+#' should know which one applies.
+#' @noRd
+m2_caveat_biclustering <- function(x) {
+  parts <- "the field partition is treated as given, so its uncertainty is not in the degrees of freedom"
+  if (!is.null(x$model) && x$model == 2) {
+    est <- if (is.null(x$estimation) || is.na(x$estimation)) "the filter" else x$estimation
+    parts <- c(parts, if (identical(est, "isotonic")) {
+      "the order restriction can bind, which makes the limiting distribution a mixture of chi-squares"
+    } else {
+      "filter smoothing is a regularisation, not a maximum likelihood estimator"
+    })
+  }
+  return(paste0("descriptive only: ", paste(parts, collapse = "; ")))
+}
+
+#' @noRd
+m2_caveat_lra <- function(x) {
+  reason <- if (identical(x$method, "isotonic")) {
+    "the order restriction can bind, which makes the limiting distribution a mixture of chi-squares"
+  } else {
+    "filter smoothing is a regularisation, not a maximum likelihood estimator"
+  }
+  return(paste0("descriptive only: ", reason))
+}
+
 #' @title Give the workspace back to the operating system
 #' @noRd
 m2_release <- function(gc) {
@@ -675,6 +758,7 @@ m2_from_biclustering <- function(x, verbose = TRUE, gc = TRUE) {
   m2_report_size(ncat, verbose)
   out <- m2_core_general(profile, ncat, nobs = x$nobs, Q = x$Q, Z = x$Z, field = field)
   out$n_class <- ncls
+  out$caveat <- m2_caveat_biclustering(x)
   m2_release(gc)
   return(structure(out, class = c("exametrika", "M2")))
 }
@@ -693,6 +777,7 @@ M2.LRAordinal <- function(x, verbose = TRUE, gc = TRUE, ...) {
   m2_report_size(ncat, verbose)
   out <- m2_core_general(profile, ncat, nobs = x$nobs, Q = dat$Q, Z = dat$Z)
   out$n_class <- nrank
+  out$caveat <- m2_caveat_lra(x)
   m2_release(gc)
   return(structure(out, class = c("exametrika", "M2")))
 }

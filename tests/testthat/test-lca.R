@@ -431,3 +431,53 @@ test_that("the M2 object stays small whatever the item count", {
   expect_lt(as.numeric(object.size(r)), 10000)
   expect_null(r$residual)
 })
+
+test_that("add_M2 works for LRA and biclustering, with an honest caveat", {
+  dat <- dataFormat(J5S1000)
+
+  # ordinal LRA: order restriction can bind, so the p value is descriptive
+  fit <- add_M2(suppressMessages(LRA(dat, nrank = 3, method = "isotonic")), verbose = FALSE)
+  m <- fit$TestFitIndicesM2
+  expect_true(inherits(m, "ModelFitM2"))
+  expect_match(m$caveat, "order restriction")
+  expect_output(print(fit), "Margin based")
+  expect_output(print(fit), "descriptive only")
+
+  fit_gtm <- add_M2(suppressMessages(LRA(dat, nrank = 3, method = "GTM")), verbose = FALSE)
+  expect_match(fit_gtm$TestFitIndicesM2$caveat, "regularisation")
+
+  # the response-pattern indices are untouched, and both blocks can be shown alone
+  expect_equal(fit$TestFitIndices, suppressMessages(
+    LRA(dat, nrank = 3, method = "isotonic")
+  )$TestFitIndices)
+  out <- capture.output(print(fit, fit_indices = "pattern"))
+  expect_false(any(grepl("Margin based", out)))
+})
+
+test_that("biclustering caveats name the reason that applies", {
+  dat <- dataFormat(J35S500)
+  b <- add_M2(suppressMessages(Biclustering(dat, ncls = 3, nfld = 2, method = "B")),
+    verbose = FALSE
+  )
+  # the field partition is always taken as given
+  expect_match(b$TestFitIndicesM2$caveat, "field partition")
+  expect_false(grepl("regularisation", b$TestFitIndicesM2$caveat))
+
+  r <- add_M2(suppressMessages(Biclustering(dat,
+    ncls = 3, nfld = 2,
+    method = "R", estimation = "GTM"
+  )), verbose = FALSE)
+  expect_match(r$TestFitIndicesM2$caveat, "field partition")
+  expect_match(r$TestFitIndicesM2$caveat, "regularisation")
+  expect_output(print(b), "Margin based")
+})
+
+test_that("the margin baseline does not depend on the model family", {
+  # the independence model is fitted to the data, not to the model, so the
+  # same data gives the same baseline whichever arm was run
+  dat <- dataFormat(J5S1000)
+  a <- add_M2(suppressMessages(LRA(dat, nrank = 3, method = "isotonic")), verbose = FALSE)
+  b <- add_M2(suppressMessages(LCA(dat, ncls = 4)), verbose = FALSE)
+  expect_equal(a$TestFitIndicesM2$M2_null, b$TestFitIndicesM2$M2_null)
+  expect_equal(a$TestFitIndicesM2$df_null, b$TestFitIndicesM2$df_null)
+})

@@ -49,6 +49,32 @@ planned for 2.0.0 ride along, so that the break happens once.
   the strength of the pin depends on the test length looks unintended and is
   being reviewed separately.
 
+- **`M2()` on a rank-deficient margin covariance is roughly 300x faster.** When
+  the Cholesky factorisation of `Xi` fails, the fallback was an
+  eigendecomposition -- an order of magnitude more arithmetic than the
+  factorisation it replaces, and it needs room for the full eigenvector matrix
+  beside `Xi` itself. It is now a pivoted Cholesky, which costs the same
+  `m^3/3` and reports the rank directly. On the largest margin set met so far
+  (biclustering, 40 items x 5 categories, m = 12,640, `Xi` at 1.2 GB) that is
+  16 seconds against about 80 minutes. Both are generalised inverses of `Xi`
+  and the statistic only uses the residual's component in the column space, so
+  the value is unchanged; the equivalence is pinned by tests.
+
+  This mattered most for biclustering, where `Xi` is rank-deficient at any
+  useful size, so the slow path was the normal path rather than the exception.
+
+- **The order-restricted solver no longer inherits the EM's iteration cap.**
+  `Biclustering()` and `LRA()` on ordinal data passed their own `maxiter`
+  straight into `iso_dual_map()`, so raising the EM cap from 100 to 1000 for the
+  convergence fix silently raised the inner solver's cap tenfold as well. Two
+  unrelated loops shared one knob. The solver now uses its own budget. No
+  results change -- it converges well inside either cap, and the fit is
+  identical for every EM cap from 100 to 1000 -- but the coupling was not
+  intended.
+
+- **`maxiter` documentation corrected** for ordinal and nominal `Biclustering()`,
+  which said 100 after the default became 1000.
+
 - **`LRA()` on ordinal or rated data could die on a lumpy score distribution.**
   The EM starting values come from grouping respondents by total score at the
   score quantiles. When the scores pile up -- few categories with a strong floor

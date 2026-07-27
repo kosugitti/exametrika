@@ -11,7 +11,7 @@
 #'   * A vector with items and corresponding fields in sequence
 #'   * A field membership profile matrix (items × fields) with 0/1 values
 #'   * NULL (default) for exploratory analysis where field memberships are estimated
-#' @param maxiter Maximum number of EM algorithm iterations. Default is 100.
+#' @param maxiter Maximum number of EM algorithm iterations. Default is 1000.
 #' @param verbose Logical; if TRUE, displays progress during estimation. Default is FALSE.
 #' @param alpha Dirichlet distribution concentration parameter for prior density of field reference probabilities. Default is 1.
 #' @param ... Additional arguments passed to specific methods.

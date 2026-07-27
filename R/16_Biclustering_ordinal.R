@@ -14,7 +14,7 @@
 #'   * NULL (default) for exploratory analysis where field memberships are estimated
 #' @param mic Logical; if TRUE, forces Field Reference Profiles to be monotonically
 #' increasing. Default is FALSE.
-#' @param maxiter Maximum number of EM algorithm iterations. Default is 100.
+#' @param maxiter Maximum number of EM algorithm iterations. Default is 1000.
 #' @param verbose Logical; if TRUE, displays progress during estimation. Default is FALSE.
 #' @param alpha Dirichlet distribution concentration parameter for prior density of field reference probabilities. Default is 1.
 #' @param ... Additional arguments passed to specific methods.
@@ -268,7 +268,13 @@ Biclustering.ordinal <- function(U,
       # the independent per-cell boundary MLE plus the crude `mic` relabelling.
       for (f in 1:nfld) {
         Mcount <- matrix(Ufcq_prior[f, , ], nrow = ncls, ncol = maxQ)
-        Pf <- iso_dual_map(Mcount, maxiter = maxiter, tol = 1e-6)
+        # The solver gets its own iteration budget (its default, 100). It used to
+        # inherit the EM's `maxiter`, which coupled two unrelated loops: raising
+        # the EM cap to 1000 for the convergence fix silently raised the inner
+        # solver's cap tenfold as well. It converges well inside 100 here --
+        # the fit is identical for any EM cap from 100 to 1000 -- but the two
+        # budgets have no reason to move together.
+        Pf <- iso_dual_map(Mcount, tol = 1e-6)
         BCRM[f, , ] <- Pf
         BBRM[f, , 1] <- 1
         BBRM[f, , 2:maxQ] <- iso_upper_cum(Pf)

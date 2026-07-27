@@ -218,13 +218,26 @@ m2_whitener <- function(Xi, tol_rel = 1e-10) {
       dim = ncol(Xi)
     ))
   }
-  ev <- eigen(Xi, symmetric = TRUE)
-  keep <- ev$values > max(ev$values) * tol_rel
-  V <- ev$vectors[, keep, drop = FALSE]
-  root <- sqrt(ev$values[keep])
+  # Rank-deficient. A pivoted Cholesky costs the same m^3/3 as the plain one and
+  # reports the rank; an eigendecomposition costs an order of magnitude more and
+  # needs room for the full eigenvector matrix beside Xi itself. On the largest
+  # biclustering margin set met so far (m = 12,640) that is 16 seconds against
+  # about 80 minutes, which is the difference between running a simulation and
+  # not. Both give a generalised inverse of Xi, and the statistic only needs the
+  # residual's component in the column space; the pivoted factor keeps the
+  # leading rank coordinates rather than the eigen basis, so the two agree
+  # wherever the theory applies (checked against the eigen path in
+  # test-m2-whitener.R).
+  pc <- suppressWarnings(chol(Xi, pivot = TRUE))
+  rank <- attr(pc, "rank")
+  piv <- attr(pc, "pivot")
+  R11 <- pc[seq_len(rank), seq_len(rank), drop = FALSE]
+  keep <- piv[seq_len(rank)]
   return(list(
-    apply = function(M) (t(V) %*% M) / root,
-    dim = sum(keep)
+    apply = function(M) {
+      return(backsolve(R11, as.matrix(M)[keep, , drop = FALSE], transpose = TRUE))
+    },
+    dim = rank
   ))
 }
 

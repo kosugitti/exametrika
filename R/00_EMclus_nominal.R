@@ -93,9 +93,7 @@ emclus_nominal <- function(Q, Z, ncls, ncat, alpha = 1, maxiter = 100,
     for (q in seq_len(maxQ)) {
       tmpL <- tmpL + (Z * Uq[, , q]) %*% log(profile[, , q] + const)
     }
-    minllsr <- apply(tmpL, 1, min)
-    expllsr <- exp(pmin(tmpL - minllsr, 700))
-    clsmemb <- expllsr / rowSums(expllsr)
+    clsmemb <- row_softmax(tmpL)
 
     ## Maximization: category profiles are membership-weighted frequencies
     Ujcq <- array(0, dim = c(nitems, ncls, maxQ))

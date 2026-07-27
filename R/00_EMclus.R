@@ -52,8 +52,7 @@ emclus <- function(U, Z, ncls, Fil, beta1, beta2, maxiter = 100, mic = FALSE,
     old_test_log_lik <- test_log_lik
 
     llmat <- U %*% t(log(classRefMat + const)) + (Z * (1 - U)) %*% t(log(1 - classRefMat + const))
-    exp_llmat <- exp(llmat)
-    postDist <- exp_llmat / rowSums(exp_llmat)
+    postDist <- row_softmax(llmat)
 
     smoothPost <- postDist %*% Fil
     correct_cls <- t(smoothPost) %*% U
@@ -233,8 +232,7 @@ somclus <- function(U, Z, ncls, mic = FALSE, maxiter = 100,
     }
     llmat <- U %*% t(log(t(RefMat) + const)) + (Z * (1 - U)) %*%
       t(log(1 - t(RefMat) + const))
-    expllmat <- exp(llmat)
-    postdist <- expllmat / rowSums(expllmat)
+    postdist <- row_softmax(llmat)
     item_ell <- item_log_lik(U, Z, postdist, t(RefMat))
     if (BIC.check) {
       if (somt > maxiter * 10) {

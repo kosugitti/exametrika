@@ -161,9 +161,7 @@ Biclustering.nominal <- function(U,
       tmpL <- tmpL + (tmp$Z * Uq[, , q]) %*% fldmemb %*% log(BCRM[, , q] + const)
     }
 
-    minllsr <- apply(tmpL, 1, min)
-    expllsr <- exp(pmin(tmpL - minllsr, 700))
-    clsmemb <- round(expllsr / rowSums(expllsr), 1e8)
+    clsmemb <- row_softmax(tmpL)
 
     if (!is.null(conf_class_mat)) {
       clsmemb <- conf_class_mat
@@ -174,9 +172,9 @@ Biclustering.nominal <- function(U,
       tmpH <- tmpH + (t(tmp$Z * Uq[, , q]) %*% clsmemb) %*% t(log(BCRM[, , q] + const))
     }
 
-    minllsr <- apply(tmpH, 1, min)
-    expllsr <- exp(pmin(tmpH - minllsr, 700))
-    fldmemb <- round(expllsr / rowSums(expllsr), 1e8)
+    # Sums over examinees; see the note in row_softmax() for why the row maximum
+    # is the only safe reference point here.
+    fldmemb <- row_softmax(tmpH)
 
     if (!any(is.null(conf_mat))) {
       fldmemb <- conf_mat

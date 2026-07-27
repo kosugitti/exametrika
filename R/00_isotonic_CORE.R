@@ -94,8 +94,7 @@ emclus_isotonic <- function(U, Z, ncls, beta1, beta2, maxiter = 100, mic = FALSE
 
     # E-step (no filter smoothing)
     llmat <- U %*% t(log(classRefMat + const)) + (Z * (1 - U)) %*% t(log(1 - classRefMat + const))
-    exp_llmat <- exp(llmat - apply(llmat, 1, max))
-    postDist <- exp_llmat / rowSums(exp_llmat)
+    postDist <- row_softmax(llmat)
 
     # M-step (posterior used directly; no filter)
     correct_cls <- t(postDist) %*% U

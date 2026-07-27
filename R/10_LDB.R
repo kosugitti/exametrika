@@ -313,9 +313,9 @@ LDB <- function(U, na = NULL, Z = NULL, w = NULL,
   tmp2 <- nsf_expand2 * tmp2
 
   llsr <- apply(tmp1 + tmp2, c(1, 3), sum)
-  minllsr <- apply(llsr, 1, min)
-  expllsr <- exp(llsr - minllsr)
-  clsmemb <- round(expllsr / rowSums(expllsr), 8)
+  # No clip here, so the old min-subtraction overflowed to Inf outright and the
+  # normalisation returned NaN rather than a merged posterior.
+  clsmemb <- round(row_softmax(llsr), 8)
   cls01 <- sign(clsmemb - apply(clsmemb, 1, max)) + 1
   cls <- apply(clsmemb, 1, which.max)
 

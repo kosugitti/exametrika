@@ -213,12 +213,7 @@ Biclustering.ordinal <- function(U,
       log_probs <- matrix(log_delta[, , q], nrow = nfld, ncol = ncls)
       tmpL <- tmpL + ZU[, , q] %*% fldmemb %*% log_probs
     }
-    # Row-wise min via C-level pmin.int instead of apply (one R-level call per row):
-    # do.call(pmin.int, as.data.frame(X)) passes each column as a separate argument,
-    # and pmin.int(col1, col2, ...) returns the element-wise min across columns.
-    minllsr <- do.call(pmin.int, as.data.frame(tmpL))
-    expllsr <- exp(pmin(tmpL - minllsr, 700))
-    clsmemb <- round(expllsr / rowSums(expllsr), 1e8)
+    clsmemb <- row_softmax(tmpL)
 
     if (!is.null(conf_class_mat)) {
       clsmemb <- conf_class_mat
@@ -243,9 +238,11 @@ Biclustering.ordinal <- function(U,
       tmpH <- tmpH + (t(ZU[, , q]) %*% smoothed_memb) %*% t(log_probs)
     }
 
-    minllsr <- do.call(pmin.int, as.data.frame(tmpH))
-    expllsr <- exp(pmin(tmpH - minllsr, 700)) # 700 is approx upper limit for exp()
-    fldmemb <- round(expllsr / rowSums(expllsr), 1e8)
+    # The field posterior sums over examinees, so its rows spread far wider than
+    # the class posterior's (which sums over items). This is where the old
+    # min-subtraction bit first: from about 700 examinees the exponents passed
+    # the clip and adjacent fields merged.
+    fldmemb <- row_softmax(tmpH)
 
     if (!any(is.null(conf_mat))) {
       fldmemb <- conf_mat

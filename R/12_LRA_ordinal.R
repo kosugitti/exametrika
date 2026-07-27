@@ -252,9 +252,9 @@ LRA.ordinal <- function(U,
   while (FLG) {
     old_log_like_satu <- ij_log_lik_satu
     ## Estep
-    nume_satu <- exp(uuMat %*% log(catRefMat_satu + const))
-    denom_satu <- rowSums(nume_satu)
-    rankProf_satu <- nume_satu / denom_satu
+    ll_satu <- uuMat %*% log(catRefMat_satu + const)
+    nume_satu <- exp(ll_satu)
+    rankProf_satu <- row_softmax(ll_satu)
 
     ## Mstep
     refMatcore_satu <- t(uuMat) %*% rankProf_satu
@@ -339,9 +339,9 @@ LRA.ordinal <- function(U,
   while (FLG) {
     old_log_like <- ij_log_lik
     ## Estep
-    nume <- exp(uuMat %*% log(catRefMat + const) + logprior_NQmat)
-    denom <- rowSums(nume)
-    rankProf <- nume / denom
+    llmat <- uuMat %*% log(catRefMat + const) + logprior_NQmat
+    nume <- exp(llmat)
+    rankProf <- row_softmax(llmat)
 
     if (method == "isotonic") {
       # Order-restricted MAP per item (Fenchel dual; no filter)
@@ -396,9 +396,7 @@ LRA.ordinal <- function(U,
 
 
   # results ---------------------------------------------------------
-  nume <- exp(uuMat %*% log(catRefMat + const) + logprior_NQmat)
-  denom <- rowSums(nume)
-  rankProf <- nume / denom
+  rankProf <- row_softmax(uuMat %*% log(catRefMat + const) + logprior_NQmat)
 
   ## Item - Prob report
   boundary_report <- as.data.frame(refMat111)
@@ -483,9 +481,7 @@ LRA.ordinal <- function(U,
   null_itemdf <- (ncat - 1) * (nitems - 1)
   null_testdf <- sum(null_itemdf)
 
-  rankProf_satu_num <- exp(uuMat %*% log(catRefMat_satu + const))
-  rankProf_satu_denom <- rowSums(rankProf_satu_num)
-  rankProf_satu <- rankProf_satu_num / rankProf_satu_denom
+  rankProf_satu <- row_softmax(uuMat %*% log(catRefMat_satu + const))
   Rank_satu <- apply(rankProf_satu, 1, which.max)
   Rank_satu01 <- sign(rankProf_satu - apply(rankProf_satu, 1, max)) + 1
 

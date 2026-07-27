@@ -8,6 +8,47 @@ planned for 2.0.0 ride along, so that the break happens once.
 
 ## Bug Fixes
 
+- **Posterior memberships were normalised by subtracting the row *minimum*, and
+  polytomous biclustering silently merged fields once the sample passed roughly
+  700 respondents.** The E-steps turn a matrix of log-likelihoods into
+  memberships. Doing that safely means subtracting the row maximum before
+  exponentiating, so every exponent is at most zero. Several E-steps subtracted
+  the row minimum instead, which pushes every exponent positive, and then clipped
+  at `exp(700)` to stop the overflow. Everything above the clip lands on the same
+  value: two fields differing by a factor of `exp(400)` came out equally likely.
+
+  How far a row spreads depends on what is being summed over. A class posterior
+  sums over items, so it stays small and the clip is rarely reached. A *field*
+  posterior sums over respondents, so it grows with the sample -- which is why
+  the visible symptom was backwards, more data giving a worse answer. Measured on
+  ordinal data with 24 items in 3 true fields: fields recovered exactly up to 500
+  respondents, degrading at 700, and by 1000 two of the three fields had merged
+  and one came out empty (adjusted Rand index 1.00 falling to 0.55). The class
+  side was almost unaffected in the same runs, which is what made it look like a
+  field-clustering quirk rather than a normalisation bug.
+
+  Affected: `Biclustering()` and `Ranklustering()` on ordinal and nominal data
+  (both the class and field steps), `LCA()` on nominal and rated data, and
+  `LDB()`. Binary biclustering was already correct. Fixed by routing all of them
+  through one `row_softmax()` helper.
+
+  The same helper replaces the unstabilised `exp(ll) / rowSums(exp(ll))` in
+  binary `LCA()`/`LRA()`, `LDLRA()`, and `LRA()` on ordinal and rated data.
+  Those subtract nothing at all, so their exponents are negative and they
+  underflow rather than overflow -- reachable only on very long tests, and loud
+  (`NaN`) rather than silent when reached. The returned values are unchanged
+  wherever the old code did not overflow or underflow.
+
+  No test in the suite caught this: the biclustering reference fixtures top out
+  at 515 respondents, below where the clip starts to bite. Regression tests over
+  a range of sample sizes were added.
+
+  `BINET()` uses the same unstabilised form but is deliberately left alone: it
+  pins boundary-class respondents by writing a literal `1` next to the raw
+  likelihoods, so rescaling the rows would change how hard that pin holds. That
+  the strength of the pin depends on the test length looks unintended and is
+  being reviewed separately.
+
 - **`LRA()` on ordinal or rated data could die on a lumpy score distribution.**
   The EM starting values come from grouping respondents by total score at the
   score quantiles. When the scores pile up -- few categories with a strong floor

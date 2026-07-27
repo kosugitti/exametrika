@@ -10,6 +10,30 @@ softmax <- function(x) {
   return(exp(x) / sum(exp(x)))
 }
 
+#' @title Row-wise softmax
+#' @description
+#' `softmax()` applied to every row, without an R-level loop. Subtracting the
+#' row maximum is what makes this safe: every exponent is then at most 0, so
+#' `exp()` cannot overflow and the largest entry is exactly 1, which also rules
+#' out a row underflowing to all zeros.
+#'
+#' Subtracting the row *minimum* instead -- as several E-steps used to do --
+#' pushes every exponent positive. The spread of these log-likelihood rows grows
+#' with whatever is being summed over (items for a class posterior, examinees for
+#' a field posterior), so on real data the exponents run into thousands, and
+#' clipping them at `exp(700)` silently collapses every entry above the clip onto
+#' the same value. Two fields differing by a factor of `exp(400)` came out equally
+#' likely (fixed 2026-07-27).
+#'
+#' @param x numeric matrix; rows are normalised independently
+#' @return matrix of the same shape whose rows sum to 1
+#' @noRd
+row_softmax <- function(x) {
+  x_max <- do.call(pmax.int, as.data.frame(x))
+  e <- exp(x - x_max)
+  return(e / rowSums(e))
+}
+
 #' @title Build a field/rank confirmatory membership matrix
 #' @description
 #' Shared parser for the `conf` argument used by Biclustering()/

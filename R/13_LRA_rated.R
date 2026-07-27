@@ -327,9 +327,9 @@ LRA.rated <- function(U,
   while (FLG) {
     old_log_lik_satu <- ij_log_lik_satu
 
-    rankProf_num_satu <- exp(CijkMat %*% log(catRefmat_satu + const))
-    rankProf_den_satu <- rowSums(rankProf_num_satu)
-    rankProf_satu <- rankProf_num_satu / rankProf_den_satu
+    ll_satu <- CijkMat %*% log(catRefmat_satu + const)
+    rankProf_num_satu <- exp(ll_satu)
+    rankProf_satu <- row_softmax(ll_satu)
 
     refMatcore_satu <- t(CijkMat) %*% rankProf_satu
 
@@ -399,9 +399,9 @@ LRA.rated <- function(U,
   FLG <- TRUE
   while (FLG) {
     old_log_lik <- ij_log_lik
-    rankProf_num <- exp(CijkMat %*% log(catRefmat + const) + logprior_NQmat)
-    rankProf_den <- rowSums(rankProf_num)
-    rankProf <- rankProf_num / rankProf_den
+    llmat <- CijkMat %*% log(catRefmat + const) + logprior_NQmat
+    rankProf_num <- exp(llmat)
+    rankProf <- row_softmax(llmat)
 
     refMatcore <- t(CijkMat) %*% rankProf %*% Fil
     catRefmat <- refMatcore / design5 %*% refMatcore
@@ -483,9 +483,7 @@ LRA.rated <- function(U,
   testRefVec <- apply(catRefmat[design6, ], 2, sum)
 
   ## rank Profile
-  rankProf_num <- exp(CijkMat %*% log(catRefmat + const) + logprior_NQmat)
-  rankProf_den <- rowSums(rankProf_num)
-  rankProf <- rankProf_num / rankProf_den
+  rankProf <- row_softmax(CijkMat %*% log(catRefmat + const) + logprior_NQmat)
 
   rankmemb <- apply(rankProf, 1, which.max)
   rankmemb01 <- sign(rankProf - apply(rankProf, 1, max)) + 1
@@ -538,9 +536,7 @@ LRA.rated <- function(U,
   null_itemdf <- (useNcat - 1) * (nitems - 1)
   null_testdf <- sum(null_itemdf)
 
-  rankProf_num_satu <- exp(CijkMat %*% log(catRefmat_satu + const))
-  rankProf_den_satu <- rowSums(rankProf_num_satu)
-  rankProf_satu <- rankProf_num_satu / rankProf_den_satu
+  rankProf_satu <- row_softmax(CijkMat %*% log(catRefmat_satu + const))
   Rank_satu <- apply(rankProf_satu, 1, which.max)
   Rank_satu01 <- sign(rankProf_satu - apply(rankProf_satu, 1, max)) + 1
 

@@ -127,8 +127,7 @@ LD_param_est <- function(tmp, adj_list, classRefMat, ncls, smoothpost, beta1 = 2
   term2 <- aperm(Z_expanded * (1 - U_expanded) * pat01, perm = c(2, 3, 4, 1)) * log(1 - refmat_expanded + const)
   llmat <- aperm(term1 + term2, perm = c(1, 3, 4, 2))
   llmat <- apply(llmat, 3:4, sum)
-  exp_llmat <- exp(llmat)
-  postdist <- exp_llmat / rowSums(exp_llmat)
+  postdist <- row_softmax(llmat)
 
   postdist_expand <- array(rep(postdist, testlength * npapat), dim = c(nobs, ncls, testlength, npapat))
   irp_tmp <- postdist_expand * aperm(pat01, perm = c(1, 3, 2, 4))

@@ -1,3 +1,70 @@
+#' @title Group respondents by total score for the EM starting values
+#' @description
+#' Cutting at score quantiles is what the reference implementation does and is
+#' kept unchanged. It can leave a group empty when the score distribution is
+#' lumpy -- few categories with a strong ceiling or floor is enough -- and the
+#' caller then divides by a zero count.
+#' @param score numeric vector of total scores
+#' @param ngroup number of groups (equal to the number of latent ranks)
+#' @noRd
+score_groups <- function(score, ngroup) {
+  cuts <- stats::quantile(score, probs = (seq_len(ngroup - 1)) / ngroup)
+  return(rowSums(outer(score, cuts, ">")) + 1)
+}
+
+#' @title Repair score groups that came out empty
+#' @description
+#' An empty score group has no respondents to average, so its starting values are
+#' 0/0. Left alone the NaN propagates: `sort()` drops it, the result no longer
+#' fills the array slice it is assigned to, and the run dies with a message about
+#' replacement lengths that says nothing about scores. These are starting values,
+#' and an empty group means the data have nothing to say about that stretch of
+#' the scale, so the nearest group that does have respondents is borrowed.
+#'
+#' Groups are ordered by score, which is what makes the nearest one the sensible
+#' donor. Repairing the values rather than changing how the groups are cut keeps
+#' the quantile rule identical to the reference implementation on every dataset.
+#' @param arr array whose last margin indexes the score groups
+#' @noRd
+fill_empty_groups <- function(arr) {
+  ngroup <- dim(arr)[length(dim(arr))]
+  usable <- vapply(seq_len(ngroup), function(q) {
+    all(is.finite(asub_last(arr, q)))
+  }, logical(1))
+  if (all(usable)) {
+    return(arr)
+  }
+  if (!any(usable)) {
+    return(arr)
+  }
+  donors <- which(usable)
+  for (q in which(!usable)) {
+    nearest <- donors[which.min(abs(donors - q))]
+    arr <- assign_last(arr, q, asub_last(arr, nearest))
+  }
+  return(arr)
+}
+
+#' @noRd
+asub_last <- function(arr, q) {
+  d <- length(dim(arr))
+  if (d == 2) {
+    return(arr[, q])
+  }
+  return(arr[, , q])
+}
+
+#' @noRd
+assign_last <- function(arr, q, value) {
+  d <- length(dim(arr))
+  if (d == 2) {
+    arr[, q] <- value
+  } else {
+    arr[, , q] <- value
+  }
+  return(arr)
+}
+
 #' @title Model Fit Functions for Items
 #' @description
 #' A general function that returns the model fit indices.

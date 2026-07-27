@@ -192,14 +192,14 @@ LRA.rated <- function(U,
     CijkMat[i, ] <- tmp
   }
 
-  quantileScore <- quantile(score, probs = (1:(nquan - 1)) / nquan)
-  quantileRank <- rowSums(outer(score, quantileScore, ">")) + 1
+  quantileRank <- score_groups(score, nquan)
   quantileRefVec <- matrix(0, nrow = nitems, ncol = nquan)
   for (j in 1:nitems) {
     for (k in 1:nquan) {
       quantileRefVec[j, k] <- mean(U$U[quantileRank == k, j])
     }
   }
+  quantileRefVec <- fill_empty_groups(quantileRefVec)
 
   QRVdf <- data.frame(quantileRefVec)
   names(QRVdf) <- paste0("Q", 1:nquan)
@@ -519,7 +519,11 @@ LRA.rated <- function(U,
       scoreMembDist[s + 1, ] <- colSums(rankProf[score == s, , drop = FALSE])
     }
   }
-  rankQuanDist <- unname(table(rankmemb, quantileRank))
+  # keep empty score groups as columns; see the ordinal path for why
+  rankQuanDist <- unname(table(
+    factor(rankmemb, levels = seq_len(nrank)),
+    factor(quantileRank, levels = seq_len(nrank))
+  ))
   membQuanDist <- matrix(0, nrow = nrank, ncol = nquan)
   rho2 <- cor(rankmemb, quantileRank, method = "spearman")
   for (q in 1:nquan) {

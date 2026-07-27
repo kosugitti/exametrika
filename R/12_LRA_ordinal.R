@@ -131,8 +131,7 @@ LRA.ordinal <- function(U,
     uuMat[, design1[j, 1]:design1[j, 2]] <- UU[, j, 1:ncat[j]]
   }
 
-  quantileScore <- quantile(score, probs = (1:(nquan - 1)) / nquan)
-  quantileRank <- rowSums(outer(score, quantileScore, ">")) + 1
+  quantileRank <- score_groups(score, nquan)
 
 
   quanRefmat <- array(NA, dim = c(nitems, max(ncat) - 1, nquan))
@@ -144,6 +143,9 @@ LRA.ordinal <- function(U,
       catquanRefmat[j, , q] <- apply(UU[quantileRank == q, j, ], 2, sum) / apply(U$Z[quantileRank == q, ], 2, sum)[j]
     }
   }
+  # A score group can come out empty; borrow from the nearest one that did not
+  quanRefmat <- fill_empty_groups(quanRefmat)
+  catquanRefmat <- fill_empty_groups(catquanRefmat)
 
 
   ## Category Quantile Report
@@ -448,7 +450,12 @@ LRA.ordinal <- function(U,
     }
   }
 
-  rankQuanDist <- unname(table(rankmemb, quantileRank))
+  # An empty score group must still appear as a column: table() drops unused
+  # levels, and the row/column names assigned below assume all nrank of them.
+  rankQuanDist <- unname(table(
+    factor(rankmemb, levels = seq_len(nrank)),
+    factor(quantileRank, levels = seq_len(nrank))
+  ))
   membQuanDist <- matrix(0, nrow = nrank, ncol = nquan)
   rho2 <- cor(rankmemb, quantileRank, method = "spearman")
   for (q in 1:nquan) {

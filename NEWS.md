@@ -8,6 +8,32 @@ planned for 2.0.0 ride along, so that the break happens once.
 
 ## Bug Fixes
 
+- **`LRA()` on ordinal or rated data could die on a lumpy score distribution.**
+  The EM starting values come from grouping respondents by total score at the
+  score quantiles. When the scores pile up -- few categories with a strong floor
+  or ceiling is enough -- a quantile group comes out empty, its mean is 0/0, and
+  the `NaN` propagates until `sort()` drops it and an array assignment fails with
+  a message about replacement lengths that says nothing about scores. Measured
+  instance: 20 items, 3 categories, 6 ranks, 300 respondents, with 66 people at
+  the lowest possible score and 77 at the highest.
+
+  The grouping rule is unchanged -- it is the reference implementation's -- and
+  only the undefined values are repaired: an empty group borrows from the nearest
+  group that has respondents, which is meaningful because the groups are ordered
+  by score. Empty groups also had to survive `table()`, which drops unused levels
+  and left the rank-by-quantile cross-tabulation too small for its own dimnames.
+
+- **`M2()` no longer fails on a singular margin covariance.** Two causes, both
+  routine on real data. A category nobody chose gives an exact zero in the
+  profile, and the covariance correction then computes 0/0; the value that
+  division stands for is zero. A margin with a vanishingly small probability
+  leaves a direction with no usable variance, which a Cholesky factorisation
+  rejects and a check on the diagonal alone cannot catch, the dependence being
+  off-diagonal. `M2()` now falls back to an eigendecomposition and works in the
+  subspace with non-negligible eigenvalues, reporting how many directions were
+  dropped; the degrees of freedom count the subspace actually used.
+
+
 - **EM convergence was declared far too early, and on short tests after a single
   cycle.** This affects every EM-based model and is the largest behavioural
   change in this release: estimates move, and they no longer reproduce the

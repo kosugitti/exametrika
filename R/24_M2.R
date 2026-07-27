@@ -104,7 +104,13 @@ m2_xi <- function(profile, A, idx) {
       j, rep(seq_len(ncls), each = length(ks)), rep(catj, ncls)
     )], nrow = length(ks), ncol = ncls)
     Aks <- A[ks, , drop = FALSE]
-    val <- ((Aks / rho_j) %*% t(Aks)) / ncls
+    # A profile can hold an exact zero -- the plain multinomial MLE gives one
+    # whenever a category went unchosen in a class -- and then this division is
+    # 0/0. The value it stands for is zero: the union probability contains that
+    # factor once, and the factor is zero.
+    reduced <- Aks / rho_j
+    reduced[!is.finite(reduced)] <- 0
+    val <- (reduced %*% t(Aks)) / ncls
     val[!outer(catj, catj, "==")] <- 0
     joint[ks, ks] <- val
   }
@@ -186,6 +192,56 @@ m2_p_obs <- function(Q, Z, idx) {
   return(c(p_single, p_pair))
 }
 
+
+
+#' @title Move to the coordinates where the margin residual is white
+#' @description
+#' The statistic needs \eqn{\Xi^{-1/2}}. A Cholesky factorisation gives it
+#' cheaply and is the usual route, but it requires \eqn{\Xi} to be numerically
+#' positive definite, and that fails in practice: a margin whose probability is
+#' vanishingly small under the model leaves a direction with essentially no
+#' variance, and one that is a linear combination of others leaves none at all.
+#' Dropping zero-variance margins by their diagonal is not enough, since the
+#' dependence can be off-diagonal.
+#'
+#' So: try the Cholesky, and if it fails fall back to an eigendecomposition and
+#' keep only the directions with a non-negligible eigenvalue. The statistic is
+#' then computed in that subspace, and its dimension -- not the nominal number
+#' of margins -- is what the degrees of freedom count. The fallback costs more
+#' than the Cholesky, which is why it is a fallback.
+#' @noRd
+m2_whitener <- function(Xi, tol_rel = 1e-10) {
+  L <- try(chol(Xi), silent = TRUE)
+  if (!inherits(L, "try-error")) {
+    return(list(
+      apply = function(M) backsolve(L, M, transpose = TRUE),
+      dim = ncol(Xi)
+    ))
+  }
+  ev <- eigen(Xi, symmetric = TRUE)
+  keep <- ev$values > max(ev$values) * tol_rel
+  V <- ev$vectors[, keep, drop = FALSE]
+  root <- sqrt(ev$values[keep])
+  return(list(
+    apply = function(M) (t(V) %*% M) / root,
+    dim = sum(keep)
+  ))
+}
+
+#' @title Drop margins that carry no information
+#' @description
+#' A margin whose probability is 0 or 1 under the model has no variance, so the
+#' covariance matrix is singular and the Cholesky factorisation fails with a
+#' message that says nothing about the cause. This happens for real reasons: a
+#' category nobody chose, or a pair of categories that never co-occur. Such a
+#' margin cannot contribute to the statistic, so it is dropped and the degrees of
+#' freedom follow. The alternative -- a ridge or a pseudo-inverse -- would keep a
+#' column that is noise by construction.
+#' @noRd
+m2_usable_margins <- function(Xi, tol = 1e-10) {
+  return(diag(Xi) > tol)
+}
+
 #' @title Core of the M2 computation
 #' @description
 #' Works in the \eqn{\Xi^{-1/2}} coordinates, where the parameter-estimation
@@ -210,25 +266,32 @@ m2_core <- function(profile, ncat, nobs, Q = NULL, Z = NULL, p_vec = NULL) {
   Xi <- m2_xi(profile, A, idx)
   Delta <- m2_delta(profile, idx, ncat)
 
-  L <- chol(Xi) # Xi = L'L, L upper triangular
-  # Xi is not needed once the factor exists; dropping the reference lets R
-  # reuse the block. An explicit gc() here was tried and removed: it cost ~30%
-  # of the runtime and saved nothing, because the peak is set by Xi and its
-  # Cholesky factor being alive at the same time, which R cannot avoid without
-  # an in-place factorisation.
+  keep <- m2_usable_margins(Xi)
+  if (!all(keep)) {
+    Xi <- Xi[keep, keep, drop = FALSE]
+    e <- e[keep]
+    Delta <- Delta[keep, , drop = FALSE]
+  }
+
+  # Xi is the largest object here, so it is dropped as soon as the whitener
+  # holds what it needs. An explicit gc() at this point was tried and removed:
+  # it cost about a third of the runtime and saved nothing, the peak being Xi
+  # and its factor alive together.
+  W <- m2_whitener(Xi)
   rm(Xi)
-  e_tilde <- backsolve(L, e, transpose = TRUE)
-  B <- backsolve(L, Delta, transpose = TRUE)
+  e_tilde <- W$apply(e)
+  B <- W$apply(Delta)
   sv <- svd(B)
   rank_delta <- sum(sv$d > max(dim(B)) * .Machine$double.eps * sv$d[1])
   U_r <- sv$u[, seq_len(rank_delta), drop = FALSE]
   resid <- e_tilde - U_r %*% crossprod(U_r, e_tilde)
 
   stat <- nobs * sum(resid^2)
-  df <- idx$m - rank_delta
+  df <- W$dim - rank_delta
   return(list(
     M2 = stat, df = df, p = stats::pchisq(stat, df, lower.tail = FALSE),
-    m = idx$m, n_param = ncol(Delta), rank_delta = rank_delta
+    m = W$dim, m_dropped = idx$m - W$dim,
+    n_param = ncol(Delta), rank_delta = rank_delta
   ))
 }
 
@@ -627,20 +690,28 @@ m2_core_general <- function(profile, ncat, nobs, Q, Z, field = NULL) {
     m2_delta_shared(profile, idx, ncat, field)
   }
 
-  L <- chol(Xi)
+  keep <- m2_usable_margins(Xi)
+  if (!all(keep)) {
+    Xi <- Xi[keep, keep, drop = FALSE]
+    e <- e[keep]
+    Delta <- Delta[keep, , drop = FALSE]
+  }
+
+  W <- m2_whitener(Xi)
   rm(Xi)
-  e_tilde <- backsolve(L, e, transpose = TRUE)
-  B <- backsolve(L, Delta, transpose = TRUE)
+  e_tilde <- W$apply(e)
+  B <- W$apply(Delta)
   sv <- svd(B)
   rank_delta <- sum(sv$d > max(dim(B)) * .Machine$double.eps * sv$d[1])
   U_r <- sv$u[, seq_len(rank_delta), drop = FALSE]
   resid <- e_tilde - U_r %*% crossprod(U_r, e_tilde)
 
   stat <- nobs * sum(resid^2)
-  df <- idx$m - rank_delta
+  df <- W$dim - rank_delta
   return(list(
     M2 = stat, df = df, p = stats::pchisq(stat, df, lower.tail = FALSE),
-    m = idx$m, n_param = ncol(Delta), rank_delta = rank_delta
+    m = W$dim, m_dropped = idx$m - W$dim,
+    n_param = ncol(Delta), rank_delta = rank_delta
   ))
 }
 

@@ -204,8 +204,24 @@ Biclustering.ordinal <- function(U,
     # Both E-steps (class and field) use the same values across all q; the old
     # code recomputed this 2*maxQ times per iteration. Using drop=FALSE on
     # array slicing keeps the 3D shape even when nfld == 1.
-    log_delta <- log(BBRM[, , seq_len(maxQ), drop = FALSE] -
-      BBRM[, , seq_len(maxQ) + 1, drop = FALSE] + const)
+    #
+    # The difference of two upper-cumulative probabilities is a category
+    # probability, so it cannot be negative -- except by rounding. The
+    # order-restricted M-step pools adjacent categories, which makes exact ties
+    # common (11 of 30 differences on a 72-item fit), and a tie computed as a
+    # subtraction lands anywhere within a few ulp of zero. `const` cannot absorb
+    # that: it is exp(-nitems), which falls below double precision noise once the
+    # test passes about 37 items (exp(-72) is 5e-32 against errors of 1e-14), so
+    # log() of a negative difference returned NaN, the NaN reached the field
+    # posterior, and every item came back unassigned. Clamping at zero repairs
+    # only the rounding; a difference that is genuinely zero still becomes
+    # log(const), exactly as before, and every value that was already positive is
+    # unchanged to the bit.
+    log_delta <- log(pmax(
+      BBRM[, , seq_len(maxQ), drop = FALSE] -
+        BBRM[, , seq_len(maxQ) + 1, drop = FALSE],
+      0
+    ) + const)
 
     ## Msc <- Pi, Mjf
     tmpL <- matrix(0, nrow = nobs, ncol = ncls)

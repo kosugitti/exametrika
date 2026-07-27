@@ -91,3 +91,64 @@ test_that("memberships stay finite and normalised on a large ordinal sample", {
   expect_equal(rowSums(fit$FieldMembership), rep(1, 15), tolerance = 1e-8,
     ignore_attr = TRUE)
 })
+
+# Order-restricted biclustering on a long test (2026-07-27, v2.0.0)
+#
+# The M-step pools adjacent categories, so upper-cumulative differences tie
+# exactly, and a tie computed as a subtraction lands within a few ulp of zero --
+# sometimes below it. `const` is exp(-nitems), which drops under double
+# precision noise past about 37 items, so log() of the difference returned NaN,
+# the NaN reached the field posterior through the softmax, and every item came
+# back unassigned.
+
+test_that("isotonic biclustering assigns every item on a long test", {
+  skip_on_cran()
+  set.seed(20260727)
+  nitems <- 72
+  nfld <- 6
+  ncls <- 4
+  nobs <- 600
+  field <- rep(seq_len(nfld), each = nitems / nfld)
+  mu <- seq(-2, 2, length.out = ncls)
+  offset <- seq(-1.5, 1.5, length.out = nfld)
+  tau <- seq(-2.5, 2.5, length.out = 4)
+
+  cls <- rep(seq_len(ncls), length.out = nobs)
+  Q <- matrix(0L, nrow = nobs, ncol = nitems)
+  for (j in seq_len(nitems)) {
+    for (c in seq_len(ncls)) {
+      who <- which(cls == c)
+      cum <- stats::pnorm(tau - (mu[c] + offset[field[j]]))
+      Q[who, j] <- sample.int(5, length(who), replace = TRUE,
+        prob = diff(c(0, cum, 1)))
+    }
+  }
+  dat <- suppressMessages(dataFormat(
+    cbind(ID = seq_len(nobs), as.data.frame(Q)),
+    response.type = "ordinal"
+  ))
+
+  fit <- suppressWarnings(suppressMessages(
+    Biclustering(dat, ncls = ncls, nfld = nfld, method = "R",
+      estimation = "isotonic")
+  ))
+
+  est <- as.vector(fit$FieldEstimated)
+  expect_false(anyNA(est))
+  expect_true(all(est %in% seq_len(nfld)))
+  expect_true(all(is.finite(fit$FRP)))
+  expect_true(fit$converge)
+})
+
+test_that("tied upper-cumulative probabilities survive the log", {
+  # A field whose adjacent categories are pooled: the differences are exactly
+  # zero, and a subtraction of the cumulative form can undershoot.
+  P <- matrix(c(0.25, 0.25, 0.25, 0.25), nrow = 1)
+  upper <- exametrika:::iso_upper_cum(P)
+  bb <- cbind(1, upper, 0)
+  d <- bb[, seq_len(ncol(P)), drop = FALSE] -
+    bb[, seq_len(ncol(P)) + 1, drop = FALSE]
+
+  const <- exp(-72)
+  expect_true(all(is.finite(log(pmax(d, 0) + const))))
+})

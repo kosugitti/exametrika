@@ -49,6 +49,35 @@ planned for 2.0.0 ride along, so that the break happens once.
   the strength of the pin depends on the test length looks unintended and is
   being reviewed separately.
 
+- **Order-restricted biclustering returned no field assignments at all on tests
+  longer than about 40 items.** The E-step needs the log of a category
+  probability, formed as the difference of two upper-cumulative probabilities.
+  That difference cannot be negative in exact arithmetic, but the
+  order-restricted M-step pools adjacent categories, so exact ties are the norm
+  rather than the exception (11 of 30 differences on a 72-item fit), and a tie
+  computed as a subtraction lands anywhere within a few ulp of zero.
+
+  The guard against that was `+ const`, and `const` is `exp(-nitems)`. It
+  therefore *shrinks* as the test grows -- `exp(-72)` is 5e-32 against rounding
+  errors of 1e-14 -- while the errors it has to absorb do not. Past roughly 37
+  items the guard stops working: `log()` of a negative difference gave `NaN`,
+  the `NaN` reached the field posterior through the softmax, and `max.col()`
+  returned `NA` for every item, so the fit came back with all fields empty and
+  `converge = FALSE`. The cost was visible too, since a fit that never
+  stabilises runs to the iteration cap: 72 items in 6 fields now converges in 5
+  cycles and 0.2 seconds.
+
+  Fixed by clamping the difference at zero before adding `const`. Only the
+  rounding is repaired: a genuinely tied pair still becomes `log(const)` exactly
+  as before, and every already-positive value is unchanged to the bit, so no
+  previously-working fit moves. Ordinal `LRA()` is unaffected -- its isotonic
+  path works with the probabilities themselves rather than a difference.
+
+  `const = exp(-nitems)` is doing two jobs that pull apart as tests get longer:
+  a modelling penalty for an impossible response, which should scale with the
+  test, and a numerical floor, which should not. Separating them is left for a
+  later release.
+
 - **`M2()` says how much memory it needs, and refuses a size the machine cannot
   hold.** The margin covariance is a dense `m x m` matrix and `m` grows with the
   *square* of the test length: 35 items over 5 categories is 0.7 GB, 40 items is

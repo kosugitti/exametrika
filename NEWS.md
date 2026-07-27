@@ -228,6 +228,29 @@ planned for 2.0.0 ride along, so that the break happens once.
   the square of the item count; for nominal data it is also the only route to an
   absolute fit statistic at all, since no saturated model can be formed.
 
+- `M2()` also accepts fits from `LRA()` on ordinal data and from
+  `Biclustering()` on ordinal or nominal data, so the three ways of treating the
+  same polytomous data — order-restricted, filter-smoothed, unordered — can be
+  put on one scale. Biclustering shares one category profile across the items of
+  a field, so its Jacobian columns are shared too, and its parameter count is
+  fields x classes x (categories - 1) rather than items x classes x (categories
+  - 1). The field partition is taken as given; its uncertainty is not
+  propagated. Items must all have the same number of categories, since a shared
+  profile would otherwise hand an item margins it can never produce (the check
+  is explicit: without it the covariance matrix loses positive definiteness and
+  the failure is unreadable).
+
+  Only a maximum likelihood fit makes the reference distribution hold, so for
+  filter-based (GTM) and order-restricted estimation the statistic is
+  descriptive: recorded, not tested.
+
+- `M2()` and `add_M2()` take `gc = TRUE`, which releases the workspace before
+  returning. The margin covariance and its factor are the largest objects the
+  package allocates and R otherwise keeps the block. Interactive use wants this;
+  a loop over many fits should pass `FALSE`, where the collection costs time and
+  buys nothing. With `verbose = TRUE` and a large problem, `add_M2()` now says
+  which of its two statistics it is working on.
+
 - **New: `LCA()` supports nominal data** (`LCA.nominal`). The model is a finite
   mixture of product-multinomial distributions — one free category distribution
   per item within each latent class, with no ordering imposed on the classes or

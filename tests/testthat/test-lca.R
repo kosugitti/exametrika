@@ -369,3 +369,65 @@ test_that("print shows both worlds of fit indices, and either alone", {
 test_that("add_M2 refuses models it cannot handle", {
   expect_error(add_M2(LCA(J15S500, ncls = 3)), "available for models fitted")
 })
+
+### M2 for LRA and Biclustering ---------------------------------------------
+
+test_that("M2 for ordinal LRA matches LCA in structure", {
+  dat <- dataFormat(J5S1000)
+  a <- M2(suppressMessages(LRA(dat, nrank = 3, method = "isotonic")), verbose = FALSE)
+  b <- M2(suppressMessages(LCA(dat, ncls = 3)), verbose = FALSE)
+  # LRA is an ordered LCA: same margins, same parameters, same Jacobian rank.
+  # Only the estimator differs, so only the statistic itself may differ.
+  expect_equal(c(a$m, a$n_param, a$rank_delta), c(b$m, b$n_param, b$rank_delta))
+  expect_true(is.finite(a$M2) && a$M2 > 0)
+})
+
+test_that("the Jacobian rank deficiency follows the same rule for LRA", {
+  dat <- dataFormat(J5S1000)
+  for (k in 2:4) {
+    r <- M2(suppressMessages(LRA(dat, nrank = k, method = "isotonic")), verbose = FALSE)
+    expect_equal(r$n_param - r$rank_delta, (k - 1) * (k - 2) / 2)
+  }
+})
+
+test_that("M2 for biclustering counts field-shared parameters", {
+  dat <- dataFormat(J35S500)
+  ncls <- 4
+  nfld <- 3
+  fit <- suppressMessages(Biclustering(dat, ncls = ncls, nfld = nfld, method = "B"))
+  r <- M2(fit, verbose = FALSE)
+  # one profile per (field, class), not per (item, class)
+  expect_equal(r$n_param, nfld * ncls * (5 - 1))
+  expect_equal(r$n_param - r$rank_delta, (ncls - 1) * (ncls - 2) / 2)
+  expect_equal(r$df, r$m - r$rank_delta)
+})
+
+test_that("the shared Jacobian doubles the derivative within a field", {
+  # A pair margin whose two items sit in the same field and name the same
+  # category is (1/C) sum_c rho^2, so its derivative is twice rho, not rho.
+  profile <- array(0, dim = c(2, 2, 3))
+  profile[1, , ] <- profile[2, , ] <- matrix(c(.5, .3, .2, .2, .3, .5), nrow = 2, byrow = TRUE)
+  idx <- exametrika:::m2_margin_index(rep(3, 2))
+  D <- exametrika:::m2_delta_shared(profile, idx, rep(3, 2), field = c(1, 1))
+  # the pair margin (item1 cat1, item2 cat1) is the third row of the pair block
+  pair_row <- nrow(idx$single) + which(idx$pair[, "cat1"] == 1 & idx$pair[, "cat2"] == 1)
+  # its derivative with respect to (field 1, category 1, class c) is 2 rho / C
+  expect_equal(unname(D[pair_row, 1:2]), unname(profile[1, , 1]))
+})
+
+test_that("biclustering M2 refuses ragged category counts", {
+  # J5S1000 has 4/3/4/3/4 categories; a field profile cannot serve them all
+  dat <- dataFormat(J5S1000)
+  fit <- suppressMessages(Biclustering(dat, ncls = 3, nfld = 2, method = "B"))
+  expect_error(M2(fit, verbose = FALSE), "same number of categories")
+})
+
+test_that("the M2 object stays small whatever the item count", {
+  # the simulation keeps one of these per fit, so it must not carry the
+  # residual vector or anything else that grows with m
+  dat <- dataFormat(J35S500)
+  fit <- suppressMessages(Biclustering(dat, ncls = 3, nfld = 2, method = "B"))
+  r <- M2(fit, verbose = FALSE)
+  expect_lt(as.numeric(object.size(r)), 10000)
+  expect_null(r$residual)
+})

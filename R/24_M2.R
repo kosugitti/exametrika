@@ -1,8 +1,6 @@
 # Limited-information goodness-of-fit statistic M2
 # (Maydeu-Olivares & Joe, 2005, 2006)
 #
-# Design memo: develop/Algorithm_M2.tex
-#
 # What the statistic tests: whether the model reproduces the univariate and
 # bivariate margins -- the item-pair cross tables. The reference point is the
 # saturated model of the 2nd-order margins, not of the full response-pattern
@@ -120,7 +118,14 @@ m2_xi <- function(profile, A, idx) {
     joint[ks, ks] <- diag(pi_vec[ks], nrow = length(ks))
   }
 
-  return(joint - outer(pi_vec, pi_vec))
+  # Subtract the outer product one column at a time and in place. Writing
+  # `joint - outer(pi_vec, pi_vec)` would hold three m x m matrices at once
+  # (joint, the outer product, the result); at m = 19,800 each of those is
+  # 2.9 GB, and the peak decides how many of these can run in parallel.
+  for (k in seq_along(pi_vec)) {
+    joint[, k] <- joint[, k] - pi_vec * pi_vec[k]
+  }
+  return(joint)
 }
 
 #' @title Parameter index for M2
@@ -206,6 +211,12 @@ m2_core <- function(profile, ncat, nobs, Q = NULL, Z = NULL, p_vec = NULL) {
   Delta <- m2_delta(profile, idx, ncat)
 
   L <- chol(Xi) # Xi = L'L, L upper triangular
+  # Xi is not needed once the factor exists; dropping the reference lets R
+  # reuse the block. An explicit gc() here was tried and removed: it cost ~30%
+  # of the runtime and saved nothing, because the peak is set by Xi and its
+  # Cholesky factor being alive at the same time, which R cannot avoid without
+  # an in-place factorisation.
+  rm(Xi)
   e_tilde <- backsolve(L, e, transpose = TRUE)
   B <- backsolve(L, Delta, transpose = TRUE)
   sv <- svd(B)
@@ -217,8 +228,7 @@ m2_core <- function(profile, ncat, nobs, Q = NULL, Z = NULL, p_vec = NULL) {
   df <- idx$m - rank_delta
   return(list(
     M2 = stat, df = df, p = stats::pchisq(stat, df, lower.tail = FALSE),
-    m = idx$m, n_param = ncol(Delta), rank_delta = rank_delta,
-    residual = e
+    m = idx$m, n_param = ncol(Delta), rank_delta = rank_delta
   ))
 }
 
@@ -315,20 +325,28 @@ M2.default <- function(x, ...) {
 #' @rdname M2
 #' @param verbose Logical; if TRUE (default), reports the size of the margin
 #'   covariance matrix before computing it when that matrix is large.
+#' @param gc Logical; if TRUE (default), releases the workspace back to the
+#'   operating system before returning. The margin covariance and its Cholesky
+#'   factor are the largest objects the package ever allocates -- gigabytes for a
+#'   long test -- and R holds on to that block otherwise. Interactive use, where
+#'   this is called once per model, wants it. A loop over many fits does not:
+#'   the collection costs a noticeable fraction of the computation and buys
+#'   nothing, since the next call allocates the same block again. Pass FALSE
+#'   there.
 #' @export
-M2.nominalLCA <- function(x, verbose = TRUE, ...) {
-  return(m2_from_lca(x, verbose = verbose))
+M2.nominalLCA <- function(x, verbose = TRUE, gc = TRUE, ...) {
+  return(m2_from_lca(x, verbose = verbose, gc = gc))
 }
 
 #' @rdname M2
 #' @export
-M2.ratedLCA <- function(x, verbose = TRUE, ...) {
-  return(m2_from_lca(x, verbose = verbose))
+M2.ratedLCA <- function(x, verbose = TRUE, gc = TRUE, ...) {
+  return(m2_from_lca(x, verbose = verbose, gc = gc))
 }
 
 #' @title Shared body of the LCA M2 methods
 #' @noRd
-m2_from_lca <- function(x, verbose = TRUE) {
+m2_from_lca <- function(x, verbose = TRUE, gc = TRUE) {
   if (is.null(x$Q) || is.null(x$Z)) {
     stop(
       "The fitted object does not carry the response data needed by M2(). ",
@@ -359,6 +377,7 @@ m2_from_lca <- function(x, verbose = TRUE) {
 
   out <- m2_core(profile, ncat, nobs = x$nobs, Q = x$Q, Z = x$Z)
   out$n_class <- ncls
+  m2_release(gc)
   return(structure(out, class = c("exametrika", "M2")))
 }
 
@@ -460,24 +479,220 @@ add_M2.default <- function(x, ...) {
 #' @rdname add_M2
 #' @param verbose Logical; if TRUE (default), reports the size of the margin
 #'   covariance matrix before computing it when that matrix is large.
+#' @param gc Logical; if TRUE (default), releases the workspace before
+#'   returning. See \code{\link{M2}}.
 #' @export
-add_M2.nominalLCA <- function(x, verbose = TRUE, ...) {
-  return(add_m2_to_lca(x, verbose = verbose))
+add_M2.nominalLCA <- function(x, verbose = TRUE, gc = TRUE, ...) {
+  return(add_m2_to_lca(x, verbose = verbose, gc = gc))
 }
 
 #' @rdname add_M2
 #' @export
-add_M2.ratedLCA <- function(x, verbose = TRUE, ...) {
-  return(add_m2_to_lca(x, verbose = verbose))
+add_M2.ratedLCA <- function(x, verbose = TRUE, gc = TRUE, ...) {
+  return(add_m2_to_lca(x, verbose = verbose, gc = gc))
 }
 
 #' @title Shared body of the add_M2 methods
 #' @noRd
-add_m2_to_lca <- function(x, verbose = TRUE) {
-  fitted <- m2_from_lca(x, verbose = verbose)
+add_m2_to_lca <- function(x, verbose = TRUE, gc = TRUE) {
   ncat <- as.vector(x$categories)
+  # Two statistics are needed, the model's and the baseline's, and they cannot
+  # share a covariance matrix -- each is computed under its own model. On a long
+  # test that is a wait worth narrating.
+  talk <- verbose && m2_report_size(ncat, verbose = FALSE) > 5000
+
+  if (talk) message("M2: computing the statistic for the fitted model ...")
+  fitted <- m2_from_lca(x, verbose = verbose, gc = FALSE)
+
+  if (talk) message("M2: computing the statistic for the independence baseline ...")
   null_profile <- m2_null_profile(x$Q, x$Z, ncat)
   null_fit <- m2_core(null_profile, ncat, nobs = x$nobs, Q = x$Q, Z = x$Z)
+  if (talk) message("M2: done.")
   x$TestFitIndicesM2 <- m2_fit_indices(fitted, null_fit, x$nobs)
+  m2_release(gc)
   return(x)
+}
+
+#' @title Jacobian when several items share one set of parameters
+#' @description
+#' Biclustering estimates one category profile per (field, class), and every item
+#' in a field uses it. The margins are the same functions as before -- responses
+#' are independent given the class, whether or not two items sit in the same
+#' field -- but the derivative of a margin now lands on the field's column, and
+#' several margins land on the same column.
+#'
+#' Contributions are accumulated rather than assigned, which matters for one
+#' case: a pair margin whose two items belong to the *same* field and name the
+#' *same* category is `(1/C) sum_c rho^2`, so the derivative picks up a factor of
+#' two. Assigning would silently halve it.
+#' @param profile items x classes x categories, the field profile expanded to items
+#' @param field integer vector: which field each item belongs to
+#' @noRd
+m2_delta_shared <- function(profile, idx, ncat, field) {
+  ncls <- dim(profile)[2]
+  nfld <- max(field)
+  ncat_fld <- vapply(seq_len(nfld), function(f) ncat[which(field == f)[1]], numeric(1))
+  par_index <- do.call(rbind, lapply(seq_len(nfld), function(f) {
+    g <- expand.grid(cls = seq_len(ncls), cat = seq_len(ncat_fld[f] - 1L))
+    data.frame(fld = f, cat = g$cat, cls = g$cls)
+  }))
+  key <- paste(par_index$fld, par_index$cat)
+  Delta <- matrix(0, nrow = idx$m, ncol = nrow(par_index))
+
+  n1 <- nrow(idx$single)
+  for (k in seq_len(n1)) {
+    j <- idx$single[k, "item"]
+    cols <- which(key == paste(field[j], idx$single[k, "cat"]))
+    Delta[k, cols] <- Delta[k, cols] + 1 / ncls
+  }
+  for (k in seq_len(nrow(idx$pair))) {
+    row <- n1 + k
+    j <- idx$pair[k, "item1"]
+    q <- idx$pair[k, "cat1"]
+    jp <- idx$pair[k, "item2"]
+    qp <- idx$pair[k, "cat2"]
+    cols_j <- which(key == paste(field[j], q))
+    cols_jp <- which(key == paste(field[jp], qp))
+    Delta[row, cols_j] <- Delta[row, cols_j] + profile[jp, , qp] / ncls
+    Delta[row, cols_jp] <- Delta[row, cols_jp] + profile[j, , q] / ncls
+  }
+  return(Delta)
+}
+
+#' @title Core of the M2 computation, with an optional shared-parameter map
+#' @param field integer vector of field memberships, or NULL when every item has
+#'   its own parameters (LCA, LRA)
+#' @noRd
+m2_core_general <- function(profile, ncat, nobs, Q, Z, field = NULL) {
+  idx <- m2_margin_index(ncat)
+  A <- m2_class_products(profile, idx)
+  pi_vec <- m2_pi(A)
+  e <- m2_p_obs(Q, Z, idx) - pi_vec
+  Xi <- m2_xi(profile, A, idx)
+  Delta <- if (is.null(field)) {
+    m2_delta(profile, idx, ncat)
+  } else {
+    m2_delta_shared(profile, idx, ncat, field)
+  }
+
+  L <- chol(Xi)
+  rm(Xi)
+  e_tilde <- backsolve(L, e, transpose = TRUE)
+  B <- backsolve(L, Delta, transpose = TRUE)
+  sv <- svd(B)
+  rank_delta <- sum(sv$d > max(dim(B)) * .Machine$double.eps * sv$d[1])
+  U_r <- sv$u[, seq_len(rank_delta), drop = FALSE]
+  resid <- e_tilde - U_r %*% crossprod(U_r, e_tilde)
+
+  stat <- nobs * sum(resid^2)
+  df <- idx$m - rank_delta
+  return(list(
+    M2 = stat, df = df, p = stats::pchisq(stat, df, lower.tail = FALSE),
+    m = idx$m, n_param = ncol(Delta), rank_delta = rank_delta
+  ))
+}
+
+#' @title Recover the item x class x category profile from an ICRP data frame
+#' @noRd
+m2_profile_from_icrp <- function(icrp, ncat, ncls, prefix) {
+  nitems <- length(ncat)
+  cols <- paste0(prefix, seq_len(ncls))
+  profile <- array(0, dim = c(nitems, ncls, max(ncat)))
+  offset <- c(0, cumsum(ncat)[-nitems])
+  for (j in seq_len(nitems)) {
+    profile[j, , seq_len(ncat[j])] <- t(as.matrix(icrp[offset[j] + seq_len(ncat[j]), cols]))
+  }
+  return(profile)
+}
+
+#' @title Give the workspace back to the operating system
+#' @noRd
+m2_release <- function(gc) {
+  if (isTRUE(gc)) {
+    gc(verbose = FALSE, full = TRUE)
+  }
+  return(invisible(NULL))
+}
+
+#' @title Report the size of the margin covariance before building it
+#' @noRd
+m2_report_size <- function(ncat, verbose) {
+  nitems <- length(ncat)
+  m <- sum(ncat - 1) + sum(outer(ncat - 1, ncat - 1)[upper.tri(diag(nitems))])
+  if (verbose && m > 5000) {
+    message(sprintf(
+      "M2: %d margins; the covariance matrix is %.1f GB and its factorisation dominates the cost.",
+      m, m^2 * 8 / 1024^3
+    ))
+  }
+  return(invisible(m))
+}
+
+#' @rdname M2
+#' @export
+M2.ordinalBiclustering <- function(x, verbose = TRUE, gc = TRUE, ...) {
+  return(m2_from_biclustering(x, verbose = verbose, gc = gc))
+}
+
+#' @rdname M2
+#' @export
+M2.nominalBiclustering <- function(x, verbose = TRUE, gc = TRUE, ...) {
+  return(m2_from_biclustering(x, verbose = verbose, gc = gc))
+}
+
+#' @title M2 for a biclustering fit
+#' @description
+#' The field profile is expanded to the items that carry it, so the margins are
+#' computed exactly as for LCA; only the Jacobian knows about the sharing. The
+#' field partition is treated as given -- its uncertainty is not propagated,
+#' which is worth remembering when reading the degrees of freedom.
+#' @noRd
+m2_from_biclustering <- function(x, verbose = TRUE, gc = TRUE) {
+  if (is.null(x$Q) || is.null(x$Z)) {
+    stop("The fitted object does not carry the response data needed by M2().")
+  }
+  ncls <- x$n_class
+  field <- as.vector(x$FieldEstimated)
+  nitems <- length(field)
+  maxQ <- dim(x$FRP)[3]
+  # Category counts come from the data, not from the array's width. A field
+  # profile has maxQ slots whatever its items look like, so an item with fewer
+  # categories would otherwise be given a margin that can never be observed --
+  # zero variance, and the covariance matrix stops being positive definite.
+  ncat <- apply(x$Q * (x$Z == 1), 2, max)
+  if (any(ncat != maxQ)) {
+    stop(
+      "M2() on a biclustering fit needs every item to have the same number of ",
+      "categories: a field profile is shared across its items, so items with ",
+      "fewer categories would be assigned margins that cannot occur."
+    )
+  }
+  profile <- array(0, dim = c(nitems, ncls, maxQ))
+  for (j in seq_len(nitems)) {
+    profile[j, , ] <- x$FRP[field[j], , ]
+  }
+
+  m2_report_size(ncat, verbose)
+  out <- m2_core_general(profile, ncat, nobs = x$nobs, Q = x$Q, Z = x$Z, field = field)
+  out$n_class <- ncls
+  m2_release(gc)
+  return(structure(out, class = c("exametrika", "M2")))
+}
+
+#' @rdname M2
+#' @export
+M2.LRAordinal <- function(x, verbose = TRUE, gc = TRUE, ...) {
+  dat <- x$U
+  if (is.null(dat$Q) || is.null(dat$Z)) {
+    stop("The fitted object does not carry the response data needed by M2().")
+  }
+  ncat <- as.vector(dat$categories)
+  nrank <- x$n_rank
+  profile <- m2_profile_from_icrp(x$ICRP, ncat, nrank, prefix = "rank")
+
+  m2_report_size(ncat, verbose)
+  out <- m2_core_general(profile, ncat, nobs = x$nobs, Q = dat$Q, Z = dat$Z)
+  out$n_class <- nrank
+  m2_release(gc)
+  return(structure(out, class = c("exametrika", "M2")))
 }

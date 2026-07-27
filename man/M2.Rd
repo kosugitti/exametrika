@@ -5,15 +5,24 @@
 \alias{M2.default}
 \alias{M2.nominalLCA}
 \alias{M2.ratedLCA}
+\alias{M2.ordinalBiclustering}
+\alias{M2.nominalBiclustering}
+\alias{M2.LRAordinal}
 \title{Limited-information goodness-of-fit statistic (M2)}
 \usage{
 M2(x, ...)
 
 \method{M2}{default}(x, ...)
 
-\method{M2}{nominalLCA}(x, verbose = TRUE, ...)
+\method{M2}{nominalLCA}(x, verbose = TRUE, gc = TRUE, ...)
 
-\method{M2}{ratedLCA}(x, verbose = TRUE, ...)
+\method{M2}{ratedLCA}(x, verbose = TRUE, gc = TRUE, ...)
+
+\method{M2}{ordinalBiclustering}(x, verbose = TRUE, gc = TRUE, ...)
+
+\method{M2}{nominalBiclustering}(x, verbose = TRUE, gc = TRUE, ...)
+
+\method{M2}{LRAordinal}(x, verbose = TRUE, gc = TRUE, ...)
 }
 \arguments{
 \item{x}{A fitted model object of class "exametrika".}
@@ -22,6 +31,15 @@ M2(x, ...)
 
 \item{verbose}{Logical; if TRUE (default), reports the size of the margin
 covariance matrix before computing it when that matrix is large.}
+
+\item{gc}{Logical; if TRUE (default), releases the workspace back to the
+operating system before returning. The margin covariance and its Cholesky
+factor are the largest objects the package ever allocates -- gigabytes for a
+long test -- and R holds on to that block otherwise. Interactive use, where
+this is called once per model, wants it. A loop over many fits does not:
+the collection costs a noticeable fraction of the computation and buys
+nothing, since the next call allocates the same block again. Pass FALSE
+there.}
 }
 \value{
 An object of class "exametrika" and "M2" containing:

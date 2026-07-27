@@ -4,12 +4,18 @@
 \alias{print.exametrika}
 \title{Print Method for Exametrika Objects}
 \usage{
-\method{print}{exametrika}(x, digits = 3, ...)
+\method{print}{exametrika}(x, digits = 3, fit_indices = c("both", "pattern", "margin"), ...)
 }
 \arguments{
 \item{x}{An object of class "exametrika" with various possible subclasses}
 
 \item{digits}{Integer indicating the number of decimal places to display. Default is 3.}
+
+\item{fit_indices}{For models that can carry both: which set of fit indices to
+show. "both" (default), "pattern" for the response-pattern based ones, or
+"margin" for the margin-based ones from \code{\link{add_M2}}. The two are
+built from chi-squares that live in different worlds and are never combined
+into a single set.}
 
 \item{...}{Additional arguments passed to print methods (not currently used)}
 }

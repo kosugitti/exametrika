@@ -11,9 +11,9 @@ add_M2(x, ...)
 
 \method{add_M2}{default}(x, ...)
 
-\method{add_M2}{nominalLCA}(x, verbose = TRUE, ...)
+\method{add_M2}{nominalLCA}(x, verbose = TRUE, gc = TRUE, ...)
 
-\method{add_M2}{ratedLCA}(x, verbose = TRUE, ...)
+\method{add_M2}{ratedLCA}(x, verbose = TRUE, gc = TRUE, ...)
 }
 \arguments{
 \item{x}{A fitted model object of class "exametrika".}
@@ -22,6 +22,9 @@ add_M2(x, ...)
 
 \item{verbose}{Logical; if TRUE (default), reports the size of the margin
 covariance matrix before computing it when that matrix is large.}
+
+\item{gc}{Logical; if TRUE (default), releases the workspace before
+returning. See \code{\link{M2}}.}
 }
 \value{
 The fitted object with \code{TestFitIndicesM2} added.

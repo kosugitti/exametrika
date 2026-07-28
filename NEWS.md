@@ -283,6 +283,25 @@ planned for 2.0.0 ride along, so that the break happens once.
   candidate cut-point matrix (`combn(gene_length, 2)` filtered) per child
   per generation; it is built once per run. RNG draw order is unchanged.
 
+- `LRA()` on ordinal and rated data no longer fails on large tables. The
+  monitored log-likelihood was accumulated as `sum(rankProf * log(exp(ll)))` --
+  a round trip that is algebraically the identity but underflows on the way:
+  once the test is large enough for the entries of `ll` to fall below about
+  -700 (2000 respondents x 60 items x 5 categories is enough), `exp()` returns
+  zero, `log(0)` is `-Inf`, and `0 * -Inf` is `NaN`. The convergence check then
+  received `NA` and the fit died with "missing value where TRUE/FALSE needed".
+  The sum is now taken on the log scale directly, which is the same quantity
+  without the excursion through the exponent. Found while sizing a simulation
+  study; it affects `LRA.ordinal()` and `LRA.rated()` under both `isotonic` and
+  `GTM`.
+
+  The corresponding line in each saturated-model loop adds a small constant
+  inside the logarithm and is deliberately left alone: removing it moves the
+  saturated log-likelihood substantially (where `exp(ll) < const` the old
+  expression was pinned near `log(const)`), and the Mathematica reference values
+  were produced with that behaviour in place. Changing it is a separate,
+  breaking decision.
+
 - The order-restricted M-step for ordinal data is now implemented in C++
   (`src/isotonic_core.cpp`). `LRA.ordinal(method = "isotonic")` and
   `Biclustering.ordinal(estimation = "isotonic")` call it through the same

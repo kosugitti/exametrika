@@ -253,7 +253,6 @@ LRA.ordinal <- function(U,
     old_log_like_satu <- ij_log_lik_satu
     ## Estep
     ll_satu <- uuMat %*% log(catRefMat_satu + const)
-    nume_satu <- exp(ll_satu)
     rankProf_satu <- row_softmax(ll_satu)
 
     ## Mstep
@@ -263,6 +262,10 @@ LRA.ordinal <- function(U,
     refMat000_satu[design0, ] <- 0
     catRefMat_satu <- refMat111_satu - refMat000_satu
     ### Log Lik for Saturation Model
+    # ここは往復のまま残す。const を外すと値が大きく動き(exp(ll) < const の
+    # 場面では log(const) に張り付いていた)、Mathematica 参照値と食い違う。
+    # 荘島実装の挙動そのものなので、直すなら別件として承認を取る。
+    nume_satu <- exp(ll_satu)
     log_lik_satu <- sum(rankProf_satu * log(nume_satu + const))
     ij_log_lik_satu <- log_lik_satu / nitems / nobs
 
@@ -340,7 +343,6 @@ LRA.ordinal <- function(U,
     old_log_like <- ij_log_lik
     ## Estep
     llmat <- uuMat %*% log(catRefMat + const) + logprior_NQmat
-    nume <- exp(llmat)
     rankProf <- row_softmax(llmat)
 
     if (method == "isotonic") {
@@ -372,7 +374,13 @@ LRA.ordinal <- function(U,
       catRefMat <- refMat111 - refMat000
     }
 
-    log_lik <- sum(rankProf * log(nume))
+    # 期待対数事後は対数のまま足す。exp() してから log() で戻す往復は代数的に
+    # 恒等だが、その途中でアンダーフローする: 2000人 x 60項目 x 5カテゴリの
+    # 規模だと ll の要素が -700 を下回り、exp() が 0 に落ちて log(0) = -Inf、
+    # 0 * -Inf = NaN となって収束判定の if が NA で落ちる。const を足した版は
+    # 落ちない代わりに log(const) という無関係な定数に化けるので、黙って
+    # 間違った値で回り続ける。
+    log_lik <- sum(rankProf * llmat)
     ij_log_lik <- log_lik / nitems / nobs
 
     iter <- iter + 1

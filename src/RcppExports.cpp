@@ -131,16 +131,17 @@ BEGIN_RCPP
 END_RCPP
 }
 // iso_dual_map_cpp
-List iso_dual_map_cpp(NumericMatrix Mcount, int maxiter, double tol, bool fast);
-RcppExport SEXP _exametrika_iso_dual_map_cpp(SEXP McountSEXP, SEXP maxiterSEXP, SEXP tolSEXP, SEXP fastSEXP) {
+List iso_dual_map_cpp(NumericMatrix Mcount, int maxiter, double tol, double viol_tol, bool fast);
+RcppExport SEXP _exametrika_iso_dual_map_cpp(SEXP McountSEXP, SEXP maxiterSEXP, SEXP tolSEXP, SEXP viol_tolSEXP, SEXP fastSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< NumericMatrix >::type Mcount(McountSEXP);
     Rcpp::traits::input_parameter< int >::type maxiter(maxiterSEXP);
     Rcpp::traits::input_parameter< double >::type tol(tolSEXP);
+    Rcpp::traits::input_parameter< double >::type viol_tol(viol_tolSEXP);
     Rcpp::traits::input_parameter< bool >::type fast(fastSEXP);
-    rcpp_result_gen = Rcpp::wrap(iso_dual_map_cpp(Mcount, maxiter, tol, fast));
+    rcpp_result_gen = Rcpp::wrap(iso_dual_map_cpp(Mcount, maxiter, tol, viol_tol, fast));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -203,7 +204,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_exametrika_irm_gibbs_core_cpp", (DL_FUNC) &_exametrika_irm_gibbs_core_cpp, 11},
     {"_exametrika_iso_build_pi_cpp", (DL_FUNC) &_exametrika_iso_build_pi_cpp, 2},
     {"_exametrika_iso_upper_cum_cpp", (DL_FUNC) &_exametrika_iso_upper_cum_cpp, 1},
-    {"_exametrika_iso_dual_map_cpp", (DL_FUNC) &_exametrika_iso_dual_map_cpp, 4},
+    {"_exametrika_iso_dual_map_cpp", (DL_FUNC) &_exametrika_iso_dual_map_cpp, 5},
     {"_exametrika_qBiNormal_cpp", (DL_FUNC) &_exametrika_qBiNormal_cpp, 3},
     {"_exametrika_polychoric_likelihood_cpp", (DL_FUNC) &_exametrika_polychoric_likelihood_cpp, 2},
     {"_exametrika_polychoric_cpp", (DL_FUNC) &_exametrika_polychoric_cpp, 2},

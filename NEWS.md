@@ -319,6 +319,18 @@ planned for 2.0.0 ride along, so that the break happens once.
   which is close to the answer from the second sweep on; the check of whether
   the constraint binds at zero is kept, being complementary slackness itself.
 
+  The sweeps stop on both halves of the KKT picture, not on the log-likelihood
+  alone. Near the optimum the likelihood moves quadratically while the order
+  violation is still shrinking geometrically, so the likelihood goes quiet
+  several sweeps before the restriction is actually met: on real tables it was
+  stopping with the returned probabilities breaching the stochastic order by
+  around 1e-3. Convergence now also requires the largest violation to fall
+  below `viol_tol` (1e-6), and the sweep cap rises to 1000 because the number
+  of sweeps grows with the table -- 6 ranks need about 100, 20 ranks about 500.
+  Across 60 tables from real EM runs the worst violation drops from 3.2e-3 to
+  9.9e-7 for a 1.2x cost, and `Biclustering(J35S500, ncls = 6, nfld = 5,
+  method = "R", estimation = "isotonic")` is unchanged at 2.7s.
+
   Measured on the dual solver alone: 111x (3 ranks x 3 categories), 289x
   (12 x 7), 509x (20 x 6; 274s -> 0.54s), and a further 6.8x from the two root
   finds and the warm start, on tables taken from a real EM run. At the model level, where the

@@ -136,7 +136,7 @@ static inline double upper_at(const NumericMatrix& P, int r, int b) {
 
 // [[Rcpp::export]]
 List iso_dual_map_cpp(NumericMatrix Mcount, int maxiter = 100, double tol = 1e-7,
-                      bool fast = true) {
+                      double viol_tol = 1e-6, bool fast = true) {
   const int nrank = Mcount.nrow(), nc = Mcount.ncol();
   NumericMatrix theta(nc - 1, nrank - 1);
   NumericMatrix theta_prev(nc - 1, nrank - 1); // 直前のスイープで求めた値
@@ -233,7 +233,18 @@ List iso_dual_map_cpp(NumericMatrix Mcount, int maxiter = 100, double tol = 1e-7
     for (int r = 0; r < nrank; ++r)
       for (int q = 0; q < nc; ++q)
         loglik += Mcount(r, q) * std::log(std::max(P(r, q), 1e-300));
-    if (std::fabs(loglik - old_loglik) <= tol * (std::fabs(loglik) + tol)) {
+    // 収束判定には KKT の両側が要る。対数尤度は最適点の近くで2次的に平ら
+    // になる一方、順序制約の違反はまだ幾何級数的に減っている途中なので、
+    // 尤度だけで止めると違反が 1e-3 程度残ったところで掃引が終わる。
+    // 主問題の実行可能性も条件に加える。
+    double viol = 0.0;
+    for (int b = 0; b < nc - 1; ++b)
+      for (int r = 0; r < nrank - 1; ++r) {
+        const double v = upper_at(P, r, b) - upper_at(P, r + 1, b);
+        if (v > viol) viol = v;
+      }
+    if (std::fabs(loglik - old_loglik) <= tol * (std::fabs(loglik) + tol) &&
+        viol <= viol_tol) {
       converged = true; break;
     }
     old_loglik = loglik;

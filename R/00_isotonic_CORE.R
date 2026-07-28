@@ -163,19 +163,6 @@ emclus_isotonic <- function(U, Z, ncls, beta1, beta2, maxiter = 100, mic = FALSE
 }
 
 
-#' @title Category probabilities from dual multipliers (ordinal isotonic)
-#' @description
-#' Internal helper for the order-restricted ordinal M-step. Builds the
-#' (nrank x ncat) category-probability matrix from the Fenchel dual variables
-#' \code{theta} via the rational stationarity form
-#' \eqn{\pi_{ck} = M_{ck} / (\lambda_c + d_{ck})}, with the per-rank normalizer
-#' \eqn{\lambda_c} solved so each row sums to one.
-#' @param Mcount (nrank x ncat) expected counts plus Dirichlet pseudocounts
-#'   (\eqn{U_{ck} + \alpha_{ck} - 1}).
-#' @param theta ((ncat-1) x (nrank-1)) non-negative dual multipliers, one per
-#'   (boundary, adjacent-rank-pair).
-#' @return (nrank x ncat) category-probability matrix.
-#' @noRd
 #' @title One rank's category probabilities from its dual offsets
 #' @description
 #' Solves the per-rank normalizer of the stationarity form \eqn{\pi_q = m_q /
@@ -262,6 +249,17 @@ iso_row_probs <- function(m, d) {
   return(out)
 }
 
+#' @title Category probabilities from dual multipliers (ordinal isotonic)
+#' @description
+#' Internal helper for the order-restricted ordinal M-step. Builds the
+#' (nrank x ncat) category-probability matrix from the Fenchel dual variables
+#' \code{theta} by solving each rank separately with \code{iso_row_probs()}.
+#' @param Mcount (nrank x ncat) expected counts plus Dirichlet pseudocounts
+#'   (\eqn{U_{ck} + \alpha_{ck} - 1}).
+#' @param theta ((ncat-1) x (nrank-1)) non-negative dual multipliers, one per
+#'   (boundary, adjacent-rank-pair).
+#' @return (nrank x ncat) category-probability matrix.
+#' @noRd
 iso_build_pi <- function(Mcount, theta) {
   nrank <- nrow(Mcount)
   nc <- ncol(Mcount)
@@ -329,9 +327,14 @@ iso_upper_cum <- function(P) {
 #' @param maxiter maximum dual sweeps.
 #' @param tol stop when the relative change in the log-likelihood between sweeps
 #'   falls below this.
+#' @param viol_tol stop only once the largest violation of the stochastic order
+#'   is also below this. The log-likelihood alone goes flat several sweeps
+#'   before the restriction is met, so without this the returned probabilities
+#'   can breach the ordering by around 1e-3.
 #' @return (nrank x ncat) order-restricted category-probability matrix.
 #' @noRd
-iso_dual_map_ref <- function(Mcount, maxiter = 100, tol = 1e-7) {
+iso_dual_map_ref <- function(Mcount, maxiter = 1000, tol = 1e-7,
+                             viol_tol = 1e-6) {
   nrank <- nrow(Mcount)
   nc <- ncol(Mcount)
   theta <- matrix(0, nc - 1, nrank - 1)
@@ -420,9 +423,22 @@ iso_dual_map_ref <- function(Mcount, maxiter = 100, tol = 1e-7) {
         }
       }
     }
-    # Convergence on the log-likelihood drift, not the residual violation.
-    loglik <- sum(Mcount * log(pmax(iso_build_pi(Mcount, theta), 1e-300)))
-    if (abs(loglik - old_loglik) <= tol * (abs(loglik) + tol)) {
+    # Convergence needs both halves of the KKT picture. The log-likelihood
+    # goes flat well before the order restriction is actually satisfied --
+    # near the optimum it moves quadratically while the violation is still
+    # shrinking geometrically -- so on its own it stops the sweeps with a
+    # residual violation around 1e-3. Require primal feasibility as well.
+    P_now <- iso_build_pi(Mcount, theta)
+    loglik <- sum(Mcount * log(pmax(P_now, 1e-300)))
+    S_now <- iso_upper_cum(P_now)
+    viol <- if (nrow(S_now) < 2) {
+      0
+    } else {
+      max(0, max(S_now[-nrow(S_now), , drop = FALSE] -
+        S_now[-1, , drop = FALSE]))
+    }
+    if (abs(loglik - old_loglik) <= tol * (abs(loglik) + tol) &&
+      viol <= viol_tol) {
       FLG <- FALSE
     }
     old_loglik <- loglik
@@ -455,9 +471,14 @@ iso_dual_map_ref <- function(Mcount, maxiter = 100, tol = 1e-7) {
 #' @param maxiter maximum dual sweeps.
 #' @param tol stop when the relative change in the log-likelihood between sweeps
 #'   falls below this.
+#' @param viol_tol stop only once the largest violation of the stochastic order
+#'   is also below this. See \code{iso_dual_map_ref()}.
 #' @return (nrank x ncat) order-restricted category-probability matrix.
 #' @noRd
-iso_dual_map <- function(Mcount, maxiter = 100, tol = 1e-7) {
-  fit <- iso_dual_map_cpp(Mcount, maxiter = maxiter, tol = tol, fast = TRUE)
+iso_dual_map <- function(Mcount, maxiter = 1000, tol = 1e-7, viol_tol = 1e-6) {
+  fit <- iso_dual_map_cpp(Mcount,
+    maxiter = maxiter, tol = tol,
+    viol_tol = viol_tol, fast = TRUE
+  )
   return(fit$P)
 }

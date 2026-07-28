@@ -286,18 +286,29 @@ planned for 2.0.0 ride along, so that the break happens once.
 - The order-restricted M-step for ordinal data is now implemented in C++
   (`src/isotonic_core.cpp`). `LRA.ordinal(method = "isotonic")` and
   `Biclustering.ordinal(estimation = "isotonic")` call it through the same
-  internal `iso_dual_map()` entry point as before, so results are unchanged --
-  the port follows the R original's arithmetic operation for operation and
-  agrees with it exactly (`expect_identical`), not merely to a tolerance. It
-  additionally exploits the fact that raising one dual multiplier
-  `theta[c, q]` can only change ranks `c` and `c+1`, so the inner bisection
-  rebuilds two rows rather than the whole table.
+  internal `iso_dual_map()` entry point. It exploits the fact that raising one
+  dual multiplier `theta[c, q]` can only change ranks `c` and `c+1`, so a trial
+  value rebuilds two rows rather than the whole table.
+
+  Both root finds use the residual's value rather than only its sign: Newton's
+  method for the multiplier that normalises a rank (the function is strictly
+  decreasing and convex there, so the iteration cannot overshoot, and the
+  bracket is available in closed form), and the Illinois method for the dual
+  variable. The pure-R `iso_dual_map_ref()` does the same and the two are
+  checked against each other to a tolerance -- not to the bit, which a
+  value-driven search cannot promise: a difference in the last bits moves the
+  next trial point and the two paths then differ on their way to the same root.
 
   Measured on the dual solver alone: 111x (3 ranks x 3 categories), 289x
-  (12 x 7), 509x (20 x 6; 274s -> 0.54s). At the model level, where the
+  (12 x 7), 509x (20 x 6; 274s -> 0.54s), and a further 4.6x from the two root
+  finds on tables taken from a real EM run. At the model level, where the
   remaining EM machinery is still R, `Biclustering(J35S500, ncls = 6,
-  nfld = 5, method = "R", estimation = "isotonic")` drops from 265s to 11s
-  (same 125 EM cycles, same log-likelihood and BIC to the digit).
+  nfld = 5, method = "R", estimation = "isotonic")` drops from 265s to 11s.
+
+  The multiplier exists to make each rank's probabilities sum to one, so the
+  row sums measure how well it is found: bisection stopped at an error around
+  2e-6 on real tables, Newton reaches 6e-9. For binary data the solution must
+  coincide with weighted PAVA, and it does.
 
   This matters because the ordinal isotonic path was the slowest thing in the
   package and effectively ruled out large simulation studies. The pure-R

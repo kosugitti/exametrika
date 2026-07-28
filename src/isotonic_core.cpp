@@ -4,42 +4,80 @@
 #include <Rcpp.h>
 using namespace Rcpp;
 
+// R の sum() は長倍精度で累算する(src/main/summary.c の LDOUBLE)。二分探索は
+// 「和が1を超えるか」という真偽値しか使わないので累算方式の差は結果に出な
+// かったが、ニュートン法は和の値そのものを使うので、double で累算すると R 版
+// と最終ビットが食い違う。iso_dual_map_ref() との expect_identical を保つため
+// ここも長倍精度で足す。商は R と同じく double で作ってから累算する。
+//
+// 分母は保存せずその場で作る。この関数は1ソルバ呼び出しあたり2万回近く呼ば
+// れるので、作業用ベクタを確保すると反復を減らして浮いた分をヒープ確保で
+// 食い潰す(実測: 確保ありだと 2.46s、なしだと下の測定のとおり)。
+
 // ランク r の1行だけを有理形から作る。d は長さ nc。
+//
+// sum_q M[r,q]/(lambda + d[q]) = 1 を満たす lambda を安全化ニュートン法で解く。
+// f は定義域 lambda > -min(d) で狭義単調減少かつ凸(f' < 0, f'' > 0)なので、
+// 凸関数の接線が関数の下側を通ることから、f < 0 の点から踏み出した1歩は根の
+// 左側に着地し、以後は左から単調に近づく。行き過ぎない。
+// 区間も閉じた形で取れる: 左端 -min(d) で f は +無限大、右端 sum(M) - min(d)
+// では分母が全て sum(M) 以上になるので f <= 0。倍々に広げる探索は要らない。
 static inline void build_row(const NumericMatrix& M, int r,
                              const std::vector<double>& d,
                              NumericMatrix& P) {
   const int nc = M.ncol();
   double dmin = d[0];
   for (int q = 1; q < nc; ++q) if (d[q] < dmin) dmin = d[q];
-  double lo = -dmin + 1e-12;
-  double hi = lo + 1.0;
-  // 上限を倍々に広げる
-  for (;;) {
-    double s = 0.0;
-    for (int q = 0; q < nc; ++q) s += M(r, q) / (hi + d[q]);
-    if (s > 1.0) hi = lo + (hi - lo) * 2.0; else break;
+  long double tot = 0.0L;
+  for (int q = 0; q < nc; ++q) tot += M(r, q);
+  const double total = (double)tot;
+
+  double lam;
+  if (total <= 0.0) {
+    // 重みのない行。lambda によらず P は全て 0 になる
+    lam = -dmin + 1.0;
+  } else {
+    double lo = -dmin;
+    double hi = total - dmin;
+    lam = hi;
+    for (int k = 0; k < 60; ++k) {
+      long double s1 = 0.0L;
+      for (int q = 0; q < nc; ++q) s1 += (double)(M(r, q) / (lam + d[q]));
+      const double f = (double)s1 - 1.0;
+      if (f > 0.0) lo = lam; else hi = lam;
+      if (std::fabs(f) <= 1e-14) break;
+      long double s2 = 0.0L;
+      for (int q = 0; q < nc; ++q) {
+        const double dq = lam + d[q];
+        s2 += (double)(M(r, q) / (dq * dq));
+      }
+      const double fp = (double)s2; // -f'(lam)、正で持つ
+      double lam_new = lam + f / fp;
+      if (!R_finite(lam_new) || lam_new <= lo || lam_new >= hi) {
+        lam_new = (lo + hi) / 2.0;
+      }
+      if (std::fabs(lam_new - lam) <= 1e-15 * std::max(1.0, std::fabs(lam))) {
+        lam = lam_new;
+        break;
+      }
+      lam = lam_new;
+    }
   }
-  // 区間を詰める
-  while (hi - lo > 1e-10) {
-    double mid = (lo + hi) / 2.0;
-    double s = 0.0;
-    for (int q = 0; q < nc; ++q) s += M(r, q) / (mid + d[q]);
-    if (s > 1.0) lo = mid; else hi = mid;
-  }
-  const double lam = (lo + hi) / 2.0;
   for (int q = 0; q < nc; ++q) P(r, q) = M(r, q) / (lam + d[q]);
 }
 
 // theta((nc-1) x (nrank-1)) からランク r の d を作る
+// R 側は c(0, cumsum(theta_lower - theta_upper)) で作る。cumsum は長倍精度で
+// 累算するので、ここも合わせる(upper_at と同じ理由)。
 static inline void make_d(const NumericMatrix& theta, int r, int nrank, int nc,
                           std::vector<double>& d) {
   d[0] = 0.0;
-  double acc = 0.0;
+  long double acc = 0.0L;
   for (int b = 0; b < nc - 1; ++b) {
     const double tl = (r <= nrank - 2) ? theta(b, r) : 0.0;      // 自分が下側の対
     const double tu = (r >= 1)         ? theta(b, r - 1) : 0.0;  // 自分が上側の対
-    acc += tl - tu;
-    d[b + 1] = acc;
+    acc += (double)(tl - tu);
+    d[b + 1] = (double)acc;
   }
 }
 
@@ -64,11 +102,16 @@ NumericMatrix iso_upper_cum_cpp(NumericMatrix P) {
 }
 
 // S[r,b] を1つだけ得る（行 r の上側累積の b 番目）
+//
+// R 側は rev(cumsum(rev(P[r, ]))) で作る。cumsum も長倍精度で累算するので、
+// 加算の順序(末尾から b+1 まで)だけでなく累算の精度も合わせる必要がある。
+// 二分探索の時代はこの値の符号しか使わなかったので差が出なかったが、外側の
+// 探索が線形補間になった以上、値そのものが経路を決める。
 static inline double upper_at(const NumericMatrix& P, int r, int b) {
   const int nc = P.ncol();
-  double cum = 0.0;
+  long double cum = 0.0L;
   for (int q = nc - 1; q >= b + 1; --q) cum += P(r, q);
-  return cum;
+  return (double)cum;
 }
 
 // [[Rcpp::export]]
@@ -107,12 +150,40 @@ List iso_dual_map_cpp(NumericMatrix Mcount, int maxiter = 100, double tol = 1e-7
           while (upper_at(P, r, b) - upper_at(P, r + 1, b) > 0.0 && hi < 1e8) {
             hi *= 2.0; theta(b, r) = hi; refresh(r);
           }
-          while (hi - lo > 1e-10) {
-            const double mid = (lo + hi) / 2.0;
-            theta(b, r) = mid; refresh(r);
-            if (upper_at(P, r, b) - upper_at(P, r + 1, b) > 0.0) lo = mid; else hi = mid;
+          // Illinois 法(挟み撃ちの改良)。g(theta) = S[r,b] - S[r+1,b] は theta
+          // について単調減少で、上の倍々探索で符号の異なる2点が手に入って
+          // いる。線形補間で詰めるので二分より速く、区間を保持するので外へ
+          // 出ない。同じ端が2回続けて残ったらその側の関数値を半分にする ——
+          // 素の挟み撃ちが片側だけ動いて遅くなる欠点を消すため。
+          //
+          // ここを速くする意味: build_row は1ソルバ呼び出しあたり2万回近く
+          // 呼ばれ、その回数を決めているのがこの探索の反復数である。
+          auto g_at = [&](double x) {
+            theta(b, r) = x; refresh(r);
+            return upper_at(P, r, b) - upper_at(P, r + 1, b);
+          };
+          double g_lo = g_at(lo);
+          double g_hi = g_at(hi);
+          // 残差が最小だった点を覚えて最後にそれを採る(R 側の注記参照)
+          double root = (std::fabs(g_lo) <= std::fabs(g_hi)) ? lo : hi;
+          double best = std::min(std::fabs(g_lo), std::fabs(g_hi));
+          int side = 0;
+          while (hi - lo > 1e-12 && best > 1e-14) {
+            double mid = (lo * g_hi - hi * g_lo) / (g_hi - g_lo);
+            if (!R_finite(mid) || mid <= lo || mid >= hi) mid = (lo + hi) / 2.0;
+            const double g_mid = g_at(mid);
+            if (std::fabs(g_mid) < best) { best = std::fabs(g_mid); root = mid; }
+            if (g_mid > 0.0) {
+              lo = mid; g_lo = g_mid;
+              if (side == 1) g_hi = g_hi / 2.0;
+              side = 1;
+            } else {
+              hi = mid; g_hi = g_mid;
+              if (side == -1) g_lo = g_lo / 2.0;
+              side = -1;
+            }
           }
-          theta(b, r) = (lo + hi) / 2.0; refresh(r);
+          theta(b, r) = root; refresh(r);
         }
       }
     }

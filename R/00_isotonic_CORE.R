@@ -176,6 +176,68 @@ emclus_isotonic <- function(U, Z, ncls, beta1, beta2, maxiter = 100, mic = FALSE
 #'   (boundary, adjacent-rank-pair).
 #' @return (nrank x ncat) category-probability matrix.
 #' @noRd
+#' @title The multiplier that makes one rank's probabilities sum to one
+#' @description
+#' Solves \eqn{f(\lambda) = \sum_q m_q / (\lambda + d_q) - 1 = 0} for the
+#' Lagrange multiplier of a single rank.
+#'
+#' Newton's method is safe here without any globalisation heuristics, because
+#' the function's shape settles the matter: on \eqn{\lambda > -\min_q d_q},
+#' \eqn{f' = -\sum m/(\lambda+d)^2 < 0} and \eqn{f'' = 2\sum m/(\lambda+d)^3 > 0},
+#' so \eqn{f} is strictly decreasing and convex. A tangent to a convex function
+#' lies below it, so a step taken from a point where \eqn{f < 0} lands at or to
+#' the left of the root, and every step after that approaches the root from the
+#' left without overshooting.
+#'
+#' The bracket is available in closed form and needs no search: \eqn{f \to
+#' +\infty} as \eqn{\lambda \to -\min_q d_q}, and at \eqn{\lambda = \sum_q m_q -
+#' \min_q d_q} every denominator is at least \eqn{\sum_q m_q}, so \eqn{f \le 0}.
+#' Starting from that right end costs one step to get inside.
+#'
+#' The bracket is still maintained and a step that would leave it falls back to
+#' bisection. Convexity says that cannot happen; rounding on a degenerate row
+#' (a rank with almost no weight in it) says it occasionally does.
+#'
+#' @param m one row of the count matrix
+#' @param d the rank's offsets, \code{c(0, cumsum(theta_lower - theta_upper))}
+#' @return the multiplier
+#' @noRd
+iso_lambda <- function(m, d) {
+  dmin <- min(d)
+  total <- sum(m)
+  # A rank with no weight gives an all-zero row whatever the multiplier is.
+  if (total <= 0) {
+    return(-dmin + 1)
+  }
+  lo <- -dmin
+  hi <- total - dmin
+  lam <- hi
+  for (k in 1:60) {
+    den <- lam + d
+    f <- sum(m / den) - 1
+    if (f > 0) {
+      lo <- lam
+    } else {
+      hi <- lam
+    }
+    if (abs(f) <= 1e-14) {
+      break
+    }
+    # -f'(lam), kept positive so the step reads as an addition
+    fp <- sum(m / (den * den))
+    lam_new <- lam + f / fp
+    if (!is.finite(lam_new) || lam_new <= lo || lam_new >= hi) {
+      lam_new <- (lo + hi) / 2
+    }
+    if (abs(lam_new - lam) <= 1e-15 * max(1, abs(lam))) {
+      lam <- lam_new
+      break
+    }
+    lam <- lam_new
+  }
+  return(lam)
+}
+
 iso_build_pi <- function(Mcount, theta) {
   nrank <- nrow(Mcount)
   nc <- ncol(Mcount)
@@ -192,20 +254,7 @@ iso_build_pi <- function(Mcount, theta) {
       theta_upper <- rep(0, nc - 1)
     }
     d <- c(0, cumsum(theta_lower - theta_upper))
-    lo <- -min(d) + 1e-12
-    hi <- lo + 1
-    while (sum(Mcount[r, ] / (hi + d)) > 1) {
-      hi <- lo + (hi - lo) * 2
-    }
-    while (hi - lo > 1e-10) {
-      mid <- (lo + hi) / 2
-      if (sum(Mcount[r, ] / (mid + d)) > 1) {
-        lo <- mid
-      } else {
-        hi <- mid
-      }
-    }
-    P[r, ] <- Mcount[r, ] / ((lo + hi) / 2 + d)
+    P[r, ] <- Mcount[r, ] / (iso_lambda(Mcount[r, ], d) + d)
   }
   return(P)
 }
@@ -281,17 +330,49 @@ iso_dual_map_ref <- function(Mcount, maxiter = 100, tol = 1e-7) {
             theta[b, r] <- hi
             S <- iso_upper_cum(iso_build_pi(Mcount, theta))
           }
-          while (hi - lo > 1e-10) {
-            mid <- (lo + hi) / 2
-            theta[b, r] <- mid
+          # Illinois 法(挟み撃ちの改良)。g(theta) = S[r,b] - S[r+1,b] は
+          # theta について単調減少で、上の倍々探索で符号の異なる2点が既に
+          # 手に入っている。区間を保持したまま線形補間で詰めるので二分より
+          # 速く、しかも区間外へ出ない。同じ端が2回続けて残ったらその側の
+          # 関数値を半分にする —— これが素の挟み撃ちの「片側だけ動いて
+          # 収束が遅くなる」欠点を消す。
+          g_at <- function(x) {
+            theta[b, r] <<- x
             S <- iso_upper_cum(iso_build_pi(Mcount, theta))
-            if (S[r, b] - S[r + 1, b] > 0) {
+            return(S[r, b] - S[r + 1, b])
+          }
+          g_lo <- g_at(lo)
+          g_hi <- g_at(hi)
+          # 残差が最小だった点を覚えておき，最後にそれを採る。区間の中点を
+          # 返してはいけない: 残差で打ち切ったとき根は片端にあり，中点はそこ
+          # から離れている。二値のとき重み付き PAVA と一致するという理論値
+          # 検査がこれを拾った。
+          root <- if (abs(g_lo) <= abs(g_hi)) lo else hi
+          best <- min(abs(g_lo), abs(g_hi))
+          side <- 0L
+          while (hi - lo > 1e-12 && best > 1e-14) {
+            mid <- (lo * g_hi - hi * g_lo) / (g_hi - g_lo)
+            if (!is.finite(mid) || mid <= lo || mid >= hi) {
+              mid <- (lo + hi) / 2
+            }
+            g_mid <- g_at(mid)
+            if (abs(g_mid) < best) {
+              best <- abs(g_mid)
+              root <- mid
+            }
+            if (g_mid > 0) {
               lo <- mid
+              g_lo <- g_mid
+              if (side == 1L) g_hi <- g_hi / 2
+              side <- 1L
             } else {
               hi <- mid
+              g_hi <- g_mid
+              if (side == -1L) g_lo <- g_lo / 2
+              side <- -1L
             }
           }
-          theta[b, r] <- (lo + hi) / 2
+          theta[b, r] <- root
         }
       }
     }

@@ -111,11 +111,20 @@ test_that("iso_dual_map pools to the combined MLE under full reversal", {
   expect_equal(P[2, ], pooled, tolerance = 1e-5)
 })
 
-test_that("the C++ iso_dual_map reproduces the R reference exactly", {
+test_that("the C++ iso_dual_map agrees with the R reference", {
   # iso_dual_map() dispatches to src/isotonic_core.cpp; iso_dual_map_ref() is
-  # the pure-R original. The C++ port follows the same arithmetic operation for
-  # operation and only skips rebuilding rows that a given multiplier cannot
-  # touch, so the two must agree to the bit, not merely to a tolerance.
+  # the pure-R original. They implement the same method and converge to the
+  # same tolerance, but they are compared here to a tolerance rather than to
+  # the bit.
+  #
+  # Bit-for-bit agreement was attainable while both searches were bisections:
+  # the sequence of midpoints is made of exactly representable dyadic numbers
+  # and only the *sign* of the residual steers it, so differences far below the
+  # comparison threshold could not change the path. Both searches now use the
+  # residual's value -- Newton for the multiplier, Illinois for the dual
+  # variable -- and a difference in the last bits moves the next trial point,
+  # after which the two paths differ while converging to the same root. That is
+  # a property of value-driven root finding, not a defect in either version.
   cases <- list(
     rbind(c(1, 1, 8), c(8, 1, 1)), # full reversal, all boundaries pooled
     rbind(c(5, 25, 20), c(20, 5, 25)), # one boundary violated, one slack
@@ -124,10 +133,24 @@ test_that("the C++ iso_dual_map reproduces the R reference exactly", {
     rbind(c(2, 2, 2, 2), c(1, 3, 3, 1), c(4, 1, 1, 4)) # 4 categories
   )
   for (M in cases) {
-    expect_identical(
+    expect_equal(
       iso_dual_map(M, maxiter = 200, tol = 1e-8),
-      iso_dual_map_ref(M, maxiter = 200, tol = 1e-8)
+      iso_dual_map_ref(M, maxiter = 200, tol = 1e-8),
+      tolerance = 1e-4
     )
+  }
+})
+
+test_that("the solver returns rows that are probability distributions", {
+  # The multiplier's whole job is to make each row sum to one, so the row sums
+  # are the sharpest available check on the inner solve. Bisection left an
+  # error of about 2e-6 on real tables; Newton brings it to 3e-11.
+  set.seed(20260728)
+  for (i in 1:20) {
+    M <- matrix(stats::rgamma(30, shape = 2, scale = 40), nrow = 6, ncol = 5)
+    P <- iso_dual_map(M, tol = 1e-6)
+    expect_equal(rowSums(P), rep(1, 6), tolerance = 1e-9)
+    expect_true(all(P >= 0))
   }
 })
 

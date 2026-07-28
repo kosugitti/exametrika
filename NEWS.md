@@ -291,13 +291,29 @@ planned for 2.0.0 ride along, so that the break happens once.
   value rebuilds two rows rather than the whole table.
 
   Both root finds use the residual's value rather than only its sign: Newton's
-  method for the multiplier that normalises a rank (the function is strictly
-  decreasing and convex there, so the iteration cannot overshoot, and the
-  bracket is available in closed form), and the Illinois method for the dual
-  variable. The pure-R `iso_dual_map_ref()` does the same and the two are
-  checked against each other to a tolerance -- not to the bit, which a
+  method for the multiplier that normalises a rank, and the Illinois method for
+  the dual variable. The pure-R `iso_dual_map_ref()` does the same and the two
+  are checked against each other to a tolerance -- not to the bit, which a
   value-driven search cannot promise: a difference in the last bits moves the
   next trial point and the two paths then differ on their way to the same root.
+
+  For the multiplier, the parameterisation matters more than the root finder.
+  Categories with a zero count are dropped first: their probability is zero
+  whatever the multiplier is, but if one of them attains the smallest offset it
+  drags the lower end of the domain far away from the root. On the shifted
+  variable `u = lambda + min(d)` the bracket then follows in closed form,
+  `sum_{d'=0} m <= u <= sum m`, and the search runs on `log u`, because those two
+  ends can sit thirteen orders of magnitude apart on a rank holding almost no
+  weight -- far enough that bisection does not converge within any sane
+  iteration cap and a Newton step from the upper end lands past zero. The
+  probabilities are formed from `u + d'` rather than `lambda + d`, which would
+  cancel the shift back out and lose digits when `min(d)` is large.
+
+  The Illinois search judges its bracket width relatively. On the same
+  low-weight ranks an endpoint can reach 1e8, where the spacing between
+  representable doubles (~3e-8) is coarser than an absolute 1e-12 threshold: the
+  interval stops shrinking, every interpolated point rounds onto an endpoint,
+  and the loop has no way to exit.
 
   Each sweep also starts its bracket from the value the previous sweep found,
   which is close to the answer from the second sweep on; the check of whether
@@ -309,10 +325,11 @@ planned for 2.0.0 ride along, so that the break happens once.
   remaining EM machinery is still R, `Biclustering(J35S500, ncls = 6,
   nfld = 5, method = "R", estimation = "isotonic")` drops from 265s to 11s.
 
-  The multiplier exists to make each rank's probabilities sum to one, so the
-  row sums measure how well it is found: bisection stopped at an error around
-  2e-6 on real tables, Newton reaches 6e-9. For binary data the solution must
-  coincide with weighted PAVA, and it does.
+  The multiplier exists to make each rank's probabilities sum to one, so the row
+  sums measure how well it is found. Across 60 expected-count tables captured
+  from real EM runs the largest row-sum error is 9.6e-15, and every table
+  converges. For binary data the solution must coincide with weighted PAVA, and
+  it does.
 
   This matters because the ordinal isotonic path was the slowest thing in the
   package and effectively ruled out large simulation studies. The pure-R

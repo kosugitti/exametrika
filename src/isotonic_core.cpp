@@ -1,69 +1,89 @@
 // 順序制約つきM-step(Fenchel双対)のC++実装。
-// R/00_isotonic_CORE.R の iso_dual_map の中核。R版(iso_dual_map_ref)と
-// 演算順序まで一致し、内側の二分探索では変化する2行だけを再計算する。
+// R/00_isotonic_CORE.R の iso_dual_map の中核。R版(iso_dual_map_ref)と同じ
+// 手順を踏み、theta が動いたときは変化する2行だけを再計算する。
 #include <Rcpp.h>
 using namespace Rcpp;
 
-// R の sum() は長倍精度で累算する(src/main/summary.c の LDOUBLE)。二分探索は
-// 「和が1を超えるか」という真偽値しか使わないので累算方式の差は結果に出な
-// かったが、ニュートン法は和の値そのものを使うので、double で累算すると R 版
-// と最終ビットが食い違う。iso_dual_map_ref() との expect_identical を保つため
-// ここも長倍精度で足す。商は R と同じく double で作ってから累算する。
+// R の sum()/cumsum() は長倍精度で累算する(src/main/summary.c の LDOUBLE)。
+// ここも合わせる。求根が値そのものを使うようになって以降、累算方式の差は
+// 経路の差になって表に出るので、R 版と近い答えを保つには揃えておく必要が
+// ある。商は R と同じく double で作ってから累算する。
+// (両者が最終ビットまで一致することはもう期待できない。値で駆動する求根は
+//  丸めの違いが分岐の違いになりうるため。test-isotonic-core.R は許容誤差で
+//  比べている。)
 //
 // 分母は保存せずその場で作る。この関数は1ソルバ呼び出しあたり2万回近く呼ば
 // れるので、作業用ベクタを確保すると反復を減らして浮いた分をヒープ確保で
 // 食い潰す(実測: 確保ありだと 2.46s、なしだと下の測定のとおり)。
 
-// ランク r の1行だけを有理形から作る。d は長さ nc。
+// ランク r の1行だけを有理形 pi_q = M[r,q]/(lambda + d[q]) から作る。
 //
-// sum_q M[r,q]/(lambda + d[q]) = 1 を満たす lambda を安全化ニュートン法で解く。
-// f は定義域 lambda > -min(d) で狭義単調減少かつ凸(f' < 0, f'' > 0)なので、
-// 凸関数の接線が関数の下側を通ることから、f < 0 の点から踏み出した1歩は根の
-// 左側に着地し、以後は左から単調に近づく。行き過ぎない。
-// 区間も閉じた形で取れる: 左端 -min(d) で f は +無限大、右端 sum(M) - min(d)
-// では分母が全て sum(M) 以上になるので f <= 0。倍々に広げる探索は要らない。
+// 求根そのものより、変数の取り方のほうが効く。詳細は R 側 iso_row_probs() の
+// 注記にあるが、要点は3つ。
+//  (1) 度数 0 のカテゴリを外す。lambda に情報を与えないのに、そこが d の最小を
+//      取ると定義域の下端が根から遠く離れた場所へ引きずられる。
+//  (2) u = lambda + dmin と置くと区間が閉じた形で出る。1 = sum M/(u+d') >= m0/u
+//      より u >= m0 (m0 は d' = 0 のカテゴリの度数和)、d' >= 0 より u <= sum M。
+//  (3) その両端は13桁離れることがある。u の空間では二分法に80回、ニュートン法は
+//      右端から踏み出すと根を飛び越す。t = log u なら区間幅は30程度に収まる。
+// P も u + d' から直に作る。lambda + d と書くと足し戻しで桁が落ちる。
 static inline void build_row(const NumericMatrix& M, int r,
                              const std::vector<double>& d,
                              NumericMatrix& P) {
   const int nc = M.ncol();
-  double dmin = d[0];
-  for (int q = 1; q < nc; ++q) if (d[q] < dmin) dmin = d[q];
+  double dmin = R_PosInf;
   long double tot = 0.0L;
-  for (int q = 0; q < nc; ++q) tot += M(r, q);
+  int npos = 0;
+  for (int q = 0; q < nc; ++q) {
+    if (M(r, q) > 0.0) {
+      ++npos; tot += M(r, q);
+      if (d[q] < dmin) dmin = d[q];
+    }
+  }
+  if (npos == 0) { // 重みのない行
+    for (int q = 0; q < nc; ++q) P(r, q) = 0.0;
+    return;
+  }
   const double total = (double)tot;
+  long double m0l = 0.0L;
+  for (int q = 0; q < nc; ++q)
+    if (M(r, q) > 0.0 && d[q] == dmin) m0l += M(r, q);
+  const double m0 = (double)m0l;
 
-  double lam;
-  if (total <= 0.0) {
-    // 重みのない行。lambda によらず P は全て 0 になる
-    lam = -dmin + 1.0;
+  double u;
+  if (m0 >= total) {
+    u = total; // 生き残ったカテゴリの d' が全て 0
   } else {
-    double lo = -dmin;
-    double hi = total - dmin;
-    lam = hi;
-    for (int k = 0; k < 60; ++k) {
+    double t_lo = std::log(m0), t_hi = std::log(total), t = t_hi;
+    for (int k = 0; k < 200; ++k) {
+      const double uu = std::exp(t);
       long double s1 = 0.0L;
-      for (int q = 0; q < nc; ++q) s1 += (double)(M(r, q) / (lam + d[q]));
+      for (int q = 0; q < nc; ++q)
+        if (M(r, q) > 0.0) s1 += (double)(M(r, q) / (uu + (d[q] - dmin)));
       const double f = (double)s1 - 1.0;
-      if (f > 0.0) lo = lam; else hi = lam;
+      if (f > 0.0) t_lo = t; else t_hi = t;
       if (std::fabs(f) <= 1e-14) break;
       long double s2 = 0.0L;
       for (int q = 0; q < nc; ++q) {
-        const double dq = lam + d[q];
-        s2 += (double)(M(r, q) / (dq * dq));
+        if (M(r, q) <= 0.0) continue;
+        const double dq = uu + (d[q] - dmin);
+        s2 += (double)(M(r, q) * uu / (dq * dq));
       }
-      const double fp = (double)s2; // -f'(lam)、正で持つ
-      double lam_new = lam + f / fp;
-      if (!R_finite(lam_new) || lam_new <= lo || lam_new >= hi) {
-        lam_new = (lo + hi) / 2.0;
+      const double fp = (double)s2; // -df/dt、正で持つ
+      double t_new = (fp > 0.0) ? t + f / fp : (t_lo + t_hi) / 2.0;
+      if (!R_finite(t_new) || t_new <= t_lo || t_new >= t_hi) {
+        t_new = (t_lo + t_hi) / 2.0;
       }
-      if (std::fabs(lam_new - lam) <= 1e-15 * std::max(1.0, std::fabs(lam))) {
-        lam = lam_new;
+      if (std::fabs(t_new - t) <= 1e-15 * std::max(1.0, std::fabs(t))) {
+        t = t_new;
         break;
       }
-      lam = lam_new;
+      t = t_new;
     }
+    u = std::exp(t);
   }
-  for (int q = 0; q < nc; ++q) P(r, q) = M(r, q) / (lam + d[q]);
+  for (int q = 0; q < nc; ++q)
+    P(r, q) = (M(r, q) > 0.0) ? M(r, q) / (u + (d[q] - dmin)) : 0.0;
 }
 
 // theta((nc-1) x (nrank-1)) からランク r の d を作る
@@ -183,9 +203,14 @@ List iso_dual_map_cpp(NumericMatrix Mcount, int maxiter = 100, double tol = 1e-7
           double root = (std::fabs(g_lo) <= std::fabs(g_hi)) ? lo : hi;
           double best = std::min(std::fabs(g_lo), std::fabs(g_hi));
           int side = 0;
-          while (hi - lo > 1e-12 && best > 1e-14) {
+          // 区間幅の判定は相対で取る。重みの薄いランクでは端が 1e8 まで伸びる
+          // ことがあり、その近傍の double の刻み幅(約 3e-8)は絶対条件 1e-12 より
+          // 粗い。絶対条件のままだと区間がそれ以上縮まず、補間点が必ず端に丸め
+          // られて抜けられなくなる。
+          while (hi - lo > 1e-12 * std::max(1.0, std::fabs(hi)) && best > 1e-14) {
             double mid = (lo * g_hi - hi * g_lo) / (g_hi - g_lo);
             if (!R_finite(mid) || mid <= lo || mid >= hi) mid = (lo + hi) / 2.0;
+            if (mid <= lo || mid >= hi) break; // 表現できる中点がもう無い
             const double g_mid = g_at(mid);
             if (std::fabs(g_mid) < best) { best = std::fabs(g_mid); root = mid; }
             if (g_mid > 0.0) {

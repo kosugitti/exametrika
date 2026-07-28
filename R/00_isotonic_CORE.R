@@ -176,66 +176,90 @@ emclus_isotonic <- function(U, Z, ncls, beta1, beta2, maxiter = 100, mic = FALSE
 #'   (boundary, adjacent-rank-pair).
 #' @return (nrank x ncat) category-probability matrix.
 #' @noRd
-#' @title The multiplier that makes one rank's probabilities sum to one
+#' @title One rank's category probabilities from its dual offsets
 #' @description
-#' Solves \eqn{f(\lambda) = \sum_q m_q / (\lambda + d_q) - 1 = 0} for the
-#' Lagrange multiplier of a single rank.
+#' Solves the per-rank normalizer of the stationarity form \eqn{\pi_q = m_q /
+#' (\lambda + d_q)} and returns the resulting probability row.
 #'
-#' Newton's method is safe here without any globalisation heuristics, because
-#' the function's shape settles the matter: on \eqn{\lambda > -\min_q d_q},
-#' \eqn{f' = -\sum m/(\lambda+d)^2 < 0} and \eqn{f'' = 2\sum m/(\lambda+d)^3 > 0},
-#' so \eqn{f} is strictly decreasing and convex. A tangent to a convex function
-#' lies below it, so a step taken from a point where \eqn{f < 0} lands at or to
-#' the left of the root, and every step after that approaches the root from the
-#' left without overshooting.
+#' Three things about the parameterisation matter more than the choice of root
+#' finder, and getting them wrong costs several digits (or all of them).
 #'
-#' The bracket is available in closed form and needs no search: \eqn{f \to
-#' +\infty} as \eqn{\lambda \to -\min_q d_q}, and at \eqn{\lambda = \sum_q m_q -
-#' \min_q d_q} every denominator is at least \eqn{\sum_q m_q}, so \eqn{f \le 0}.
-#' Starting from that right end costs one step to get inside.
+#' First, categories with \eqn{m_q = 0} are dropped up front. Their probability
+#' is zero whatever \eqn{\lambda} is, so they carry no information about it --
+#' but if one of them happens to attain \eqn{\min_q d_q}, it drags the lower end
+#' of the domain to a place the root is nowhere near.
 #'
-#' The bracket is still maintained and a step that would leave it falls back to
-#' bisection. Convexity says that cannot happen; rounding on a degenerate row
-#' (a rank with almost no weight in it) says it occasionally does.
+#' Second, the shifted variable \eqn{u = \lambda + d_{\min}} (so denominators
+#' read \eqn{u + d'_q} with \eqn{d' = d - d_{\min} \ge 0}) has a bracket in
+#' closed form. From \eqn{1 = \sum_q m_q/(u + d'_q) \ge m_0/u} with \eqn{m_0 =
+#' \sum_{q: d'_q = 0} m_q} we get \eqn{u \ge m_0}; from \eqn{d' \ge 0} we get
+#' \eqn{u \le \sum_q m_q}. No widening search is needed.
+#'
+#' Third -- and this is what forces the log scale -- the two ends of that
+#' bracket can sit thirteen orders of magnitude apart. On a rank holding almost
+#' no weight, \eqn{m_0} is of the order of the smallest surviving count while
+#' the upper end is of the order of the row total. Bisecting in \eqn{u} would
+#' need roughly eighty halvings to resolve the root, and Newton's method started
+#' from the right end steps clean past zero. In \eqn{t = \log u} the bracket is
+#' about thirty wide and both behave.
+#'
+#' The probabilities are formed from \eqn{u + d'_q} rather than \eqn{\lambda +
+#' d_q}. Written the second way the sum cancels the shift back out, which throws
+#' away digits when \eqn{d_{\min}} is large.
 #'
 #' @param m one row of the count matrix
 #' @param d the rank's offsets, \code{c(0, cumsum(theta_lower - theta_upper))}
-#' @return the multiplier
+#' @return the rank's category probabilities (same length as \code{m})
 #' @noRd
-iso_lambda <- function(m, d) {
-  dmin <- min(d)
-  total <- sum(m)
-  # A rank with no weight gives an all-zero row whatever the multiplier is.
-  if (total <= 0) {
-    return(-dmin + 1)
+iso_row_probs <- function(m, d) {
+  pos <- m > 0
+  # A rank with no weight gives an all-zero row.
+  if (!any(pos)) {
+    return(rep(0, length(m)))
   }
-  lo <- -dmin
-  hi <- total - dmin
-  lam <- hi
-  for (k in 1:60) {
-    den <- lam + d
-    f <- sum(m / den) - 1
-    if (f > 0) {
-      lo <- lam
-    } else {
-      hi <- lam
+  dmin <- min(d[pos])
+  dsh <- d - dmin
+  total <- sum(m[pos])
+  m0 <- sum(m[pos & dsh == 0])
+  if (m0 >= total) {
+    # every surviving category shares the same offset: u* = total exactly
+    u <- total
+  } else {
+    f_at <- function(u) {
+      return(sum(m[pos] / (u + dsh[pos])) - 1)
     }
-    if (abs(f) <= 1e-14) {
-      break
+    t_lo <- log(m0)
+    t_hi <- log(total)
+    t <- t_hi
+    for (k in 1:200) {
+      u <- exp(t)
+      f <- f_at(u)
+      if (f > 0) {
+        t_lo <- t
+      } else {
+        t_hi <- t
+      }
+      if (abs(f) <= 1e-14) {
+        break
+      }
+      # -df/dt, kept positive so the step reads as an addition
+      den <- u + dsh[pos]
+      fp <- sum(m[pos] * u / (den * den))
+      t_new <- if (fp > 0) t + f / fp else (t_lo + t_hi) / 2
+      if (!is.finite(t_new) || t_new <= t_lo || t_new >= t_hi) {
+        t_new <- (t_lo + t_hi) / 2
+      }
+      if (abs(t_new - t) <= 1e-15 * max(1, abs(t))) {
+        t <- t_new
+        break
+      }
+      t <- t_new
     }
-    # -f'(lam), kept positive so the step reads as an addition
-    fp <- sum(m / (den * den))
-    lam_new <- lam + f / fp
-    if (!is.finite(lam_new) || lam_new <= lo || lam_new >= hi) {
-      lam_new <- (lo + hi) / 2
-    }
-    if (abs(lam_new - lam) <= 1e-15 * max(1, abs(lam))) {
-      lam <- lam_new
-      break
-    }
-    lam <- lam_new
+    u <- exp(t)
   }
-  return(lam)
+  out <- numeric(length(m))
+  out[pos] <- m[pos] / (u + dsh[pos])
+  return(out)
 }
 
 iso_build_pi <- function(Mcount, theta) {
@@ -254,7 +278,7 @@ iso_build_pi <- function(Mcount, theta) {
       theta_upper <- rep(0, nc - 1)
     }
     d <- c(0, cumsum(theta_lower - theta_upper))
-    P[r, ] <- Mcount[r, ] / (iso_lambda(Mcount[r, ], d) + d)
+    P[r, ] <- iso_row_probs(Mcount[r, ], d)
   }
   return(P)
 }
@@ -364,11 +388,16 @@ iso_dual_map_ref <- function(Mcount, maxiter = 100, tol = 1e-7) {
           root <- if (abs(g_lo) <= abs(g_hi)) lo else hi
           best <- min(abs(g_lo), abs(g_hi))
           side <- 0L
-          while (hi - lo > 1e-12 && best > 1e-14) {
+          # 区間幅の停止条件は相対で取り、中点が端に丸められたら打ち切る。
+          # 空ランクでは端が 1e8 に達し、その近傍の double の刻み幅(約3e-8)は
+          # 絶対条件より粗いので、絶対条件のままだと無限ループになる
+          # (C++ 側の注記参照)。
+          while (hi - lo > 1e-12 * max(1, abs(hi)) && best > 1e-14) {
             mid <- (lo * g_hi - hi * g_lo) / (g_hi - g_lo)
             if (!is.finite(mid) || mid <= lo || mid >= hi) {
               mid <- (lo + hi) / 2
             }
+            if (mid <= lo || mid >= hi) break # 表現できる中点がもう無い
             g_mid <- g_at(mid)
             if (abs(g_mid) < best) {
               best <- abs(g_mid)

@@ -119,6 +119,7 @@ List iso_dual_map_cpp(NumericMatrix Mcount, int maxiter = 100, double tol = 1e-7
                       bool fast = true) {
   const int nrank = Mcount.nrow(), nc = Mcount.ncol();
   NumericMatrix theta(nc - 1, nrank - 1);
+  NumericMatrix theta_prev(nc - 1, nrank - 1); // 直前のスイープで求めた値
   NumericMatrix P(nrank, nc);
   std::vector<double> d(nc);
 
@@ -145,7 +146,21 @@ List iso_dual_map_cpp(NumericMatrix Mcount, int maxiter = 100, double tol = 1e-7
         theta(b, r) = 0.0;
         refresh(r);
         if (upper_at(P, r, b) - upper_at(P, r + 1, b) > 1e-12) {
+          // 前回のスイープで求めた値から区間を張る。2周目以降はそれが解の
+          // すぐ近くにあるので、0 から倍々に広げ直す段階(実測で theta 1個
+          // あたり6.4回)がほとんど省ける。theta = 0 で制約が満たされている
+          // かの判定は上に残してある。あれは相補性条件そのものなので、
+          // 速度のために飛ばしてよい類のものではない。
           double lo = 0.0, hi = 1.0;
+          const double warm = theta_prev(b, r);
+          if (warm > 0.0) {
+            theta(b, r) = warm; refresh(r);
+            if (upper_at(P, r, b) - upper_at(P, r + 1, b) > 0.0) {
+              lo = warm; hi = warm * 2.0; // 根は右側
+            } else {
+              hi = warm;                  // 根は左側。lo = 0 のままでよい
+            }
+          }
           theta(b, r) = hi; refresh(r);
           while (upper_at(P, r, b) - upper_at(P, r + 1, b) > 0.0 && hi < 1e8) {
             hi *= 2.0; theta(b, r) = hi; refresh(r);
@@ -184,6 +199,7 @@ List iso_dual_map_cpp(NumericMatrix Mcount, int maxiter = 100, double tol = 1e-7
             }
           }
           theta(b, r) = root; refresh(r);
+          theta_prev(b, r) = root;
         }
       }
     }

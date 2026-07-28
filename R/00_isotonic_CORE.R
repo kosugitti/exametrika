@@ -311,6 +311,7 @@ iso_dual_map_ref <- function(Mcount, maxiter = 100, tol = 1e-7) {
   nrank <- nrow(Mcount)
   nc <- ncol(Mcount)
   theta <- matrix(0, nc - 1, nrank - 1)
+  theta_prev <- matrix(0, nc - 1, nrank - 1) # 直前のスイープで求めた値
   emt <- 0
   old_loglik <- -Inf
   FLG <- TRUE
@@ -321,8 +322,21 @@ iso_dual_map_ref <- function(Mcount, maxiter = 100, tol = 1e-7) {
         theta[b, r] <- 0
         S <- iso_upper_cum(iso_build_pi(Mcount, theta))
         if (S[r, b] - S[r + 1, b] > 1e-12) {
+          # 前回のスイープの値から区間を張る(C++ 側の注記参照)。theta = 0 で
+          # 制約が満たされているかの判定は上に残す。相補性条件そのものなので。
           lo <- 0
           hi <- 1
+          warm <- theta_prev[b, r]
+          if (warm > 0) {
+            theta[b, r] <- warm
+            S <- iso_upper_cum(iso_build_pi(Mcount, theta))
+            if (S[r, b] - S[r + 1, b] > 0) {
+              lo <- warm
+              hi <- warm * 2
+            } else {
+              hi <- warm
+            }
+          }
           theta[b, r] <- hi
           S <- iso_upper_cum(iso_build_pi(Mcount, theta))
           while (S[r, b] - S[r + 1, b] > 0 && hi < 1e8) {
@@ -373,6 +387,7 @@ iso_dual_map_ref <- function(Mcount, maxiter = 100, tol = 1e-7) {
             }
           }
           theta[b, r] <- root
+          theta_prev[b, r] <- root
         }
       }
     }

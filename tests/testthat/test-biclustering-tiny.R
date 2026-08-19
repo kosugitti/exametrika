@@ -85,8 +85,10 @@ test_that("Biclustering(maxiter) reaches the EM loop", {
   # was accepted and discarded. The polytomous branches always wrote
   # maxemt <- maxiter. Found 2026-08-19.
   short <- suppressWarnings(suppressMessages(
-    Biclustering(tiny_bicl_dat, ncls = 3, nfld = 3, method = "B", mic = TRUE,
-                 maxiter = 3, verbose = FALSE)
+    Biclustering(tiny_bicl_dat,
+      ncls = 3, nfld = 3, method = "B", mic = TRUE,
+      maxiter = 3, verbose = FALSE
+    )
   ))
   expect_lt(short$n_cycle, 10L)
   expect_false(short$converge)

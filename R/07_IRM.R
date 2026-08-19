@@ -651,4 +651,3 @@ Biclustering_IRM.binary <- function(U, na = NULL, Z = NULL, w = NULL,
   ), class = c("exametrika", "IRM"))
   return(ret)
 }
-

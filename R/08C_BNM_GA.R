@@ -470,4 +470,3 @@ BNM_PBIL <- function(U, na = NULL, Z = NULL, w = NULL,
 
   return(ret)
 }
-

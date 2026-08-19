@@ -22,7 +22,7 @@
 
 # --- tinyCommon: IRT / Biclustering / Ranklustering -------------------------------
 # クラス(順序ランク) x フィールドの二重構造。**LCA はここでは使わない**(下の tinyLCA)。
-# 探索して sep=2.6 / 240名 / 15項目 / seed=80001 を採用。合計49周期。
+# 探索して sep=2.4 / 240名 / 15項目 / seed=80001 を採用。合計66周期。
 #
 # 飽和(参照行列のセルが 0 や 1 に張り付くこと)を**ゼロにはできない**。分離を弱めれば
 # 飽和は減るがクラスが復元できなくなる。ただし飽和は実データでも起きる——J15S500 の
@@ -31,11 +31,15 @@
 set.seed(80001)
 n <- 240
 j <- 15
-sep <- 2.6
+sep <- 2.4
 cls <- rep(1:3, length.out = n)
 fld <- rep(1:3, length.out = j)
-pi_fc <- plogis(outer(seq(-sep, sep, length.out = 3), seq(-sep, sep, length.out = 3), "+"))
-U <- matrix(rbinom(n * j, 1, t(pi_fc[fld, ][, cls])), n, j)
+# 項目ごとに難易度を揺らす。揺らさないと総得点の分布に山ができ，stanine(9段階)の
+# 分位境界が重複して警告が出る。実データでは出ない警告なので，出さない形にする。
+jit <- seq(-0.9, 0.9, length.out = j)
+P <- plogis(outer(seq(-sep, sep, length.out = 3)[fld] + jit,
+                  seq(-sep, sep, length.out = 3), "+"))
+U <- matrix(rbinom(n * j, 1, t(P[, cls])), n, j)
 stopifnot(!any(apply(U, 2, function(col) length(unique(col))) < 2))
 common <- data.frame(ID = sprintf("S%03d", seq_len(n)), U, check.names = FALSE)
 colnames(common) <- c("ID", sprintf("Item%02d", seq_len(j)))

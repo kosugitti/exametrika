@@ -312,7 +312,22 @@ test_that("nominal Biclustering FCBR is not allowed", {
 # rated = nominal推定 + 正答率によるクラスソート + 二値/名義二層適合度
 # ================================================================
 
-result_rated <- Biclustering(J35S5000, ncls = 3, nfld = 3, method = "R", maxiter = 200)
+# Rows are subset to keep the CRAN Windows check inside its time budget: 1.13.0
+# was rejected at "Overall checktime 11 min > 10 min". Only rows are dropped, so
+# the object keeps its class and its metadata (response.type, categories, CA),
+# and every assertion below is structural -- class, convergence, dimensions,
+# sums, finiteness -- rather than a comparison against reference numbers.
+head_rows <- function(x, n) {
+  x$ID <- x$ID[seq_len(n)]
+  for (f in c("Q", "U", "Z")) {
+    if (!is.null(x[[f]])) x[[f]] <- x[[f]][seq_len(n), , drop = FALSE]
+  }
+  return(x)
+}
+
+result_rated <- Biclustering(head_rows(J35S5000, 1000),
+  ncls = 3, nfld = 3, method = "R", maxiter = 200
+)
 
 test_that("rated Biclustering returns correct class", {
   expect_s3_class(result_rated, "exametrika")
@@ -358,7 +373,7 @@ test_that("rated Biclustering has both binary and nominal fit indices", {
 
 test_that("rated Biclustering field/class counts", {
   # LFD sum may exceed nitems when field memberships have ties
-  expect_equal(sum(result_rated$LCD), 5000)
+  expect_equal(sum(result_rated$LCD), nrow(result_rated$Q))
   expect_equal(length(result_rated$LFD), 3)
   expect_equal(length(result_rated$LCD), 3)
 })
@@ -392,7 +407,7 @@ test_that("rated Biclustering Students table has rank-up/down odds", {
   expect_true("Rank-Up Odds" %in% colnames(result_rated$Students))
   expect_true("Rank-Down Odds" %in% colnames(result_rated$Students))
   expect_true("Estimate" %in% colnames(result_rated$Students))
-  expect_equal(nrow(result_rated$Students), 5000)
+  expect_equal(nrow(result_rated$Students), nrow(result_rated$Q))
 })
 
 test_that("rated Biclustering has FieldAnalysis", {

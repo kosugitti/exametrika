@@ -237,7 +237,20 @@ test_that("Mixed categories: nested log-likelihood ordering holds", {
 ### Isotonic method (default) -------------------------------------------------
 # No Mathematica reference exists for the order-restricted method; structural
 # checks on the new default path (uniform-category data, J15S3810).
-result_iso <- LRA(J15S3810, nrank = 3)
+# Rows are subset to keep the CRAN Windows check inside its time budget: 1.13.0
+# was rejected at "Overall checktime 11 min > 10 min". Only rows are dropped, so
+# the object keeps its class and its metadata (response.type, categories, CA),
+# and every assertion below is structural -- class, convergence, dimensions,
+# sums, finiteness -- rather than a comparison against reference numbers.
+head_rows <- function(x, n) {
+  x$ID <- x$ID[seq_len(n)]
+  for (f in c("Q", "U", "Z")) {
+    if (!is.null(x[[f]])) x[[f]] <- x[[f]][seq_len(n), , drop = FALSE]
+  }
+  return(x)
+}
+
+result_iso <- LRA(head_rows(J15S3810, 1000), nrank = 3)
 
 test_that("isotonic is the default ordinal method", {
   expect_equal(result_iso$method, "isotonic")

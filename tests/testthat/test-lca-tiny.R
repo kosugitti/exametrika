@@ -56,3 +56,51 @@ test_that("tiny LCA reproduces Mathematica's class distributions", {
   expect_numeric_equal(tiny_fit$LCD, tiny_class[2, -1])
   expect_numeric_equal(tiny_fit$CMD, tiny_class[3, -1])
 })
+
+# --- the missing-data path -------------------------------------------------
+# The tiny fixture above is complete on purpose: with responses missing, the
+# two implementations settle on different local optima and the fitted numbers
+# cannot be compared. What they still agree on to machine precision are the
+# quantities that do not depend on where EM lands -- the per-item respondent
+# counts and correct response rates, and the benchmark and null
+# log-likelihoods, all of which are computed from the observed data under the
+# same Z matrix. That is precisely the missing-data handling, so it can be
+# cross-validated here rather than relying on the full-size fixtures.
+
+tiny_miss <- read.csv(
+  test_path("fixtures", "tiny_data", "tinyLCA_missing.csv"),
+  check.names = FALSE
+)
+tiny_miss_dat <- dataFormat(tiny_miss, na = -99)
+miss_test <- load_ref("TinyLCAmiss_Test.csv")
+miss_item <- load_ref("TinyLCAmiss_Item.csv")
+
+test_that("tiny LCA counts respondents and correct responses around the missing values", {
+  expect_equal(
+    unname(colSums(tiny_miss_dat$Z)),
+    as.numeric(miss_item[["Number of Respondents"]])
+  )
+  expect_equal(
+    as.numeric(crr(tiny_miss_dat)),
+    as.numeric(miss_item[["Correct Response Rate"]]),
+    tolerance = 1e-12
+  )
+})
+
+test_that("tiny LCA reproduces the benchmark and null models with missing data", {
+  fit <- LCA(tiny_miss_dat, ncls = 3, verbose = FALSE)
+  key <- function(k) as.numeric(miss_test[miss_test[[1]] == k, 2])
+  expect_equal(fit$TestFitIndices$bench_log_like,
+    key("Log-Likelihood(Benchmark Model)"),
+    tolerance = 1e-10
+  )
+  expect_equal(fit$TestFitIndices$null_log_like,
+    key("Log-Likelihood(Null Model)"),
+    tolerance = 1e-10
+  )
+  expect_equal(fit$TestFitIndices$null_Chi_sq,
+    key("Chi-square(Null Model)"),
+    tolerance = 1e-10
+  )
+  expect_equal(as.numeric(fit$TestFitIndices$null_df), key("DF(Null Model)"))
+})

@@ -38,6 +38,11 @@ dat <- dataFormat(U, na = -99, id = 1)
 # Test Section ------------------------------------------------------------
 
 test_that("Simple Test Statistics", {
+  # The tiny fixtures cross-validate the same quantities against the same
+  # Mathematica implementation in a fraction of the time (test-lca-tiny.R,
+  # test-ctt-tiny.R), including the missing-data handling. This full-size
+  # comparison stays for local runs, where the extra seconds cost nothing.
+  skip_on_cran()
   result <- TestStatistics(dat)
   expect <- Ch03Tests2[1:23, 2] |>
     unlist() |>
@@ -49,6 +54,11 @@ test_that("Simple Test Statistics", {
 })
 
 test_that("Dimensionality Analysis", {
+  # The tiny fixtures cross-validate the same quantities against the same
+  # Mathematica implementation in a fraction of the time (test-lca-tiny.R,
+  # test-ctt-tiny.R), including the missing-data handling. This full-size
+  # comparison stays for local runs, where the extra seconds cost nothing.
+  skip_on_cran()
   result <- Dimensionality(dat) |>
     unclass() |>
     unlist() |>
@@ -63,6 +73,11 @@ test_that("Dimensionality Analysis", {
 
 
 test_that("Reliability", {
+  # The tiny fixtures cross-validate the same quantities against the same
+  # Mathematica implementation in a fraction of the time (test-lca-tiny.R,
+  # test-ctt-tiny.R), including the missing-data handling. This full-size
+  # comparison stays for local runs, where the extra seconds cost nothing.
+  skip_on_cran()
   result <- CTT(dat)
   result <- result$Reliability[, 2] |> as.matrix()
   expect <- CTTexpect[, 2] |>
@@ -72,6 +87,11 @@ test_that("Reliability", {
 })
 
 test_that("Item Del Reliability", {
+  # The tiny fixtures cross-validate the same quantities against the same
+  # Mathematica implementation in a fraction of the time (test-lca-tiny.R,
+  # test-ctt-tiny.R), including the missing-data handling. This full-size
+  # comparison stays for local runs, where the extra seconds cost nothing.
+  skip_on_cran()
   result <- CTT(dat)
   result <- result$ReliabilityExcludingItem[, -1] |> unname()
   expect <- Ch03Items[, 8:10] |> unname()

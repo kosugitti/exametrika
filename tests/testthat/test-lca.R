@@ -42,80 +42,116 @@ student <- read.csv(
 
 
 ### Setup
+# A small binary frame for the tests that only need *a* binary dataset -- which
+# method dispatch picks, that a path errors, that two engines agree with each
+# other. None of them compares against Mathematica, so J15S500 buys nothing
+# there but time, and on CRAN's Windows build time is the scarce thing.
+tiny_bin <- dataFormat(
+  read.csv(test_path("fixtures", "tiny_data", "tinyLCA.csv"), check.names = FALSE),
+  na = -99
+)
+# Fitted lazily and cached. skip_on_cran() skips a test_that() body but not
+# file-scope setup, so leaving the fit out here would have it run on CRAN for
+# the sake of four blocks that are skipped there.
 tmp <- dataFormat(J15S500, na = -99)
-model <- LCA(tmp, ncls = 5)
+.lca_model <- NULL
+full_model <- function() {
+  if (is.null(.lca_model)) .lca_model <<- LCA(tmp, ncls = 5)
+  return(.lca_model)
+}
 
 ### Tests
 test_that("LCA Test Info", {
+  # The tiny fixtures cross-validate the same quantities against the same
+  # Mathematica implementation in a fraction of the time (test-lca-tiny.R,
+  # test-ctt-tiny.R), including the missing-data handling. This full-size
+  # comparison stays for local runs, where the extra seconds cost nothing.
+  skip_on_cran()
   expect <- test[14:29, 2] |>
     unlist() |>
     unname() |>
     as.numeric()
   expect <- expect[c(5, 1, 2, 6, 3, 7, 4, 8:16)]
-  result <- model$TestFitIndices |> as.numeric()
+  result <- full_model()$TestFitIndices |> as.numeric()
   expect_equal(result, expect, tolerance = 1e-4)
 })
 
 test_that("LCA Class Info", {
+  # The tiny fixtures cross-validate the same quantities against the same
+  # Mathematica implementation in a fraction of the time (test-lca-tiny.R,
+  # test-ctt-tiny.R), including the missing-data handling. This full-size
+  # comparison stays for local runs, where the extra seconds cost nothing.
+  skip_on_cran()
   ## TRP
   expect <- class[1, 2:6] |>
     unlist() |>
     unname() |>
     as.numeric()
-  result <- model$TRP |> as.numeric()
+  result <- full_model()$TRP |> as.numeric()
   expect_equal(result, expect, tolerance = 1e-4)
   ## LCD
   expect <- class[2, 2:6] |>
     unlist() |>
     unname() |>
     as.numeric()
-  result <- model$LCD |> as.numeric()
+  result <- full_model()$LCD |> as.numeric()
   expect_equal(result, expect, tolerance = 1e-4)
   ## CMD
   expect <- class[3, 2:6] |>
     unlist() |>
     unname() |>
     as.numeric()
-  result <- model$CMD |> as.numeric()
+  result <- full_model()$CMD |> as.numeric()
   expect_equal(result, expect, tolerance = 1e-4)
 })
 
 
 test_that("LCA Item Info", {
+  # The tiny fixtures cross-validate the same quantities against the same
+  # Mathematica implementation in a fraction of the time (test-lca-tiny.R,
+  # test-ctt-tiny.R), including the missing-data handling. This full-size
+  # comparison stays for local runs, where the extra seconds cost nothing.
+  skip_on_cran()
   ## IRP
   expect <- items[, 6:10] |>
     unlist() |>
     unname() |>
     as.numeric()
-  result <- model$IRP |> as.numeric()
+  result <- full_model()$IRP |> as.numeric()
   expect_equal(result, expect, tolerance = 1e-4)
   ## FitIndex
   expect <- items[, c(15, 11, 12, 16, 13, 17, 14, 18:26)] |>
     unlist() |>
     unname() |>
     as.numeric()
-  result <- model$ItemFitIndices |>
+  result <- full_model()$ItemFitIndices |>
     unlist() |>
     as.numeric()
   expect_equal(result, expect, tolerance = 1e-4)
 })
 
 test_that("LCA Students", {
+  # The tiny fixtures cross-validate the same quantities against the same
+  # Mathematica implementation in a fraction of the time (test-lca-tiny.R,
+  # test-ctt-tiny.R), including the missing-data handling. This full-size
+  # comparison stays for local runs, where the extra seconds cost nothing.
+  skip_on_cran()
   ## Membership
   expect <- student[, 6:11] |>
     unlist() |>
     unname() |>
     as.numeric()
-  result <- model$Students |> as.numeric()
+  result <- full_model()$Students |> as.numeric()
   expect_equal(result, expect, tolerance = 1e-4)
 })
 
 ### S3 dispatch -------------------------------------------------------------
 
 test_that("LCA dispatches on response type", {
-  expect_true(inherits(model, "LCA"))
+  expect_true(inherits(full_model(), "LCA"))
   # raw input and a pre-formatted object take the same route
-  expect_equal(LCA(J15S500, ncls = 5)$log_lik, model$log_lik)
+  raw_tiny <- read.csv(test_path("fixtures", "tiny_data", "tinyLCA.csv"), check.names = FALSE)
+  expect_equal(LCA(raw_tiny, na = -99, ncls = 3)$log_lik, LCA(tiny_bin, ncls = 3)$log_lik)
   # every response type now has a method, each with its own return class
   expect_true(inherits(LCA(J21S300, ncls = 2), "ratedLCA"))
   expect_true(inherits(LCA(dataFormat(head_cols(J20S600, 12), response.type = "nominal"), ncls = 2), "nominalLCA"))
@@ -180,7 +216,7 @@ test_that("ordinal data is routed to the nominal model with a notice", {
 test_that("binary data recovers the same solution through the nominal engine", {
   # a two-category nominal mixture is the binary LCA model, so the two paths
   # must agree up to label switching and local optima
-  db <- dataFormat(J15S500)
+  db <- tiny_bin
   raw <- cbind(ID = db$ID, as.data.frame(db$U + 1))
   dn <- dataFormat(raw, response.type = "nominal")
   b <- LCA(db, ncls = 3)
@@ -349,7 +385,7 @@ test_that("M2 works from a fitted LCA and prints", {
   # rated data goes through the same path
   expect_true(inherits(M2(LCA(J21S300, ncls = 2), verbose = FALSE), "M2"))
   # models without a maximum likelihood fit of this kind are refused
-  expect_error(M2(LCA(J15S500, ncls = 3)), "available for models fitted")
+  expect_error(M2(LCA(tiny_bin, ncls = 3)), "available for models fitted")
 })
 
 test_that("add_M2 attaches margin-based fit indices without touching the others", {
@@ -389,7 +425,7 @@ test_that("print shows both worlds of fit indices, and either alone", {
 })
 
 test_that("add_M2 refuses models it cannot handle", {
-  expect_error(add_M2(LCA(J15S500, ncls = 3)), "available for models fitted")
+  expect_error(add_M2(LCA(tiny_bin, ncls = 3)), "available for models fitted")
 })
 
 ### M2 for LRA and Biclustering ---------------------------------------------

@@ -1,5 +1,27 @@
 library(exametrika)
 
+# M2 factorises a matrix whose size is set by the margins, m = sum(cat - 1) plus
+# one block per item pair, so it grows with the square of the item count and the
+# factorisation with its cube. The respondent count does not enter: subsetting
+# rows leaves m unchanged and saves nothing. Dropping to 12 items takes m from
+# 1770 to 630 and these blocks from ~20s to ~1.8s under the reference BLAS that
+# CRAN's Windows build ships, which is what the 10-minute checktime limit is
+# measured against. Every assertion below is structural -- the rank-deficiency
+# rule, m recomputed from the data's own category counts, what print() shows --
+# so fewer items tests the same thing.
+head_cols <- function(x, j) {
+  x$ItemLabel <- x$ItemLabel[seq_len(j)]
+  x$w <- x$w[seq_len(j)]
+  x$categories <- x$categories[seq_len(j)]
+  if (!is.null(x$CategoryLabel)) x$CategoryLabel <- x$CategoryLabel[seq_len(j)]
+  if (!is.null(x$CA)) x$CA <- x$CA[seq_len(j)]
+  for (f in c("Q", "U", "Z")) {
+    if (!is.null(x[[f]])) x[[f]] <- x[[f]][, seq_len(j), drop = FALSE]
+  }
+  return(x)
+}
+
+
 ### GOALS - Mathematica reference data
 test <- read.csv(
   test_path("fixtures", "mathematica_reference", "Chapter05LCA_Test.csv"),
@@ -96,12 +118,12 @@ test_that("LCA dispatches on response type", {
   expect_equal(LCA(J15S500, ncls = 5)$log_lik, model$log_lik)
   # every response type now has a method, each with its own return class
   expect_true(inherits(LCA(J21S300, ncls = 2), "ratedLCA"))
-  expect_true(inherits(LCA(dataFormat(J20S600, response.type = "nominal"), ncls = 2), "nominalLCA"))
+  expect_true(inherits(LCA(dataFormat(head_cols(J20S600, 12), response.type = "nominal"), ncls = 2), "nominalLCA"))
 })
 
 ### Nominal LCA -------------------------------------------------------------
 
-nominal_data <- dataFormat(J20S600, response.type = "nominal")
+nominal_data <- dataFormat(head_cols(J20S600, 12), response.type = "nominal")
 nominal_model <- LCA(nominal_data, ncls = 3)
 
 test_that("nominal LCA returns its own class and converges", {
@@ -306,7 +328,7 @@ test_that("the Jacobian loses rank as (ncls - 1)(ncls - 2) / 2", {
   # With the class proportions fixed, the second-order margins see the class
   # deviations only through their Gram matrix, which is invariant to rotations
   # of the (ncls - 1)-dimensional class space.
-  dat <- dataFormat(J20S600, response.type = "nominal")
+  dat <- dataFormat(head_cols(J20S600, 12), response.type = "nominal")
   for (k in 2:4) {
     fit <- LCA(dat, ncls = k)
     r <- M2(fit, verbose = FALSE)
@@ -316,7 +338,7 @@ test_that("the Jacobian loses rank as (ncls - 1)(ncls - 2) / 2", {
 })
 
 test_that("M2 works from a fitted LCA and prints", {
-  dat <- dataFormat(J20S600, response.type = "nominal")
+  dat <- dataFormat(head_cols(J20S600, 12), response.type = "nominal")
   fit <- LCA(dat, ncls = 3)
   r <- M2(fit, verbose = FALSE)
   expect_true(inherits(r, "M2"))
@@ -331,7 +353,7 @@ test_that("M2 works from a fitted LCA and prints", {
 })
 
 test_that("add_M2 attaches margin-based fit indices without touching the others", {
-  dat <- dataFormat(J20S600, response.type = "nominal")
+  dat <- dataFormat(head_cols(J20S600, 12), response.type = "nominal")
   fit <- LCA(dat, ncls = 3)
   fit2 <- add_M2(fit, verbose = FALSE)
 
@@ -354,7 +376,7 @@ test_that("add_M2 attaches margin-based fit indices without touching the others"
 })
 
 test_that("print shows both worlds of fit indices, and either alone", {
-  dat <- dataFormat(J20S600, response.type = "nominal")
+  dat <- dataFormat(head_cols(J20S600, 12), response.type = "nominal")
   fit <- add_M2(LCA(dat, ncls = 3), verbose = FALSE)
   expect_output(print(fit), "Response-pattern based")
   expect_output(print(fit), "Margin based")

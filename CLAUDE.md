@@ -170,6 +170,34 @@ rated = nominal + correct answer (multiple-choice tests); ordinal = Likert-type 
 
 ## Known Technical Debt
 
+### spell_check() の信号対雑音比を上げる (2026-08-19・**2.0.0 リリースを機に。急がない**)
+
+いまの `devtools::spell_check()` は **318語を指摘し，そのうち本物の誤字は11件**。
+`inst/WORDLIST` は136語で 2025-02 から更新されていない。**登録しすぎではなく，登録が
+追いついていない。**
+
+埋もれた実害: `Biclustering.Rd` の `wheter` / `iterasions` が利用者向けヘルプに長く残って
+いた（2026-08-19 に修正）。318件の中では見えない。
+
+指摘の内訳:
+
+| 出所 | 件数 | 性質 |
+|---|---|---|
+| `NEWS.md` | 158 | 過去の履歴。**直さない方針**を 2026-08-19 に決めた |
+| `guide-ja.Rmd` | 124 | **日本語**。hunspell が形態素を単語として拾うだけで，原理的に永久にノイズ |
+| Rd / README / vignettes | 36 | `FCRP` `ICRP` `FCBR` `Chatterjee` `Foygel` `Drton` 等，正当な用語 |
+
+**やること**:
+
+1. `guide-ja.Rmd` を検査対象から外す（日本語 vignette に英語の綴り検査は意味がない）
+2. `NEWS.md` を検査対象から外す（直さないものを毎回報告させない）
+3. 残る36件の正当な用語を `inst/WORDLIST` に登録
+
+これで**指摘がほぼゼロになり，次に何か出たら本物**という状態になる。`spell_check()` が道具
+として機能し始める。
+
+**提出直前には触らない。**2.0.0 が受理されてから，リリース作業の一環として片づける。
+
 ### TODO Items (`tests/testthat/test-lra-ordinal.R`)
 - **L149**: Investigate `nobs` handling unification — R uses per-item nobs
   (`colSums(Z)`) while Mathematica uses total nobs. Affects RMSEA, CAIC, BIC

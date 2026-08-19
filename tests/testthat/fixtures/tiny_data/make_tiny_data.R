@@ -43,3 +43,18 @@ U <- matrix(rbinom(n * j, 1, P), n, j)
 out <- data.frame(ID = sprintf("S%03d", seq_len(n)), U, check.names = FALSE)
 colnames(out) <- c("ID", sprintf("Item%02d", seq_len(j)))
 write.csv(out, "tinyIRT.csv", row.names = FALSE, quote = FALSE)
+
+# --- tinyCTT: 二値・150名x10項目・欠測なし ---
+# 記述統計と相関・信頼性係数なので潜在構造は要らないが，テトラコリック相関と
+# Omega の推定が壊れないだけの分散と共通性は要る。1因子の IRT で生成する。
+set.seed(20260819)
+n <- 150
+j <- 10
+th <- rnorm(n)
+b <- seq(-1.2, 1.2, length.out = j)
+P <- 1 / (1 + exp(-outer(th, b, "-") * 1.2))
+U <- matrix(rbinom(n * j, 1, P), n, j)
+stopifnot(!any(apply(U, 2, function(c) length(unique(c)) < 2)))
+out <- data.frame(ID = sprintf("S%03d", seq_len(n)), U, check.names = FALSE)
+colnames(out) <- c("ID", sprintf("Item%02d", seq_len(j)))
+write.csv(out, "tinyCTT.csv", row.names = FALSE, quote = FALSE)

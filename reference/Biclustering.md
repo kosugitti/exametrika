@@ -40,7 +40,7 @@ Biclustering(
   conf = NULL,
   conf_class = NULL,
   mic = FALSE,
-  maxiter = 100,
+  maxiter = 1000,
   verbose = FALSE,
   alpha = 1,
   ...
@@ -56,7 +56,7 @@ Biclustering(
   conf = NULL,
   conf_class = NULL,
   mic = FALSE,
-  maxiter = 100,
+  maxiter = 1000,
   verbose = FALSE,
   alpha = 1,
   ...
@@ -218,15 +218,15 @@ An object of class "exametrika" and "Biclustering" containing:
 
   Number of examinees in the dataset
 
-- Nclass:
+- n_class:
 
   Number of latent classes/ranks specified
 
-- Nfield:
+- n_field:
 
   Number of latent fields specified
 
-- N_Cycle:
+- n_cycle:
 
   Number of EM iterations performed
 
@@ -410,6 +410,8 @@ result.Bi <- Biclustering(J35S515, nfld = 5, ncls = 6, method = "B")
 # Perform Biclustering for rated sample data
 # Analyze data with 5 fields and 6 classes
 result.Bi <- Biclustering(J35S5000, nfld = 5, ncls = 6, method = "R")
-#> Warning: Only 2 of 5 specified fields have items assigned. Fields 2, 4, 5 are empty. Consider reducing nfld.
+#> 
+#> Reached the maximum number of iterations (100).
+#> Warning: Algorithm may not have converged. Interpret results with caution.
 # }
 ```

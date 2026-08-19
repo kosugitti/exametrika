@@ -34,7 +34,6 @@
 <url><loc>https://kosugitti.github.io/exametrika/reference/GridSearch.html</loc></url>
 <url><loc>https://kosugitti.github.io/exametrika/reference/IIF2PLM.html</loc></url>
 <url><loc>https://kosugitti.github.io/exametrika/reference/IIF3PLM.html</loc></url>
-<url><loc>https://kosugitti.github.io/exametrika/reference/IRM.html</loc></url>
 <url><loc>https://kosugitti.github.io/exametrika/reference/IRT.html</loc></url>
 <url><loc>https://kosugitti.github.io/exametrika/reference/ITBiserial.html</loc></url>
 <url><loc>https://kosugitti.github.io/exametrika/reference/InterItemAnalysis.html</loc></url>
@@ -69,6 +68,7 @@
 <url><loc>https://kosugitti.github.io/exametrika/reference/LD_param_est.html</loc></url>
 <url><loc>https://kosugitti.github.io/exametrika/reference/LRA.html</loc></url>
 <url><loc>https://kosugitti.github.io/exametrika/reference/LogisticModel.html</loc></url>
+<url><loc>https://kosugitti.github.io/exametrika/reference/M2.html</loc></url>
 <url><loc>https://kosugitti.github.io/exametrika/reference/MutualInformation.html</loc></url>
 <url><loc>https://kosugitti.github.io/exametrika/reference/OmegaCoefficient.html</loc></url>
 <url><loc>https://kosugitti.github.io/exametrika/reference/PSD_item_params.html</loc></url>
@@ -76,9 +76,6 @@
 <url><loc>https://kosugitti.github.io/exametrika/reference/PolychoricCorrelationMatrix.html</loc></url>
 <url><loc>https://kosugitti.github.io/exametrika/reference/RaschModel.html</loc></url>
 <url><loc>https://kosugitti.github.io/exametrika/reference/ScoreReport.html</loc></url>
-<url><loc>https://kosugitti.github.io/exametrika/reference/StrLearningGA_BNM.html</loc></url>
-<url><loc>https://kosugitti.github.io/exametrika/reference/StrLearningPBIL_BNM.html</loc></url>
-<url><loc>https://kosugitti.github.io/exametrika/reference/StrLearningPBIL_LDLRA.html</loc></url>
 <url><loc>https://kosugitti.github.io/exametrika/reference/StudentAnalysis.html</loc></url>
 <url><loc>https://kosugitti.github.io/exametrika/reference/TestFit.html</loc></url>
 <url><loc>https://kosugitti.github.io/exametrika/reference/TestFitSaturated.html</loc></url>
@@ -88,6 +85,7 @@
 <url><loc>https://kosugitti.github.io/exametrika/reference/TetrachoricCorrelationMatrix.html</loc></url>
 <url><loc>https://kosugitti.github.io/exametrika/reference/ThreePLM.html</loc></url>
 <url><loc>https://kosugitti.github.io/exametrika/reference/TwoPLM.html</loc></url>
+<url><loc>https://kosugitti.github.io/exametrika/reference/add_M2.html</loc></url>
 <url><loc>https://kosugitti.github.io/exametrika/reference/asymprior.html</loc></url>
 <url><loc>https://kosugitti.github.io/exametrika/reference/calcFitIndices.html</loc></url>
 <url><loc>https://kosugitti.github.io/exametrika/reference/chatterjee_matrix.html</loc></url>

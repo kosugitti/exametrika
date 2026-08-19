@@ -6,8 +6,8 @@
 (2022, <ISBN:978-9811699856>). It provides psychometric analysis tools:
 CTT, IRT, GRM, LCA, LRA, Biclustering, BNM, LDLRA, LDB, BINET.
 
-- **Current version**: 1.16.0 (dev, targeting CRAN submission
-  2026-08-15)
+- **Current version**: 2.0.0 (dev; CRAN submission early September 2026,
+  after the A3 simulation)
 - **CRAN version**: 1.15.0 (accepted/published 2026-07)
 - **GitHub Release**: v1.15.0 (2026-07-15, latest) / v1.14.0
   (2026-06-14)
@@ -177,14 +177,41 @@ Rscript -e 'roxygen2::roxygenise()'
 
 ## Polytomous Support Matrix
 
-|              | binary | ordinal | rated | nominal |
-|--------------|--------|---------|-------|---------|
-| LRA          | yes    | yes     | yes   | —       |
-| Biclustering | yes    | yes     | yes   | yes     |
-| IRM          | yes    | yes     | —     | yes     |
+|              | binary | ordinal     | rated | nominal |
+|--------------|--------|-------------|-------|---------|
+| LCA          | yes    | via nominal | yes   | yes     |
+| LRA          | yes    | yes         | yes   | n/a     |
+| Biclustering | yes    | yes         | yes   | yes     |
+| IRM          | yes    | yes         | n/a   | yes     |
 
 rated = nominal + correct answer (multiple-choice tests); ordinal =
 Likert-type ordered ratings.
+
+“n/a” means **not applicable**, not unimplemented (decided
+2026-07-22): - `LRA.nominal` cannot exist. A rank ordering has to be
+anchored in the category ordering (higher ranks favour higher
+categories); nominal labels give it nothing to attach to. Nominal data
+passed to
+[`LRA()`](https://kosugitti.github.io/exametrika/reference/LRA.md) is
+handed to
+[`LCA.nominal()`](https://kosugitti.github.io/exametrika/reference/LCA.md)
+with a message. The same argument rules out the isotonic estimator for
+nominal data: its constraint lives on cumulative probabilities
+`P(>= q)`, and “\>= q” needs ordered categories to mean anything. - “via
+nominal” (LCA, ordinal): latent classes carry no order, so the category
+ordering has nothing to attach to either — estimation *is* the nominal
+one, and
+[`LCA()`](https://kosugitti.github.io/exametrika/reference/LCA.md) says
+so before delegating. A genuinely ordinal LCA would have to put the
+order inside the category profiles (see Future Work); it is not a
+wrapper. - `LCA.rated` calls
+[`LCA.nominal()`](https://kosugitti.github.io/exametrika/reference/LCA.md)
+and adds the correct-answer post-processing:
+`IRP[j, c] = rho[j, CA[j] | c]` (model-implied, not the empirical
+class-assignment rate `Biclustering.rated` uses), `TRP` as its weighted
+item sum, and a binary layer of fit indices alongside the nominal one.
+It does NOT sort classes by correct rate the way `Biclustering.rated`
+does — LCA classes are unordered, and sorting would imply otherwise.
 
 ## Known Technical Debt
 
@@ -197,17 +224,13 @@ Likert-type ordered ratings.
 
 ### Deprecated Functions (to be removed in v2.0.0)
 
-- [`IRM()`](https://kosugitti.github.io/exametrika/reference/IRM.md) →
-  use
+- `IRM()` → use
   [`Biclustering_IRM()`](https://kosugitti.github.io/exametrika/reference/Biclustering_IRM.md)
-- [`StrLearningGA_BNM()`](https://kosugitti.github.io/exametrika/reference/StrLearningGA_BNM.md)
-  → use
+- `StrLearningGA_BNM()` → use
   [`BNM_GA()`](https://kosugitti.github.io/exametrika/reference/BNM_GA.md)
-- [`StrLearningPBIL_BNM()`](https://kosugitti.github.io/exametrika/reference/StrLearningPBIL_BNM.md)
-  → use
+- `StrLearningPBIL_BNM()` → use
   [`BNM_PBIL()`](https://kosugitti.github.io/exametrika/reference/BNM_PBIL.md)
-- [`StrLearningPBIL_LDLRA()`](https://kosugitti.github.io/exametrika/reference/StrLearningPBIL_LDLRA.md)
-  → use
+- `StrLearningPBIL_LDLRA()` → use
   [`LDLRA_PBIL()`](https://kosugitti.github.io/exametrika/reference/LDLRA_PBIL.md)
 
 ### Deprecated Field Names (to be removed in v2.0.0)
@@ -312,14 +335,62 @@ Likert-type ordered ratings.
   `layout_on_grid()`. Both are user-visible, so removing them is a
   breaking change and needs a replacement drawing path.
 - BINET FRPIndex addition
-- LCA.nominal — 仕様確定済み(EMエンジン `00_EMclus_nominal.R`
-  のみ存在，本体未実装)。 適合度は飽和モデルを作らず
-  $`M_2`$(Maydeu-Olivares & Joe 2006)で出す方針。設計メモは
-  `develop/Algorithm_M2.tex`(2026-07-25に全節レビュー完了・14p)。実装順は
-  LCA.nominal 本体 → $`M_2`$(二値2PLで mirt の `M2(fit, type = "M2")`
-  と数値一致を取ってから名義へ。mirtはGPL
-  なので参照実行のみ・コード取り込み不可)。[`calcFitIndices()`](https://kosugitti.github.io/exametrika/reference/calcFitIndices.md)
-  に流し込めば NFI 以下は出るが `bench_log_like` だけは対応物がなく NA。
+- Ordinal LCA with unordered classes (a real model, not a wrapper) —
+  categories carry order while classes do not, so the order has to enter
+  through the category profiles themselves: a unimodality restriction
+  per class, or a class-specific location under a cumulative link. Not
+  to be confused with routing ordinal data to `LCA.nominal` (which is
+  what we do now, and which ignores the order). Revisit alongside the
+  v2.0.0 polytomous BNM, where the cumulative link is already on the
+  table.
+- **EM convergence criterion (fixed 2026-07-26, breaking)** — the
+  criterion inherited from Shojima’s Mathematica had three defects: the
+  sentinel `-exp(J)` sits *above* the log-likelihood on short tests (EM
+  exited after one cycle reporting `converge = TRUE`); the monitored
+  quantity was the expected log-posterior `Q(theta_t|theta_{t-1})`,
+  which is not monotone (the book’s eq. 5.11 states monotonicity for the
+  observed-data log-posterior but the formula given computes the
+  expected one); and the relative tolerance `1e-4` on a value of order
+  1e3 stopped EM ~0.4 nats short. Now: observed-data log-likelihood,
+  `-Inf` sentinel with the first pass skipped, `tol = 1e-8`, `maxiter`
+  1000 — in `emclus()`, `emclus_isotonic()`, `emclus_nominal()`.
+  Biclustering (07/15/16) got only the sentinel and tolerance (a
+  two-sided mixture has no single observed-data likelihood);
+  [`IRT()`](https://kosugitti.github.io/exametrika/reference/IRT.md)
+  uses 1e-6 (one [`optim()`](https://rdrr.io/r/stats/optim.html) per
+  item per cycle). The Mathematica side was corrected in step and agrees
+  to full double precision. Guard trap: `emt > 0` is not enough — on the
+  second pass `oldtestell` is still `-Infinity` and
+  `Infinity <= Infinity` is TRUE; use `NumberQ[oldtestell]` /
+  `is.finite(old_test_log_lik)`.
+- LCA.nominal / LCA.rated / $`M_2`$ — **DONE 2026-07-26/27**
+  (`R/05_LCA.R`, `R/24_M2.R`).
+  [`M2()`](https://kosugitti.github.io/exametrika/reference/M2.md)
+  covers LCA (nominal, rated), LRA (ordinal) and Biclustering (ordinal,
+  nominal), so the three arms of the A3 simulation share one scale;
+  [`add_M2()`](https://kosugitti.github.io/exametrika/reference/add_M2.md)
+  attaches margin-based fit indices. **Everything lives in `R/24_M2.R`**
+  — the model files were not touched, since S3 dispatches on the fitted
+  object’s class. Two rules to remember: response-pattern and
+  margin-based indices are never combined (their chi-squares are a
+  likelihood ratio and a quadratic form respectively), and the reference
+  distribution only holds for a maximum likelihood fit, so GTM and
+  order-restricted arms record the statistic without testing it.
+  適合度は飽和モデルを作らず $`M_2`$(Maydeu-Olivares & Joe
+  2006)で出す方針。設計メモは `develop/Algorithm_M2.tex`(14p)，試作は
+  `develop/20260725_M2_prototype.R`(メモの数値例を 完全再現・$`\Xi`$
+  をモンテカルロ検証済み・J20S600 で1秒未満)。次は二値2PLで mirt の
+  `M2(fit, type = "M2")`
+  と突合してから名義へ(mirtはGPLなので参照実行のみ・取り込み不可)。
+  [`calcFitIndices()`](https://kosugitti.github.io/exametrika/reference/calcFitIndices.md)
+  に流し込めば NFI 以下は出るが `bench_log_like` だけは NA。
+  **要注意2点**: (a) 混合比は推定しない($`\gamma_c \equiv 1/C`$)ので
+  $`t = C\sum_j(Q_j-1)`$， $`\Delta`$ に $`\gamma`$ 列はない。(b)
+  その定式化では 2次マージンがクラス偏差行列のグラム行列に
+  しか依存せず，$`\Delta`$ が $`(C-1)(C-2)/2`$
+  だけランク落ちする($`C\ge3`$ で母数が2次マージンから
+  識別されない)。自由度は $`m-\mathrm{rank}(\Delta)`$
+  を使い，射影はSVDで作る。
 - Input data storage method unification (v2.0.0)
 - **Order-restricted IRM (estimate the number of *ordered* classes)** —
   the missing cell in the design grid: `Biclustering`/`Ranklustering`
@@ -496,7 +567,7 @@ Likert-type ordered ratings.
   the tests.
 - See `WORKLOG.md` (2026-07-01) and `.claude/CLAUDE.md` for full detail
 
-### v1.16.0 (dev, targeting CRAN submission 2026-08-15)
+### v2.0.0 (dev; renamed from 1.16.0 on 2026-07-26, see below)
 
 - **GRM bug fixes (2026-07-16 audit; committed f3d9557; see NEWS.md)**:
   - [`grm_iif()`](https://kosugitti.github.io/exametrika/reference/grm_iif.md)
@@ -618,31 +689,45 @@ Likert-type ordered ratings.
   submitted after this version is accepted, so its GRM information plots
   match the fixed parent
 
-### v2.0.0 (breaking changes, in design)
+### Version policy (decided 2026-07-26)
 
-- **Polytomous BNM (StepReg / StepBNM, case C)** — DAG-given fit only;
-  structure learning deferred to v2.1+.
-  - Case C: `P(Y ≤ q | X = x) = Φ(τ_q − μ_x)` with monotone
-    `μ_1 ≤ ... ≤ μ_Q`
-  - β_caseC = bsp_moX × D (where D = number of category gaps), matches
-    brms `mo()` (Bürkner-Charpentier 2020)
-  - Additive parents only (interactions out of scope for v2.0.0)
-  - Model fit indices `M_0`/`M_t`/`M_s` with AIC/BIC/CAIC/NFI/CFI/RMSEA
-  - “ξ map” + “StepReg/StepBNM” naming established 2026-05-12/13
-  - Validated on お遍路さん dataset (2026-05-09): DAG full reversal ΔAIC
-    = +17 (clearer than J15S3810 ΔAIC = ±5)
-- Structure learning (Glasso skeleton → ξ direction → case C fit) is
-  deferred to v2.1+
-- Remove deprecated functions and field names
-  ([`IRM()`](https://kosugitti.github.io/exametrika/reference/IRM.md),
-  [`StrLearningGA_BNM()`](https://kosugitti.github.io/exametrika/reference/StrLearningGA_BNM.md),
-  `Nclass`, `Nfield`, etc.)
-- Drop backward-compatible aliases
-- Downstream packages (ggExametrika, shinyExametrika) must complete
-  snake_case migration first
-- CRAN cadence note: per `feedback_cran_submit_cadence.md`, allow ≥1
-  month from v1.13.1 acceptance (2026-05-18) before submitting v2.0.0 —
-  target 2026-06-18 or later.
+The development line was renumbered 1.16.0 -\> **2.0.0**. The EM
+convergence fix changes the estimates every EM-based model produces:
+same code, same data, different numbers, and no longer the numbers
+printed in Shojima (2022). That is a heavier break than an API change,
+and a minor bump would have understated it. Since a major bump was
+happening anyway, the deprecation removals ride along — break once.
+
+**In 2.0.0** (see the section above for what is already done): - EM
+convergence fix (breaking numerics), `LCA.nominal` / `LCA.rated`, IRT
+speedup - $`M_2`$ (limited-information fit) — shared with the A3 paper,
+so the paper’s numbers and the package’s numbers come from one
+implementation - Remove deprecated functions and field names (`IRM()`,
+`StrLearningGA_BNM()`, `Nclass`, `Nfield`, `N_Cycle`, `LogLik`, …) and
+the backward-compatible aliases. Downstream cost measured 2026-07-26: 7
+occurrences in ggExametrika, 11 in shinyExametrika. Both are mechanical
+renames; update and submit in lockstep. - Timing: after the A3
+simulation, early September 2026. The 1.15.0 submission was 2026-07-15
+and acceptance followed within days, so the \>= 1 month cadence
+(`feedback_cran_submit_cadence`) is clear from mid-August onward — the
+date is set by the simulation and the paper, not by CRAN.
+
+**Deliberately NOT in 2.0.0** — each was in the old v2.0.0 plan and is
+decoupled so that the release is not held hostage to design work: -
+**Polytomous BNM (StepReg / StepBNM, case C)** -\> v2.1.0. Additive, not
+breaking. DAG-given fit only; structure learning later still. - Case C:
+`P(Y <= q | X = x) = Phi(tau_q - mu_x)` with monotone
+`mu_1 <= ... <= mu_Q` - beta_caseC = bsp_moX x D (D = number of category
+gaps), matches brms `mo()` (Bürkner-Charpentier 2020) - Additive parents
+only; fit indices `M_0`/`M_t`/`M_s` with AIC/BIC/CAIC/NFI/CFI/RMSEA -
+“xi map” + “StepReg/StepBNM” naming established 2026-05-12/13 -
+Validated on お遍路さん (2026-05-09): DAG full reversal dAIC = +17
+(clearer than J15S3810 dAIC = ±5) - Structure learning (Glasso skeleton
+-\> xi direction -\> case C fit) -\> v2.2+ - **Drop the igraph
+dependency** -\> a later major. `LDLRA`/`LDB`/`BINET` return igraph
+objects in `g_list` and `R/00_print_network.R` draws with
+`plot.igraph()`, so it needs a replacement drawing path first (survey
+under Known Technical Debt). - Input data storage unification
 
 ### Long-term
 

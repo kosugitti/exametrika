@@ -9,17 +9,50 @@ probabilities.
 ## Usage
 
 ``` r
+LCA(U, ...)
+
+# Default S3 method
+LCA(U, na = NULL, Z = NULL, w = NULL, ...)
+
+# S3 method for class 'binary'
 LCA(
   U,
   ncls = 2,
   na = NULL,
   Z = NULL,
   w = NULL,
-  maxiter = 100,
+  maxiter = 1000,
   verbose = FALSE,
   beta1 = 1,
   beta2 = 1,
-  conf = NULL
+  conf = NULL,
+  ...
+)
+
+# S3 method for class 'nominal'
+LCA(
+  U,
+  ncls = 2,
+  na = NULL,
+  Z = NULL,
+  w = NULL,
+  maxiter = 1000,
+  verbose = FALSE,
+  alpha = 1,
+  ...
+)
+
+# S3 method for class 'rated'
+LCA(
+  U,
+  ncls = 2,
+  na = NULL,
+  Z = NULL,
+  w = NULL,
+  maxiter = 1000,
+  verbose = FALSE,
+  alpha = 1,
+  ...
 )
 ```
 
@@ -32,9 +65,9 @@ LCA(
   [`dataFormat`](https://kosugitti.github.io/exametrika/reference/dataFormat.md)
   function.
 
-- ncls:
+- ...:
 
-  Number of latent classes to identify (between 2 and 20). Default is 2.
+  Additional arguments passed to specific methods.
 
 - na:
 
@@ -49,9 +82,13 @@ LCA(
 
   Item weight vector specifying the relative importance of each item.
 
+- ncls:
+
+  Number of latent classes to identify (between 2 and 20). Default is 2.
+
 - maxiter:
 
-  Maximum number of EM algorithm iterations. Default is 100.
+  Maximum number of EM algorithm iterations. Default is 1000.
 
 - verbose:
 
@@ -76,6 +113,12 @@ LCA(
   (0, 1). When row names are present, items are matched by label;
   otherwise by position. Default is NULL (fully exploratory).
 
+- alpha:
+
+  Dirichlet prior parameter for the category profiles (nominal data
+  only). Default 1, which leaves the M-step at the plain multinomial
+  MLE.
+
 ## Value
 
 An object of class "exametrika" and "LCA" containing:
@@ -92,11 +135,11 @@ An object of class "exametrika" and "LCA" containing:
 
   Sample size (number of rows in the dataset).
 
-- Nclass:
+- n_class:
 
   Number of latent classes specified.
 
-- N_Cycle:
+- n_cycle:
 
   Number of EM algorithm iterations performed.
 
@@ -168,6 +211,40 @@ Unlike Item Response Theory (IRT), LCA treats latent variables as
 categorical rather than continuous, identifying distinct profiles rather
 than positions on a continuum.
 
+For nominal data the model is a finite mixture of product-multinomial
+distributions: every latent class carries an independent category
+distribution for each item, and no ordering is imposed on the classes or
+on the categories. Category counts may differ across items.
+
+Ordered rating data is routed to this method as well, because unordered
+latent classes give the category order nothing to attach to. Use
+[`LRA`](https://kosugitti.github.io/exametrika/reference/LRA.md) when
+the ordering should be respected.
+
+No benchmark (saturated) model is fitted, for the same reason as in
+`Biclustering.nominal`: with many items and categories nearly every
+response pattern is unique, so the saturated log-likelihood is not
+informative. Only AIC, BIC and CAIC are reported; the chi-square based
+indices are NA.
+
+For rated data (multiple-choice items with a key) the estimation is the
+nominal one — `LCA.rated` calls `LCA.nominal` internally — and the key
+is used afterwards to recover the quantities that need a notion of a
+correct answer. The Item Reference Profile is the model-implied
+probability of the keyed category, `IRP[j, c] = rho[j, CA[j] | c]`, and
+the Test Reference Profile is its weighted item sum. Unlike
+[`Biclustering`](https://kosugitti.github.io/exametrika/reference/Biclustering.md)
+on rated data, the classes are not sorted by correct response rate:
+latent classes carry no order, and sorting them would suggest one.
+
+Two layers of fit are reported. `TestFitIndices` is the binary layer,
+built from correct/incorrect responses under the
+class-membership-weighted correct probabilities, so it carries the usual
+chi-square based indices and is comparable with binary `LCA`.
+`TestFitIndicesNominal` is the nominal layer taken from the internal
+fit, with AIC/BIC/CAIC only. The full category probabilities stay in
+`ICRP` for distractor analysis.
+
 ## References
 
 Goodman, L. A. (1974). Exploratory latent structure analysis using both
@@ -186,18 +263,18 @@ result.LCA <- LCA(J15S500, ncls = 5)
 # Display the first few rows of student class membership probabilities
 head(result.LCA$Students)
 #>            Membership 1 Membership 2 Membership 3 Membership 4 Membership 5
-#> Student001 0.7839477684  0.171152798  0.004141844 4.075759e-02 3.744590e-12
-#> Student002 0.0347378747  0.051502214  0.836022799 7.773694e-02 1.698776e-07
-#> Student003 0.0146307878  0.105488644  0.801853496 3.343026e-02 4.459682e-02
-#> Student004 0.0017251650  0.023436459  0.329648386 3.656488e-01 2.795412e-01
-#> Student005 0.2133830569  0.784162066  0.001484616 2.492073e-08 9.702355e-04
-#> Student006 0.0003846482  0.001141448  0.001288901 8.733869e-01 1.237981e-01
+#> Student001 0.7285244374  0.012211535  0.226232540 3.303149e-02 3.055593e-12
+#> Student002 0.0220645036  0.086986302  0.830839343 6.010974e-02 1.074954e-07
+#> Student003 0.0170578933  0.054109896  0.879752304 2.100872e-02 2.807118e-02
+#> Student004 0.0010508039  0.223175413  0.203820488 3.286491e-01 2.433042e-01
+#> Student005 0.9407961670  0.053321705  0.004873703 1.808344e-08 1.008407e-03
+#> Student006 0.0002372397  0.002528968  0.029747250 8.551046e-01 1.123819e-01
 #>            Estimate
 #> Student001        1
 #> Student002        3
 #> Student003        3
 #> Student004        4
-#> Student005        2
+#> Student005        1
 #> Student006        4
 
 # Plot Item Response Profiles (IRP) for items 1-6 in a 2x3 grid
@@ -237,9 +314,9 @@ data.frame(
   )
 )
 #>   Classes       BIC
-#> 1       2 -349.9323
-#> 2       3 -461.9099
-#> 3       4 -557.2459
-#> 4       5 -630.9953
+#> 1       2 -346.3585
+#> 2       3 -464.5868
+#> 3       4 -609.6852
+#> 4       5 -655.1747
 # }
 ```

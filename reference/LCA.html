@@ -11,7 +11,7 @@ and estimates both the class characteristics and individual membership probabili
 
     <a class="navbar-brand me-2" href="../index.html">exametrika</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.16.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.0.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -46,17 +46,50 @@ and estimates both the class characteristics and individual membership probabili
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">LCA</span><span class="op">(</span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">LCA</span><span class="op">(</span><span class="va">U</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Default S3 method</span></span>
+<span><span class="fu">LCA</span><span class="op">(</span><span class="va">U</span>, na <span class="op">=</span> <span class="cn">NULL</span>, Z <span class="op">=</span> <span class="cn">NULL</span>, w <span class="op">=</span> <span class="cn">NULL</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for class 'binary'</span></span>
+<span><span class="fu">LCA</span><span class="op">(</span></span>
 <span>  <span class="va">U</span>,</span>
 <span>  ncls <span class="op">=</span> <span class="fl">2</span>,</span>
 <span>  na <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  Z <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  w <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  maxiter <span class="op">=</span> <span class="fl">100</span>,</span>
+<span>  maxiter <span class="op">=</span> <span class="fl">1000</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  beta1 <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  beta2 <span class="op">=</span> <span class="fl">1</span>,</span>
-<span>  conf <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  conf <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  <span class="va">...</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for class 'nominal'</span></span>
+<span><span class="fu">LCA</span><span class="op">(</span></span>
+<span>  <span class="va">U</span>,</span>
+<span>  ncls <span class="op">=</span> <span class="fl">2</span>,</span>
+<span>  na <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  Z <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  w <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  maxiter <span class="op">=</span> <span class="fl">1000</span>,</span>
+<span>  verbose <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  alpha <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>  <span class="va">...</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for class 'rated'</span></span>
+<span><span class="fu">LCA</span><span class="op">(</span></span>
+<span>  <span class="va">U</span>,</span>
+<span>  ncls <span class="op">=</span> <span class="fl">2</span>,</span>
+<span>  na <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  Z <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  w <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  maxiter <span class="op">=</span> <span class="fl">1000</span>,</span>
+<span>  verbose <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  alpha <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -69,8 +102,8 @@ and estimates both the class characteristics and individual membership probabili
 it is converted to the exametrika class with the <code><a href="dataFormat.html">dataFormat</a></code> function.</p></dd>
 
 
-<dt id="arg-ncls">ncls<a class="anchor" aria-label="anchor" href="#arg-ncls"></a></dt>
-<dd><p>Number of latent classes to identify (between 2 and 20). Default is 2.</p></dd>
+<dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
+<dd><p>Additional arguments passed to specific methods.</p></dd>
 
 
 <dt id="arg-na">na<a class="anchor" aria-label="anchor" href="#arg-na"></a></dt>
@@ -86,8 +119,12 @@ observed responses, while 0 indicates missing data.</p></dd>
 <dd><p>Item weight vector specifying the relative importance of each item.</p></dd>
 
 
+<dt id="arg-ncls">ncls<a class="anchor" aria-label="anchor" href="#arg-ncls"></a></dt>
+<dd><p>Number of latent classes to identify (between 2 and 20). Default is 2.</p></dd>
+
+
 <dt id="arg-maxiter">maxiter<a class="anchor" aria-label="anchor" href="#arg-maxiter"></a></dt>
-<dd><p>Maximum number of EM algorithm iterations. Default is 100.</p></dd>
+<dd><p>Maximum number of EM algorithm iterations. Default is 1000.</p></dd>
 
 
 <dt id="arg-verbose">verbose<a class="anchor" aria-label="anchor" href="#arg-verbose"></a></dt>
@@ -109,6 +146,12 @@ NA values are freely estimated. Fixed values must be in the open interval (0, 1)
 When row names are present, items are matched by label; otherwise by position.
 Default is NULL (fully exploratory).</p></dd>
 
+
+<dt id="arg-alpha">alpha<a class="anchor" aria-label="anchor" href="#arg-alpha"></a></dt>
+<dd><p>Dirichlet prior parameter for the category profiles
+(nominal data only). Default 1, which leaves the M-step at the plain
+multinomial MLE.</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
@@ -121,10 +164,10 @@ Default is NULL (fully exploratory).</p></dd>
 <dt>nobs</dt>
 <dd><p>Sample size (number of rows in the dataset).</p></dd>
 
-<dt>Nclass</dt>
+<dt>n_class</dt>
 <dd><p>Number of latent classes specified.</p></dd>
 
-<dt>N_Cycle</dt>
+<dt>n_cycle</dt>
 <dd><p>Number of EM algorithm iterations performed.</p></dd>
 
 <dt>converge</dt>
@@ -169,6 +212,33 @@ item depends on class membership.</p>
 <li><p>Iterating until convergence or reaching the maximum number of iterations</p></li>
 </ol><p>Unlike Item Response Theory (IRT), LCA treats latent variables as categorical rather than
 continuous, identifying distinct profiles rather than positions on a continuum.</p>
+<p>For nominal data the model is a finite mixture of product-multinomial
+distributions: every latent class carries an independent category
+distribution for each item, and no ordering is imposed on the classes or on
+the categories. Category counts may differ across items.</p>
+<p>Ordered rating data is routed to this method as well, because unordered
+latent classes give the category order nothing to attach to. Use
+<code><a href="LRA.html">LRA</a></code> when the ordering should be respected.</p>
+<p>No benchmark (saturated) model is fitted, for the same reason as in
+<code>Biclustering.nominal</code>: with many items and categories nearly every
+response pattern is unique, so the saturated log-likelihood is not
+informative. Only AIC, BIC and CAIC are reported; the chi-square based
+indices are NA.</p>
+<p>For rated data (multiple-choice items with a key) the estimation is the
+nominal one — <code>LCA.rated</code> calls <code>LCA.nominal</code> internally — and the
+key is used afterwards to recover the quantities that need a notion of a
+correct answer. The Item Reference Profile is the model-implied probability
+of the keyed category, <code>IRP[j, c] = rho[j, CA[j] | c]</code>, and the Test
+Reference Profile is its weighted item sum. Unlike
+<code><a href="Biclustering.html">Biclustering</a></code> on rated data, the classes are not sorted by
+correct response rate: latent classes carry no order, and sorting them would
+suggest one.</p>
+<p>Two layers of fit are reported. <code>TestFitIndices</code> is the binary layer,
+built from correct/incorrect responses under the class-membership-weighted
+correct probabilities, so it carries the usual chi-square based indices and
+is comparable with binary <code>LCA</code>. <code>TestFitIndicesNominal</code> is the
+nominal layer taken from the internal fit, with AIC/BIC/CAIC only. The full
+category probabilities stay in <code>ICRP</code> for distractor analysis.</p>
     </div>
     <div class="section level2">
     <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>
@@ -187,18 +257,18 @@ Boston: Houghton Mifflin.</p>
 <span class="r-in"><span><span class="co"># Display the first few rows of student class membership probabilities</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">result.LCA</span><span class="op">$</span><span class="va">Students</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>            Membership 1 Membership 2 Membership 3 Membership 4 Membership 5</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Student001 0.7839477684  0.171152798  0.004141844 4.075759e-02 3.744590e-12</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Student002 0.0347378747  0.051502214  0.836022799 7.773694e-02 1.698776e-07</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Student003 0.0146307878  0.105488644  0.801853496 3.343026e-02 4.459682e-02</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Student004 0.0017251650  0.023436459  0.329648386 3.656488e-01 2.795412e-01</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Student005 0.2133830569  0.784162066  0.001484616 2.492073e-08 9.702355e-04</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Student006 0.0003846482  0.001141448  0.001288901 8.733869e-01 1.237981e-01</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Student001 0.7285244374  0.012211535  0.226232540 3.303149e-02 3.055593e-12</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Student002 0.0220645036  0.086986302  0.830839343 6.010974e-02 1.074954e-07</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Student003 0.0170578933  0.054109896  0.879752304 2.100872e-02 2.807118e-02</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Student004 0.0010508039  0.223175413  0.203820488 3.286491e-01 2.433042e-01</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Student005 0.9407961670  0.053321705  0.004873703 1.808344e-08 1.008407e-03</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Student006 0.0002372397  0.002528968  0.029747250 8.551046e-01 1.123819e-01</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>            Estimate</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Student001        1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Student002        3</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Student003        3</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Student004        4</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Student005        2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Student005        1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Student006        4</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Plot Item Response Profiles (IRP) for items 1-6 in a 2x3 grid</span></span></span>
@@ -238,10 +308,10 @@ Boston: Houghton Mifflin.</p>
 <span class="r-in"><span>  <span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   Classes       BIC</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1       2 -349.9323</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2       3 -461.9099</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3       4 -557.2459</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4       5 -630.9953</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1       2 -346.3585</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2       3 -464.5868</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3       4 -609.6852</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4       5 -655.1747</span>
 <span class="r-in"><span><span class="co"># }</span></span></span>
 <span class="r-in"><span></span></span>
 </code></pre></div>

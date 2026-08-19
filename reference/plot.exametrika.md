@@ -279,6 +279,14 @@ Each model class supports specific plot types:
 
   Supports "IRP", "FRP", "TRP", "LCD", "CMP"
 
+- nominalLCA:
+
+  Supports "ICRP", "LCD", "CMP"
+
+- ratedLCA:
+
+  Supports "IRP", "TRP", "ICRP", "LCD", "CMP"
+
 - LRA:
 
   Supports "IRP", "FRP", "TRP", "LRD", "RMP"

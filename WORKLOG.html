@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="index.html">exametrika</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.16.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.0.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -1828,7 +1828,257 @@ LDLRA_PBIL J15S500 (15.3秒) 09_LDLRA.R#55 50.7% / #54 28.3% / #50 5.4%
 <div class="section level3">
 <h3 id="次-2">次<a class="anchor" aria-label="anchor" href="#%E6%AC%A1-2"></a></h3>
 <p>M2メモは完了。実装フェーズへ。順序は (1) LCA.nominal 本体(仕様確定済み・EMエンジンのみ存在)， (2) <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>M</mi><mn>2</mn></msub><annotation encoding="application/x-tex">M_2</annotation></semantics></math> の実装(二値2PLで mirt の <code>M2(fit, type = "M2")</code> と数値一致を取ってエンジンを 固めてから名義へ。mirtはGPLなのでコード取り込み不可・参照実行のみ)。 CLAUDE.md のサポート行列表記を「該当なし」に改める件も残っている。</p>
+<p>追記(同日): 規模節の「現在の計算機なら通るが無料ではない。」を「現在の計算機なら通るが， 数百MBのメモリと相応の計算時間を要する。」に修正(英語の not free の直訳で，日本語では 金銭の話に読める)。メモは荘島先生へ送付済み。</p>
 </div>
+</div>
+<div class="section level2">
+<h2 id="id_2026-07-26-lcanominalrated-実装em収束判定の欠陥修正m2試作">2026-07-26 LCA.nominal/rated 実装，EM収束判定の欠陥修正，M2試作<a class="anchor" aria-label="anchor" href="#id_2026-07-26-lcanominalrated-%E5%AE%9F%E8%A3%85em%E5%8F%8E%E6%9D%9F%E5%88%A4%E5%AE%9A%E3%81%AE%E6%AC%A0%E9%99%A5%E4%BF%AE%E6%AD%A3m2%E8%A9%A6%E4%BD%9C"></a></h2>
+<p>M2メモの推敲から実装へ移り，その過程でEM収束判定の欠陥を発見して修正した。 全体テスト 5284 pass / 0 fail。</p>
+<div class="section level3">
+<h3 id="id_1-m2メモの推敲完了-developalgorithm_m2tex-14p">1. M2メモの推敲完了 (develop/Algorithm_M2.tex, 14p)<a class="anchor" aria-label="anchor" href="#id_1-m2%E3%83%A1%E3%83%A2%E3%81%AE%E6%8E%A8%E6%95%B2%E5%AE%8C%E4%BA%86-developalgorithm_m2tex-14p"></a></h3>
+<p>7/25の続きで全節を通した。<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>M</mi><mi>r</mi></msub><annotation encoding="application/x-tex">M_r</annotation></semantics></math> の初出を修正，適合度接続のベースラインを <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msubsup><mi>M</mi><mn>2</mn><mrow><mi mathvariant="normal">n</mi><mi mathvariant="normal">u</mi><mi mathvariant="normal">l</mi><mi mathvariant="normal">l</mi></mrow></msubsup><annotation encoding="application/x-tex">M_2^{\mathrm{null}}</annotation></semantics></math> と書き分け，RMSEA注意の理由(自由度で割る量である)を明示， 「2005年当時」を \textcite に，「その標本版」→「同じ並びで観測から求めたもの」， ヤコビアン4式と3・4変量マージン2式の式番号を分割，<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>𝚫</mi><annotation encoding="application/x-tex">\bm{\Delta}</annotation></semantics></math> の張る平面の 説明段落を新規追加(残差が平面方向に成分を持たない理由を一階条件まで書き下し)， 見出し3つ付け替え(「座標を取り替えて見る」→「斜交射影を直交射影に直す」， 「なぜWが要るのか」→「<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi mathvariant="normal">Ξ</mi><mrow><mi>−</mi><mn>1</mn></mrow></msup><annotation encoding="application/x-tex">\Xi^{-1}</annotation></semantics></math> だけで済む推定法もある」，情報行列の段落を分離)， 「系として出る」「最初の関門」「無料ではない」を平易化，節見出し2つ短縮。 <strong>荘島先生へ送付済み</strong>。ただし後述の <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>γ</mi><mi>c</mi></msub><mo>=</mo><mn>1</mn><mi>/</mi><mi>C</mi></mrow><annotation encoding="application/x-tex">\gamma_c=1/C</annotation></semantics></math> 固定に合わせた式の修正は未反映。</p>
+</div>
+<div class="section level3">
+<h3 id="id_2-lca-の-s3-化と-lcanominal--lcarated-r05_lcar">2. LCA の S3 化と LCA.nominal / LCA.rated (R/05_LCA.R)<a class="anchor" aria-label="anchor" href="#id_2-lca-%E3%81%AE-s3-%E5%8C%96%E3%81%A8-lcanominal--lcarated-r05_lcar"></a></h3>
+<ul><li>
+<code><a href="reference/LCA.html">LCA()</a></code> を総称関数化。<code>LCA.default</code>/<code>.binary</code>/<code>.nominal</code>/<code>.rated</code>。 binary の結果は不変(log_lik -3663.994, 73サイクルで従来一致)。</li>
+<li>
+<strong>LCA.nominal</strong>: <code>emclus_nominal()</code> を呼ぶだけで新EMコードなし。ICRP(item×category行 × class列)・LCD・CMD・Students を返す。母数は <code>ncls * sum(ncat - 1)</code> (混合比は荘島流で <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>1</mn><mi>/</mi><mi>C</mi></mrow><annotation encoding="application/x-tex">1/C</annotation></semantics></math> 固定なので数えない)。適合度は AIC/BIC/CAIC のみ (飽和モデルを作らない理由は Biclustering.nominal と同じ)。</li>
+<li>
+<strong>LCA.rated</strong>: 名義で推定 → 正答による後処理。IRP はモデル含意の正答カテゴリ確率 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>ρ</mi><mrow><mi>j</mi><mo>,</mo><mi>C</mi><msub><mi>A</mi><mi>j</mi></msub><mo stretchy="false" form="prefix">|</mo><mi>c</mi></mrow></msub><annotation encoding="application/x-tex">\rho_{j,CA_j|c}</annotation></semantics></math>(Biclustering.rated の経験的正答率とは異なる)，TRP はその重み付き 項目和。適合度2層(二値層=カイ二乗系あり，名義層=情報量規準のみ)。 <strong>クラスの正答率ソートはしない</strong>(LCAのクラスは無順序)。</li>
+<li>
+<strong>ordinal は nominal へ委譲</strong>(メッセージ付き)。クラスが無順序なのでカテゴリの順序を つなぐ相手がなく，推定は名義と数学的に同一。逆に <strong>LRA に名義が来たら LCA へ委譲</strong> (<code>nrank</code> は <code>ncls</code> に読み替え)。サポート行列の “—” を “n/a”/“via nominal” に書き分け。</li>
+<li>print・plot 対応。ICRPプロットは<strong>線でなく群棒グラフ</strong>(クラス軸もカテゴリ軸も無順序で， 線は存在しない傾向を示唆するため)。テスト23本追加。</li>
+</ul></div>
+<div class="section level3">
+<h3 id="id_3-m2-の試作-develop20260725_m2_prototyper">3. M2 の試作 (develop/20260725_M2_prototype.R)<a class="anchor" aria-label="anchor" href="#id_3-m2-%E3%81%AE%E8%A9%A6%E4%BD%9C-develop20260725_m2_prototyper"></a></h3>
+<ul><li>メモの数値例(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>J</mi><mo>=</mo><mn>3</mn><mo>,</mo><mi>Q</mi><mo>=</mo><mn>2</mn><mo>,</mo><mi>S</mi><mo>=</mo><mn>100</mn></mrow><annotation encoding="application/x-tex">J=3,Q=2,S=100</annotation></semantics></math>の独立モデル)を <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>M</mi><mn>2</mn></msub><mo>=</mo><mn>5.52778</mn></mrow><annotation encoding="application/x-tex">M_2=5.52778</annotation></semantics></math>, df=3, <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>p</mi><mo>=</mo><mn>0.13699</mn></mrow><annotation encoding="application/x-tex">p=0.13699</annotation></semantics></math> まで 完全再現。<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>𝚵</mi><annotation encoding="application/x-tex">\bm{\Xi}</annotation></semantics></math> の全成分・<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>𝚫</mi><annotation encoding="application/x-tex">\bm{\Delta}</annotation></semantics></math> の全行も一致。</li>
+<li>
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>𝚵</mi><annotation encoding="application/x-tex">\bm{\Xi}</annotation></semantics></math> をモンテカルロで検証(2000反復で最大差0.011，最大値0.25)。</li>
+<li>
+<strong>実装上の要点</strong>: <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>𝚵</mi><annotation encoding="application/x-tex">\bm{\Xi}</annotation></semantics></math> の非対角は <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>A</mi><msup><mi>A</mi><mi>⊤</mi></msup><mi>/</mi><mi>C</mi></mrow><annotation encoding="application/x-tex">A A^\top/C</annotation></semantics></math> 一発。項目が重なる場合だけ補正 (同一項目の別カテゴリは0，同カテゴリは重複因子を割る)。同じ項目対のペアマージン同士は ブロック対角(値は <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>π</mi><mi>a</mi></msub><annotation encoding="application/x-tex">\pi_a</annotation></semantics></math>)。この2段補正を忘れると対角が壊れる。</li>
+<li>
+<strong>発見: <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>𝚫</mi><annotation encoding="application/x-tex">\bm{\Delta}</annotation></semantics></math> が <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false" form="prefix">(</mo><mi>C</mi><mo>−</mo><mn>1</mn><mo stretchy="false" form="postfix">)</mo><mo stretchy="false" form="prefix">(</mo><mi>C</mi><mo>−</mo><mn>2</mn><mo stretchy="false" form="postfix">)</mo><mi>/</mi><mn>2</mn></mrow><annotation encoding="application/x-tex">(C-1)(C-2)/2</annotation></semantics></math> だけランク落ちする</strong>。クラス比率固定だと 2次マージンはクラス偏差行列のグラム行列にしか依存せず，<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false" form="prefix">(</mo><mi>C</mi><mo>−</mo><mn>1</mn><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">(C-1)</annotation></semantics></math> 次元空間の回転で不変。 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>C</mi><mo>≥</mo><mn>3</mn></mrow><annotation encoding="application/x-tex">C\ge3</annotation></semantics></math> でLCAの母数は2次マージンから識別されない(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>π</mi><mn>2</mn></msub><annotation encoding="application/x-tex">\pi_2</annotation></semantics></math> 自体は識別される)。 よって自由度は <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>m</mi><mo>−</mo><mrow><mi mathvariant="normal">r</mi><mi mathvariant="normal">a</mi><mi mathvariant="normal">n</mi><mi mathvariant="normal">k</mi></mrow><mo stretchy="false" form="prefix">(</mo><mi>𝚫</mi><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">m-\mathrm{rank}(\bm{\Delta})</annotation></semantics></math>。SVDで射影を作れば数値的にも安定。</li>
+<li>J20S600(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>m</mi><mo>=</mo><mn>1770</mn></mrow><annotation encoding="application/x-tex">m=1770</annotation></semantics></math>)で1秒未満。</li>
+</ul></div>
+<div class="section level3">
+<h3 id="id_4-em収束判定の欠陥本セッション最大の発見">4. EM収束判定の欠陥(本セッション最大の発見)<a class="anchor" aria-label="anchor" href="#id_4-em%E5%8F%8E%E6%9D%9F%E5%88%A4%E5%AE%9A%E3%81%AE%E6%AC%A0%E9%99%A5%E6%9C%AC%E3%82%BB%E3%83%83%E3%82%B7%E3%83%A7%E3%83%B3%E6%9C%80%E5%A4%A7%E3%81%AE%E7%99%BA%E8%A6%8B"></a></h3>
+<p>M2の帰無分布検定で平均 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>M</mi><mn>2</mn></msub><annotation encoding="application/x-tex">M_2</annotation></semantics></math> が80.7(期待値37)と大きく外れたことから発覚。原因は 推定量が最尤解に達していないこと。3つの欠陥がありいずれも<strong>荘島実装由来</strong>で，Rは 忠実に移植していた(<code>develop/mtmk15forVer13/mod/Module_IRP.wl</code> で確認)。</p>
+<ol style="list-style-type: decimal"><li>
+<strong>初期値</strong>: <code>-1/const = -exp(J)</code> は「どんな対数尤度より下」のつもりだが，短いテストでは 上に来る(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>J</mi><mo>=</mo><mn>6</mn></mrow><annotation encoding="application/x-tex">J=6</annotation></semantics></math> で <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>−</mi><mn>403</mn></mrow><annotation encoding="application/x-tex">-403</annotation></semantics></math> 対 実際 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>−</mi><mn>3900</mn></mrow><annotation encoding="application/x-tex">-3900</annotation></semantics></math>)。1周目終わりに「減少」と誤判定し， <code>converge = TRUE</code> のまま1周で終了。二値LCA(6項目1000名)・<code>J5S1000</code> の Biclustering.ordinal で実測。<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>J</mi><mo>≥</mo><mn>15</mn></mrow><annotation encoding="application/x-tex">J\ge15</annotation></semantics></math> のデータしか参照テストになかったので未発覚。</li>
+<li>
+<strong>監視量</strong>: 本の式(5.11)(5.12)は <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mrow><mi mathvariant="normal">ln</mi><mo>⁡</mo></mrow><mi>p</mi><mi>r</mi><mo stretchy="false" form="prefix">(</mo><msup><mi>𝚷</mi><mrow><mo stretchy="false" form="prefix">(</mo><mi>t</mi><mo stretchy="false" form="postfix">)</mo></mrow></msup><mo stretchy="false" form="prefix">|</mo><mi>𝐔</mi><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">\ln pr(\bm{\Pi}^{(t)}|\bm{U})</annotation></semantics></math> の単調増加を主張するが， 与えられている計算式は期待対数事後 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>Q</mi><mo stretchy="false" form="prefix">(</mo><msub><mi>θ</mi><mi>t</mi></msub><mo>∣</mo><msub><mi>θ</mi><mrow><mi>t</mi><mo>−</mo><mn>1</mn></mrow></msub><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">Q(\theta_t\mid\theta_{t-1})</annotation></semantics></math>。EMが保証するのは前者で あって後者ではない。6項目データで iter1 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>−</mi><mn>3869.26</mn></mrow><annotation encoding="application/x-tex">-3869.26</annotation></semantics></math> → iter2 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>−</mi><mn>3922.42</mn></mrow><annotation encoding="application/x-tex">-3922.42</annotation></semantics></math> と減少し， 「減ったら巻き戻して停止」が正常な反復で発火する。</li>
+<li>
+<strong>許容誤差</strong>: 相対 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mn>10</mn><mrow><mi>−</mi><mn>4</mn></mrow></msup><annotation encoding="application/x-tex">10^{-4}</annotation></semantics></math> は値が数千なら実質0.4ネイト。<code>J15S500</code> 5クラスで 17〜73周で停止(観測対数尤度 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>−</mi><mn>4121.53</mn></mrow><annotation encoding="application/x-tex">-4121.53</annotation></semantics></math>)，厳密収束は440周で <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>−</mi><mn>4118.16</mn></mrow><annotation encoding="application/x-tex">-4118.16</annotation></semantics></math>。</li>
+</ol><p><strong>修正</strong>: 監視量を観測データの周辺対数尤度に変更＋初期値 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>−</mi><mi>∞</mi></mrow><annotation encoding="application/x-tex">-\infty</annotation></semantics></math>＋許容誤差 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mn>10</mn><mrow><mi>−</mi><mn>8</mn></mrow></msup><annotation encoding="application/x-tex">10^{-8}</annotation></semantics></math>＋ <code>maxiter</code> 既定 100→1000 を <code>emclus()</code>(二値LCA・LRA GTM・LDLRA)，<code>emclus_isotonic()</code>， <code>emclus_nominal()</code> に適用。バイクラスタリング(07/15/16)は<strong>保守的に番兵と許容誤差のみ</strong> (二重混合で観測データ尤度が一意に決まらないため。ユーザ判断)。IRT(04C)は許容誤差 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mn>10</mn><mrow><mi>−</mi><mn>5</mn></mrow></msup><mo>→</mo><msup><mn>10</mn><mrow><mi>−</mi><mn>6</mn></mrow></msup></mrow><annotation encoding="application/x-tex">10^{-5}\to10^{-6}</annotation></semantics></math>(1周ごとに項目数ぶんの optim を回すので <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mn>10</mn><mrow><mi>−</mi><mn>8</mn></mrow></msup><annotation encoding="application/x-tex">10^{-8}</annotation></semantics></math> は4.86秒と高価， かつ optim の reltol に律速される)。</p>
+<p><strong>Mathematica側も同一の修正</strong>を入れ，<code>Module_IRP.wl</code>(完全)と <code>Module_Biclus.wl</code>・ <code>Module_IRT.wl</code>(保守的)を更新。R と倍精度まで一致(LCA J15S500 5クラス: 337サイクル， <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>−</mi><mn>3651.903821773122</mn></mrow><annotation encoding="application/x-tex">-3651.903821773122</annotation></semantics></math> 対 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>−</mi><mn>3651.9038217731227</mn></mrow><annotation encoding="application/x-tex">-3651.9038217731227</annotation></semantics></math>)。修正後にM2の帰無分布が理論値と一致 (平均35.32 対 自由度37，棄却率0.030)。</p>
+<p><strong>罠</strong>: Mathematica でも <code>emt &gt; 0</code> ガードでは不十分。2周目に <code>oldtestell</code> がまだ <code>-Infinity</code> で <code>Infinity &lt;= Infinity</code> が真になり停止する。<code>NumberQ[oldtestell]</code> が必要。 R 側も同じ理由で <code>is.finite(old_test_log_lik)</code> を使う。</p>
+</div>
+<div class="section level3">
+<h3 id="id_5-irt-の高速化">5. IRT の高速化<a class="anchor" aria-label="anchor" href="#id_5-irt-%E3%81%AE%E9%AB%98%E9%80%9F%E5%8C%96"></a></h3>
+<p>プロファイルで M-step の目的関数が自己時間の80%。(a)応答関数を <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>p</mi><annotation encoding="application/x-tex">p</annotation></semantics></math> と <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>1</mn><mo>−</mo><mi>p</mi></mrow><annotation encoding="application/x-tex">1-p</annotation></semantics></math> で2回 呼んでいたのを1回に，(b)スカラーへの <code>ifelse</code> を <code>if</code> に，(c)<strong>解析的勾配を optim に供給</strong> (勾配なしL-BFGS-Bは有限差分で母数の数だけ余分に目的関数を呼ぶ)。 <code>IRT(J35S515, model=2)</code>: 1.55秒→0.34秒(締める前の0.63秒より速い)。母数差は5e-6。 勾配は数値微分と2PL/3PL/4PLすべてで <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>1.5</mn><mo>×</mo><msup><mn>10</mn><mrow><mi>−</mi><mn>7</mn></mrow></msup></mrow><annotation encoding="application/x-tex">1.5\times10^{-7}</annotation></semantics></math> 以内で一致。</p>
+</div>
+<div class="section level3">
+<h3 id="id_6-フィクスチャ再生成">6. フィクスチャ再生成<a class="anchor" aria-label="anchor" href="#id_6-%E3%83%95%E3%82%A3%E3%82%AF%E3%82%B9%E3%83%81%E3%83%A3%E5%86%8D%E7%94%9F%E6%88%90"></a></h3>
+<p><code>develop/mtmk15forVer13/tools/xlsx2fixture.R</code>(readxl + write.csv。<strong>旧xlsxから既存 フィクスチャをバイト単位で完全再現できることを検証済み</strong>)と <code>tools/regen_fixtures.sh</code> を整備。</p>
+<ul><li>
+<strong>差し替えた</strong>: Chapter04IRT{2,3,4}pl(12) / Chapter05LCA(4) / Chapter06LRA_GTMmic{0,1}(8) / Chapter11BINET(6) = 30ファイル</li>
+<li>
+<strong>不要</strong>: Chapter07 Biclustering・Ranklustering(再生成しても完全一致。減少検知で 収束が決まり許容誤差の変更が効かない) / Chapter09 LDLRA・Chapter10 LDB(旧参照値のまま テスト通過)</li>
+<li>
+<strong>注意</strong>: Ch09 LDLRA は <code>J12S5000</code> で修正前後とも30分以上かかる。重さは実装由来で 今回の変更とは無関係(修正前コードで実測)。またログが6.4GBに膨れてジョブが落ちたので <code>regen_fixtures.sh</code> は <code>tail -c 200000</code> でログを絞る。</li>
+</ul></div>
+<div class="section level3">
+<h3 id="方針決定ユーザ判断">方針決定(ユーザ判断)<a class="anchor" aria-label="anchor" href="#%E6%96%B9%E9%87%9D%E6%B1%BA%E5%AE%9A%E3%83%A6%E3%83%BC%E3%82%B6%E5%88%A4%E6%96%AD"></a></h3>
+<ul><li>
+<code>.nb</code> は受領時のまま保存記録とし，<strong><code>.wl</code> を今後の正本</strong>とする(エンジンから見れば同じ)。 来歴と修正内容は <code>mod/README.md</code> に記載。無修正の .nb と旧xlsxは <code>backup_20260725/</code>。</li>
+<li>本の数値と一致しなくなることは NEWS に明記。v1.16.0 に入れる。荘島先生には先生から説明。</li>
+<li>科学的正しさを優先する，というのがこの一連の判断の基準。</li>
+</ul></div>
+<div class="section level3">
+<h3 id="次-3">次<a class="anchor" aria-label="anchor" href="#%E6%AC%A1-3"></a></h3>
+<ol style="list-style-type: decimal"><li>M2メモを <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>γ</mi><mi>c</mi></msub><mo>=</mo><mn>1</mn><mi>/</mi><mi>C</mi></mrow><annotation encoding="application/x-tex">\gamma_c=1/C</annotation></semantics></math> 固定に合わせて修正(モデル節・ヤコビアン2式化・<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>t</mi><mo>=</mo><mi>C</mi><mo>∑</mo><mo stretchy="false" form="prefix">(</mo><msub><mi>Q</mi><mi>j</mi></msub><mo>−</mo><mn>1</mn><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">t=C\sum(Q_j-1)</annotation></semantics></math>・ 3/4変量マージン・将来 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>γ</mi><annotation encoding="application/x-tex">\gamma</annotation></semantics></math> を推定する版への注記)→ 差し替え版を荘島先生へ</li>
+<li>M2 の本実装(R/へ)。二値2PLで mirt の <code>M2(fit, type="M2")</code> と突合してから名義へ。 mirt は GPL なので参照実行のみ・コード取り込み不可</li>
+<li>v1.16.0 リリース準備(8/15目処)</li>
+</ol><p>追記(2026-07-26): M2メモを実装に合わせて改訂(16p)。<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>γ</mi><mi>c</mi></msub><mo>=</mo><mn>1</mn><mi>/</mi><mi>C</mi></mrow><annotation encoding="application/x-tex">\gamma_c=1/C</annotation></semantics></math> 固定への統一5点 (モデル節の式・ヤコビアン4式→2式・<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>t</mi><mo>=</mo><mi>C</mi><msub><mo>∑</mo><mi>j</mi></msub><mo stretchy="false" form="prefix">(</mo><msub><mi>Q</mi><mi>j</mi></msub><mo>−</mo><mn>1</mn><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">t=C\sum_j(Q_j-1)</annotation></semantics></math>・3/4変量マージン・バイクラの母数数)， 自由度を全体で <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>m</mi><mo>−</mo><mrow><mi mathvariant="normal">r</mi><mi mathvariant="normal">a</mi><mi mathvariant="normal">n</mi><mi mathvariant="normal">k</mi></mrow><mo stretchy="false" form="prefix">(</mo><mi>𝚫</mi><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">m-\mathrm{rank}(\bm{\Delta})</annotation></semantics></math> に統一，第7節「自由度は母数の数ではなく <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>𝚫</mi><annotation encoding="application/x-tex">\bm{\Delta}</annotation></semantics></math> の階数で決まる」を新設(グラム行列経由の回転不定性 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false" form="prefix">(</mo><mi>C</mi><mo>−</mo><mn>1</mn><mo stretchy="false" form="postfix">)</mo><mo stretchy="false" form="prefix">(</mo><mi>C</mi><mo>−</mo><mn>2</mn><mo stretchy="false" form="postfix">)</mo><mi>/</mi><mn>2</mn></mrow><annotation encoding="application/x-tex">(C-1)(C-2)/2</annotation></semantics></math> の導出と J20S600での数値確認)，テキストの <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>π</mi><mi>c</mi></msub><annotation encoding="application/x-tex">\pi_c</annotation></semantics></math> と本ノートの <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>π</mi><annotation encoding="application/x-tex">\pi</annotation></semantics></math>(マージン)の衝突を表記節に注記。 荘島先生へメール送付済み(草稿 develop/20260726_荘島先生宛メール案.txt)。</p>
+<p><strong><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>γ</mi><annotation encoding="application/x-tex">\gamma</annotation></semantics></math> を推定しても自由度は増えないことを実測で確認</strong>: <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>𝚫</mi><annotation encoding="application/x-tex">\bm{\Delta}</annotation></semantics></math> に <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>γ</mi><annotation encoding="application/x-tex">\gamma</annotation></semantics></math> 列 (<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>C</mi><mo>−</mo><mn>1</mn></mrow><annotation encoding="application/x-tex">C-1</annotation></semantics></math> 本)を足しても階数がまったく増えない(J20S600・C=2〜5 で 120/179/237/294 のまま)。 2次マージンからはクラス比率を動かすこととカテゴリ確率を動かすことが区別できない。 ランク落ちは <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false" form="prefix">(</mo><mi>C</mi><mo>−</mo><mn>1</mn><mo stretchy="false" form="postfix">)</mo><mo stretchy="false" form="prefix">(</mo><mi>C</mi><mo>−</mo><mn>2</mn><mo stretchy="false" form="postfix">)</mo><mi>/</mi><mn>2</mn></mrow><annotation encoding="application/x-tex">(C-1)(C-2)/2</annotation></semantics></math> から <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false" form="prefix">(</mo><mi>C</mi><mo>−</mo><mn>1</mn><mo stretchy="false" form="postfix">)</mo><mi>C</mi><mi>/</mi><mn>2</mn></mrow><annotation encoding="application/x-tex">(C-1)C/2</annotation></semantics></math> に増えるだけ。<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>γ</mi><annotation encoding="application/x-tex">\gamma</annotation></semantics></math> 固定は M2 の観点でも 合理的という結論。検証コードは prototype の <code>check_gamma_rank()</code>。</p>
+</div>
+</div>
+<div class="section level2">
+<h2 id="id_2026-07-26-続き-バージョン方針の変更a3シミュレーション設計m2実装">2026-07-26 (続き) バージョン方針の変更・A3シミュレーション設計・M2実装<a class="anchor" aria-label="anchor" href="#id_2026-07-26-%E7%B6%9A%E3%81%8D-%E3%83%90%E3%83%BC%E3%82%B8%E3%83%A7%E3%83%B3%E6%96%B9%E9%87%9D%E3%81%AE%E5%A4%89%E6%9B%B4a3%E3%82%B7%E3%83%9F%E3%83%A5%E3%83%AC%E3%83%BC%E3%82%B7%E3%83%A7%E3%83%B3%E8%A8%AD%E8%A8%88m2%E5%AE%9F%E8%A3%85"></a></h2>
+<div class="section level3">
+<h3 id="v1160--v200-に改番-ユーザ判断">v1.16.0 → v2.0.0 に改番 (ユーザ判断)<a class="anchor" aria-label="anchor" href="#v1160--v200-%E3%81%AB%E6%94%B9%E7%95%AA-%E3%83%A6%E3%83%BC%E3%82%B6%E5%88%A4%E6%96%AD"></a></h3>
+<p>EM収束判定の修正は「同じコードで同じデータから違う数字が出る」変更で，APIの変更より重い 非互換である。マイナーバージョンでは実態を過小に伝えるという理由で 2.0.0 に上げた。 どうせメジャーを上げるなら非推奨名の削除も同時に済ませる(壊すのは一度に)。</p>
+<ul><li>
+<strong>2.0.0 に入れる</strong>: EM収束判定の修正 / LCA.nominal・rated / IRT高速化 / アイソトニック推定 / GRM監査修正 / BNM・LDLRA高速化 / <strong>M2</strong> / 非推奨の関数名・フィールド名の削除 (下流の実測: ggExametrika 7箇所・shinyExametrika 11箇所。機械的置換なので同時提出)</li>
+<li>
+<strong>入れない</strong>(設計作業にリリースを人質に取られないため): 多値BNM(→2.1.0) / 構造学習(→2.2+) / igraph除去(描画経路の代替が要るのでさらに先) / 入力データ保持方式の統一</li>
+<li>
+<strong>時期</strong>: A3シミュレーション完了後の9月上旬。1.15.0 は 7/15 提出・数日で受理なので 1ヶ月ルールは8月中旬以降クリア。日付を決めるのはCRANでなく論文の進捗</li>
+<li>DESCRIPTION・NEWS.md の見出し・CLAUDE.md のロードマップに反映済</li>
+</ul></div>
+<div class="section level3">
+<h3 id="a3-シミュレーション設計-方法シミュレーション設計_20260726md">A3 シミュレーション設計 (方法/シミュレーション設計_20260726.md)<a class="anchor" aria-label="anchor" href="#a3-%E3%82%B7%E3%83%9F%E3%83%A5%E3%83%AC%E3%83%BC%E3%82%B7%E3%83%A7%E3%83%B3%E8%A8%AD%E8%A8%88-%E6%96%B9%E6%B3%95%E3%82%B7%E3%83%9F%E3%83%A5%E3%83%AC%E3%83%BC%E3%82%B7%E3%83%A7%E3%83%B3%E8%A8%AD%E8%A8%88_20260726md"></a></h3>
+<p>7/21 版への差分として書いた。<strong>7/21 の確定事項(腕3本・SOM除外・信号強度R・フィールド異質性・ 132セル・試行500・GridSearch 2測定・指標・表現の統一)は動かさない</strong>。</p>
+<ul><li>
+<strong>構えを書き直した</strong>: 当初「主張A/B/C」と勝敗の形で立てたが，ユーザ指摘で<strong>問いの一覧</strong>に 改めた。このシミュレーションは順序制約の優位を示す装置ではなく，多値順序モデルが条件で どう振る舞うかを<strong>記述する</strong>装置。目玉(一撃)は結果を見てから決める。 <strong>「一撃」の出所を取り違えていた</strong>: SWB が「方法の話か応用の話か分からない」と指摘された ことへの反省で，<strong>目的を1つに絞れという規律</strong>であって劇的な発見の要求ではない (応用SWB/CLAUDE.md「攻撃→提示。淡々と道具について静かに語る」)。結論ありきで図を用意する ことはその規律に反する</li>
+<li>
+<strong>私の初稿は旧設計を引きずって二値化の腕を入れていた</strong>。7/21 に除外済み(順序を捨てることと 解像度を落とすことが交絡する)。ログを読まずに書いた誤り</li>
+<li>
+<strong>変更1: 適合度は尤度ベースに統一</strong>。<code>log_lik</code> と母数の数から自分で AIC/BIC を計算し， 返り値の <code>TestFitIndices$AIC</code> は読まない。二値・順序経路はカイ二乗ベース (<code>AIC = χ²_A - 2df_A</code>)，名義経路は <code>-2ℓ+2k</code> で別物(実測: 二値LCA 233.5 / 名義LCA 7471)。 3腕は同一の多値データ上で同じ <code>P(Y=q)</code> を与えるので標本空間が共通で比較できる。 二値化データの尤度は別の標本空間なので比較不能(腕から外した判断はこの点でも正しい)</li>
+<li>
+<strong>変更2: クラスサイズ配分の偏りを追加</strong>。equal / unimodal(山型) / skewed(3:1)。 E-step がクラス事前確率を 1/C 固定している(テキスト160ページ)ので，偏れば誤特定になる。 この代償は誰も測っていない。<strong>空クラスは失敗扱いせず結果として記録</strong>(ユーザ判断)。 全条件に交差させず中心条件で +2セルのみ</li>
+<li>
+<strong>前提</strong>: 5月の243条件資産は使わない(枠組み変更＋EM修正で二重に無効)</li>
+<li>
+<strong>実行設計(停電対策)</strong>: 8/13-14 に4号館終日停電。Al-Khwarizumi は Raspi の <code>@reboot wake_al_on_boot.sh</code> で自動復帰するが R プロセスは死ぬ。単位を「条件×試行」に切り， 1単位ごとに書き出し，冪等にし，一時ファイル→<code><a href="https://rdrr.io/r/base/files.html" class="external-link">file.rename()</a></code> で原子的に置換，シードは決定的。 停電を避けて日程を組む必要はない</li>
+<li>
+<strong>M2 は密行列版で計算し高速化しない</strong>。<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi mathvariant="normal">Ξ</mi><annotation encoding="application/x-tex">\Xi</annotation></semantics></math> は「疎行列＋階数 C+1」に分解でき Woodbury で 桁違いに速くできるが，低階数補正が符号混在(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>+</mi><mi>A</mi><msup><mi>A</mi><mi>⊤</mi></msup><mo>−</mo><mi>π</mi><msup><mi>π</mi><mi>⊤</mi></msup></mrow><annotation encoding="application/x-tex">+AA^\top-\pi\pi^\top</annotation></semantics></math>)でダウンデート方向の 桁落ちが起き，疎部分の正定値性も保証できない。<strong>密版と数値が一致することを事前に保証できない</strong>。 計算資源は足りている(下記実測)ので参照実装を1つに保つほうが価値が高い</li>
+</ul></div>
+<div class="section level3">
+<h3 id="m2-の実装-r24_m2r">M2 の実装 (R/24_M2.R)<a class="anchor" aria-label="anchor" href="#m2-%E3%81%AE%E5%AE%9F%E8%A3%85-r24_m2r"></a></h3>
+<p><strong>論文には書かないが計算はする</strong>(ユーザ判断: 書かないことと計算しないことは別。探索的に やる以上，出せる出力は出す)。A3 本文では脚注1つに留め，実装はパッケージへ。</p>
+<ul><li>
+<code><a href="reference/M2.html">M2()</a></code> を S3 総称関数として新設。<code>LCA.nominal</code> / <code>LCA.rated</code> にメソッド。適合済みモデルを 受け取る独立関数にした(計算が重い・既存の TestFitIndices を壊さない・シミュから任意の フィットに呼べる)。<code>LCA.nominal</code>/<code>.rated</code> の返り値に <code>Q</code>・<code>Z</code> を追加</li>
+<li>出力は M2・df・p・m・n_param・rank_delta。print は階数落ちの説明つき</li>
+<li>J20S600・3クラスで M2=3510.944, df=1591, m=1770, t=180, rank=179，0.2秒</li>
+<li>テスト4本: メモの数値例(M2/df/p に加え <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi mathvariant="normal">Ξ</mi><annotation encoding="application/x-tex">\Xi</annotation></semantics></math> 全36成分・<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi mathvariant="normal">Δ</mi><annotation encoding="application/x-tex">\Delta</annotation></semantics></math> 全18成分)，データ=モデルなら M2=0，階数落ちが <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false" form="prefix">(</mo><mi>C</mi><mo>−</mo><mn>1</mn><mo stretchy="false" form="postfix">)</mo><mo stretchy="false" form="prefix">(</mo><mi>C</mi><mo>−</mo><mn>2</mn><mo stretchy="false" form="postfix">)</mo><mi>/</mi><mn>2</mn></mrow><annotation encoding="application/x-tex">(C-1)(C-2)/2</annotation></semantics></math> (C=2..4)，適合済みモデルからの実行と print と誤用エラー</li>
+</ul><p><strong>計算コストの実測</strong>(Mac・BLASマルチスレッド。当初「J=50は実行不能」と述べたのは誤りで訂正):</p>
+<table class="table"><thead><tr><th>J</th>
+<th>m</th>
+<th>時間</th>
+<th>Ξ</th>
+</tr></thead><tbody><tr><td>15</td>
+<td>1,740</td>
+<td>0.2秒</td>
+<td>23 MB</td>
+</tr><tr><td>20</td>
+<td>3,120</td>
+<td>0.3秒</td>
+<td>74 MB</td>
+</tr><tr><td>30</td>
+<td>7,080</td>
+<td>1.4秒</td>
+<td>382 MB</td>
+</tr><tr><td>40</td>
+<td>12,640</td>
+<td>6.2秒</td>
+<td>1.2 GB</td>
+</tr><tr><td>50</td>
+<td>19,800</td>
+<td>19.2秒</td>
+<td>2.9 GB</td>
+</tr></tbody></table><p>Al-khwarizumi は 80コア・188GB(空き179GB)。BLAS を1スレッドに固定する運用なので1フィットは 数倍。1プロセス10GB前後で15並列，20.1万フィットで約15日の見込み。</p>
+<p><strong>C++化は効かない</strong>: 時間の大半はコレスキー分解で，19秒は実効140GFLOPS。すでに最適化された LAPACK が回っており，書き直しても呼ぶ先は同じ。効くのは <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi mathvariant="normal">Ξ</mi><annotation encoding="application/x-tex">\Xi</annotation></semantics></math> の構造(疎＋低階数)だが上記の 理由で今回は採らない。</p>
+</div>
+<div class="section level3">
+<h3 id="この日の議論で確定した理解">この日の議論で確定した理解<a class="anchor" aria-label="anchor" href="#%E3%81%93%E3%81%AE%E6%97%A5%E3%81%AE%E8%AD%B0%E8%AB%96%E3%81%A7%E7%A2%BA%E5%AE%9A%E3%81%97%E3%81%9F%E7%90%86%E8%A7%A3"></a></h3>
+<ul><li>
+<strong>γ(クラス比率)と TRP の mic は別物</strong>。ユーザが記憶していた「TRPの比率を補正する話」は 7/19 の多値バイクラ <code>mic=TRUE</code>(クラスを合計期待得点で並べ替えるだけ・J35S500では恒等写像)。 γ はクラスの大きさで，mic は並び順。掛ける対象が違う</li>
+<li>
+<strong>PAVA/Dykstra の重みと γ は同じ量が源</strong>。M-step のプーリング重み(<code>nmat = correct_cls + incorrect_cls</code> 等)は「そのランクの期待人数」で，γ を推定するならその推定値は <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>γ</mi><mi>c</mi></msub><mo>=</mo><mfrac><mn>1</mn><mi>S</mi></mfrac><msub><mo>∑</mo><mi>s</mi></msub><msub><mi>m</mi><mrow><mi>s</mi><mi>c</mi></mrow></msub></mrow><annotation encoding="application/x-tex">\gamma_c=\frac1S\sum_s m_{sc}</annotation></semantics></math> = 同じ期待人数。違いは，M-step の重みは制約付き最尤の要件で 選択の余地がない(Ayer 1955)のに対し，E-step の事前分布は設計判断であること</li>
+<li>
+<strong>「1/C は事前に知り得ないから」ではない</strong>。γ は推定できる母数であり，1/C 固定は 「全クラスが同じ大きさ」という積極的な仮定。中立でありたいなら平坦なディリクレ事前分布で 推定するのが筋。ただし実害があるかは別問題で，それを測るのが上記の配分因子</li>
+<li>
+<strong>γ を推定しても自由度は増えない</strong>(実測)。<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi mathvariant="normal">Δ</mi><annotation encoding="application/x-tex">\Delta</annotation></semantics></math> に γ 列を足しても階数がまったく増えない (J20S600・C=2〜5 で 120/179/237/294 のまま)。2次マージンからはクラス比率を動かすことと カテゴリ確率を動かすことが区別できない。よって γ 固定は M2 の観点でも合理的</li>
+<li>
+<strong>既存の alpha/beta とは別物</strong>。<code>emclus_nominal</code> の <code>alpha</code> はカテゴリ確率 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>ρ</mi><mrow><mi>j</mi><mi>q</mi><mo stretchy="false" form="prefix">|</mo><mi>c</mi></mrow></msub><annotation encoding="application/x-tex">\rho_{jq|c}</annotation></semantics></math> への ディリクレ事前分布，<code>beta1/beta2</code> は <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>π</mi><mrow><mi>j</mi><mi>c</mi></mrow></msub><annotation encoding="application/x-tex">\pi_{jc}</annotation></semantics></math> へのベータ事前分布。どちらもセルの確率への 事前分布で，クラス比率への事前分布ではない。γ を推定可能にするなら新しい引数になる</li>
+<li>
+<strong>M2 の p 値の位置づけ</strong>: 帰無仮説は「モデルが母集団の1次・2次マージンを再現している」で あって「モデルが正しい」ではない。SEM のカイ二乗と同じ論理だが，同じ弱点(標本サイズ依存)も そのまま。A3 の立場(記述的・ファミリー内相対診断)からすると合否のスタンプには使わない</li>
+</ul></div>
+<div class="section level3">
+<h3 id="次-4">次<a class="anchor" aria-label="anchor" href="#%E6%AC%A1-4"></a></h3>
+<ol style="list-style-type: decimal"><li>M2 をバイクラスタリング(フィールド共有の <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi mathvariant="normal">Δ</mi><annotation encoding="application/x-tex">\Delta</annotation></semantics></math>)と LRA へ拡張。シミュレーションで 3腕すべてに記録するため。半日程度</li>
+<li>シミュレーションのデータ生成コードとパイロット(1条件・10試行で per-trial 時間を実測)</li>
+<li>本実行(8月上旬開始・停電を1回挟んで8月下旬)</li>
+<li>実データ再分析 → そこから論文構成をゼロベースで起こす</li>
+</ol></div>
+</div>
+<div class="section level2">
+<h2 id="id_2026-07-27-荘島先生の返信への対応m2をlraバイクラへ拡張">2026-07-27 荘島先生の返信への対応・M2をLRA/バイクラへ拡張<a class="anchor" aria-label="anchor" href="#id_2026-07-27-%E8%8D%98%E5%B3%B6%E5%85%88%E7%94%9F%E3%81%AE%E8%BF%94%E4%BF%A1%E3%81%B8%E3%81%AE%E5%AF%BE%E5%BF%9Cm2%E3%82%92lra%E3%83%90%E3%82%A4%E3%82%AF%E3%83%A9%E3%81%B8%E6%8B%A1%E5%BC%B5"></a></h2>
+<div class="section level3">
+<h3 id="荘島先生の返信-2026-07-26着研究員通信r8年度７月号スレッド">荘島先生の返信 (2026-07-26着「研究員通信R8年度７月号」スレッド)<a class="anchor" aria-label="anchor" href="#%E8%8D%98%E5%B3%B6%E5%85%88%E7%94%9F%E3%81%AE%E8%BF%94%E4%BF%A1-2026-07-26%E7%9D%80%E7%A0%94%E7%A9%B6%E5%93%A1%E9%80%9A%E4%BF%A1r8%E5%B9%B4%E5%BA%A6%EF%BC%97%E6%9C%88%E5%8F%B7%E3%82%B9%E3%83%AC%E3%83%83%E3%83%89"></a></h3>
+<p>EM収束判定の修正とM2メモへの返信。全体として好意的で，指摘は3点。</p>
+<ul><li>
+<strong>著作の数値が変わる件は承認</strong>。「僕の著作のことは気にせず，どんどん修正して， 改良・改善していってください。もともと僕の能力だけで完成するものじゃないです。 残念ながら著作の修正はもう追いつかない。いずれ改稿するチャンスがあれば，まとめて 一気にやっちゃいます。そのときはぜひセカンドにお名前入れさせてください」。 v2.0.0 の内容は動かない。改稿時の共著の話まで出た</li>
+<li>
+<strong>「飽和モデルを必要としない」の表現</strong>: 正しくは「飽和モデルの M2 は常に 0 になるので 明示的に計算する必要がない」。飽和モデルは残差が零ベクトルなので M2=0。よって <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>M</mi><mn>2</mn></msub><mo>=</mo><msubsup><mi>χ</mi><mtext mathvariant="normal">model</mtext><mn>2</mn></msubsup><mo>−</mo><msubsup><mi>χ</mi><mtext mathvariant="normal">saturated</mtext><mn>2</mn></msubsup><mo stretchy="false" form="prefix">(</mo><mo>=</mo><mn>0</mn><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">M_2=\chi^2_{\text{model}}-\chi^2_{\text{saturated}}(=0)</annotation></semantics></math> と読める</li>
+<li>
+<strong>応答パタン系とマージン系を混ぜるな</strong>(最も重要): 「僕が査読者ならそれらを混ぜてもいん？ という突っ込みをいれてしまうかも。そのときに『いいんです！』と合理的に説明するのは 結構難しい」。<strong><code><a href="reference/calcFitIndices.html">calcFitIndices()</a></code> に M2 を流し込む当初設計への正面からの警告</strong>。 代案も提示された=マージン系でも帰無モデルを定義すれば <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msubsup><mi>M</mi><mn>2</mn><mtext mathvariant="normal">null</mtext></msubsup><annotation encoding="application/x-tex">M_2^{\text{null}}</annotation></semantics></math> が計算でき， M2ベースのCFI/RMSEAに展開できる</li>
+<li>
+<strong>マージンの単位</strong>: 「本」は長細いものを想起するので「個」に</li>
+<li>
+<strong>発展の示唆</strong>: 標本が大きければ <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>M</mi><mn>3</mn></msub><annotation encoding="application/x-tex">M_3</annotation></semantics></math> も作れそう</li>
+</ul></div>
+<div class="section level3">
+<h3 id="メモの修正-developalgorithm_m2tex-1718p">メモの修正 (develop/Algorithm_M2.tex, 17→18p)<a class="anchor" aria-label="anchor" href="#%E3%83%A1%E3%83%A2%E3%81%AE%E4%BF%AE%E6%AD%A3-developalgorithm_m2tex-1718p"></a></h3>
+<ul><li>飽和モデルの節に段落追加(上記の読み替え)。「計算して求める点」から 「常に0と分かっている点」へ移っただけ，と整理</li>
+<li>マージンの数え方を「本」→「個」に統一</li>
+<li>
+<strong>新小節「応答パタン系とマージン系は混ぜない」</strong>。ここで組む指標は <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msubsup><mi>χ</mi><mi>A</mi><mn>2</mn></msubsup><annotation encoding="application/x-tex">\chi^2_A</annotation></semantics></math> も <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msubsup><mi>χ</mi><mi>B</mi><mn>2</mn></msubsup><annotation encoding="application/x-tex">\chi^2_B</annotation></semantics></math> も M2 なのでマージン系で閉じている。混ぜてはならないのは従来の 応答パタン系のカイ二乗と同じ式に入れること。ベースラインの選択肢(独立モデル vs 1次マージン等分)にも言及</li>
+<li>
+<strong>新小節「なぜ2次で止めるのか(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>M</mi><mn>3</mn></msub><annotation encoding="application/x-tex">M_3</annotation></semantics></math> について)」</strong>。(a)規模: 3次マージンは項目数の3乗。 20項目5カテゴリで <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>m</mi><annotation encoding="application/x-tex">m</annotation></semantics></math> が 3,120→76,080，<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi mathvariant="normal">Ξ</mi><annotation encoding="application/x-tex">\Xi</annotation></semantics></math> が46GB。MSPS規模で173GB。<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi mathvariant="normal">Ξ</mi><annotation encoding="application/x-tex">\Xi</annotation></semantics></math> の計算には <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>r</mi><mo>=</mo><mn>2</mn></mrow><annotation encoding="application/x-tex">r=2</annotation></semantics></math> で4次・<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>r</mi><mo>=</mo><mn>3</mn></mrow><annotation encoding="application/x-tex">r=3</annotation></semantics></math> で6次のマージンが要る。(b)<strong>識別可能性との接続</strong>: 2次マージンで <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false" form="prefix">(</mo><mi>C</mi><mo>−</mo><mn>1</mn><mo stretchy="false" form="postfix">)</mo><mo stretchy="false" form="prefix">(</mo><mi>C</mi><mo>−</mo><mn>2</mn><mo stretchy="false" form="postfix">)</mo><mi>/</mi><mn>2</mn></mrow><annotation encoding="application/x-tex">(C-1)(C-2)/2</annotation></semantics></math> の階数落ちが起きるのは偶然でなく，潜在クラスモデルの識別可能性が一般に 3元表から得られる(Kruskalの定理を使った Allman, Matias &amp; Rhodes 2009)ため。 3次マージンこそが混合を識別する情報を持つ。<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>M</mi><mn>3</mn></msub><annotation encoding="application/x-tex">M_3</annotation></semantics></math> ならこの階数落ちも解消する見込み。 文献 <code>allman2009</code> を myBiber.bib に追加</li>
+</ul></div>
+<div class="section level3">
+<h3 id="実装1-マージン系の適合度を別建てに-commit-4c2132d">実装1: マージン系の適合度を別建てに (commit 4c2132d)<a class="anchor" aria-label="anchor" href="#%E5%AE%9F%E8%A3%851-%E3%83%9E%E3%83%BC%E3%82%B8%E3%83%B3%E7%B3%BB%E3%81%AE%E9%81%A9%E5%90%88%E5%BA%A6%E3%82%92%E5%88%A5%E5%BB%BA%E3%81%A6%E3%81%AB-commit-4c2132d"></a></h3>
+<ul><li>
+<code>add_M2(fit)</code> がモデルオブジェクトを返し <code>TestFitIndicesM2</code> を足す (brms の <code>add_criterion()</code> と同じ形。ユーザ選択)。中で当てはめモデルと独立モデルの M2 を計算し，<strong>両方ともマージン系のカイ二乗として</strong> <code><a href="reference/calcFitIndices.html">calcFitIndices()</a></code> に渡す</li>
+<li>
+<code><a href="https://rdrr.io/r/base/print.html" class="external-link">print()</a></code> に <code>fit_indices = "both"(既定)/"pattern"/"margin"</code>。2ブロックを別々に表示</li>
+<li>
+<strong>マージン系にAIC/BIC/CAICは置かない</strong>。<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>χ</mi><mn>2</mn></msup><mo>−</mo><mn>2</mn><mrow><mi mathvariant="normal">d</mi><mi mathvariant="normal">f</mi></mrow></mrow><annotation encoding="application/x-tex">\chi^2-2\mathrm{df}</annotation></semantics></math> が正当なのは応答パタン系の カイ二乗が尤度比だから。M2はWald型の二次形式なので導出が移らない。増分適合度指標 (NFI/RFI/IFI/TLI/CFI/RMSEA)はカイ二乗と自由度の関数なので問題ない。SRMSRも見送り(ユーザ判断)</li>
+<li>独立モデルは1クラス・観測周辺確率。回転の不定性がないので列フルランクで， <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mrow><mi mathvariant="normal">d</mi><mi mathvariant="normal">f</mi></mrow><mtext mathvariant="normal">null</mtext></msub><annotation encoding="application/x-tex">\mathrm{df}_{\text{null}}</annotation></semantics></math> は2次マージンのセル数そのもの(実測で一致)</li>
+<li>J20S600・3クラスで NFI .622 / CFI .746 / RMSEA .045。名義データで従来まったく出せなかった</li>
+</ul></div>
+<div class="section level3">
+<h3 id="実装2-m2-を-lra-とバイクラへ-commit-c824b82">実装2: M2 を LRA とバイクラへ (commit c824b82)<a class="anchor" aria-label="anchor" href="#%E5%AE%9F%E8%A3%852-m2-%E3%82%92-lra-%E3%81%A8%E3%83%90%E3%82%A4%E3%82%AF%E3%83%A9%E3%81%B8-commit-c824b82"></a></h3>
+<p><strong>すべて <code>R/24_M2.R</code> 内。15_/16_ には一行も足していない</strong>(S3で返り値のクラスに振り分けるので モデル側は無関係)。</p>
+<ul><li>
+<strong>LRA は新規コード不要</strong>。順序づいたLCAなので m・母数・ヤコビアンの構造が同じ。 推定法だけが違う。テストで m/t/rank の一致を確認</li>
+<li>
+<strong>バイクラは <code>m2_delta_shared()</code> が要る</strong>。1つのフィールドプロファイルを複数項目が使うので 複数のマージンが同じ列に微分される。<strong>加算で組む</strong>必要がある: 同一フィールド・同一 カテゴリのペアマージンは <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false" form="prefix">(</mo><mn>1</mn><mi>/</mi><mi>C</mi><mo stretchy="false" form="postfix">)</mo><msub><mo>∑</mo><mi>c</mi></msub><msup><mi>ρ</mi><mn>2</mn></msup></mrow><annotation encoding="application/x-tex">(1/C)\sum_c\rho^2</annotation></semantics></math> で微分に係数2が付き，代入だと黙って半分になる。 母数はフィールド×クラス×(カテゴリ-1)。フィールド分割は与件として扱う(不確実性は伝播しない)</li>
+<li>
+<strong>カテゴリ数が揃わないバイクラは明示的に停止</strong>。フィールドプロファイルは常に最大カテゴリ数 ぶんのスロットを持つので，少ない項目に「起こりえないマージン」が割り当たる。分散ゼロで <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi mathvariant="normal">Ξ</mi><annotation encoding="application/x-tex">\Xi</annotation></semantics></math> が正定値でなくなり <code><a href="https://rdrr.io/r/base/chol.html" class="external-link">chol()</a></code> が落ちるが，そのメッセージからは原因が読めない</li>
+<li>実測: LRA(J5S1000, 3ランク) isotonic 45.00 / GTM 42.60 / LCA 43.98 (df=42, m=80, t=39, rank=38 共通)。 バイクラ(J35S500, 4クラス3フィールド) isotonic 15362 / GTM 15070 / 無順序 15318 (m=9660, t=48, rank=45, 2.6秒)</li>
+</ul></div>
+<div class="section level3">
+<h3 id="メモリ回りの整理-測ってから決めた">メモリ回りの整理 (測ってから決めた)<a class="anchor" aria-label="anchor" href="#%E3%83%A1%E3%83%A2%E3%83%AA%E5%9B%9E%E3%82%8A%E3%81%AE%E6%95%B4%E7%90%86-%E6%B8%AC%E3%81%A3%E3%81%A6%E3%81%8B%E3%82%89%E6%B1%BA%E3%82%81%E3%81%9F"></a></h3>
+<ul><li>
+<strong>残差ベクトルを返り値から削除</strong>。シミュは1フィットにつき1つ保持するので， 項目数に比例して増える量を持たせない。現在1.4KB固定</li>
+<li>
+<code><a href="https://rdrr.io/r/base/chol.html" class="external-link">chol()</a></code> 直後に <code>rm(Xi)</code>。外積は列ごとに引く(<code>joint - outer()</code> は <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>m</mi><mo>×</mo><mi>m</mi></mrow><annotation encoding="application/x-tex">m\times m</annotation></semantics></math> を3個同時に持つ)</li>
+<li>
+<strong>関数内の明示的 <code><a href="https://rdrr.io/r/base/gc.html" class="external-link">gc()</a></code> は試して外した</strong>。3割遅くなってメモリは減らない。ピークを決めるのは <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi mathvariant="normal">Ξ</mi><annotation encoding="application/x-tex">\Xi</annotation></semantics></math> とコレスキー因子が同時に生きる瞬間で，<code><a href="https://rdrr.io/r/base/gc.html" class="external-link">gc()</a></code> はそこに効かない</li>
+<li>代わりに <strong><code>gc = TRUE</code> 引数</strong>(既定)。計算後に1回だけ解放。対話的利用は1モデル1回なので これが親切。ループからは <code>FALSE</code>。<code><a href="reference/add_M2.html">add_M2()</a></code> は内部2回計算のうち中間を省き最後に1回</li>
+<li>
+<strong>累積しないことを実測</strong>: 12回連続でヒープ1.48GB一定・RSSも横ばい</li>
+<li>ピークをさらに下げるには LAPACK <code>dpotrf</code> によるその場分解(Rcpp)が要る。<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>J</mi><mo>=</mo><mn>50</mn></mrow><annotation encoding="application/x-tex">J=50</annotation></semantics></math> で 5.8GB→2.9GB，サーバ並列度が30→60。<strong>保留</strong>(必要になってから)</li>
+</ul></div>
+<div class="section level3">
+<h3 id="デモスクリプト-ユーザ確認用">デモスクリプト (ユーザ確認用)<a class="anchor" aria-label="anchor" href="#%E3%83%87%E3%83%A2%E3%82%B9%E3%82%AF%E3%83%AA%E3%83%97%E3%83%88-%E3%83%A6%E3%83%BC%E3%82%B6%E7%A2%BA%E8%AA%8D%E7%94%A8"></a></h3>
+<ul><li>
+<code>develop/20260727_M2_demo.R</code> — LCA編。8節(従来出力/M2単体/両方表示/クラス数比較/ レーティング/計算時間/メモの数値例再現/残差ゼロならM2=0)</li>
+<li>
+<code>develop/20260727_M2_demo_LRA_Biclustering.R</code> — LRA・バイクラ編。6節(3本の腕/ランク数と 階数落ち/バイクラ3本/計算時間/カテゴリ数不揃いの停止/LCAとLRAの構造一致)</li>
+</ul></div>
+<div class="section level3">
+<h3 id="決まったこと">決まったこと<a class="anchor" aria-label="anchor" href="#%E6%B1%BA%E3%81%BE%E3%81%A3%E3%81%9F%E3%81%93%E3%81%A8"></a></h3>
+<ul><li>用語は「回答パタン系」「マージン系」(荘島先生の言葉)。<strong>「M1系」とは呼ばない</strong> (<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>M</mi><mi>r</mi></msub><annotation encoding="application/x-tex">M_r</annotation></semantics></math> 族の <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>M</mi><mn>1</mn></msub><annotation encoding="application/x-tex">M_1</annotation></semantics></math> は1次マージンのみの統計量で衝突する)</li>
+<li>大きい問題では <code>verbose = TRUE</code> で進捗を表示する(2つの統計量のどちらを計算中か)</li>
+</ul></div>
+<div class="section level3">
+<h3 id="次-5">次<a class="anchor" aria-label="anchor" href="#%E6%AC%A1-5"></a></h3>
+<ol style="list-style-type: decimal"><li>シミュレーションのデータ生成コードとパイロット</li>
+<li>非推奨名の削除と下流2パッケージ(ggExametrika 7箇所・shinyExametrika 11箇所)の更新</li>
+<li>v2.0.0 リリース(9月上旬)</li>
+</ol></div>
+</div>
+<div class="section level2">
+<h2 id="claudemdからの退避-2026-08-01">CLAUDE.mdからの退避 (2026-08-01)<a class="anchor" aria-label="anchor" href="#claudemd%E3%81%8B%E3%82%89%E3%81%AE%E9%80%80%E9%81%BF-2026-08-01"></a></h2>
+<p>ホーム索引(~/Dropbox/CLAUDE.md)のステータスセル圧縮時の退避(退避時点の全文)。以下の経緯は本WORKLOGの各日付エントリに記録済み。</p>
+<blockquote>
+<p>CRAN版v1.15.0公開済。開発版v1.16.0(8/15目処)=GRM監査修正済＋LRA.ordinal混在カテゴリ対応済＋アイソトニックLRA/バイクラ実装済・新デフォルト(二値PAVA/多値Fenchel双対・memory: project_isotonic_latent_rank)＋双対ソルバC++化(ソルバ単体509x)＋BNM/LDLRA構造探索をBIC専用カーネル化(BNM_PBIL 22x・LDLRA_PBIL累積14x・全結果identical・C++不要と結論)。全テスト5232 pass。次のボトルネックはemclus E-step。Title変更(issue#32)未着手・v2.0.0多値BNM設計中。LCA.nominal/ratedは実装完了。EM収束判定の3欠陥(番兵exp(J)・監視量が期待対数事後・許容誤差1e-4)を荘島実装まで遡って修正し，Mathematica側も同時修正して倍精度一致・参照フィクスチャ30件を再生成(本の数値とは一致しなくなる＝破壊的変更)。IRTは解析的勾配で4.5倍速。全テスト5284 pass。M2実装済(R/24_M2.R・LCA/LRA/バイクラの3腕に対応・add_M2でマージン系適合度を別建て表示)。荘島先生から著作の数値変更を承認する返信＋M2への指摘3点(飽和モデルの言い方・パタン系とマージン系を混ぜるな・M3の示唆)を反映済。開発版は破壊的変更の規模からv2.0.0に改番し，非推奨名削除も同梱して9月上旬提出予定(下流2パッケージと同時)。A3シミュは7/21設計への差分を確定(尤度ベース比較・配分の偏り追加・停電対策の再開設計・M2は密版で全腕記録するが論文には書かない)。次=M2をバイクラ/LRAへ拡張→生成コードとパイロット→8月上旬に本実行。詳細→Git/exametrika/{CLAUDE,WORKLOG}.md</p>
+</blockquote>
 </div>
 </div>
 

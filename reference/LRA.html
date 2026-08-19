@@ -25,7 +25,7 @@ examinees to these ranks based on their response patterns."><meta property="og:i
 
     <a class="navbar-brand me-2" href="../index.html">exametrika</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.16.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.0.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -75,7 +75,7 @@ examinees to these ranks based on their response patterns.</p>
 <span>  nrank <span class="op">=</span> <span class="fl">2</span>,</span>
 <span>  method <span class="op">=</span> <span class="st">"isotonic"</span>,</span>
 <span>  mic <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  maxiter <span class="op">=</span> <span class="fl">100</span>,</span>
+<span>  maxiter <span class="op">=</span> <span class="fl">1000</span>,</span>
 <span>  BIC.check <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  seed <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">FALSE</span>,</span>
@@ -154,7 +154,7 @@ smoothing). Default is "isotonic".</p></dd>
 
 
 <dt id="arg-maxiter">maxiter<a class="anchor" aria-label="anchor" href="#arg-maxiter"></a></dt>
-<dd><p>Maximum number of iterations for estimation. Default is 100.</p></dd>
+<dd><p>Maximum number of iterations for estimation. Default is 1000.</p></dd>
 
 
 <dt id="arg-bic-check">BIC.check<a class="anchor" aria-label="anchor" href="#arg-bic-check"></a></dt>
@@ -221,10 +221,10 @@ containing the following common elements:</p><dl><dt>msg</dt>
 <dt>nobs</dt>
 <dd><p>Sample size (number of rows in the dataset).</p></dd>
 
-<dt>Nrank</dt>
+<dt>n_rank</dt>
 <dd><p>Number of latent ranks specified.</p></dd>
 
-<dt>N_Cycle</dt>
+<dt>n_cycle</dt>
 <dd><p>Number of EM algorithm iterations performed.</p></dd>
 
 <dt>converge</dt>
@@ -378,19 +378,19 @@ partially-credited items or preference scales where response categories have dif
 <span class="r-in"><span><span class="co"># Display the first few rows of student rank membership profiles</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">result.LRA</span><span class="op">$</span><span class="va">Students</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>            Membership 1 Membership 2 Membership 3 Membership 4 Membership 5</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Student001 0.3677662894  0.434091572   0.11058891  0.036872666   0.05068055</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Student002 0.0197536734  0.082316601   0.58176142  0.281540126   0.03462778</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Student003 0.0062820540  0.216416748   0.53609302  0.145636332   0.08059171</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Student004 0.0010014078  0.009064826   0.19851135  0.284268528   0.13509623</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Student005 0.2584603668  0.721793236   0.01379897  0.003748661   0.00207442</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Student006 0.0001302681  0.002082945   0.04646690  0.081667731   0.75534209</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Student001 0.3732015798  0.428451221   0.11219848  0.030244910  0.055903805</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Student002 0.0200254309  0.080848295   0.57928413  0.282874219  0.036967734</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Student003 0.0062126694  0.213151690   0.54304200  0.146385733  0.076483260</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Student004 0.0010041013  0.009115691   0.19880904  0.293017561  0.133718573</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Student005 0.2529143262  0.727293364   0.01394516  0.003759143  0.001964068</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Student006 0.0001300928  0.002053329   0.04593162  0.067696979  0.766760085</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>            Membership 6 Estimate Rank-Up Odds Rank-Down Odds</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Student001 1.359014e-08        2   0.25475940      0.8472090</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Student002 4.013907e-07        3   0.48394431      0.1414955</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Student003 1.498014e-02        3   0.27166243      0.4036925</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Student004 3.720577e-01        6           NA      0.3631056</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Student005 1.243501e-04        2   0.01911762      0.3580809</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Student006 1.143101e-01        5   0.15133549      0.1081202</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Student001 6.653884e-09        2   0.26186990     0.87104800</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Student002 1.950328e-07        3   0.48831688     0.13956587</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Student003 1.472465e-02        3   0.26956613     0.39251419</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Student004 3.643350e-01        6           NA     0.36702090</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Student005 1.239411e-04        2   0.01917405     0.34774733</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Student006 1.174279e-01        5   0.15314816     0.08828965</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Plot Item Reference Profiles (IRP) for the first 6 items</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">result.LRA</span>, type <span class="op">=</span> <span class="st">"IRP"</span>, items <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">6</span>, nc <span class="op">=</span> <span class="fl">2</span>, nr <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span></span>

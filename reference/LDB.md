@@ -103,11 +103,11 @@ LDB(
 
   A character string indicating the model type.
 
-- Nclass:
+- n_class:
 
   Optimal number of classes.
 
-- Nfield:
+- n_field:
 
   Optimal number of fields.
 

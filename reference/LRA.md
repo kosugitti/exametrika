@@ -30,7 +30,7 @@ LRA(
   nrank = 2,
   method = "isotonic",
   mic = FALSE,
-  maxiter = 100,
+  maxiter = 1000,
   BIC.check = FALSE,
   seed = NULL,
   verbose = FALSE,
@@ -112,7 +112,7 @@ LRA(
 
 - maxiter:
 
-  Maximum number of iterations for estimation. Default is 100.
+  Maximum number of iterations for estimation. Default is 1000.
 
 - BIC.check:
 
@@ -187,11 +187,11 @@ A list of class "exametrika" and the specific subclass (e.g., "LRA",
 
   Sample size (number of rows in the dataset).
 
-- Nrank:
+- n_rank:
 
   Number of latent ranks specified.
 
-- N_Cycle:
+- n_cycle:
 
   Number of EM algorithm iterations performed.
 
@@ -398,19 +398,19 @@ result.LRA <- LRA(J15S500, nrank = 6)
 # Display the first few rows of student rank membership profiles
 head(result.LRA$Students)
 #>            Membership 1 Membership 2 Membership 3 Membership 4 Membership 5
-#> Student001 0.3677662894  0.434091572   0.11058891  0.036872666   0.05068055
-#> Student002 0.0197536734  0.082316601   0.58176142  0.281540126   0.03462778
-#> Student003 0.0062820540  0.216416748   0.53609302  0.145636332   0.08059171
-#> Student004 0.0010014078  0.009064826   0.19851135  0.284268528   0.13509623
-#> Student005 0.2584603668  0.721793236   0.01379897  0.003748661   0.00207442
-#> Student006 0.0001302681  0.002082945   0.04646690  0.081667731   0.75534209
+#> Student001 0.3732015798  0.428451221   0.11219848  0.030244910  0.055903805
+#> Student002 0.0200254309  0.080848295   0.57928413  0.282874219  0.036967734
+#> Student003 0.0062126694  0.213151690   0.54304200  0.146385733  0.076483260
+#> Student004 0.0010041013  0.009115691   0.19880904  0.293017561  0.133718573
+#> Student005 0.2529143262  0.727293364   0.01394516  0.003759143  0.001964068
+#> Student006 0.0001300928  0.002053329   0.04593162  0.067696979  0.766760085
 #>            Membership 6 Estimate Rank-Up Odds Rank-Down Odds
-#> Student001 1.359014e-08        2   0.25475940      0.8472090
-#> Student002 4.013907e-07        3   0.48394431      0.1414955
-#> Student003 1.498014e-02        3   0.27166243      0.4036925
-#> Student004 3.720577e-01        6           NA      0.3631056
-#> Student005 1.243501e-04        2   0.01911762      0.3580809
-#> Student006 1.143101e-01        5   0.15133549      0.1081202
+#> Student001 6.653884e-09        2   0.26186990     0.87104800
+#> Student002 1.950328e-07        3   0.48831688     0.13956587
+#> Student003 1.472465e-02        3   0.26956613     0.39251419
+#> Student004 3.643350e-01        6           NA     0.36702090
+#> Student005 1.239411e-04        2   0.01917405     0.34774733
+#> Student006 1.174279e-01        5   0.15314816     0.08828965
 
 # Plot Item Reference Profiles (IRP) for the first 6 items
 plot(result.LRA, type = "IRP", items = 1:6, nc = 2, nr = 3)

@@ -10,13 +10,13 @@
 Source:
 [`DESCRIPTION`](https://github.com/kosugitti/exametrika/blob/main/DESCRIPTION)
 
-Koji Kosugi (2026). *exametrika: Test Theory Analysis and Biclustering*.
-R package version 1.16.0, <https://kosugitti.github.io/exametrika/>.
+Koji Kosugi (2026). *exametrika: Test Data Engineering*. R package
+version 2.0.0, <https://kosugitti.github.io/exametrika/>.
 
     @Manual{,
-      title = {exametrika: Test Theory Analysis and Biclustering},
+      title = {exametrika: Test Data Engineering},
       author = {{Koji Kosugi}},
       year = {2026},
-      note = {R package version 1.16.0},
+      note = {R package version 2.0.0},
       url = {https://kosugitti.github.io/exametrika/},
     }

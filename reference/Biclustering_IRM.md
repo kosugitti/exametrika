@@ -203,13 +203,13 @@ An object of class "exametrika" containing the IRM results. See
 
   Number of EM algorithm iterations (new naming convention).
 
-- Nclass:
+- n_class:
 
-  Optimal number of classes (deprecated, use n_class).
+  Optimal number of classes.
 
-- Nfield:
+- n_field:
 
-  Optimal number of fields (deprecated, use n_field).
+  Optimal number of fields.
 
 - EM_Cycle:
 

@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="index.html">exametrika</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.16.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.0.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -39,7 +39,7 @@
 <h2 id="package-overview">Package Overview<a class="anchor" aria-label="anchor" href="#package-overview"></a></h2>
 <p><code>exametrika</code> is an R package for Test Data Engineering based on Shojima (2022, <a href="ISBN:978-9811699856" class="uri">ISBN:978-9811699856</a>). It provides psychometric analysis tools: CTT, IRT, GRM, LCA, LRA, Biclustering, BNM, LDLRA, LDB, BINET.</p>
 <ul><li>
-<strong>Current version</strong>: 1.16.0 (dev, targeting CRAN submission 2026-08-15)</li>
+<strong>Current version</strong>: 2.0.0 (dev; CRAN submission early September 2026, after the A3 simulation)</li>
 <li>
 <strong>CRAN version</strong>: 1.15.0 (accepted/published 2026-07)</li>
 <li>
@@ -167,11 +167,16 @@ docs/                # .gitignore'd (removed from repo); pkgdown site deployed t
 <th>ordinal</th>
 <th>rated</th>
 <th>nominal</th>
-</tr></thead><tbody><tr><td>LRA</td>
+</tr></thead><tbody><tr><td>LCA</td>
+<td>yes</td>
+<td>via nominal</td>
+<td>yes</td>
+<td>yes</td>
+</tr><tr><td>LRA</td>
 <td>yes</td>
 <td>yes</td>
 <td>yes</td>
-<td>—</td>
+<td>n/a</td>
 </tr><tr><td>Biclustering</td>
 <td>yes</td>
 <td>yes</td>
@@ -180,9 +185,10 @@ docs/                # .gitignore'd (removed from repo); pkgdown site deployed t
 </tr><tr><td>IRM</td>
 <td>yes</td>
 <td>yes</td>
-<td>—</td>
+<td>n/a</td>
 <td>yes</td>
 </tr></tbody></table><p>rated = nominal + correct answer (multiple-choice tests); ordinal = Likert-type ordered ratings.</p>
+<p>“n/a” means <strong>not applicable</strong>, not unimplemented (decided 2026-07-22): - <code>LRA.nominal</code> cannot exist. A rank ordering has to be anchored in the category ordering (higher ranks favour higher categories); nominal labels give it nothing to attach to. Nominal data passed to <code><a href="reference/LRA.html">LRA()</a></code> is handed to <code><a href="reference/LCA.html">LCA.nominal()</a></code> with a message. The same argument rules out the isotonic estimator for nominal data: its constraint lives on cumulative probabilities <code>P(&gt;= q)</code>, and “&gt;= q” needs ordered categories to mean anything. - “via nominal” (LCA, ordinal): latent classes carry no order, so the category ordering has nothing to attach to either — estimation <em>is</em> the nominal one, and <code><a href="reference/LCA.html">LCA()</a></code> says so before delegating. A genuinely ordinal LCA would have to put the order inside the category profiles (see Future Work); it is not a wrapper. - <code>LCA.rated</code> calls <code><a href="reference/LCA.html">LCA.nominal()</a></code> and adds the correct-answer post-processing: <code>IRP[j, c] = rho[j, CA[j] | c]</code> (model-implied, not the empirical class-assignment rate <code>Biclustering.rated</code> uses), <code>TRP</code> as its weighted item sum, and a binary layer of fit indices alongside the nominal one. It does NOT sort classes by correct rate the way <code>Biclustering.rated</code> does — LCA classes are unordered, and sorting would imply otherwise.</p>
 </div>
 <div class="section level2">
 <h2 id="known-technical-debt">Known Technical Debt<a class="anchor" aria-label="anchor" href="#known-technical-debt"></a></h2>
@@ -196,16 +202,16 @@ docs/                # .gitignore'd (removed from repo); pkgdown site deployed t
 <div class="section level3">
 <h3 id="deprecated-functions-to-be-removed-in-v200">Deprecated Functions (to be removed in v2.0.0)<a class="anchor" aria-label="anchor" href="#deprecated-functions-to-be-removed-in-v200"></a></h3>
 <ul><li>
-<code><a href="reference/IRM.html">IRM()</a></code> → use <code><a href="reference/Biclustering_IRM.html">Biclustering_IRM()</a></code>
+<code>IRM()</code> → use <code><a href="reference/Biclustering_IRM.html">Biclustering_IRM()</a></code>
 </li>
 <li>
-<code><a href="reference/StrLearningGA_BNM.html">StrLearningGA_BNM()</a></code> → use <code><a href="reference/BNM_GA.html">BNM_GA()</a></code>
+<code>StrLearningGA_BNM()</code> → use <code><a href="reference/BNM_GA.html">BNM_GA()</a></code>
 </li>
 <li>
-<code><a href="reference/StrLearningPBIL_BNM.html">StrLearningPBIL_BNM()</a></code> → use <code><a href="reference/BNM_PBIL.html">BNM_PBIL()</a></code>
+<code>StrLearningPBIL_BNM()</code> → use <code><a href="reference/BNM_PBIL.html">BNM_PBIL()</a></code>
 </li>
 <li>
-<code><a href="reference/StrLearningPBIL_LDLRA.html">StrLearningPBIL_LDLRA()</a></code> → use <code><a href="reference/LDLRA_PBIL.html">LDLRA_PBIL()</a></code>
+<code>StrLearningPBIL_LDLRA()</code> → use <code><a href="reference/LDLRA_PBIL.html">LDLRA_PBIL()</a></code>
 </li>
 </ul></div>
 <div class="section level3">
@@ -245,7 +251,10 @@ docs/                # .gitignore'd (removed from repo); pkgdown site deployed t
 <li>
 <strong>Drop the igraph dependency (v2.0.0)</strong> — surveyed 2026-07-21. Only four calls are real graph algorithms (<code>is_dag</code> x2, <code>is_connected</code> x2, in <code>08A_BNM.R:170-171</code> and <code>11_BINET.R:282-283</code>); on the item counts these models use, a Kahn-style cycle check and a union-find/BFS weak-connectivity check on the adjacency matrix are cheaper than constructing the igraph object at all — and that construction is ~93% of <code>BNM_GA</code>/<code>BNM_PBIL</code> self time because it is redone per candidate. The remaining 23 calls are format round-trips (<code>graph_from_adjacency_matrix</code> x10, <code>graph_from_data_frame</code> x7, <code>as_adjacency_matrix</code> x3, <code>as_data_frame</code> x3) that plain matrix/data.frame code replaces. Two things make this v2.0.0 rather than now: <code>LDLRA</code>/<code>LDB</code>/<code>BINET</code> return igraph objects in <code>g_list</code>, and <code>R/00_print_network.R</code> draws with <code>plot.igraph()</code> + <code>layout_on_grid()</code>. Both are user-visible, so removing them is a breaking change and needs a replacement drawing path.</li>
 <li>BINET FRPIndex addition</li>
-<li>LCA.nominal — 仕様確定済み(EMエンジン <code>00_EMclus_nominal.R</code> のみ存在，本体未実装)。 適合度は飽和モデルを作らず <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>M</mi><mn>2</mn></msub><annotation encoding="application/x-tex">M_2</annotation></semantics></math>(Maydeu-Olivares &amp; Joe 2006)で出す方針。設計メモは <code>develop/Algorithm_M2.tex</code>(2026-07-25に全節レビュー完了・14p)。実装順は LCA.nominal 本体 → <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>M</mi><mn>2</mn></msub><annotation encoding="application/x-tex">M_2</annotation></semantics></math>(二値2PLで mirt の <code>M2(fit, type = "M2")</code> と数値一致を取ってから名義へ。mirtはGPL なので参照実行のみ・コード取り込み不可)。<code><a href="reference/calcFitIndices.html">calcFitIndices()</a></code> に流し込めば NFI 以下は出るが <code>bench_log_like</code> だけは対応物がなく NA。</li>
+<li>Ordinal LCA with unordered classes (a real model, not a wrapper) — categories carry order while classes do not, so the order has to enter through the category profiles themselves: a unimodality restriction per class, or a class-specific location under a cumulative link. Not to be confused with routing ordinal data to <code>LCA.nominal</code> (which is what we do now, and which ignores the order). Revisit alongside the v2.0.0 polytomous BNM, where the cumulative link is already on the table.</li>
+<li>
+<strong>EM convergence criterion (fixed 2026-07-26, breaking)</strong> — the criterion inherited from Shojima’s Mathematica had three defects: the sentinel <code>-exp(J)</code> sits <em>above</em> the log-likelihood on short tests (EM exited after one cycle reporting <code>converge = TRUE</code>); the monitored quantity was the expected log-posterior <code>Q(theta_t|theta_{t-1})</code>, which is not monotone (the book’s eq. 5.11 states monotonicity for the observed-data log-posterior but the formula given computes the expected one); and the relative tolerance <code>1e-4</code> on a value of order 1e3 stopped EM ~0.4 nats short. Now: observed-data log-likelihood, <code>-Inf</code> sentinel with the first pass skipped, <code>tol = 1e-8</code>, <code>maxiter</code> 1000 — in <code>emclus()</code>, <code>emclus_isotonic()</code>, <code>emclus_nominal()</code>. Biclustering (07/15/16) got only the sentinel and tolerance (a two-sided mixture has no single observed-data likelihood); <code><a href="reference/IRT.html">IRT()</a></code> uses 1e-6 (one <code><a href="https://rdrr.io/r/stats/optim.html" class="external-link">optim()</a></code> per item per cycle). The Mathematica side was corrected in step and agrees to full double precision. Guard trap: <code>emt &gt; 0</code> is not enough — on the second pass <code>oldtestell</code> is still <code>-Infinity</code> and <code>Infinity &lt;= Infinity</code> is TRUE; use <code>NumberQ[oldtestell]</code> / <code>is.finite(old_test_log_lik)</code>.</li>
+<li>LCA.nominal / LCA.rated / <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>M</mi><mn>2</mn></msub><annotation encoding="application/x-tex">M_2</annotation></semantics></math> — <strong>DONE 2026-07-26/27</strong> (<code>R/05_LCA.R</code>, <code>R/24_M2.R</code>). <code><a href="reference/M2.html">M2()</a></code> covers LCA (nominal, rated), LRA (ordinal) and Biclustering (ordinal, nominal), so the three arms of the A3 simulation share one scale; <code><a href="reference/add_M2.html">add_M2()</a></code> attaches margin-based fit indices. <strong>Everything lives in <code>R/24_M2.R</code></strong> — the model files were not touched, since S3 dispatches on the fitted object’s class. Two rules to remember: response-pattern and margin-based indices are never combined (their chi-squares are a likelihood ratio and a quadratic form respectively), and the reference distribution only holds for a maximum likelihood fit, so GTM and order-restricted arms record the statistic without testing it. 適合度は飽和モデルを作らず <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>M</mi><mn>2</mn></msub><annotation encoding="application/x-tex">M_2</annotation></semantics></math>(Maydeu-Olivares &amp; Joe 2006)で出す方針。設計メモは <code>develop/Algorithm_M2.tex</code>(14p)，試作は <code>develop/20260725_M2_prototype.R</code>(メモの数値例を 完全再現・<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi mathvariant="normal">Ξ</mi><annotation encoding="application/x-tex">\Xi</annotation></semantics></math> をモンテカルロ検証済み・J20S600 で1秒未満)。次は二値2PLで mirt の <code>M2(fit, type = "M2")</code> と突合してから名義へ(mirtはGPLなので参照実行のみ・取り込み不可)。 <code><a href="reference/calcFitIndices.html">calcFitIndices()</a></code> に流し込めば NFI 以下は出るが <code>bench_log_like</code> だけは NA。 <strong>要注意2点</strong>: (a) 混合比は推定しない(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>γ</mi><mi>c</mi></msub><mo>≡</mo><mn>1</mn><mi>/</mi><mi>C</mi></mrow><annotation encoding="application/x-tex">\gamma_c \equiv 1/C</annotation></semantics></math>)ので <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>t</mi><mo>=</mo><mi>C</mi><msub><mo>∑</mo><mi>j</mi></msub><mo stretchy="false" form="prefix">(</mo><msub><mi>Q</mi><mi>j</mi></msub><mo>−</mo><mn>1</mn><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">t = C\sum_j(Q_j-1)</annotation></semantics></math>， <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi mathvariant="normal">Δ</mi><annotation encoding="application/x-tex">\Delta</annotation></semantics></math> に <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>γ</mi><annotation encoding="application/x-tex">\gamma</annotation></semantics></math> 列はない。(b) その定式化では 2次マージンがクラス偏差行列のグラム行列に しか依存せず，<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi mathvariant="normal">Δ</mi><annotation encoding="application/x-tex">\Delta</annotation></semantics></math> が <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false" form="prefix">(</mo><mi>C</mi><mo>−</mo><mn>1</mn><mo stretchy="false" form="postfix">)</mo><mo stretchy="false" form="prefix">(</mo><mi>C</mi><mo>−</mo><mn>2</mn><mo stretchy="false" form="postfix">)</mo><mi>/</mi><mn>2</mn></mrow><annotation encoding="application/x-tex">(C-1)(C-2)/2</annotation></semantics></math> だけランク落ちする(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>C</mi><mo>≥</mo><mn>3</mn></mrow><annotation encoding="application/x-tex">C\ge3</annotation></semantics></math> で母数が2次マージンから 識別されない)。自由度は <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>m</mi><mo>−</mo><mrow><mi mathvariant="normal">r</mi><mi mathvariant="normal">a</mi><mi mathvariant="normal">n</mi><mi mathvariant="normal">k</mi></mrow><mo stretchy="false" form="prefix">(</mo><mi mathvariant="normal">Δ</mi><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">m-\mathrm{rank}(\Delta)</annotation></semantics></math> を使い，射影はSVDで作る。</li>
 <li>Input data storage method unification (v2.0.0)</li>
 <li>
 <strong>Order-restricted IRM (estimate the number of <em>ordered</em> classes)</strong> — the missing cell in the design grid: <code>Biclustering</code>/<code>Ranklustering</code> cover “class count given”, <code>Biclustering_IRM</code> covers “class count estimated, unordered”, and nothing covers “class count estimated, ordered”. Order cannot be bolted onto the current sampler: collapsing π relies on Dirichlet-multinomial conjugacy, and the truncated Dirichlet over the order-restricted region has no closed-form normalizer; more fundamentally the CRP is exchangeable over blocks, so ordering is meaningless under it. The asymmetry that matters: fields have no order (keep the CRP there), only the class side needs replacing — with an ordered partition prior (contiguous blocks on a latent continuum, class count = change-point count, splits/merges restricted to adjacent classes, mirroring PAVA’s adjacent pooling). Research-scale; revisit with Shojima after the A3 submission. Interim workaround for A3: over-specify the class count and let the order constraint pool adjacent ranks (<code>df</code> already counts the surviving distinct levels) — a diagnostic, not an estimator, since it stays dependent on the specified count and leaves tied classes unidentified in the membership matrix. memory: project_exametrika_future (item 6).</li>
@@ -359,7 +368,7 @@ docs/                # .gitignore'd (removed from repo); pkgdown site deployed t
 <li>See <code>WORKLOG.md</code> (2026-07-01) and <code>.claude/CLAUDE.md</code> for full detail</li>
 </ul></div>
 <div class="section level3">
-<h3 id="v1160-dev-targeting-cran-submission-2026-08-15">v1.16.0 (dev, targeting CRAN submission 2026-08-15)<a class="anchor" aria-label="anchor" href="#v1160-dev-targeting-cran-submission-2026-08-15"></a></h3>
+<h3 id="v200-dev-renamed-from-1160-on-2026-07-26-see-below">v2.0.0 (dev; renamed from 1.16.0 on 2026-07-26, see below)<a class="anchor" aria-label="anchor" href="#v200-dev-renamed-from-1160-on-2026-07-26-see-below"></a></h3>
 <ul><li>
 <strong>GRM bug fixes (2026-07-16 audit; committed f3d9557; see NEWS.md)</strong>:
 <ul><li>
@@ -386,23 +395,11 @@ docs/                # .gitignore'd (removed from repo); pkgdown site deployed t
 <li>Downstream: ggExametrika v1.1.2 (audit release, ready) will be submitted after this version is accepted, so its GRM information plots match the fixed parent</li>
 </ul></div>
 <div class="section level3">
-<h3 id="v200-breaking-changes-in-design">v2.0.0 (breaking changes, in design)<a class="anchor" aria-label="anchor" href="#v200-breaking-changes-in-design"></a></h3>
-<ul><li>
-<strong>Polytomous BNM (StepReg / StepBNM, case C)</strong> — DAG-given fit only; structure learning deferred to v2.1+.
-<ul><li>Case C: <code>P(Y ≤ q | X = x) = Φ(τ_q − μ_x)</code> with monotone <code>μ_1 ≤ ... ≤ μ_Q</code>
-</li>
-<li>β_caseC = bsp_moX × D (where D = number of category gaps), matches brms <code>mo()</code> (Bürkner-Charpentier 2020)</li>
-<li>Additive parents only (interactions out of scope for v2.0.0)</li>
-<li>Model fit indices <code>M_0</code>/<code>M_t</code>/<code>M_s</code> with AIC/BIC/CAIC/NFI/CFI/RMSEA</li>
-<li>“ξ map” + “StepReg/StepBNM” naming established 2026-05-12/13</li>
-<li>Validated on お遍路さん dataset (2026-05-09): DAG full reversal ΔAIC = +17 (clearer than J15S3810 ΔAIC = ±5)</li>
-</ul></li>
-<li>Structure learning (Glasso skeleton → ξ direction → case C fit) is deferred to v2.1+</li>
-<li>Remove deprecated functions and field names (<code><a href="reference/IRM.html">IRM()</a></code>, <code><a href="reference/StrLearningGA_BNM.html">StrLearningGA_BNM()</a></code>, <code>Nclass</code>, <code>Nfield</code>, etc.)</li>
-<li>Drop backward-compatible aliases</li>
-<li>Downstream packages (ggExametrika, shinyExametrika) must complete snake_case migration first</li>
-<li>CRAN cadence note: per <code>feedback_cran_submit_cadence.md</code>, allow ≥1 month from v1.13.1 acceptance (2026-05-18) before submitting v2.0.0 — target 2026-06-18 or later.</li>
-</ul></div>
+<h3 id="version-policy-decided-2026-07-26">Version policy (decided 2026-07-26)<a class="anchor" aria-label="anchor" href="#version-policy-decided-2026-07-26"></a></h3>
+<p>The development line was renumbered 1.16.0 -&gt; <strong>2.0.0</strong>. The EM convergence fix changes the estimates every EM-based model produces: same code, same data, different numbers, and no longer the numbers printed in Shojima (2022). That is a heavier break than an API change, and a minor bump would have understated it. Since a major bump was happening anyway, the deprecation removals ride along — break once.</p>
+<p><strong>In 2.0.0</strong> (see the section above for what is already done): - EM convergence fix (breaking numerics), <code>LCA.nominal</code> / <code>LCA.rated</code>, IRT speedup - <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>M</mi><mn>2</mn></msub><annotation encoding="application/x-tex">M_2</annotation></semantics></math> (limited-information fit) — shared with the A3 paper, so the paper’s numbers and the package’s numbers come from one implementation - Remove deprecated functions and field names (<code>IRM()</code>, <code>StrLearningGA_BNM()</code>, <code>Nclass</code>, <code>Nfield</code>, <code>N_Cycle</code>, <code>LogLik</code>, …) and the backward-compatible aliases. Downstream cost measured 2026-07-26: 7 occurrences in ggExametrika, 11 in shinyExametrika. Both are mechanical renames; update and submit in lockstep. - Timing: after the A3 simulation, early September 2026. The 1.15.0 submission was 2026-07-15 and acceptance followed within days, so the &gt;= 1 month cadence (<code>feedback_cran_submit_cadence</code>) is clear from mid-August onward — the date is set by the simulation and the paper, not by CRAN.</p>
+<p><strong>Deliberately NOT in 2.0.0</strong> — each was in the old v2.0.0 plan and is decoupled so that the release is not held hostage to design work: - <strong>Polytomous BNM (StepReg / StepBNM, case C)</strong> -&gt; v2.1.0. Additive, not breaking. DAG-given fit only; structure learning later still. - Case C: <code>P(Y &lt;= q | X = x) = Phi(tau_q - mu_x)</code> with monotone <code>mu_1 &lt;= ... &lt;= mu_Q</code> - beta_caseC = bsp_moX x D (D = number of category gaps), matches brms <code>mo()</code> (Bürkner-Charpentier 2020) - Additive parents only; fit indices <code>M_0</code>/<code>M_t</code>/<code>M_s</code> with AIC/BIC/CAIC/NFI/CFI/RMSEA - “xi map” + “StepReg/StepBNM” naming established 2026-05-12/13 - Validated on お遍路さん (2026-05-09): DAG full reversal dAIC = +17 (clearer than J15S3810 dAIC = ±5) - Structure learning (Glasso skeleton -&gt; xi direction -&gt; case C fit) -&gt; v2.2+ - <strong>Drop the igraph dependency</strong> -&gt; a later major. <code>LDLRA</code>/<code>LDB</code>/<code>BINET</code> return igraph objects in <code>g_list</code> and <code>R/00_print_network.R</code> draws with <code>plot.igraph()</code>, so it needs a replacement drawing path first (survey under Known Technical Debt). - Input data storage unification</p>
+</div>
 <div class="section level3">
 <h3 id="long-term">Long-term<a class="anchor" aria-label="anchor" href="#long-term"></a></h3>
 <ol style="list-style-type: decimal"><li>Resolve nobs handling discrepancy (TODO items above)</li>

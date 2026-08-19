@@ -213,19 +213,10 @@ Model fit index computation
 
 - [`calcFitIndices()`](https://kosugitti.github.io/exametrika/reference/calcFitIndices.md)
   : calc Fit Indices
-
-## Deprecated
-
-Functions deprecated since v1.5.0 (to be removed in v2.0.0)
-
-- [`IRM()`](https://kosugitti.github.io/exametrika/reference/IRM.md) :
-  IRM (Deprecated)
-- [`StrLearningGA_BNM()`](https://kosugitti.github.io/exametrika/reference/StrLearningGA_BNM.md)
-  : StrLearningGA_BNM (Deprecated)
-- [`StrLearningPBIL_BNM()`](https://kosugitti.github.io/exametrika/reference/StrLearningPBIL_BNM.md)
-  : StrLearningPBIL_BNM (Deprecated)
-- [`StrLearningPBIL_LDLRA()`](https://kosugitti.github.io/exametrika/reference/StrLearningPBIL_LDLRA.md)
-  : StrLearningPBIL_LDLRA (Deprecated)
+- [`M2()`](https://kosugitti.github.io/exametrika/reference/M2.md) :
+  Limited-information goodness-of-fit statistic (M2)
+- [`add_M2()`](https://kosugitti.github.io/exametrika/reference/add_M2.md)
+  : Attach the margin-based fit indices to a fitted model
 
 ## S3 Methods
 

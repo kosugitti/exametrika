@@ -1,30 +1,30 @@
 "Total Score","Statistics"
-"Test Length",10
-"Sample Size",150
-"Mean",5.12666666666667
-"SE of Mean",0.200736154512735
-"Variance",6.04425055928412
-"SD",2.45850575742342
-"Skewness",0.103533555402468
-"Kurtosis",-0.633398049586967
+"Test Length",8
+"Sample Size",250
+"Mean",4.104
+"SE of Mean",0.128962246584715
+"Variance",4.15781526104418
+"SD",2.03907215689984
+"Skewness",-0.143958197591889
+"Kurtosis",-0.894048370832721
 "Min",0
-"Max",10
-"Range",10
-"Q1(25%)",3
-"Median(50%)",5
-"Q3(75%)",7
+"Max",8
+"Range",8
+"Q1(25%)",2
+"Median(50%)",4
+"Q3(75%)",6
 "Interquartile Range",4
 "Q2(Stanine)",1
-"Q3(Stanine)",2
-"Q4(Stanine)",3
+"Q3(Stanine)",1
+"Q4(Stanine)",2
 "Q5(Stanine)",4
-"Q6(Stanine)",6
-"Q7(Stanine)",7
-"Q8(Stanine)",8
-"Q9(Stanine)",10
-"Alpha(Covariance)",0.708372505039888
-"Alpha(Phi)",0.706818904135445
-"Alpha(Tetrachoric)",0.827987052398427
-"Omega(Covariance)",0.71110596190739
-"Omega(Phi)",0.708497844285336
-"Omega(Tetrachoric)",0.829351943792004
+"Q6(Stanine)",5
+"Q7(Stanine)",6
+"Q8(Stanine)",7
+"Q9(Stanine)",7
+"Alpha(Covariance)",0.602266956917221
+"Alpha(Phi)",0.602314462128565
+"Alpha(Tetrachoric)",0.72708487252289
+"Omega(Covariance)",0.604509141348528
+"Omega(Phi)",0.604562504262132
+"Omega(Tetrachoric)",0.729635052214746

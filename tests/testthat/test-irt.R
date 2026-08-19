@@ -145,6 +145,10 @@ pl3Student <- read.csv(
   test_path("fixtures", "mathematica_reference", "Chapter04IRT3pl_Student.csv"),
   check.names = FALSE
 )
+pl3Q3mat <- read.csv(
+  test_path("fixtures", "mathematica_reference", "Chapter04IRT3pl_Q3.csv"),
+  check.names = FALSE
+)
 
 
 tmp <- dataFormat(J15S500, na = -99)
@@ -248,6 +252,10 @@ pl4Student <- read.csv(
   test_path("fixtures", "mathematica_reference", "Chapter04IRT4pl_Student.csv"),
   check.names = FALSE
 )
+pl4Q3mat <- read.csv(
+  test_path("fixtures", "mathematica_reference", "Chapter04IRT4pl_Q3.csv"),
+  check.names = FALSE
+)
 
 
 tmp <- dataFormat(J15S500, na = -99)
@@ -343,4 +351,42 @@ test_that("4PL model Students", {
     unlist() |>
     as.numeric()
   expect_equal(result, expect, tolerance = 1e-3)
+})
+
+test_that("3PL Q3mat", {
+  # the reference existed but nothing read it; 2PL was the only arm checked.
+  # Same absolute-difference comparison as 2PL: Q3 residual correlations pass
+  # through zero, where a relative tolerance is meaningless.
+  expect <- pl3Q3mat[, -1] |>
+    unlist() |>
+    as.numeric()
+  result <- result3$Q3mat |>
+    unlist() |>
+    as.numeric()
+  max_abs_diff <- max(abs(result - expect))
+  expect_true(max_abs_diff < 0.005,
+    info = sprintf(
+      "Max absolute difference in Q3 matrix: %.6f (threshold: 0.005)",
+      max_abs_diff
+    )
+  )
+})
+
+test_that("4PL Q3mat", {
+  # the reference existed but nothing read it; 2PL was the only arm checked.
+  # Same absolute-difference comparison as 2PL: Q3 residual correlations pass
+  # through zero, where a relative tolerance is meaningless.
+  expect <- pl4Q3mat[, -1] |>
+    unlist() |>
+    as.numeric()
+  result <- result4$Q3mat |>
+    unlist() |>
+    as.numeric()
+  max_abs_diff <- max(abs(result - expect))
+  expect_true(max_abs_diff < 0.005,
+    info = sprintf(
+      "Max absolute difference in Q3 matrix: %.6f (threshold: 0.005)",
+      max_abs_diff
+    )
+  )
 })

@@ -51,8 +51,8 @@ result <- LRA(J15S3810, mic = TRUE, nrank = 3, method = "GTM")
 # test -------------------------------------------------------------------------
 expect <- ScoreRank[, -1] |> as.data.frame()
 actual <- result$ScoreMembership |>
-    as.matrix() |>
-    as.data.frame()
+  as.matrix() |>
+  as.data.frame()
 actual[1:28, ] <- actual[28:1, ]
 rownames(expect) <- rownames(actual) <- NULL
 colnames(expect) <- colnames(actual) <- NULL

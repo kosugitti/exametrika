@@ -193,7 +193,6 @@ m2_p_obs <- function(Q, Z, idx) {
 }
 
 
-
 #' @title Move to the coordinates where the margin residual is white
 #' @description
 #' The statistic needs \eqn{\Xi^{-1/2}}. A Cholesky factorisation gives it

@@ -45,8 +45,10 @@ test_that("ordinal biclustering recovers fields as the sample grows", {
       for (c in seq_len(ncls)) {
         who <- which(cls == c)
         cum <- stats::pnorm(tau - (mu[c] + offset[field[j]]))
-        Q[who, j] <- sample.int(4, length(who), replace = TRUE,
-          prob = diff(c(0, cum, 1)))
+        Q[who, j] <- sample.int(4, length(who),
+          replace = TRUE,
+          prob = diff(c(0, cum, 1))
+        )
       }
     }
     return(Q)
@@ -86,10 +88,14 @@ test_that("memberships stay finite and normalised on a large ordinal sample", {
 
   expect_true(all(is.finite(fit$ClassMembership)))
   expect_true(all(is.finite(fit$FieldMembership)))
-  expect_equal(rowSums(fit$ClassMembership), rep(1, nobs), tolerance = 1e-8,
-    ignore_attr = TRUE)
-  expect_equal(rowSums(fit$FieldMembership), rep(1, 15), tolerance = 1e-8,
-    ignore_attr = TRUE)
+  expect_equal(rowSums(fit$ClassMembership), rep(1, nobs),
+    tolerance = 1e-8,
+    ignore_attr = TRUE
+  )
+  expect_equal(rowSums(fit$FieldMembership), rep(1, 15),
+    tolerance = 1e-8,
+    ignore_attr = TRUE
+  )
 })
 
 # Order-restricted biclustering on a long test (2026-07-27, v2.0.0)
@@ -119,8 +125,10 @@ test_that("isotonic biclustering assigns every item on a long test", {
     for (c in seq_len(ncls)) {
       who <- which(cls == c)
       cum <- stats::pnorm(tau - (mu[c] + offset[field[j]]))
-      Q[who, j] <- sample.int(5, length(who), replace = TRUE,
-        prob = diff(c(0, cum, 1)))
+      Q[who, j] <- sample.int(5, length(who),
+        replace = TRUE,
+        prob = diff(c(0, cum, 1))
+      )
     }
   }
   dat <- suppressMessages(dataFormat(
@@ -129,8 +137,10 @@ test_that("isotonic biclustering assigns every item on a long test", {
   ))
 
   fit <- suppressWarnings(suppressMessages(
-    Biclustering(dat, ncls = ncls, nfld = nfld, method = "R",
-      estimation = "isotonic")
+    Biclustering(dat,
+      ncls = ncls, nfld = nfld, method = "R",
+      estimation = "isotonic"
+    )
   ))
 
   est <- as.vector(fit$FieldEstimated)

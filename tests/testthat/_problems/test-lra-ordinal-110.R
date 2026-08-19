@@ -50,8 +50,8 @@ result <- LRA(J15S3810, mic = TRUE, nrank = 3, method = "GTM")
 
 # test -------------------------------------------------------------------------
 TRP_mat <- TRP_ref[, 2:4] |>
-    as.matrix() |>
-    unname()
+  as.matrix() |>
+  unname()
 expect1 <- TRP_mat[1, ] |> as.vector()
 expect2 <- TRP_mat[2, ] |> as.vector()
 actual1 <- result$TRP |> as.vector()

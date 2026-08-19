@@ -51,9 +51,9 @@ result <- LRA(J15S3810, mic = TRUE, nrank = 3, method = "GTM")
 # test -------------------------------------------------------------------------
 expect <- TesFit3[-3, 3] |> as.numeric()
 actual <- result$TestFitIndices |>
-    unclass() |>
-    unlist() |>
-    as.numeric()
+  unclass() |>
+  unlist() |>
+  as.numeric()
 actual <- actual[-c(1, 2, 3, 5, 7)]
 cols_to_test <- 1:7
 expect_equal(actual[cols_to_test], expect[cols_to_test], tolerance = 1e-4)

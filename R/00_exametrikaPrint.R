@@ -83,12 +83,15 @@ print.exametrika <- function(x, digits = 3, fit_indices = c("both", "pattern", "
     M2 = {
       cat("Limited-information goodness-of-fit (M2)\n")
       cat(sprintf("M2 = %.3f, df = %d, p = %.4f\n", x$M2, x$df, x$p))
-      cat(sprintf("margins = %d, parameters = %d, rank of Jacobian = %d\n",
-                  x$m, x$n_param, x$rank_delta))
+      cat(sprintf(
+        "margins = %d, parameters = %d, rank of Jacobian = %d\n",
+        x$m, x$n_param, x$rank_delta
+      ))
       if (x$rank_delta < x$n_param) {
         cat(sprintf(
           "  (the Jacobian is %d short of the parameter count: the class space can be rotated\n   without changing the margins, so df counts the rank, not the parameters)\n",
-          x$n_param - x$rank_delta))
+          x$n_param - x$rank_delta
+        ))
       }
     },
     LRA = print_lra_case(x, digits),

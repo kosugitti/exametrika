@@ -51,8 +51,8 @@ result <- LRA(J15S3810, mic = TRUE, nrank = 3, method = "GTM")
 # test -------------------------------------------------------------------------
 expect <- TesFit2[, -c(1, 4)] |> as.data.frame()
 actual <- result$ItemFitIndices |>
-    unclass() |>
-    as.data.frame()
+  unclass() |>
+  as.data.frame()
 actual <- actual[, -c(1, 2, 3, 5, 7)]
 rownames(expect) <- rownames(actual) <- NULL
 colnames(expect) <- colnames(actual) <- NULL

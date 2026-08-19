@@ -181,7 +181,7 @@ LRA.binary <- function(U,
 
     fit <- emclus(tmp$U, tmp$Z,
       ncls = ncls,
-      Fil = Filter, beta1, beta2, mic = mic,
+      Fil = Filter, beta1, beta2, maxiter = maxiter, mic = mic,
       conf = conf
     )
   }

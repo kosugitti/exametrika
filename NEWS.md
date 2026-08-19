@@ -6,6 +6,18 @@ now returns different numbers, and no longer the numbers printed in Shojima
 (2022). A minor bump would have understated that. The deprecation removals
 planned for 2.0.0 ride along, so that the break happens once.
 
+## Bug Fixes (2.0.0, continued)
+
+- **`LRA(method = "GTM")` ignored `maxiter`.** The GTM branch called the EM loop
+  without passing the argument on, so it always stopped at `emclus()`'s default
+  of 100 cycles no matter what the caller asked for -- while the help said the
+  default was 1000. The `SOM` and `isotonic` branches were unaffected. Fits that
+  needed more than 100 cycles returned with `converge = FALSE` and estimates
+  short of the maximum; on the packaged datasets 100 was enough, which is why it
+  went unnoticed. Found while building a small cross-validation dataset that
+  needs 113 cycles, where the log-likelihood came out 7.2e-4 away from the
+  reference and lands on it exactly once the argument is honoured.
+
 ## Removals (breaking)
 
 The names deprecated in earlier releases are gone. Each carried a deprecation

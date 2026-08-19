@@ -58,3 +58,20 @@ stopifnot(!any(apply(U, 2, function(c) length(unique(c)) < 2)))
 out <- data.frame(ID = sprintf("S%03d", seq_len(n)), U, check.names = FALSE)
 colnames(out) <- c("ID", sprintf("Item%02d", seq_len(j)))
 write.csv(out, "tinyCTT.csv", row.names = FALSE, quote = FALSE)
+
+# --- tinyLRA: 二値・160名x10項目・4ランク・欠測なし ---
+# ランクが上がるほど各項目の正答率が単調に上がる構造(GTM の想定)を植える。
+set.seed(20260819)
+n <- 160
+j <- 10
+nrank <- 4
+rk <- rep(seq_len(nrank), length.out = n)
+base <- seq(0.15, 0.85, length.out = j)
+prof <- t(sapply(seq_len(nrank), function(r) {
+  plogis(qlogis(base) + (r - (nrank + 1) / 2) * 1.1)
+}))
+U <- matrix(rbinom(n * j, 1, prof[rk, ]), n, j)
+stopifnot(!any(apply(U, 2, function(c) length(unique(c)) < 2)))
+out <- data.frame(ID = sprintf("S%03d", seq_len(n)), U, check.names = FALSE)
+colnames(out) <- c("ID", sprintf("Item%02d", seq_len(j)))
+write.csv(out, "tinyLRA.csv", row.names = FALSE, quote = FALSE)

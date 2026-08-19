@@ -5,7 +5,7 @@
 `exametrika` is an R package for Test Data Engineering based on Shojima (2022, ISBN:978-9811699856).
 It provides psychometric analysis tools: CTT, IRT, GRM, LCA, LRA, Biclustering, BNM, LDLRA, LDB, BINET.
 
-- **Current version**: 2.0.0 (dev; CRAN submission early September 2026, after the A3 simulation)
+- **Current version**: 2.0.0 (dev; **ready to submit** -- the A3 simulation that set the September date finished 2026-08-17, and the >= 1 month CRAN cadence has been clear since mid-August)
 - **CRAN version**: 1.15.0 (accepted/published 2026-07)
 - **GitHub Release**: v1.15.0 (2026-07-15, latest) / v1.14.0 (2026-06-14)
 - **License**: MIT
@@ -525,6 +525,37 @@ rated = nominal + correct answer (multiple-choice tests); ordinal = Likert-type 
   Details under "Known Technical Debt" and in `NEWS.md` / `WORKLOG.md`.
 - Downstream: ggExametrika v1.1.2 (audit release, ready) will be submitted after
   this version is accepted, so its GRM information plots match the fixed parent
+
+### 2.0.0 の提出前に踏んだ地雷 (2026-08-19・次回も効く)
+
+- **計画を実装済みと思い込まない。**NEWS もマージコミットも「非推奨名を削除した」と書いて
+  いたが，**一度も削除されていなかった**。pkgdown の索引を直そうとして気づいた。CRAN 向け
+  文書に書く前に，`grep -c "^export(名前)" NAMESPACE` の類で**実物を確認する**。
+- **`R CMD check` が通ることは，やるべきことをやった証拠にならない。**何も消していなければ
+  壊れようがない。
+- **win-builder の `Status: OK` は「提出しても通る」ではない。**10分の checktime 上限は
+  提出時の incoming 検査で適用される。win-builder はビルドと検査が通るかを見るだけ。
+  **必ずログの `checking tests` の秒数を見る。**
+- **Windows が遅いのは参照BLAS。**CRAN の Windows 版 R は SIMD もキャッシュブロッキングも
+  無い参照実装を同梱する。**行列分解を含むテストだけが桁違いに遅くなる**（M2 は項目数の3乗）。
+  実測: 同じ Linux 機で `test-lca.R` が OpenBLAS 1スレッド 64秒 / 参照BLAS 1222秒。
+  **代役の作り方**:
+  ```bash
+  LD_PRELOAD=/usr/lib/x86_64-linux-gnu/lapack/liblapack.so.3:/usr/lib/x86_64-linux-gnu/blas/libblas.so.3 Rscript ...
+  ```
+  Al-khwa でこれをやると win-builder とほぼ一致する（1378秒 対 1315秒）。**投げて待つ前に
+  手元で判定できる。**
+- **重いテストは `skip_on_cran()` の前に「データを小さくできないか」を見る。**主張が構造的
+  （母数の数え方・オブジェクトの大きさ・caveat の文言）なら大きなデータは要らない。
+  caveat は `$model` と `$estimation` だけで決まる純粋な関数だったので，生成した 120x12 で
+  0.29 秒で足りた。**同梱データは増やさず，テストファイル内で種を固定して生成する。**
+- **`list(...)` から行を消すと空要素が残る。**`list(a = 1, )` は構文エラー。カンマが
+  (a) 素の行末，(b) 孤立コメントの手前，(c) 行内コメントの手前 の3パターンある。
+- **`develop/myBiber.bib` は相対 symlink**（`../../../myBiber.bib`）。絶対パスにすると
+  ユーザ名が焼き込まれて他機で `R CMD build` が落ちる。`.Rbuildignore` に `^develop$` が
+  あっても落ちる——**build は先に全体をコピーしてから除外を適用する**。
+- **NEWS.md の履歴部分の誤字は直さない。**あれは「そのとき何を出したか」の記録。
+  現行の Rd/roxygen の誤字は直す。
 
 ### Version policy (decided 2026-07-26)
 

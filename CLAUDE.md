@@ -543,8 +543,9 @@ rated = nominal + correct answer (multiple-choice tests); ordinal = Likert-type 
   ```bash
   LD_PRELOAD=/usr/lib/x86_64-linux-gnu/lapack/liblapack.so.3:/usr/lib/x86_64-linux-gnu/blas/libblas.so.3 Rscript ...
   ```
-  Al-khwa でこれをやると win-builder とほぼ一致する（1378秒 対 1315秒）。**投げて待つ前に
-  手元で判定できる。**
+  **ただし絶対時間の代役にはならない。**BLAS 律速の部分が支配的なあいだは一致するが
+  （修正前 1378秒 対 1315秒），それを取り除くとずれる（修正後 189秒 対 422秒）。
+  **使いどころは「どのテストが BLAS で重いか」の特定と順位づけ。**最終判断は win-builder。
 - **重いテストは `skip_on_cran()` の前に「データを小さくできないか」を見る。**主張が構造的
   （母数の数え方・オブジェクトの大きさ・caveat の文言）なら大きなデータは要らない。
   caveat は `$model` と `$estimation` だけで決まる純粋な関数だったので，生成した 120x12 で

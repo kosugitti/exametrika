@@ -305,6 +305,8 @@ test_that("grm_iif matches the numerical Fisher information", {
 })
 
 test_that("GRM posterior ability estimates use the product likelihood", {
+  # Recomputes the posterior independently to verify the estimator, on a 1000-respondent fit. Verifies arithmetic, not the platform. Runs locally.
+  skip_on_cran()
   data("J5S1000", package = "exametrika")
   fit <- GRM(J5S1000, verbose = FALSE)
 

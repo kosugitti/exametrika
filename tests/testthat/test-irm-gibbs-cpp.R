@@ -83,6 +83,8 @@ test_that("nominal IRM Gibbs: C++ matches R after 1 iteration", {
 })
 
 test_that("nominal IRM Gibbs: C++ matches R after 10 iterations", {
+  # An equivalence check between the C++ and R paths. It costs two full runs and verifies our own arithmetic, not the platform. Runs locally.
+  skip_on_cran()
   rR <- run_R(state_nom, max_iter = 10)
   rC <- run_C(state_nom, max_iter = 10)
   expect_equal(rC$ncls, rR$ncls)
@@ -113,6 +115,8 @@ test_that("ordinal IRM Gibbs: C++ matches R after 1 iteration", {
 })
 
 test_that("ordinal IRM Gibbs: C++ matches R after 5 iterations", {
+  # An equivalence check between the C++ and R paths. It costs two full runs and verifies our own arithmetic, not the platform. Runs locally.
+  skip_on_cran()
   rR <- run_R(state_ord, max_iter = 5)
   rC <- run_C(state_ord, max_iter = 5)
   expect_equal(rC$cls, rR$cls)

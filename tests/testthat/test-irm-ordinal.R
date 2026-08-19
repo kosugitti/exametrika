@@ -256,6 +256,8 @@ test_that("Ordinal IRM Backward Compatibility", {
 })
 
 test_that("Ordinal IRM Seed Reproducibility", {
+  # A reproducibility check: it re-fits the same model to compare runs, which is the expensive shape and the one CRAN gains least from. Runs locally, and under devtools::check(cran = TRUE).
+  skip_on_cran()
   # Same seed should produce identical results
   result_a <- Biclustering_IRM(J35S500, gamma_c = 1, gamma_f = 1, seed = 42, verbose = FALSE)
   result_b <- Biclustering_IRM(J35S500, gamma_c = 1, gamma_f = 1, seed = 42, verbose = FALSE)
@@ -275,6 +277,8 @@ test_that("Ordinal IRM Seed Reproducibility", {
 })
 
 test_that("Ordinal IRM Seed NULL Does Not Set Seed", {
+  # A reproducibility check: it re-fits the same model to compare runs, which is the expensive shape and the one CRAN gains least from. Runs locally, and under devtools::check(cran = TRUE).
+  skip_on_cran()
   result_null <- Biclustering_IRM(J35S500, gamma_c = 1, gamma_f = 1, seed = NULL, verbose = FALSE)
   expect_s3_class(result_null, "exametrika")
   expect_true("ordinalBiclustering" %in% class(result_null))

@@ -99,7 +99,7 @@ build_conf_mat <- function(conf, nitems) {
 #'  \item{n_class}{Number of latent classes/ranks specified}
 #'  \item{n_field}{Number of latent fields specified}
 #'  \item{n_cycle}{Number of EM iterations performed}
-#'  \item{converge}{Logical value indicating wheter the algorithm converged within maxiter iterasions}
+#'  \item{converge}{Logical value indicating whether the algorithm converged within maxiter iterations}
 #'  \item{LFD}{Latent Field Distribution - counts of items assigned to each field}
 #'  \item{LRD/LCD}{Latent Rank/Class Distribution - counts of examinees assigned to each class/rank}
 #'  \item{FRP}{Field Reference Profile matrix - probability of correct response for each field-class combination}

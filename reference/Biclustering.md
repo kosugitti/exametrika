@@ -232,8 +232,8 @@ An object of class "exametrika" and "Biclustering" containing:
 
 - converge:
 
-  Logical value indicating wheter the algorithm converged within maxiter
-  iterasions
+  Logical value indicating whether the algorithm converged within
+  maxiter iterations
 
 - LFD:
 

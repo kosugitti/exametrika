@@ -391,13 +391,17 @@ test_that("the Jacobian rank deficiency follows the same rule for LRA", {
 })
 
 test_that("M2 for biclustering counts field-shared parameters", {
-  dat <- dataFormat(J35S500)
+  # J20S600 (20 items, 4 categories) rather than J35S500: the assertion is about
+  # how the parameters are counted, not about the data, and M2 on 35 items costs
+  # roughly 130x more under the reference BLAS that CRAN's Windows build uses.
+  dat <- dataFormat(J20S600)
+  ncat <- 4
   ncls <- 4
   nfld <- 3
   fit <- suppressMessages(Biclustering(dat, ncls = ncls, nfld = nfld, method = "B"))
   r <- M2(fit, verbose = FALSE)
   # one profile per (field, class), not per (item, class)
-  expect_equal(r$n_param, nfld * ncls * (5 - 1))
+  expect_equal(r$n_param, nfld * ncls * (ncat - 1))
   expect_equal(r$n_param - r$rank_delta, (ncls - 1) * (ncls - 2) / 2)
   expect_equal(r$df, r$m - r$rank_delta)
 })
@@ -425,7 +429,7 @@ test_that("biclustering M2 refuses ragged category counts", {
 test_that("the M2 object stays small whatever the item count", {
   # the simulation keeps one of these per fit, so it must not carry the
   # residual vector or anything else that grows with m
-  dat <- dataFormat(J35S500)
+  dat <- dataFormat(J20S600)
   fit <- suppressMessages(Biclustering(dat, ncls = 3, nfld = 2, method = "B"))
   r <- M2(fit, verbose = FALSE)
   expect_lt(as.numeric(object.size(r)), 10000)
@@ -455,7 +459,14 @@ test_that("add_M2 works for LRA and biclustering, with an honest caveat", {
 })
 
 test_that("biclustering caveats name the reason that applies", {
-  dat <- dataFormat(J35S500)
+  # The caveat is a pure function of $model and $estimation (m2_caveat_*), so it
+  # needs no particular data -- only a fit that records model 2 and the filter.
+  # A generated 120x12 frame does that in 0.3 s; J35S500 took roughly 20 min
+  # under the reference BLAS in CRAN's Windows build, which is what sank 1.13.0.
+  set.seed(1)
+  Q <- matrix(sample(1:4, 12 * 120, replace = TRUE), nrow = 120, ncol = 12)
+  colnames(Q) <- paste0("Item", seq_len(12))
+  dat <- dataFormat(as.data.frame(cbind(ID = seq_len(120), Q)))
   b <- add_M2(suppressMessages(Biclustering(dat, ncls = 3, nfld = 2, method = "B")),
     verbose = FALSE
   )

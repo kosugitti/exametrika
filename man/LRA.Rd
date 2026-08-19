@@ -17,7 +17,7 @@ LRA(U, ...)
   nrank = 2,
   method = "isotonic",
   mic = FALSE,
-  maxiter = 100,
+  maxiter = 1000,
   BIC.check = FALSE,
   seed = NULL,
   verbose = FALSE,
@@ -73,7 +73,7 @@ smoothing). Default is "isotonic".}
 
 \item{mic}{Logical; if TRUE, forces Item Reference Profiles to be monotonically increasing. Default is FALSE.}
 
-\item{maxiter}{Maximum number of iterations for estimation. Default is 100.}
+\item{maxiter}{Maximum number of iterations for estimation. Default is 1000.}
 
 \item{BIC.check}{For binary data with SOM method only. If TRUE, convergence is checked using BIC values. Default is FALSE.}
 

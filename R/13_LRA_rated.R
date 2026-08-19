@@ -192,14 +192,14 @@ LRA.rated <- function(U,
     CijkMat[i, ] <- tmp
   }
 
-  quantileScore <- quantile(score, probs = (1:(nquan - 1)) / nquan)
-  quantileRank <- rowSums(outer(score, quantileScore, ">")) + 1
+  quantileRank <- score_groups(score, nquan)
   quantileRefVec <- matrix(0, nrow = nitems, ncol = nquan)
   for (j in 1:nitems) {
     for (k in 1:nquan) {
       quantileRefVec[j, k] <- mean(U$U[quantileRank == k, j])
     }
   }
+  quantileRefVec <- fill_empty_groups(quantileRefVec)
 
   QRVdf <- data.frame(quantileRefVec)
   names(QRVdf) <- paste0("Q", 1:nquan)
@@ -327,13 +327,16 @@ LRA.rated <- function(U,
   while (FLG) {
     old_log_lik_satu <- ij_log_lik_satu
 
-    rankProf_num_satu <- exp(CijkMat %*% log(catRefmat_satu + const))
-    rankProf_den_satu <- rowSums(rankProf_num_satu)
-    rankProf_satu <- rankProf_num_satu / rankProf_den_satu
+    ll_satu <- CijkMat %*% log(catRefmat_satu + const)
+    rankProf_satu <- row_softmax(ll_satu)
 
     refMatcore_satu <- t(CijkMat) %*% rankProf_satu
 
     catRefmat_satu <- refMatcore_satu / design5 %*% refMatcore_satu
+    # ここは往復のまま残す。const を外すと値が大きく動き(exp(ll) < const の
+    # 場面では log(const) に張り付いていた)、Mathematica 参照値と食い違う。
+    # 荘島実装の挙動そのものなので、直すなら別件として承認を取る。
+    rankProf_num_satu <- exp(ll_satu)
     log_lik_satu <- sum(rankProf_satu * (log(rankProf_num_satu + const)))
     ij_log_lik_satu <- log_lik_satu / nitems / nobs
 
@@ -399,9 +402,8 @@ LRA.rated <- function(U,
   FLG <- TRUE
   while (FLG) {
     old_log_lik <- ij_log_lik
-    rankProf_num <- exp(CijkMat %*% log(catRefmat + const) + logprior_NQmat)
-    rankProf_den <- rowSums(rankProf_num)
-    rankProf <- rankProf_num / rankProf_den
+    llmat <- CijkMat %*% log(catRefmat + const) + logprior_NQmat
+    rankProf <- row_softmax(llmat)
 
     refMatcore <- t(CijkMat) %*% rankProf %*% Fil
     catRefmat <- refMatcore / design5 %*% refMatcore
@@ -424,7 +426,13 @@ LRA.rated <- function(U,
 
     catRefmat <- do.call(rbind, catRefbox)
 
-    log_lik <- sum(rankProf * log(rankProf_num))
+    # 期待対数事後は対数のまま足す。exp() してから log() で戻す往復は代数的に
+    # 恒等だが、その途中でアンダーフローする: 2000人 x 60項目 x 5カテゴリの
+    # 規模だと ll の要素が -700 を下回り、exp() が 0 に落ちて log(0) = -Inf、
+    # 0 * -Inf = NaN となって収束判定の if が NA で落ちる。const を足した版は
+    # 落ちない代わりに log(const) という無関係な定数に化けるので、黙って
+    # 間違った値で回り続ける。
+    log_lik <- sum(rankProf * llmat)
     ij_log_lik <- log_lik / nitems / nobs
 
     iter <- iter + 1
@@ -483,9 +491,7 @@ LRA.rated <- function(U,
   testRefVec <- apply(catRefmat[design6, ], 2, sum)
 
   ## rank Profile
-  rankProf_num <- exp(CijkMat %*% log(catRefmat + const) + logprior_NQmat)
-  rankProf_den <- rowSums(rankProf_num)
-  rankProf <- rankProf_num / rankProf_den
+  rankProf <- row_softmax(CijkMat %*% log(catRefmat + const) + logprior_NQmat)
 
   rankmemb <- apply(rankProf, 1, which.max)
   rankmemb01 <- sign(rankProf - apply(rankProf, 1, max)) + 1
@@ -519,7 +525,11 @@ LRA.rated <- function(U,
       scoreMembDist[s + 1, ] <- colSums(rankProf[score == s, , drop = FALSE])
     }
   }
-  rankQuanDist <- unname(table(rankmemb, quantileRank))
+  # keep empty score groups as columns; see the ordinal path for why
+  rankQuanDist <- unname(table(
+    factor(rankmemb, levels = seq_len(nrank)),
+    factor(quantileRank, levels = seq_len(nrank))
+  ))
   membQuanDist <- matrix(0, nrow = nrank, ncol = nquan)
   rho2 <- cor(rankmemb, quantileRank, method = "spearman")
   for (q in 1:nquan) {
@@ -534,9 +544,7 @@ LRA.rated <- function(U,
   null_itemdf <- (useNcat - 1) * (nitems - 1)
   null_testdf <- sum(null_itemdf)
 
-  rankProf_num_satu <- exp(CijkMat %*% log(catRefmat_satu + const))
-  rankProf_den_satu <- rowSums(rankProf_num_satu)
-  rankProf_satu <- rankProf_num_satu / rankProf_den_satu
+  rankProf_satu <- row_softmax(CijkMat %*% log(catRefmat_satu + const))
   Rank_satu <- apply(rankProf_satu, 1, which.max)
   Rank_satu01 <- sign(rankProf_satu - apply(rankProf_satu, 1, max)) + 1
 

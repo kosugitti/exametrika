@@ -138,7 +138,7 @@ print_rated_biclustering_case <- function(x, digits) {
 
 #' @title Print helper: nominalBiclustering
 #' @noRd
-print_nominal_biclustering_case <- function(x, digits) {
+print_nominal_biclustering_case <- function(x, digits, fit_indices = "both") {
   cat(paste("Biclustering Reference Matrix Profile\n"))
   for (q in 1:dim(x$FRP)[3]) {
     cat(paste("For category", q, "\n"))
@@ -171,11 +171,14 @@ print_nominal_biclustering_case <- function(x, digits) {
   y <- t(as.data.frame(y))
   colnames(y) <- "value"
   print(round(y, digits))
+  if (!is.null(x$TestFitIndicesM2) && fit_indices %in% c("both", "margin")) {
+    print_margin_block(x$TestFitIndicesM2, digits)
+  }
 }
 
 #' @title Print helper: ordinalBiclustering
 #' @noRd
-print_ordinal_biclustering_case <- function(x, digits) {
+print_ordinal_biclustering_case <- function(x, digits, fit_indices = "both") {
   model_name <- ifelse(x$model == 1, "Biclustering", "Ranklustering")
   mic_suffix <- if (x$mic) " [MIC]" else ""
 
@@ -230,6 +233,9 @@ print_ordinal_biclustering_case <- function(x, digits) {
   print(round(y, digits))
   if (x$WOACflg) {
     cat("Weakly Ordinal Alignment Condition is Satisfied.\n")
+  }
+  if (!is.null(x$TestFitIndicesM2) && fit_indices %in% c("both", "margin")) {
+    print_margin_block(x$TestFitIndicesM2, digits)
   }
 }
 

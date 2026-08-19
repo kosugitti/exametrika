@@ -131,8 +131,7 @@ LRA.ordinal <- function(U,
     uuMat[, design1[j, 1]:design1[j, 2]] <- UU[, j, 1:ncat[j]]
   }
 
-  quantileScore <- quantile(score, probs = (1:(nquan - 1)) / nquan)
-  quantileRank <- rowSums(outer(score, quantileScore, ">")) + 1
+  quantileRank <- score_groups(score, nquan)
 
 
   quanRefmat <- array(NA, dim = c(nitems, max(ncat) - 1, nquan))
@@ -144,6 +143,9 @@ LRA.ordinal <- function(U,
       catquanRefmat[j, , q] <- apply(UU[quantileRank == q, j, ], 2, sum) / apply(U$Z[quantileRank == q, ], 2, sum)[j]
     }
   }
+  # A score group can come out empty; borrow from the nearest one that did not
+  quanRefmat <- fill_empty_groups(quanRefmat)
+  catquanRefmat <- fill_empty_groups(catquanRefmat)
 
 
   ## Category Quantile Report
@@ -250,9 +252,8 @@ LRA.ordinal <- function(U,
   while (FLG) {
     old_log_like_satu <- ij_log_lik_satu
     ## Estep
-    nume_satu <- exp(uuMat %*% log(catRefMat_satu + const))
-    denom_satu <- rowSums(nume_satu)
-    rankProf_satu <- nume_satu / denom_satu
+    ll_satu <- uuMat %*% log(catRefMat_satu + const)
+    rankProf_satu <- row_softmax(ll_satu)
 
     ## Mstep
     refMatcore_satu <- t(uuMat) %*% rankProf_satu
@@ -261,6 +262,10 @@ LRA.ordinal <- function(U,
     refMat000_satu[design0, ] <- 0
     catRefMat_satu <- refMat111_satu - refMat000_satu
     ### Log Lik for Saturation Model
+    # ここは往復のまま残す。const を外すと値が大きく動き(exp(ll) < const の
+    # 場面では log(const) に張り付いていた)、Mathematica 参照値と食い違う。
+    # 荘島実装の挙動そのものなので、直すなら別件として承認を取る。
+    nume_satu <- exp(ll_satu)
     log_lik_satu <- sum(rankProf_satu * log(nume_satu + const))
     ij_log_lik_satu <- log_lik_satu / nitems / nobs
 
@@ -337,9 +342,8 @@ LRA.ordinal <- function(U,
   while (FLG) {
     old_log_like <- ij_log_lik
     ## Estep
-    nume <- exp(uuMat %*% log(catRefMat + const) + logprior_NQmat)
-    denom <- rowSums(nume)
-    rankProf <- nume / denom
+    llmat <- uuMat %*% log(catRefMat + const) + logprior_NQmat
+    rankProf <- row_softmax(llmat)
 
     if (method == "isotonic") {
       # Order-restricted MAP per item (Fenchel dual; no filter)
@@ -347,7 +351,8 @@ LRA.ordinal <- function(U,
       for (j in 1:nitems) {
         rows_j <- design1[j, 1]:design1[j, 2]
         Mcount <- t(ecount[rows_j, , drop = FALSE]) + (alpha - 1)
-        Pj <- iso_dual_map(Mcount, maxiter = maxiter, tol = 1e-6)
+        # Own iteration budget; see the note in Biclustering.ordinal().
+        Pj <- iso_dual_map(Mcount, tol = 1e-6)
         catRefMat[rows_j, ] <- t(Pj)
         refMat111[rows_j, ] <- apply(Pj, 1, function(pr) rev(cumsum(rev(pr))))
       }
@@ -369,7 +374,13 @@ LRA.ordinal <- function(U,
       catRefMat <- refMat111 - refMat000
     }
 
-    log_lik <- sum(rankProf * log(nume))
+    # 期待対数事後は対数のまま足す。exp() してから log() で戻す往復は代数的に
+    # 恒等だが、その途中でアンダーフローする: 2000人 x 60項目 x 5カテゴリの
+    # 規模だと ll の要素が -700 を下回り、exp() が 0 に落ちて log(0) = -Inf、
+    # 0 * -Inf = NaN となって収束判定の if が NA で落ちる。const を足した版は
+    # 落ちない代わりに log(const) という無関係な定数に化けるので、黙って
+    # 間違った値で回り続ける。
+    log_lik <- sum(rankProf * llmat)
     ij_log_lik <- log_lik / nitems / nobs
 
     iter <- iter + 1
@@ -394,9 +405,7 @@ LRA.ordinal <- function(U,
 
 
   # results ---------------------------------------------------------
-  nume <- exp(uuMat %*% log(catRefMat + const) + logprior_NQmat)
-  denom <- rowSums(nume)
-  rankProf <- nume / denom
+  rankProf <- row_softmax(uuMat %*% log(catRefMat + const) + logprior_NQmat)
 
   ## Item - Prob report
   boundary_report <- as.data.frame(refMat111)
@@ -448,7 +457,12 @@ LRA.ordinal <- function(U,
     }
   }
 
-  rankQuanDist <- unname(table(rankmemb, quantileRank))
+  # An empty score group must still appear as a column: table() drops unused
+  # levels, and the row/column names assigned below assume all nrank of them.
+  rankQuanDist <- unname(table(
+    factor(rankmemb, levels = seq_len(nrank)),
+    factor(quantileRank, levels = seq_len(nrank))
+  ))
   membQuanDist <- matrix(0, nrow = nrank, ncol = nquan)
   rho2 <- cor(rankmemb, quantileRank, method = "spearman")
   for (q in 1:nquan) {
@@ -476,9 +490,7 @@ LRA.ordinal <- function(U,
   null_itemdf <- (ncat - 1) * (nitems - 1)
   null_testdf <- sum(null_itemdf)
 
-  rankProf_satu_num <- exp(uuMat %*% log(catRefMat_satu + const))
-  rankProf_satu_denom <- rowSums(rankProf_satu_num)
-  rankProf_satu <- rankProf_satu_num / rankProf_satu_denom
+  rankProf_satu <- row_softmax(uuMat %*% log(catRefMat_satu + const))
   Rank_satu <- apply(rankProf_satu, 1, which.max)
   Rank_satu01 <- sign(rankProf_satu - apply(rankProf_satu, 1, max)) + 1
 

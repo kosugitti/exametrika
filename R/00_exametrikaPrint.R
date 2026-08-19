@@ -7,6 +7,11 @@
 #'
 #' @param x An object of class "exametrika" with various possible subclasses
 #' @param digits Integer indicating the number of decimal places to display. Default is 3.
+#' @param fit_indices For models that can carry both: which set of fit indices to
+#'   show. "both" (default), "pattern" for the response-pattern based ones, or
+#'   "margin" for the margin-based ones from \code{\link{add_M2}}. The two are
+#'   built from chi-squares that live in different worlds and are never combined
+#'   into a single set.
 #' @param ... Additional arguments passed to print methods (not currently used)
 #'
 #' @details
@@ -57,7 +62,8 @@
 #' @export
 #'
 
-print.exametrika <- function(x, digits = 3, ...) {
+print.exametrika <- function(x, digits = 3, fit_indices = c("both", "pattern", "margin"), ...) {
+  fit_indices <- match.arg(fit_indices)
   value <- if (length(class(x)) > 1) tail(class(x), 1) else "all"
 
   switch(value,
@@ -72,13 +78,26 @@ print.exametrika <- function(x, digits = 3, ...) {
     IRT = print_irt_case(x, digits),
     GRM = print_grm_case(x, digits),
     LCA = print_lca_case(x, digits),
+    nominalLCA = print_nominal_lca_case(x, digits, fit_indices),
+    ratedLCA = print_rated_lca_case(x, digits, fit_indices),
+    M2 = {
+      cat("Limited-information goodness-of-fit (M2)\n")
+      cat(sprintf("M2 = %.3f, df = %d, p = %.4f\n", x$M2, x$df, x$p))
+      cat(sprintf("margins = %d, parameters = %d, rank of Jacobian = %d\n",
+                  x$m, x$n_param, x$rank_delta))
+      if (x$rank_delta < x$n_param) {
+        cat(sprintf(
+          "  (the Jacobian is %d short of the parameter count: the class space can be rotated\n   without changing the margins, so df counts the rank, not the parameters)\n",
+          x$n_param - x$rank_delta))
+      }
+    },
     LRA = print_lra_case(x, digits),
-    LRAordinal = print_lra_ordinal_case(x, digits),
+    LRAordinal = print_lra_ordinal_case(x, digits, fit_indices),
     LRArated = print_lra_rated_case(x, digits),
     Biclustering = print_biclustering_case(x, digits),
     ratedBiclustering = print_rated_biclustering_case(x, digits),
-    nominalBiclustering = print_nominal_biclustering_case(x, digits),
-    ordinalBiclustering = print_ordinal_biclustering_case(x, digits),
+    nominalBiclustering = print_nominal_biclustering_case(x, digits, fit_indices),
+    ordinalBiclustering = print_ordinal_biclustering_case(x, digits, fit_indices),
     IRM = print_irm_case(x, digits),
     BNM = print_bnm_case(x, digits),
     LDLRA = print_ldlra_case(x, digits),

@@ -111,11 +111,20 @@ test_that("iso_dual_map pools to the combined MLE under full reversal", {
   expect_equal(P[2, ], pooled, tolerance = 1e-5)
 })
 
-test_that("the C++ iso_dual_map reproduces the R reference exactly", {
+test_that("the C++ iso_dual_map agrees with the R reference", {
   # iso_dual_map() dispatches to src/isotonic_core.cpp; iso_dual_map_ref() is
-  # the pure-R original. The C++ port follows the same arithmetic operation for
-  # operation and only skips rebuilding rows that a given multiplier cannot
-  # touch, so the two must agree to the bit, not merely to a tolerance.
+  # the pure-R original. They implement the same method and converge to the
+  # same tolerance, but they are compared here to a tolerance rather than to
+  # the bit.
+  #
+  # Bit-for-bit agreement was attainable while both searches were bisections:
+  # the sequence of midpoints is made of exactly representable dyadic numbers
+  # and only the *sign* of the residual steers it, so differences far below the
+  # comparison threshold could not change the path. Both searches now use the
+  # residual's value -- Newton for the multiplier, Illinois for the dual
+  # variable -- and a difference in the last bits moves the next trial point,
+  # after which the two paths differ while converging to the same root. That is
+  # a property of value-driven root finding, not a defect in either version.
   cases <- list(
     rbind(c(1, 1, 8), c(8, 1, 1)), # full reversal, all boundaries pooled
     rbind(c(5, 25, 20), c(20, 5, 25)), # one boundary violated, one slack
@@ -124,10 +133,24 @@ test_that("the C++ iso_dual_map reproduces the R reference exactly", {
     rbind(c(2, 2, 2, 2), c(1, 3, 3, 1), c(4, 1, 1, 4)) # 4 categories
   )
   for (M in cases) {
-    expect_identical(
+    expect_equal(
       iso_dual_map(M, maxiter = 200, tol = 1e-8),
-      iso_dual_map_ref(M, maxiter = 200, tol = 1e-8)
+      iso_dual_map_ref(M, maxiter = 200, tol = 1e-8),
+      tolerance = 1e-4
     )
+  }
+})
+
+test_that("the solver returns rows that are probability distributions", {
+  # The multiplier's whole job is to make each row sum to one, so the row sums
+  # are the sharpest available check on the inner solve. Bisection left an
+  # error of about 2e-6 on real tables; Newton brings it to 3e-11.
+  set.seed(20260728)
+  for (i in 1:20) {
+    M <- matrix(stats::rgamma(30, shape = 2, scale = 40), nrow = 6, ncol = 5)
+    P <- iso_dual_map(M, tol = 1e-6)
+    expect_equal(rowSums(P), rep(1, 6), tolerance = 1e-9)
+    expect_true(all(P >= 0))
   }
 })
 
@@ -136,12 +159,33 @@ test_that("the C++ solution is a valid order-restricted solution on a larger tab
   # so check the properties directly instead of against the reference.
   set.seed(20260721)
   M <- matrix(stats::runif(120, 1, 100), nrow = 20, ncol = 6)
-  P <- iso_dual_map(M, maxiter = 200, tol = 1e-7)
+  P <- iso_dual_map(M, tol = 1e-7)
   expect_equal(rowSums(P), rep(1, 20), tolerance = 1e-8)
   expect_true(all(P > 0))
   S <- iso_upper_cum(P)
-  # Ranks must be non-decreasing at every boundary. The dual is stopped on the
-  # log-likelihood (a GEM step inside EM), so allow the small residual slack
-  # that partial optimisation leaves behind.
-  expect_lt(max(S[-nrow(S), , drop = FALSE] - S[-1, , drop = FALSE]), 1e-3)
+  # Ranks must be non-decreasing at every boundary.
+  expect_lt(max(S[-nrow(S), , drop = FALSE] - S[-1, , drop = FALSE]), 1e-6)
+})
+
+test_that("the sweeps stop on the order violation, not only on the likelihood", {
+  # Expected counts captured from a real EM run. Stopping on the log-likelihood
+  # alone leaves this table breaching the stochastic order by ~3e-3: near the
+  # optimum the likelihood moves quadratically while the violation is still
+  # shrinking geometrically, so the likelihood goes quiet several sweeps too
+  # early.
+  M <- structure(c(
+    0.036522, 22.276696, 44.354879, 218.191657, 91.140243, 3e-06,
+    0.370879, 46.030882, 69.993962, 22.48066, 36.123551, 6.7e-05,
+    0.000588, 33.602129, 118.580456, 12.411839, 53.404966, 2.1e-05,
+    0, 16.967987, 83.060792, 2.972278, 74.78479, 0.214151,
+    0, 3.72494, 166.932302, 8.084405, 73.686986, 0.571367
+  ), dim = 6:5)
+  worst <- function(P) {
+    S <- iso_upper_cum(P)
+    return(max(S[-nrow(S), , drop = FALSE] - S[-1, , drop = FALSE]))
+  }
+  expect_gt(worst(iso_dual_map(M, viol_tol = Inf)), 1e-3)
+  expect_lt(worst(iso_dual_map(M)), 1e-6)
+  expect_lt(worst(iso_dual_map_ref(M)), 1e-6)
+  expect_equal(rowSums(iso_dual_map(M)), rep(1, 6), tolerance = 1e-12)
 })

@@ -10,6 +10,30 @@ softmax <- function(x) {
   return(exp(x) / sum(exp(x)))
 }
 
+#' @title Row-wise softmax
+#' @description
+#' `softmax()` applied to every row, without an R-level loop. Subtracting the
+#' row maximum is what makes this safe: every exponent is then at most 0, so
+#' `exp()` cannot overflow and the largest entry is exactly 1, which also rules
+#' out a row underflowing to all zeros.
+#'
+#' Subtracting the row *minimum* instead -- as several E-steps used to do --
+#' pushes every exponent positive. The spread of these log-likelihood rows grows
+#' with whatever is being summed over (items for a class posterior, examinees for
+#' a field posterior), so on real data the exponents run into thousands, and
+#' clipping them at `exp(700)` silently collapses every entry above the clip onto
+#' the same value. Two fields differing by a factor of `exp(400)` came out equally
+#' likely (fixed 2026-07-27).
+#'
+#' @param x numeric matrix; rows are normalised independently
+#' @return matrix of the same shape whose rows sum to 1
+#' @noRd
+row_softmax <- function(x) {
+  x_max <- do.call(pmax.int, as.data.frame(x))
+  e <- exp(x - x_max)
+  return(e / rowSums(e))
+}
+
 #' @title Build a field/rank confirmatory membership matrix
 #' @description
 #' Shared parser for the `conf` argument used by Biclustering()/
@@ -321,10 +345,15 @@ Biclustering.binary <- function(U,
   }
 
   ### Algorithm
-  test_log_lik <- -1 / const
-  old_test_log_lik <- -2 / const
+  # -Inf, not -1/const = -exp(J): the old sentinel sits above the real
+  # log-likelihood on short tests with many respondents, which ended the
+  # loop after one cycle while reporting convergence. The first pass skips
+  # the comparison instead (emt == 0).
+  test_log_lik <- -Inf
+  old_test_log_lik <- -Inf
   emt <- 0
-  maxemt <- 100
+  # Raised from 100 with the tolerance tightened to 1e-8 (see NEWS).
+  maxemt <- 1000
 
   fld0 <- pmin(ceiling(1:testlength / (testlength / nfld)), nfld)
   crr_order <- order(crr(tmp), decreasing = TRUE)
@@ -364,7 +393,7 @@ Biclustering.binary <- function(U,
   FLG <- TRUE
   converge <- TRUE
   while (FLG) {
-    if (test_log_lik - old_test_log_lik < 1e-4 * abs(old_test_log_lik)) {
+    if (emt > 0 && test_log_lik - old_test_log_lik < 1e-8 * abs(old_test_log_lik)) {
       FLG <- FALSE
       break
     }

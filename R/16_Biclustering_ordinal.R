@@ -14,7 +14,7 @@
 #'   * NULL (default) for exploratory analysis where field memberships are estimated
 #' @param mic Logical; if TRUE, forces Field Reference Profiles to be monotonically
 #' increasing. Default is FALSE.
-#' @param maxiter Maximum number of EM algorithm iterations. Default is 100.
+#' @param maxiter Maximum number of EM algorithm iterations. Default is 1000.
 #' @param verbose Logical; if TRUE, displays progress during estimation. Default is FALSE.
 #' @param alpha Dirichlet distribution concentration parameter for prior density of field reference probabilities. Default is 1.
 #' @param ... Additional arguments passed to specific methods.
@@ -26,7 +26,7 @@ Biclustering.ordinal <- function(U,
                                  conf = NULL,
                                  conf_class = NULL,
                                  mic = FALSE,
-                                 maxiter = 100,
+                                 maxiter = 1000,
                                  verbose = FALSE,
                                  alpha = 1, ...) {
   tmp <- U
@@ -34,8 +34,12 @@ Biclustering.ordinal <- function(U,
   nobs <- NROW(tmp$Q)
   nitems <- NCOL(tmp$Q)
   const <- exp(-nitems)
-  test_log_lik <- -1 / const
-  old_test_log_lik <- -2 / const
+  # -Inf, not -1/const = -exp(J): the old sentinel sits above the real
+  # log-likelihood on short tests with many respondents, which ended the
+  # loop after one cycle while reporting convergence. The first pass skips
+  # the comparison instead (emt == 0).
+  test_log_lik <- -Inf
+  old_test_log_lik <- -Inf
   emt <- 0
   maxemt <- maxiter
   ncat <- as.vector(tmp$categories)
@@ -180,8 +184,8 @@ Biclustering.ordinal <- function(U,
   converge <- TRUE
   FLG <- TRUE
   while (FLG) {
-    if (!is.finite(test_log_lik) ||
-      test_log_lik - old_test_log_lik < 1e-8 * abs(old_test_log_lik)) {
+    if (emt > 0 && (!is.finite(test_log_lik) ||
+      test_log_lik - old_test_log_lik < 1e-8 * abs(old_test_log_lik))) {
       if (!is.finite(test_log_lik)) converge <- FALSE
       FLG <- FALSE
       break
@@ -200,8 +204,24 @@ Biclustering.ordinal <- function(U,
     # Both E-steps (class and field) use the same values across all q; the old
     # code recomputed this 2*maxQ times per iteration. Using drop=FALSE on
     # array slicing keeps the 3D shape even when nfld == 1.
-    log_delta <- log(BBRM[, , seq_len(maxQ), drop = FALSE] -
-      BBRM[, , seq_len(maxQ) + 1, drop = FALSE] + const)
+    #
+    # The difference of two upper-cumulative probabilities is a category
+    # probability, so it cannot be negative -- except by rounding. The
+    # order-restricted M-step pools adjacent categories, which makes exact ties
+    # common (11 of 30 differences on a 72-item fit), and a tie computed as a
+    # subtraction lands anywhere within a few ulp of zero. `const` cannot absorb
+    # that: it is exp(-nitems), which falls below double precision noise once the
+    # test passes about 37 items (exp(-72) is 5e-32 against errors of 1e-14), so
+    # log() of a negative difference returned NaN, the NaN reached the field
+    # posterior, and every item came back unassigned. Clamping at zero repairs
+    # only the rounding; a difference that is genuinely zero still becomes
+    # log(const), exactly as before, and every value that was already positive is
+    # unchanged to the bit.
+    log_delta <- log(pmax(
+      BBRM[, , seq_len(maxQ), drop = FALSE] -
+        BBRM[, , seq_len(maxQ) + 1, drop = FALSE],
+      0
+    ) + const)
 
     ## Msc <- Pi, Mjf
     tmpL <- matrix(0, nrow = nobs, ncol = ncls)
@@ -209,12 +229,7 @@ Biclustering.ordinal <- function(U,
       log_probs <- matrix(log_delta[, , q], nrow = nfld, ncol = ncls)
       tmpL <- tmpL + ZU[, , q] %*% fldmemb %*% log_probs
     }
-    # Row-wise min via C-level pmin.int instead of apply (one R-level call per row):
-    # do.call(pmin.int, as.data.frame(X)) passes each column as a separate argument,
-    # and pmin.int(col1, col2, ...) returns the element-wise min across columns.
-    minllsr <- do.call(pmin.int, as.data.frame(tmpL))
-    expllsr <- exp(pmin(tmpL - minllsr, 700))
-    clsmemb <- round(expllsr / rowSums(expllsr), 1e8)
+    clsmemb <- row_softmax(tmpL)
 
     if (!is.null(conf_class_mat)) {
       clsmemb <- conf_class_mat
@@ -239,9 +254,11 @@ Biclustering.ordinal <- function(U,
       tmpH <- tmpH + (t(ZU[, , q]) %*% smoothed_memb) %*% t(log_probs)
     }
 
-    minllsr <- do.call(pmin.int, as.data.frame(tmpH))
-    expllsr <- exp(pmin(tmpH - minllsr, 700)) # 700 is approx upper limit for exp()
-    fldmemb <- round(expllsr / rowSums(expllsr), 1e8)
+    # The field posterior sums over examinees, so its rows spread far wider than
+    # the class posterior's (which sums over items). This is where the old
+    # min-subtraction bit first: from about 700 examinees the exponents passed
+    # the clip and adjacent fields merged.
+    fldmemb <- row_softmax(tmpH)
 
     if (!any(is.null(conf_mat))) {
       fldmemb <- conf_mat
@@ -267,7 +284,13 @@ Biclustering.ordinal <- function(U,
       # the independent per-cell boundary MLE plus the crude `mic` relabelling.
       for (f in 1:nfld) {
         Mcount <- matrix(Ufcq_prior[f, , ], nrow = ncls, ncol = maxQ)
-        Pf <- iso_dual_map(Mcount, maxiter = maxiter, tol = 1e-6)
+        # The solver gets its own iteration budget (its default, 100). It used to
+        # inherit the EM's `maxiter`, which coupled two unrelated loops: raising
+        # the EM cap to 1000 for the convergence fix silently raised the inner
+        # solver's cap tenfold as well. It converges well inside 100 here --
+        # the fit is identical for any EM cap from 100 to 1000 -- but the two
+        # budgets have no reason to move together.
+        Pf <- iso_dual_map(Mcount, tol = 1e-6)
         BCRM[f, , ] <- Pf
         BBRM[f, , 1] <- 1
         BBRM[f, , 2:maxQ] <- iso_upper_cum(Pf)

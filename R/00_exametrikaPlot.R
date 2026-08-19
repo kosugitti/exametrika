@@ -75,6 +75,8 @@
 #'   \item{IRT}{Supports "IRF"/"ICC", "TRF", "IIF"/"IIC", "TIF"/"TIC"}
 #'   \item{GRM}{Supports "IRF"/"ICC", "IIF"/"IIC", "TIF"/"TIC"}
 #'   \item{LCA}{Supports "IRP", "FRP", "TRP", "LCD", "CMP"}
+#'   \item{nominalLCA}{Supports "ICRP", "LCD", "CMP"}
+#'   \item{ratedLCA}{Supports "IRP", "TRP", "ICRP", "LCD", "CMP"}
 #'   \item{LRA}{Supports "IRP", "FRP", "TRP", "LRD", "RMP"}
 #'   \item{LRAordinal}{Supports "ScoreFreq", "ScoreRank", "ICRP", "ICBR", "RMP"}
 #'   \item{LRArated}{Supports "ScoreFreq", "ScoreRank", "ICRP", "RMP"}
@@ -188,6 +190,8 @@ plot.exametrika <- function(x,
     IRT = c("IRF", "TRF", "IIF", "TIF", "IIC", "ICC", "TIC"),
     GRM = c("IRF", "IIF", "TIF", "IIC", "ICC", "TIC"),
     LCA = c("IRP", "TRP", "LCD", "CMP"),
+    nominalLCA = c("ICRP", "LCD", "CMP"),
+    ratedLCA = c("IRP", "TRP", "ICRP", "LCD", "CMP"),
     LRA = c("IRP", "TRP", "LRD", "RMP"),
     LRAordinal = c("ScoreFreq", "ScoreRank", "ICRP", "ICBR", "RMP"),
     LRArated = c("ScoreFreq", "ScoreRank", "ICRP", "RMP"),
@@ -236,6 +240,14 @@ plot.exametrika <- function(x,
     LCA = ,
     LRA = ,
     LDLRA = plot_common_profiles(x, type, value, plotItemID, plotStudentID, testlength, dots),
+    ratedLCA = ,
+    nominalLCA = {
+      if (type == "ICRP") {
+        plot_nominal_icrp(x, plotItemID, dots)
+      } else {
+        plot_common_profiles(x, type, value, plotItemID, plotStudentID, testlength, dots)
+      }
+    },
     LRAordinal = ,
     LRArated = {
       if (type == "RMP") {

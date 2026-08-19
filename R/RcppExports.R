@@ -37,8 +37,8 @@ iso_upper_cum_cpp <- function(P) {
     .Call(`_exametrika_iso_upper_cum_cpp`, P)
 }
 
-iso_dual_map_cpp <- function(Mcount, maxiter = 100L, tol = 1e-7, fast = TRUE) {
-    .Call(`_exametrika_iso_dual_map_cpp`, Mcount, maxiter, tol, fast)
+iso_dual_map_cpp <- function(Mcount, maxiter = 100L, tol = 1e-7, viol_tol = 1e-6, fast = TRUE) {
+    .Call(`_exametrika_iso_dual_map_cpp`, Mcount, maxiter, tol, viol_tol, fast)
 }
 
 qBiNormal_cpp <- function(a, b, rho) {

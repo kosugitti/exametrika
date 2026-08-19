@@ -439,7 +439,7 @@ test_that("regression: deprecated max_iter still works with a warning", {
 test_that("regression: unified defaults across the model functions", {
   # verbose defaults to FALSE everywhere it exists
   for (fn in list(
-    IRT, GRM, LCA, GridSearch,
+    IRT, GRM, exametrika:::LCA.binary, GridSearch,
     exametrika:::Biclustering.binary, exametrika:::Biclustering.nominal,
     exametrika:::Biclustering.ordinal, exametrika:::Biclustering.rated,
     exametrika:::Biclustering_IRM.binary, exametrika:::Biclustering_IRM.nominal,

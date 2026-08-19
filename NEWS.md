@@ -1,6 +1,209 @@
-# exametrika 1.16.0 (development, targeting CRAN 2026-08-15)
+# exametrika 2.0.0 (development; renamed from 1.16.0 on 2026-07-26)
+
+The version number was raised to 2.0.0 because the EM convergence fix below
+changes the estimates of every EM-based model: the same code on the same data
+now returns different numbers, and no longer the numbers printed in Shojima
+(2022). A minor bump would have understated that. The deprecation removals
+planned for 2.0.0 ride along, so that the break happens once.
 
 ## Bug Fixes
+
+- **Posterior memberships were normalised by subtracting the row *minimum*, and
+  polytomous biclustering silently merged fields once the sample passed roughly
+  700 respondents.** The E-steps turn a matrix of log-likelihoods into
+  memberships. Doing that safely means subtracting the row maximum before
+  exponentiating, so every exponent is at most zero. Several E-steps subtracted
+  the row minimum instead, which pushes every exponent positive, and then clipped
+  at `exp(700)` to stop the overflow. Everything above the clip lands on the same
+  value: two fields differing by a factor of `exp(400)` came out equally likely.
+
+  How far a row spreads depends on what is being summed over. A class posterior
+  sums over items, so it stays small and the clip is rarely reached. A *field*
+  posterior sums over respondents, so it grows with the sample -- which is why
+  the visible symptom was backwards, more data giving a worse answer. Measured on
+  ordinal data with 24 items in 3 true fields: fields recovered exactly up to 500
+  respondents, degrading at 700, and by 1000 two of the three fields had merged
+  and one came out empty (adjusted Rand index 1.00 falling to 0.55). The class
+  side was almost unaffected in the same runs, which is what made it look like a
+  field-clustering quirk rather than a normalisation bug.
+
+  Affected: `Biclustering()` and `Ranklustering()` on ordinal and nominal data
+  (both the class and field steps), `LCA()` on nominal and rated data, and
+  `LDB()`. Binary biclustering was already correct. Fixed by routing all of them
+  through one `row_softmax()` helper.
+
+  The same helper replaces the unstabilised `exp(ll) / rowSums(exp(ll))` in
+  binary `LCA()`/`LRA()`, `LDLRA()`, and `LRA()` on ordinal and rated data.
+  Those subtract nothing at all, so their exponents are negative and they
+  underflow rather than overflow -- reachable only on very long tests, and loud
+  (`NaN`) rather than silent when reached. The returned values are unchanged
+  wherever the old code did not overflow or underflow.
+
+  No test in the suite caught this: the biclustering reference fixtures top out
+  at 515 respondents, below where the clip starts to bite. Regression tests over
+  a range of sample sizes were added.
+
+  `BINET()` uses the same unstabilised form but is deliberately left alone: it
+  pins boundary-class respondents by writing a literal `1` next to the raw
+  likelihoods, so rescaling the rows would change how hard that pin holds. That
+  the strength of the pin depends on the test length looks unintended and is
+  being reviewed separately.
+
+- **Order-restricted biclustering returned no field assignments at all on tests
+  longer than about 40 items.** The E-step needs the log of a category
+  probability, formed as the difference of two upper-cumulative probabilities.
+  That difference cannot be negative in exact arithmetic, but the
+  order-restricted M-step pools adjacent categories, so exact ties are the norm
+  rather than the exception (11 of 30 differences on a 72-item fit), and a tie
+  computed as a subtraction lands anywhere within a few ulp of zero.
+
+  The guard against that was `+ const`, and `const` is `exp(-nitems)`. It
+  therefore *shrinks* as the test grows -- `exp(-72)` is 5e-32 against rounding
+  errors of 1e-14 -- while the errors it has to absorb do not. Past roughly 37
+  items the guard stops working: `log()` of a negative difference gave `NaN`,
+  the `NaN` reached the field posterior through the softmax, and `max.col()`
+  returned `NA` for every item, so the fit came back with all fields empty and
+  `converge = FALSE`. The cost was visible too, since a fit that never
+  stabilises runs to the iteration cap: 72 items in 6 fields now converges in 5
+  cycles and 0.2 seconds.
+
+  Fixed by clamping the difference at zero before adding `const`. Only the
+  rounding is repaired: a genuinely tied pair still becomes `log(const)` exactly
+  as before, and every already-positive value is unchanged to the bit, so no
+  previously-working fit moves. Ordinal `LRA()` is unaffected -- its isotonic
+  path works with the probabilities themselves rather than a difference.
+
+  `const = exp(-nitems)` is doing two jobs that pull apart as tests get longer:
+  a modelling penalty for an impossible response, which should scale with the
+  test, and a numerical floor, which should not. Separating them is left for a
+  later release.
+
+- **`M2()` says how much memory it needs, and refuses a size the machine cannot
+  hold.** The margin covariance is a dense `m x m` matrix and `m` grows with the
+  *square* of the test length: 35 items over 5 categories is 0.7 GB, 40 items is
+  1.2 GB, 72 items is 32 GB. Allocating tens of gigabytes unannounced is not
+  something a user can recover from -- the operating system kills the process,
+  taking the session and everything in it -- so `M2()` and `add_M2()` now report
+  the size before starting whenever the computation needs 2 GB or more, and stop
+  with an explicit error when the projected peak exceeds four fifths of physical
+  memory. No question is asked: a prompt would have to be limited to
+  `interactive()` to keep scripts and `R CMD check` from waiting on input, which
+  would make the behaviour depend on how the code was started.
+
+  `options(exametrika.m2_max_gb = )` replaces the memory-derived ceiling with an
+  explicit one, and `Inf` removes the check for anyone who wants the old
+  behaviour back.
+
+- **`M2()` on a rank-deficient margin covariance is roughly 300x faster.** When
+  the Cholesky factorisation of `Xi` fails, the fallback was an
+  eigendecomposition -- an order of magnitude more arithmetic than the
+  factorisation it replaces, and it needs room for the full eigenvector matrix
+  beside `Xi` itself. It is now a pivoted Cholesky, which costs the same
+  `m^3/3` and reports the rank directly. On the largest margin set met so far
+  (biclustering, 40 items x 5 categories, m = 12,640, `Xi` at 1.2 GB) that is
+  16 seconds against about 80 minutes. Both are generalised inverses of `Xi`
+  and the statistic only uses the residual's component in the column space, so
+  the value is unchanged; the equivalence is pinned by tests.
+
+  This mattered most for biclustering, where `Xi` is rank-deficient at any
+  useful size, so the slow path was the normal path rather than the exception.
+
+- **The order-restricted solver no longer inherits the EM's iteration cap.**
+  `Biclustering()` and `LRA()` on ordinal data passed their own `maxiter`
+  straight into `iso_dual_map()`, so raising the EM cap from 100 to 1000 for the
+  convergence fix silently raised the inner solver's cap tenfold as well. Two
+  unrelated loops shared one knob. The solver now uses its own budget. No
+  results change -- it converges well inside either cap, and the fit is
+  identical for every EM cap from 100 to 1000 -- but the coupling was not
+  intended.
+
+- **`maxiter` documentation corrected** for ordinal and nominal `Biclustering()`,
+  which said 100 after the default became 1000.
+
+- **`LRA()` on ordinal or rated data could die on a lumpy score distribution.**
+  The EM starting values come from grouping respondents by total score at the
+  score quantiles. When the scores pile up -- few categories with a strong floor
+  or ceiling is enough -- a quantile group comes out empty, its mean is 0/0, and
+  the `NaN` propagates until `sort()` drops it and an array assignment fails with
+  a message about replacement lengths that says nothing about scores. Measured
+  instance: 20 items, 3 categories, 6 ranks, 300 respondents, with 66 people at
+  the lowest possible score and 77 at the highest.
+
+  The grouping rule is unchanged -- it is the reference implementation's -- and
+  only the undefined values are repaired: an empty group borrows from the nearest
+  group that has respondents, which is meaningful because the groups are ordered
+  by score. Empty groups also had to survive `table()`, which drops unused levels
+  and left the rank-by-quantile cross-tabulation too small for its own dimnames.
+
+- **`M2()` no longer fails on a singular margin covariance.** Two causes, both
+  routine on real data. A category nobody chose gives an exact zero in the
+  profile, and the covariance correction then computes 0/0; the value that
+  division stands for is zero. A margin with a vanishingly small probability
+  leaves a direction with no usable variance, which a Cholesky factorisation
+  rejects and a check on the diagonal alone cannot catch, the dependence being
+  off-diagonal. `M2()` now falls back to an eigendecomposition and works in the
+  subspace with non-negligible eigenvalues, reporting how many directions were
+  dropped; the degrees of freedom count the subspace actually used.
+
+
+- **EM convergence was declared far too early, and on short tests after a single
+  cycle.** This affects every EM-based model and is the largest behavioural
+  change in this release: estimates move, and they no longer reproduce the
+  numbers printed in Shojima (2022). Three separate defects, all inherited
+  faithfully from the reference Mathematica implementation:
+
+  1. *The starting value.* `test_log_lik` was initialised to `-1 / exp(-J)`,
+     i.e. `-exp(J)`, meant to sit below any attainable log-likelihood. For a
+     short test with many respondents it does not: J = 6 gives -403 against a
+     real log-likelihood near -3900. The first cycle then looked like a
+     decrease, the "likelihood went down" guard fired, and the loop exited
+     after one iteration -- while reporting `converge = TRUE`. Measured:
+     binary `LCA()` on 6 items x 1000 respondents stopped at 1 cycle;
+     `Biclustering()` on the bundled `J5S1000` stopped at 1 cycle. Tests never
+     caught it because every Mathematica-referenced dataset has J >= 15, where
+     `exp(J)` is safely below the log-likelihood. Now `-Inf`, with the
+     comparison skipped on the first pass.
+
+  2. *The monitored quantity.* The criterion watched the expected log-posterior
+     `Q(theta_t | theta_{t-1})` (Shojima 2022, eqs. 5.11-5.12), not the
+     observed-data log-likelihood. EM guarantees the latter increases; the
+     former conditions on a moving point and need not. On 6-item data it does
+     decrease at the second cycle (-3869.26 -> -3922.42), firing the guard on a
+     healthy iteration. `LCA()` (binary/nominal/rated), `LRA()` (isotonic and
+     GTM) and `LDLRA()` now monitor the observed-data log-likelihood, computed
+     by log-sum-exp. `LCA.nominal()`'s reported `log_lik` is therefore now a
+     proper marginal likelihood, which also makes its AIC/BIC the textbook
+     quantities. Biclustering keeps its original monitored quantity
+     deliberately -- a two-sided mixture has no single obvious observed-data
+     likelihood -- so only its starting value and tolerance changed.
+
+  3. *The tolerance.* A relative `1e-4` on a value of order 1e3 is a threshold
+     of ~0.4 nats, so EM stopped well short of convergence. `J15S500` with 5
+     classes ran 73 cycles to an observed log-likelihood of -4121.53, where a
+     properly converged run reaches -4118.16 in 440. The tolerance is now
+     `1e-8` for the EM engines, matching what the nominal engines and `GRM()`
+     already used, and `maxiter` defaults rise from 100 to 1000 (largest
+     observed requirement across the bundled data: 685 cycles, 0.25s). `IRT()`
+     uses `1e-6`: each of its cycles runs one `optim()` per item, so extra
+     cycles cost real time, and the attainable accuracy is bounded by
+     `optim()`'s own `reltol` anyway.
+
+  Effect on the published example (`LCA(J15S500, ncls = 5)`): 73 cycles -> 337,
+  and the class reference matrix of the book's Table 5.1 changes in the second
+  decimal (Item 1: .519 .700 .764 .856 .860 -> .590 .662 .772 .853 .884). The
+  Mathematica implementation in `develop/mtmk15forVer13/` was corrected in step
+  and agrees with R to full double precision (-3651.903821773122 against
+  -3651.9038217731227); the reference fixtures under
+  `tests/testthat/fixtures/mathematica_reference/` were regenerated from it.
+
+- **`IRT()` is substantially faster.** The M-step objective is the hot spot of
+  the whole fit (80% of self time). It evaluated the response function twice
+  per call where once suffices and used `ifelse()` on scalars; `optim()` was
+  also called without a gradient, so L-BFGS-B approximated one by finite
+  differences at a cost of one extra objective evaluation per parameter per
+  step. An analytic gradient is now supplied. `IRT(J35S515, model = 2)`:
+  1.55s -> 0.34s at the new tolerance, faster than the 0.63s the old, looser
+  tolerance took. Estimates are unchanged to 5e-6.
 
 - Fixed `Biclustering()` on ordinal data (`Biclustering.ordinal`) under
   Ranklustering (`method = "R"`): the GTM neighbour-smoothing filter was
@@ -80,21 +283,84 @@
   candidate cut-point matrix (`combn(gene_length, 2)` filtered) per child
   per generation; it is built once per run. RNG draw order is unchanged.
 
+- `LRA()` on ordinal and rated data no longer fails on large tables. The
+  monitored log-likelihood was accumulated as `sum(rankProf * log(exp(ll)))` --
+  a round trip that is algebraically the identity but underflows on the way:
+  once the test is large enough for the entries of `ll` to fall below about
+  -700 (2000 respondents x 60 items x 5 categories is enough), `exp()` returns
+  zero, `log(0)` is `-Inf`, and `0 * -Inf` is `NaN`. The convergence check then
+  received `NA` and the fit died with "missing value where TRUE/FALSE needed".
+  The sum is now taken on the log scale directly, which is the same quantity
+  without the excursion through the exponent. Found while sizing a simulation
+  study; it affects `LRA.ordinal()` and `LRA.rated()` under both `isotonic` and
+  `GTM`.
+
+  The corresponding line in each saturated-model loop adds a small constant
+  inside the logarithm and is deliberately left alone: removing it moves the
+  saturated log-likelihood substantially (where `exp(ll) < const` the old
+  expression was pinned near `log(const)`), and the Mathematica reference values
+  were produced with that behaviour in place. Changing it is a separate,
+  breaking decision.
+
 - The order-restricted M-step for ordinal data is now implemented in C++
   (`src/isotonic_core.cpp`). `LRA.ordinal(method = "isotonic")` and
   `Biclustering.ordinal(estimation = "isotonic")` call it through the same
-  internal `iso_dual_map()` entry point as before, so results are unchanged --
-  the port follows the R original's arithmetic operation for operation and
-  agrees with it exactly (`expect_identical`), not merely to a tolerance. It
-  additionally exploits the fact that raising one dual multiplier
-  `theta[c, q]` can only change ranks `c` and `c+1`, so the inner bisection
-  rebuilds two rows rather than the whole table.
+  internal `iso_dual_map()` entry point. It exploits the fact that raising one
+  dual multiplier `theta[c, q]` can only change ranks `c` and `c+1`, so a trial
+  value rebuilds two rows rather than the whole table.
+
+  Both root finds use the residual's value rather than only its sign: Newton's
+  method for the multiplier that normalises a rank, and the Illinois method for
+  the dual variable. The pure-R `iso_dual_map_ref()` does the same and the two
+  are checked against each other to a tolerance -- not to the bit, which a
+  value-driven search cannot promise: a difference in the last bits moves the
+  next trial point and the two paths then differ on their way to the same root.
+
+  For the multiplier, the parameterisation matters more than the root finder.
+  Categories with a zero count are dropped first: their probability is zero
+  whatever the multiplier is, but if one of them attains the smallest offset it
+  drags the lower end of the domain far away from the root. On the shifted
+  variable `u = lambda + min(d)` the bracket then follows in closed form,
+  `sum_{d'=0} m <= u <= sum m`, and the search runs on `log u`, because those two
+  ends can sit thirteen orders of magnitude apart on a rank holding almost no
+  weight -- far enough that bisection does not converge within any sane
+  iteration cap and a Newton step from the upper end lands past zero. The
+  probabilities are formed from `u + d'` rather than `lambda + d`, which would
+  cancel the shift back out and lose digits when `min(d)` is large.
+
+  The Illinois search judges its bracket width relatively. On the same
+  low-weight ranks an endpoint can reach 1e8, where the spacing between
+  representable doubles (~3e-8) is coarser than an absolute 1e-12 threshold: the
+  interval stops shrinking, every interpolated point rounds onto an endpoint,
+  and the loop has no way to exit.
+
+  Each sweep also starts its bracket from the value the previous sweep found,
+  which is close to the answer from the second sweep on; the check of whether
+  the constraint binds at zero is kept, being complementary slackness itself.
+
+  The sweeps stop on both halves of the KKT picture, not on the log-likelihood
+  alone. Near the optimum the likelihood moves quadratically while the order
+  violation is still shrinking geometrically, so the likelihood goes quiet
+  several sweeps before the restriction is actually met: on real tables it was
+  stopping with the returned probabilities breaching the stochastic order by
+  around 1e-3. Convergence now also requires the largest violation to fall
+  below `viol_tol` (1e-6), and the sweep cap rises to 1000 because the number
+  of sweeps grows with the table -- 6 ranks need about 100, 20 ranks about 500.
+  Across 60 tables from real EM runs the worst violation drops from 3.2e-3 to
+  9.9e-7 for a 1.2x cost, and `Biclustering(J35S500, ncls = 6, nfld = 5,
+  method = "R", estimation = "isotonic")` is unchanged at 2.7s.
 
   Measured on the dual solver alone: 111x (3 ranks x 3 categories), 289x
-  (12 x 7), 509x (20 x 6; 274s -> 0.54s). At the model level, where the
+  (12 x 7), 509x (20 x 6; 274s -> 0.54s), and a further 6.8x from the two root
+  finds and the warm start, on tables taken from a real EM run. At the model level, where the
   remaining EM machinery is still R, `Biclustering(J35S500, ncls = 6,
-  nfld = 5, method = "R", estimation = "isotonic")` drops from 265s to 11s
-  (same 125 EM cycles, same log-likelihood and BIC to the digit).
+  nfld = 5, method = "R", estimation = "isotonic")` drops from 265s to 11s.
+
+  The multiplier exists to make each rank's probabilities sum to one, so the row
+  sums measure how well it is found. Across 60 expected-count tables captured
+  from real EM runs the largest row-sum error is 9.6e-15, and every table
+  converges. For binary data the solution must coincide with weighted PAVA, and
+  it does.
 
   This matters because the ordinal isotonic path was the slowest thing in the
   package and effectively ruled out large simulation studies. The pure-R
@@ -110,6 +376,142 @@
   which is not the concept being used here.
 
 ## Improvements
+
+- **New: `M2()`, the limited-information goodness-of-fit statistic** of
+  Maydeu-Olivares & Joe (2005, 2006), for `LCA.nominal` and `LCA.rated`. It tests
+  whether the model reproduces the item-pair cross tables. The reference point is
+  the saturated model of the first- and second-order margins rather than of the
+  full response-pattern table, so no benchmark log-likelihood is needed — which is
+  exactly what nominal data lacks. The analogy that usually lands: an SEM
+  chi-square does not test the whole multivariate distribution, only whether the
+  model reproduces the covariance matrix; `M2()` is the categorical counterpart,
+  with cross tables in place of the covariance matrix.
+
+  Two things worth knowing. The degrees of freedom are `m - rank(Delta)`, not
+  `m - n_param`: with the class proportions fixed at `1/C`, the second-order
+  margins see the class deviations only through their Gram matrix, which is
+  invariant to rotations of the class space, so the Jacobian loses
+  `(ncls - 1)(ncls - 2) / 2` of its rank and the parameters are not identified
+  from bivariate margins once `ncls >= 3` (the margins themselves still are, so
+  the statistic is well defined). And the statistic is only interpretable for a
+  maximum likelihood fit — not for filter-based (GTM) estimation, which is a
+  regularisation rather than an MLE, nor for order-restricted estimation, whose
+  limiting distribution is a mixture of chi-squares.
+
+  Cost is dominated by the Cholesky factorisation of a dense `m x m` matrix:
+  20 items with 5 categories is `m = 3120` and well under a second; 50 items is
+  `m = 19800`, 2.9 GB and around 20 seconds.
+
+  `LCA.nominal()` and `LCA.rated()` now keep `Q` and `Z` in the returned object,
+  as `Biclustering()` already did, so `M2()` can be computed after the fact.
+
+- **New: `add_M2()` and a second set of fit indices.** `fit <- add_M2(fit)`
+  computes `M2` for the model and for the independence baseline and attaches
+  `TestFitIndicesM2`: NFI, RFI, IFI, TLI, CFI and RMSEA built entirely from
+  margin-based chi-squares. `print()` then shows the response-pattern indices and
+  the margin-based ones as two labelled blocks, and takes `fit_indices =
+  "both" | "pattern" | "margin"` to show one alone.
+
+  They are kept apart on purpose. The response-pattern chi-square is a likelihood
+  ratio against the saturated model; `M2` is a quadratic form in margin
+  residuals. Combining one with the other inside a single index — a ratio of a
+  pattern chi-square to a margin chi-square, say — has no defensible reading
+  (Shojima, personal communication, 2026-07-26). Within the margin block both
+  the model and the baseline statistic are `M2`, so the indices are internally
+  consistent.
+
+  For the same reason the margin block carries no AIC/BIC/CAIC. Those need a
+  log-likelihood: `chi_sq - 2 df` works on the pattern side only because that
+  chi-square *is* a likelihood ratio, and `M2` is not. The likelihood-based
+  information criteria these models already report are the ones to use.
+
+  This is a separate call rather than part of the fit because the cost grows with
+  the square of the item count; for nominal data it is also the only route to an
+  absolute fit statistic at all, since no saturated model can be formed.
+
+- `M2()` also accepts fits from `LRA()` on ordinal data and from
+  `Biclustering()` on ordinal or nominal data, so the three ways of treating the
+  same polytomous data — order-restricted, filter-smoothed, unordered — can be
+  put on one scale. Biclustering shares one category profile across the items of
+  a field, so its Jacobian columns are shared too, and its parameter count is
+  fields x classes x (categories - 1) rather than items x classes x (categories
+  - 1). The field partition is taken as given; its uncertainty is not
+  propagated. Items must all have the same number of categories, since a shared
+  profile would otherwise hand an item margins it can never produce (the check
+  is explicit: without it the covariance matrix loses positive definiteness and
+  the failure is unreadable).
+
+  Only a maximum likelihood fit makes the reference distribution hold, so for
+  filter-based (GTM) and order-restricted estimation the statistic is
+  descriptive: recorded, not tested.
+
+- `add_M2()` covers `LRA()` on ordinal data and `Biclustering()` on ordinal or
+  nominal data as well, so any of them can carry both sets of fit indices. For
+  ordinal data the response-pattern indices are complete — a saturated model
+  exists — so two full sets stand side by side, which is precisely where keeping
+  them apart matters.
+
+  Where the reference distribution does not hold, the margin block says so, and
+  names the reason that applies rather than issuing a generic warning: the field
+  partition is taken as given (any biclustering), the order restriction can bind
+  so the limit is a mixture of chi-squares (isotonic), filter smoothing is a
+  regularisation rather than a maximum likelihood estimator (GTM). A nominal LCA
+  gets no such line, being an honest maximum likelihood fit. The numbers are
+  still worth reading as description; the p value is not a test.
+
+- `M2()` and `add_M2()` take `gc = TRUE`, which releases the workspace before
+  returning. The margin covariance and its factor are the largest objects the
+  package allocates and R otherwise keeps the block. Interactive use wants this;
+  a loop over many fits should pass `FALSE`, where the collection costs time and
+  buys nothing. With `verbose = TRUE` and a large problem, `add_M2()` now says
+  which of its two statistics it is working on.
+
+- **New: `LCA()` supports nominal data** (`LCA.nominal`). The model is a finite
+  mixture of product-multinomial distributions — one free category distribution
+  per item within each latent class, with no ordering imposed on the classes or
+  on the categories. Category counts may differ across items. Estimation runs
+  through the shared EM engine `emclus_nominal()`; the new `alpha` argument sets
+  a Dirichlet prior on the category profiles (default 1, i.e. the plain
+  multinomial MLE). The returned object carries `ICRP` (Item Category Reference
+  Profile: one row per item-category, one column per class), `LCD`, `CMD` and
+  `Students`, and prints and plots (`type = "ICRP"`, `"LCD"`, `"CMP"`). The
+  `"ICRP"` plot uses grouped bars rather than lines across classes, because
+  neither axis is ordered.
+
+  As in `Biclustering.nominal`, no benchmark (saturated) model is fitted — with
+  many items and categories nearly every response pattern is unique — so only
+  AIC, BIC and CAIC are reported and the chi-square based indices are NA. Note
+  that these follow the `-2 log L + k` convention, unlike the chi-square based
+  AIC/BIC/CAIC on the binary path; they are not comparable across response
+  types. Class sizes are not free parameters in this formulation (every class
+  carries the same implicit prior, as in `emclus()` for binary data), so the
+  parameter count is `ncls * sum(ncat - 1)`.
+
+- **New: `LCA()` supports rated data** (`LCA.rated`), i.e. multiple-choice items
+  with an answer key. Estimation is the nominal one — `LCA.nominal()` is called
+  internally — and the key is then used to recover the quantities that need a
+  correct answer: `IRP[j, c]` is the model-implied probability of the keyed
+  category `rho[j, CA[j] | c]`, and `TRP` is its weighted item sum. Fit is
+  reported in two layers: `TestFitIndices` from correct/incorrect responses
+  (chi-square based, comparable with binary `LCA`) and `TestFitIndicesNominal`
+  from the internal nominal fit (AIC/BIC/CAIC). Full category probabilities
+  remain in `ICRP` for distractor analysis. Unlike `Biclustering.rated`, the
+  classes are **not** sorted by correct response rate: latent classes carry no
+  order, and sorting them would imply one.
+
+- Ordered rating data passed to `LCA()` is now analysed with the nominal model
+  after a message, instead of stopping: latent classes carry no order, so the
+  category ordering has nothing to attach to. Use `LRA()` when the ordering
+  should be respected. Symmetrically, nominal data passed to `LRA()` is handed
+  to `LCA.nominal()` with a message (a rank ordering is not defined without
+  ordered categories); an `nrank` argument is carried over as `ncls`.
+
+- `LCA()` is now an S3 generic dispatching on response type, matching
+  `LRA()` and `Biclustering()`. The former function body is unchanged and
+  now lives in `LCA.binary()`; `LCA.default()` formats raw input with
+  `dataFormat()` and routes it. Binary results are bit-identical to 1.15.0 and
+  non-binary input still raises the same error. This is the wiring for the
+  forthcoming `LCA.nominal()`.
 
 - `Biclustering()` on binary data (`Biclustering.binary`) gains an
   order-restricted estimation of the Field Reference Profiles under

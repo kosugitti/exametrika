@@ -131,6 +131,8 @@ Each model class supports specific plot types:
 \item{IRT}{Supports "IRF"/"ICC", "TRF", "IIF"/"IIC", "TIF"/"TIC"}
 \item{GRM}{Supports "IRF"/"ICC", "IIF"/"IIC", "TIF"/"TIC"}
 \item{LCA}{Supports "IRP", "FRP", "TRP", "LCD", "CMP"}
+\item{nominalLCA}{Supports "ICRP", "LCD", "CMP"}
+\item{ratedLCA}{Supports "IRP", "TRP", "ICRP", "LCD", "CMP"}
 \item{LRA}{Supports "IRP", "FRP", "TRP", "LRD", "RMP"}
 \item{LRAordinal}{Supports "ScoreFreq", "ScoreRank", "ICRP", "ICBR", "RMP"}
 \item{LRArated}{Supports "ScoreFreq", "ScoreRank", "ICRP", "RMP"}

@@ -11,7 +11,7 @@
 #'   * A vector with items and corresponding fields in sequence
 #'   * A field membership profile matrix (items × fields) with 0/1 values
 #'   * NULL (default) for exploratory analysis where field memberships are estimated
-#' @param maxiter Maximum number of EM algorithm iterations. Default is 100.
+#' @param maxiter Maximum number of EM algorithm iterations. Default is 1000.
 #' @param verbose Logical; if TRUE, displays progress during estimation. Default is FALSE.
 #' @param alpha Dirichlet distribution concentration parameter for prior density of field reference probabilities. Default is 1.
 #' @param ... Additional arguments passed to specific methods.
@@ -28,7 +28,7 @@ Biclustering.nominal <- function(U,
                                  conf = NULL,
                                  conf_class = NULL,
                                  mic = FALSE,
-                                 maxiter = 100,
+                                 maxiter = 1000,
                                  verbose = FALSE,
                                  alpha = 1, ...) {
   tmp <- U
@@ -36,8 +36,12 @@ Biclustering.nominal <- function(U,
   nobs <- NROW(tmp$Q)
   nitems <- NCOL(tmp$Q)
   const <- exp(-nitems)
-  test_log_lik <- -1 / const
-  old_test_log_lik <- -2 / const
+  # -Inf, not -1/const = -exp(J): the old sentinel sits above the real
+  # log-likelihood on short tests with many respondents, which ended the
+  # loop after one cycle while reporting convergence. The first pass skips
+  # the comparison instead (emt == 0).
+  test_log_lik <- -Inf
+  old_test_log_lik <- -Inf
   emt <- 0
   maxemt <- maxiter
 
@@ -136,8 +140,8 @@ Biclustering.nominal <- function(U,
   converge <- TRUE
   FLG <- TRUE
   while (FLG) {
-    if (!is.finite(test_log_lik) ||
-      test_log_lik - old_test_log_lik < 1e-8 * abs(old_test_log_lik)) {
+    if (emt > 0 && (!is.finite(test_log_lik) ||
+      test_log_lik - old_test_log_lik < 1e-8 * abs(old_test_log_lik))) {
       if (!is.finite(test_log_lik)) converge <- FALSE
       FLG <- FALSE
       break
@@ -157,9 +161,7 @@ Biclustering.nominal <- function(U,
       tmpL <- tmpL + (tmp$Z * Uq[, , q]) %*% fldmemb %*% log(BCRM[, , q] + const)
     }
 
-    minllsr <- apply(tmpL, 1, min)
-    expllsr <- exp(pmin(tmpL - minllsr, 700))
-    clsmemb <- round(expllsr / rowSums(expllsr), 1e8)
+    clsmemb <- row_softmax(tmpL)
 
     if (!is.null(conf_class_mat)) {
       clsmemb <- conf_class_mat
@@ -170,9 +172,9 @@ Biclustering.nominal <- function(U,
       tmpH <- tmpH + (t(tmp$Z * Uq[, , q]) %*% clsmemb) %*% t(log(BCRM[, , q] + const))
     }
 
-    minllsr <- apply(tmpH, 1, min)
-    expllsr <- exp(pmin(tmpH - minllsr, 700))
-    fldmemb <- round(expllsr / rowSums(expllsr), 1e8)
+    # Sums over examinees; see the note in row_softmax() for why the row maximum
+    # is the only safe reference point here.
+    fldmemb <- row_softmax(tmpH)
 
     if (!any(is.null(conf_mat))) {
       fldmemb <- conf_mat

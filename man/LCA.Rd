@@ -2,26 +2,59 @@
 % Please edit documentation in R/05_LCA.R
 \name{LCA}
 \alias{LCA}
+\alias{LCA.default}
+\alias{LCA.binary}
+\alias{LCA.nominal}
+\alias{LCA.rated}
 \title{Latent Class Analysis}
 \usage{
-LCA(
+LCA(U, ...)
+
+\method{LCA}{default}(U, na = NULL, Z = NULL, w = NULL, ...)
+
+\method{LCA}{binary}(
   U,
   ncls = 2,
   na = NULL,
   Z = NULL,
   w = NULL,
-  maxiter = 100,
+  maxiter = 1000,
   verbose = FALSE,
   beta1 = 1,
   beta2 = 1,
-  conf = NULL
+  conf = NULL,
+  ...
+)
+
+\method{LCA}{nominal}(
+  U,
+  ncls = 2,
+  na = NULL,
+  Z = NULL,
+  w = NULL,
+  maxiter = 1000,
+  verbose = FALSE,
+  alpha = 1,
+  ...
+)
+
+\method{LCA}{rated}(
+  U,
+  ncls = 2,
+  na = NULL,
+  Z = NULL,
+  w = NULL,
+  maxiter = 1000,
+  verbose = FALSE,
+  alpha = 1,
+  ...
 )
 }
 \arguments{
 \item{U}{Either an object of class "exametrika" or raw data. When raw data is given,
 it is converted to the exametrika class with the \code{\link{dataFormat}} function.}
 
-\item{ncls}{Number of latent classes to identify (between 2 and 20). Default is 2.}
+\item{...}{Additional arguments passed to specific methods.}
 
 \item{na}{Values to be treated as missing values.}
 
@@ -30,7 +63,9 @@ observed responses, while 0 indicates missing data.}
 
 \item{w}{Item weight vector specifying the relative importance of each item.}
 
-\item{maxiter}{Maximum number of EM algorithm iterations. Default is 100.}
+\item{ncls}{Number of latent classes to identify (between 2 and 20). Default is 2.}
+
+\item{maxiter}{Maximum number of EM algorithm iterations. Default is 1000.}
 
 \item{verbose}{Logical; if TRUE, displays progress during estimation. Default is FALSE.}
 
@@ -43,6 +78,10 @@ Same format as the IRP output. Non-NA values are fixed throughout estimation,
 NA values are freely estimated. Fixed values must be in the open interval (0, 1).
 When row names are present, items are matched by label; otherwise by position.
 Default is NULL (fully exploratory).}
+
+\item{alpha}{Dirichlet prior parameter for the category profiles
+(nominal data only). Default 1, which leaves the M-step at the plain
+multinomial MLE.}
 }
 \value{
 An object of class "exametrika" and "LCA" containing:
@@ -87,6 +126,38 @@ The algorithm proceeds by:
 
 Unlike Item Response Theory (IRT), LCA treats latent variables as categorical rather than
 continuous, identifying distinct profiles rather than positions on a continuum.
+
+For nominal data the model is a finite mixture of product-multinomial
+distributions: every latent class carries an independent category
+distribution for each item, and no ordering is imposed on the classes or on
+the categories. Category counts may differ across items.
+
+Ordered rating data is routed to this method as well, because unordered
+latent classes give the category order nothing to attach to. Use
+\code{\link{LRA}} when the ordering should be respected.
+
+No benchmark (saturated) model is fitted, for the same reason as in
+\code{Biclustering.nominal}: with many items and categories nearly every
+response pattern is unique, so the saturated log-likelihood is not
+informative. Only AIC, BIC and CAIC are reported; the chi-square based
+indices are NA.
+
+For rated data (multiple-choice items with a key) the estimation is the
+nominal one — \code{LCA.rated} calls \code{LCA.nominal} internally — and the
+key is used afterwards to recover the quantities that need a notion of a
+correct answer. The Item Reference Profile is the model-implied probability
+of the keyed category, \code{IRP[j, c] = rho[j, CA[j] | c]}, and the Test
+Reference Profile is its weighted item sum. Unlike
+\code{\link{Biclustering}} on rated data, the classes are not sorted by
+correct response rate: latent classes carry no order, and sorting them would
+suggest one.
+
+Two layers of fit are reported. \code{TestFitIndices} is the binary layer,
+built from correct/incorrect responses under the class-membership-weighted
+correct probabilities, so it carries the usual chi-square based indices and
+is comparable with binary \code{LCA}. \code{TestFitIndicesNominal} is the
+nominal layer taken from the internal fit, with AIC/BIC/CAIC only. The full
+category probabilities stay in \code{ICRP} for distractor analysis.
 }
 \examples{
 \donttest{

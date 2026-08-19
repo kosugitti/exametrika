@@ -58,8 +58,12 @@ emclus_nominal <- function(Q, Z, ncls, ncat, alpha = 1, maxiter = 100,
     }
   }
 
-  test_log_lik <- -1 / const
-  old_test_log_lik <- -2 / const
+  # -Inf, not -1/const = -exp(J): the old sentinel sits above the real
+  # log-likelihood on short tests with many respondents, which ended the
+  # loop after one cycle while reporting convergence. The first pass skips
+  # the comparison instead (emt == 0).
+  test_log_lik <- -Inf
+  old_test_log_lik <- -Inf
   emt <- 0
   converge <- TRUE
   clsmemb <- matrix(1 / ncls, nrow = nobs, ncol = ncls)
@@ -68,8 +72,8 @@ emclus_nominal <- function(Q, Z, ncls, ncat, alpha = 1, maxiter = 100,
   while (FLG) {
     # Convergence is judged on the change in log-likelihood, never on a
     # constraint-violation measure (see feedback_clm/isotonic convergence bug).
-    if (!is.finite(test_log_lik) ||
-      test_log_lik - old_test_log_lik < 1e-8 * abs(old_test_log_lik)) {
+    if (emt > 0 && (!is.finite(test_log_lik) ||
+      test_log_lik - old_test_log_lik < 1e-8 * abs(old_test_log_lik))) {
       if (!is.finite(test_log_lik)) converge <- FALSE
       FLG <- FALSE
       break
@@ -89,9 +93,7 @@ emclus_nominal <- function(Q, Z, ncls, ncat, alpha = 1, maxiter = 100,
     for (q in seq_len(maxQ)) {
       tmpL <- tmpL + (Z * Uq[, , q]) %*% log(profile[, , q] + const)
     }
-    minllsr <- apply(tmpL, 1, min)
-    expllsr <- exp(pmin(tmpL - minllsr, 700))
-    clsmemb <- expllsr / rowSums(expllsr)
+    clsmemb <- row_softmax(tmpL)
 
     ## Maximization: category profiles are membership-weighted frequencies
     Ujcq <- array(0, dim = c(nitems, ncls, maxQ))
@@ -108,13 +110,17 @@ emclus_nominal <- function(Q, Z, ncls, ncat, alpha = 1, maxiter = 100,
       profile[!valid_cat[, q], , q] <- 0
     }
 
-    ## Marginal log-likelihood under the current posterior weights
-    test_log_lik <- 0
+    ## Observed-data log-likelihood of the mixture,
+    ##   sum_s log sum_c (1/C) prod_j rho_{j q_sj | c},
+    ## which is what EM increases. (The posterior-weighted predictive quantity
+    ## used before is not monotone across cycles; see emclus() and NEWS.)
+    tmpL_new <- matrix(0, nrow = nobs, ncol = ncls)
     for (q in seq_len(maxQ)) {
-      pred_prob <- clsmemb %*% t(profile[, , q])
-      observed_mask <- (Z * Uq[, , q]) == 1
-      test_log_lik <- test_log_lik + sum(log(pmax(pred_prob[observed_mask], const)))
+      tmpL_new <- tmpL_new + (Z * Uq[, , q]) %*% log(profile[, , q] + const)
     }
+    row_max <- apply(tmpL_new, 1, max)
+    test_log_lik <- sum(row_max + log(rowSums(exp(tmpL_new - row_max)))) -
+      nobs * log(ncls)
 
     if (verbose) {
       message(

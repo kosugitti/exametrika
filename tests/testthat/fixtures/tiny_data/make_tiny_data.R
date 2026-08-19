@@ -27,3 +27,19 @@ out <- data.frame(ID = sprintf("S%03d", seq_len(n)), U, check.names = FALSE)
 colnames(out) <- c("ID", sprintf("Item%02d", seq_len(j)))
 write.csv(out, "tinyLCA.csv", row.names = FALSE, quote = FALSE)
 cat("tinyLCA.csv:", n, "x", j, " 欠測", sum(miss), "セル\n")
+
+# --- tinyIRT: 二値・2PL の真値から生成・200名x10項目・欠測なし ---
+# 困難度を -1.5..1.5 に広く配置して情報を確保する。IRT は LCA と違い，R と
+# Mathematica の差はサイズではなく最適化の収束判定の違いで決まり，200名でも
+# 500名の実データと同水準(LL 1e-3・パラメタ 1e-4)で一致する。
+set.seed(20260819)
+n <- 200
+j <- 10
+a <- runif(j, 0.8, 2.0)
+b <- seq(-1.5, 1.5, length.out = j)
+th <- rnorm(n)
+P <- 1 / (1 + exp(-outer(th, b, "-") * rep(a, each = n)))
+U <- matrix(rbinom(n * j, 1, P), n, j)
+out <- data.frame(ID = sprintf("S%03d", seq_len(n)), U, check.names = FALSE)
+colnames(out) <- c("ID", sprintf("Item%02d", seq_len(j)))
+write.csv(out, "tinyIRT.csv", row.names = FALSE, quote = FALSE)

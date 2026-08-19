@@ -141,8 +141,8 @@ See \code{Biclustering_IRM.binary} or \code{Biclustering_IRM.nominal} for detail
 \item{n_class}{Optimal number of classes (new naming convention).}
 \item{n_field}{Optimal number of fields (new naming convention).}
 \item{em_cycle}{Number of EM algorithm iterations (new naming convention).}
-\item{Nclass}{Optimal number of classes (deprecated, use n_class).}
-\item{Nfield}{Optimal number of fields (deprecated, use n_field).}
+\item{n_class}{Optimal number of classes.}
+\item{n_field}{Optimal number of fields.}
 \item{EM_Cycle}{Number of EM algorithm iterations (deprecated, use em_cycle).}
 \item{BRM}{Bicluster Reference Matrix}
 \item{FRP}{Field Reference Profile}

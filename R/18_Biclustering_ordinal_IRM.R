@@ -396,9 +396,6 @@ Biclustering_IRM.ordinal <- function(U,
     n_class = ncls,
     n_field = nfld,
     n_cycle = n_cycle,
-    Nclass = ncls,
-    Nfield = nfld,
-    N_Cycle = n_cycle,
     LFD = flddist,
     LRD = clsdist,
     LCD = clsdist,
@@ -416,9 +413,7 @@ Biclustering_IRM.ordinal <- function(U,
     TestFitIndices = FitIndices,
     log_lik = testell,
     SOACflg = SOACflg,
-    WOACflg = WOACflg,
-    # Deprecated fields (for backward compatibility)
-    LogLik = testell
+    WOACflg = WOACflg
   ), class = c("exametrika", "ordinalBiclustering"))
 
   return(ret)

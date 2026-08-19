@@ -322,13 +322,3 @@ LDLRA_PBIL <- function(U, na = NULL, Z = NULL, w = NULL,
   return(ret)
 }
 
-#' @title StrLearningPBIL_LDLRA (Deprecated)
-#' @description
-#' This function has been renamed to \code{\link{LDLRA_PBIL}}.
-#' Please use \code{LDLRA_PBIL} instead.
-#' @param ... All arguments passed to \code{\link{LDLRA_PBIL}}
-#' @export
-StrLearningPBIL_LDLRA <- function(...) {
-  .Deprecated("LDLRA_PBIL")
-  LDLRA_PBIL(...)
-}

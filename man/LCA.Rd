@@ -89,8 +89,8 @@ An object of class "exametrika" and "LCA" containing:
 \item{msg}{A character string indicating the model type. }
 \item{testlength}{Length of the test (number of items).}
 \item{nobs}{Sample size (number of rows in the dataset).}
-\item{Nclass}{Number of latent classes specified.}
-\item{N_Cycle}{Number of EM algorithm iterations performed.}
+\item{n_class}{Number of latent classes specified.}
+\item{n_cycle}{Number of EM algorithm iterations performed.}
 \item{converge}{Logical value indicating whether the algorithm converged within maxiter iterations}
 \item{TRP}{Test Reference Profile vector showing expected scores for each latent class.
 Calculated as the column sum of the estimated class reference matrix.}

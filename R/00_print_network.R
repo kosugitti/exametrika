@@ -64,7 +64,7 @@ print_ldlra_case <- function(x, digits) {
   ycoord <- lay.tree[, 2]
   xcoord <- xcoord[order(rowSums(x$adj_list[[1]]))]
   ycoord <- ycoord[order(x$crr, decreasing = TRUE)]
-  for (i in 1:x$Nclass) {
+  for (i in 1:x$n_class) {
     plot.igraph(x$g_list[[i]],
       layout = cbind(xcoord, ycoord),
       main = paste("Graph of ", msg, i)
@@ -108,7 +108,7 @@ print_ldlra_case <- function(x, digits) {
     paste("Latent", msg, "Ditribution"),
     paste(msg, "Membership Distribution")
   )
-  colnames(y) <- paste(msg, 1:x$Nclass)
+  colnames(y) <- paste(msg, 1:x$n_class)
   print(round(y, digits))
 
   if (x$WOACflg) {
@@ -132,7 +132,7 @@ print_ldb_case <- function(x, digits) {
   ycoord <- lay.tree[, 2]
   xcoord <- xcoord[order(rowSums(x$adj_list[[1]]))]
   ycoord <- ycoord[order(colSums(x$adj_list[[1]]))]
-  for (i in 1:x$Nrank) {
+  for (i in 1:x$n_rank) {
     plot.igraph(x$g_list[[i]],
       layout = cbind(xcoord, ycoord),
       main = paste("Graph at Rank", i)
@@ -140,7 +140,7 @@ print_ldb_case <- function(x, digits) {
   }
 
   cat("\nParameter Learning\n")
-  for (i in 1:x$Nrank) {
+  for (i in 1:x$n_rank) {
     tbl <- x$IRP[i, , ]
     tbl[tbl == 0] <- NA
     rownames(tbl) <- x$FieldLabel
@@ -160,13 +160,13 @@ print_ldb_case <- function(x, digits) {
     "Latent Rank Ditribution",
     "Rank Membership Dsitribution"
   )
-  colnames(y) <- paste("Rank", 1:x$Nrank)
+  colnames(y) <- paste("Rank", 1:x$n_rank)
   print(round(y, digits))
 
   cat("\nLatent Field Distribution\n")
   y <- matrix(x$LFD, nrow = 1)
   rownames(y) <- "N of Items"
-  colnames(y) <- paste("Field", 1:x$Nfield)
+  colnames(y) <- paste("Field", 1:x$n_field)
   print(y)
 
   cat("\nModel Fit Indices\n")
@@ -218,7 +218,7 @@ print_binet_case <- function(x, digits) {
     "Latent Class Ditribution",
     "Class Membership Dsitribution"
   )
-  colnames(y) <- paste("Class", 1:x$Nclass)
+  colnames(y) <- paste("Class", 1:x$n_class)
   print(round(y, digits))
 
   cat("\nModel Fit Indices\n")

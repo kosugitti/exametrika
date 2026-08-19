@@ -415,10 +415,18 @@ test_that("rated Biclustering log_lik fields exist", {
 })
 
 test_that("rated Biclustering backward compatibility fields", {
-  expect_equal(result_rated$Nclass, result_rated$n_class)
-  expect_equal(result_rated$Nfield, result_rated$n_field)
-  expect_equal(result_rated$N_Cycle, result_rated$n_cycle)
-  expect_equal(result_rated$LogLik, result_rated$log_lik)
+  # 2.0.0 で削除: $Nclass はもう無く，$n_class だけが残る
+  expect_null(result_rated$Nclass)
+  expect_false(is.null(result_rated$n_class))
+  # 2.0.0 で削除: $Nfield はもう無く，$n_field だけが残る
+  expect_null(result_rated$Nfield)
+  expect_false(is.null(result_rated$n_field))
+  # 2.0.0 で削除: $N_Cycle はもう無く，$n_cycle だけが残る
+  expect_null(result_rated$N_Cycle)
+  expect_false(is.null(result_rated$n_cycle))
+  # 2.0.0 で削除: $LogLik はもう無く，$log_lik だけが残る
+  expect_null(result_rated$LogLik)
+  expect_false(is.null(result_rated$log_lik))
 })
 
 test_that("rated Biclustering print works", {

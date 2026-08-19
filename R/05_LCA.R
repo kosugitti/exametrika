@@ -27,8 +27,8 @@
 #'  \item{msg}{A character string indicating the model type. }
 #'  \item{testlength}{Length of the test (number of items).}
 #'  \item{nobs}{Sample size (number of rows in the dataset).}
-#'  \item{Nclass}{Number of latent classes specified.}
-#'  \item{N_Cycle}{Number of EM algorithm iterations performed.}
+#'  \item{n_class}{Number of latent classes specified.}
+#'  \item{n_cycle}{Number of EM algorithm iterations performed.}
 #'  \item{converge}{Logical value indicating whether the algorithm converged within maxiter iterations}
 #'  \item{TRP}{Test Reference Profile vector showing expected scores for each latent class.
 #'    Calculated as the column sum of the estimated class reference matrix.}
@@ -208,10 +208,7 @@ LCA.binary <- function(U, ncls = 2, na = NULL, Z = NULL, w = NULL, maxiter = 100
     IRP = IRP,
     ItemFitIndices = FitIndices$item,
     TestFitIndices = FitIndices$test,
-    log_lik = FitIndices$test$model_log_like,
-    # Deprecated fields (for backward compatibility)
-    Nclass = ncls,
-    N_Cycle = fit$iter
+    log_lik = FitIndices$test$model_log_like
   ), class = c("exametrika", "LCA"))
   return(ret)
 }
@@ -360,11 +357,7 @@ LCA.nominal <- function(U, ncls = 2, na = NULL, Z = NULL, w = NULL, maxiter = 10
     CMD = as.vector(CMD),
     Students = StudentClass,
     TestFitIndices = FitIndices,
-    log_lik = testell,
-    # Deprecated fields (for backward compatibility)
-    Nclass = ncls,
-    N_Cycle = fit$iter,
-    LogLik = testell
+    log_lik = testell
   ), class = c("exametrika", "nominalLCA"))
   return(ret)
 }
@@ -457,11 +450,7 @@ LCA.rated <- function(U, ncls = 2, na = NULL, Z = NULL, w = NULL, maxiter = 1000
     TestFitIndices = FitIndices,
     TestFitIndicesNominal = ret_nom$TestFitIndices,
     log_lik = ell_binary,
-    log_lik_nominal = ret_nom$log_lik,
-    # Deprecated fields (for backward compatibility)
-    Nclass = ncls,
-    N_Cycle = ret_nom$n_cycle,
-    LogLik = ell_binary
+    log_lik_nominal = ret_nom$log_lik
   ), class = c("exametrika", "ratedLCA"))
   return(ret)
 }

@@ -290,9 +290,6 @@ Biclustering.nominal <- function(U,
     n_class = ncls,
     n_field = nfld,
     n_cycle = emt,
-    Nclass = ncls,
-    Nfield = nfld,
-    N_Cycle = emt,
     LFD = flddist,
     LRD = clsdist,
     LCD = clsdist,
@@ -305,9 +302,7 @@ Biclustering.nominal <- function(U,
     ClassEstimated = cls,
     Students = StudentRank,
     TestFitIndices = FitIndices,
-    log_lik = testell, # New naming convention
-    # Deprecated fields (for backward compatibility)
-    LogLik = testell
+    log_lik = testell # New naming convention
   ), class = c("exametrika", "nominalBiclustering"))
 
   return(ret)

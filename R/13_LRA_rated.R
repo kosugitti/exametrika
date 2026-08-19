@@ -644,10 +644,7 @@ LRA.rated <- function(U,
     ScoreReport = ScoreReport,
     ItemReport = ItemReport,
     ItemQuantileRef = QRVdf,
-    CatQuant = SelectRatio,
-    # Deprecated fields (for backward compatibility)
-    Nrank = nrank,
-    N_Cycle = iter
+    CatQuant = SelectRatio
   ), class = c("exametrika", "LRArated"))
   return(ret)
 }

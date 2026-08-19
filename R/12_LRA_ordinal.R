@@ -602,10 +602,7 @@ LRA.ordinal <- function(U,
     TestFitIndices = TestFitIndices,
     ScoreReport = ScoreReport,
     ItemReport = ItemReport,
-    CatQuant = SelectRatioTable,
-    # Deprecated fields (for backward compatibility)
-    Nrank = nrank,
-    N_Cycle = iter
+    CatQuant = SelectRatioTable
   ), class = c("exametrika", "LRAordinal"))
   return(ret)
 }

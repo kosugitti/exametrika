@@ -103,8 +103,8 @@ Biclustering_IRM.default <- function(U, na = NULL, Z = NULL, w = NULL, ...) {
 #'  \item{n_class}{Optimal number of classes (new naming convention).}
 #'  \item{n_field}{Optimal number of fields (new naming convention).}
 #'  \item{em_cycle}{Number of EM algorithm iterations (new naming convention).}
-#'  \item{Nclass}{Optimal number of classes (deprecated, use n_class).}
-#'  \item{Nfield}{Optimal number of fields (deprecated, use n_field).}
+#'  \item{n_class}{Optimal number of classes.}
+#'  \item{n_field}{Optimal number of fields.}
 #'  \item{EM_Cycle}{Number of EM algorithm iterations (deprecated, use em_cycle).}
 #'  \item{BRM}{Bicluster Reference Matrix}
 #'  \item{FRP}{Field Reference Profile}
@@ -647,21 +647,8 @@ Biclustering_IRM.binary <- function(U, na = NULL, Z = NULL, w = NULL,
     TestFitIndices = FitIndices,
     log_lik = llm,
     # Deprecated fields (for backward compatibility)
-    Nclass = ncls,
-    Nfield = nfld,
-    N_Cycle = EMt,
     EM_Cycle = EMt
   ), class = c("exametrika", "IRM"))
   return(ret)
 }
 
-#' @title IRM (Deprecated)
-#' @description
-#' This function has been renamed to \code{\link{Biclustering_IRM}}.
-#' Please use \code{Biclustering_IRM} instead.
-#' @param ... All arguments passed to \code{\link{Biclustering_IRM}}
-#' @export
-IRM <- function(...) {
-  .Deprecated("Biclustering_IRM")
-  Biclustering_IRM(...)
-}

@@ -72,11 +72,19 @@ remains described in `Description:`.
 ## Downstream dependencies
 
 `ggExametrika` (CRAN) has exametrika in `Suggests`. It was checked against this
-release:
-its full test suite passes unchanged (0 failures). Its uses of the removed field
-names all go through a helper that tries the current name first and falls back to
-the legacy one, so the removals are inert there. No source change is required in
-`ggExametrika` for it to keep working, and no simultaneous submission is needed.
+release with the removals in place.
+
+Its shipped code is unaffected: every use of a removed field name sits inside a
+helper that tries the current name first (`.first_non_null(data$n_class,
+data$Nclass, ...)`), so the removal only makes a fallback argument `NULL`. Three
+of its *test* assertions read the removed names directly; those have been updated
+in its development version, and its suite then passes in full against this
+release. No user-facing behaviour of `ggExametrika` changes, so the two do not
+need to be submitted together.
+
+`shinyExametrika` (not on CRAN) passes its suite unchanged against this release,
+for the same reason: it reads fields through a `safe_field()` helper that
+prefers the current name.
 
 ## Check time
 

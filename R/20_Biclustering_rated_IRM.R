@@ -229,12 +229,7 @@ Biclustering_IRM.rated <- function(U,
     log_lik = test_log_lik_binary,
     log_lik_nominal = ret_nom$log_lik,
     SOACflg = SOACflg,
-    WOACflg = WOACflg,
-    # Deprecated fields (for backward compatibility)
-    Nclass = ncls,
-    Nfield = nfld,
-    N_Cycle = ret_nom$n_cycle,
-    LogLik = test_log_lik_binary
+    WOACflg = WOACflg
   ), class = c("exametrika", "ratedBiclustering"))
 
   return(ret)

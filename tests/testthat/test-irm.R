@@ -37,9 +37,15 @@ test_that("IRM Basic Execution", {
 test_that("IRM Backward Compatibility", {
   skip_on_cran()
   # Deprecated field names should still work
-  expect_equal(result_irm$Nclass, result_irm$n_class)
-  expect_equal(result_irm$Nfield, result_irm$n_field)
-  expect_equal(result_irm$N_Cycle, result_irm$n_cycle)
+  # 2.0.0 で削除: $Nclass はもう無く，$n_class だけが残る
+  expect_null(result_irm$Nclass)
+  expect_false(is.null(result_irm$n_class))
+  # 2.0.0 で削除: $Nfield はもう無く，$n_field だけが残る
+  expect_null(result_irm$Nfield)
+  expect_false(is.null(result_irm$n_field))
+  # 2.0.0 で削除: $N_Cycle はもう無く，$n_cycle だけが残る
+  expect_null(result_irm$N_Cycle)
+  expect_false(is.null(result_irm$n_cycle))
   expect_equal(result_irm$EM_Cycle, result_irm$em_cycle)
 })
 

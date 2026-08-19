@@ -6,6 +6,36 @@ now returns different numbers, and no longer the numbers printed in Shojima
 (2022). A minor bump would have understated that. The deprecation removals
 planned for 2.0.0 ride along, so that the break happens once.
 
+## Removals (breaking)
+
+The names deprecated in earlier releases are gone. Each carried a deprecation
+warning for several releases: the function renames since 1.7.0, the field-name
+aliases since 1.8.0.
+
+Functions removed, with their replacements:
+
+| Removed | Use instead |
+|---|---|
+| `IRM()` | `Biclustering_IRM()` |
+| `StrLearningGA_BNM()` | `BNM_GA()` |
+| `StrLearningPBIL_BNM()` | `BNM_PBIL()` |
+| `StrLearningPBIL_LDLRA()` | `LDLRA_PBIL()` |
+
+Field aliases removed from returned objects. The snake_case names have been
+present alongside them since 1.8.0, so code that already reads the new names is
+unaffected:
+
+| Removed | Use instead |
+|---|---|
+| `$Nclass` | `$n_class` |
+| `$Nfield` | `$n_field` |
+| `$Nrank` | `$n_rank` |
+| `$N_Cycle` | `$n_cycle` |
+| `$LogLik` | `$log_lik` |
+
+`GridSearch()` still accepts `"LogLik"` as a value for its `index` argument;
+that is an input alias for the criterion name, not a field on the result.
+
 ## Bug Fixes
 
 - **Posterior memberships were normalised by subtracting the row *minimum*, and

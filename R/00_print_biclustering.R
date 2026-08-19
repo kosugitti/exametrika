@@ -26,7 +26,7 @@ print_biclustering_case <- function(x, digits) {
     paste("Latent", x$msg, "Ditribution"),
     paste(x$msg, "Membership Distribution")
   )
-  colnames(y) <- paste(x$msg, 1:x$Nclass)
+  colnames(y) <- paste(x$msg, 1:x$n_class)
   print(round(y, digits))
 
   cat("\nField Membership Profile\n")
@@ -39,12 +39,12 @@ print_biclustering_case <- function(x, digits) {
   cat("Latent Field Distribution\n")
   y <- matrix(x$LFD, byrow = T, nrow = 1)
   rownames(y) <- "N of Items"
-  colnames(y) <- paste("Field", 1:x$Nfield)
+  colnames(y) <- paste("Field", 1:x$n_field)
   print(round(y, digits))
   cat("\nModel Fit Indices\n")
-  cat(paste("Number of Latent", x$msg, ":", x$Nclass))
-  cat(paste("\nNumber of Latent Field:", x$Nfield))
-  cat(paste("\nNumber of EM cycle:", x$N_Cycle, "\n"))
+  cat(paste("Number of Latent", x$msg, ":", x$n_class))
+  cat(paste("\nNumber of Latent Field:", x$n_field))
+  cat(paste("\nNumber of EM cycle:", x$n_cycle, "\n"))
   y <- unclass(x$TestFitIndices)
   y <- t(as.data.frame(y))
   colnames(y) <- "value"
@@ -69,15 +69,15 @@ print_rated_biclustering_case <- function(x, digits) {
   for (q in 1:dim(x$FRP)[3]) {
     cat(paste("For category", q, "\n"))
     y <- x$FRP[, , q]
-    colnames(y) <- paste(x$msg, 1:x$Nclass)
-    rownames(y) <- paste("Field", 1:x$Nfield)
+    colnames(y) <- paste(x$msg, 1:x$n_class)
+    rownames(y) <- paste("Field", 1:x$n_field)
     print(y, digits = digits)
   }
 
   cat(paste("\nField Reference Profile (Binary)\n"))
   y <- x$FieldFRP
-  colnames(y) <- paste(x$msg, 1:x$Nclass)
-  rownames(y) <- paste("Field", 1:x$Nfield)
+  colnames(y) <- paste(x$msg, 1:x$n_class)
+  rownames(y) <- paste("Field", 1:x$n_field)
   print(round(y, digits))
 
   cat("\nField Reference Profile Indices\n")
@@ -90,7 +90,7 @@ print_rated_biclustering_case <- function(x, digits) {
     paste("Latent", x$msg, "Ditribution"),
     paste(x$msg, "Membership Distribution")
   )
-  colnames(y) <- paste(x$msg, 1:x$Nclass)
+  colnames(y) <- paste(x$msg, 1:x$n_class)
   print(round(y, digits))
 
   cat("\nField Membership Profile\n")
@@ -103,14 +103,14 @@ print_rated_biclustering_case <- function(x, digits) {
   cat("Latent Field Distribution\n")
   y <- matrix(x$LFD, byrow = TRUE, nrow = 1)
   rownames(y) <- "N of Items"
-  colnames(y) <- paste("Field", 1:x$Nfield)
+  colnames(y) <- paste("Field", 1:x$n_field)
   print(round(y, digits))
 
   # Layer 1: Binary fit indices
   cat("\nModel Fit Indices (Binary)\n")
-  cat(paste("Number of Latent", x$msg, ":", x$Nclass))
-  cat(paste("\nNumber of Latent Field:", x$Nfield))
-  cat(paste("\nNumber of EM cycle:", x$N_Cycle, "\n"))
+  cat(paste("Number of Latent", x$msg, ":", x$n_class))
+  cat(paste("\nNumber of Latent Field:", x$n_field))
+  cat(paste("\nNumber of EM cycle:", x$n_cycle, "\n"))
   y <- unclass(x$TestFitIndices)
   y <- t(as.data.frame(y))
   colnames(y) <- "value"
@@ -143,8 +143,8 @@ print_nominal_biclustering_case <- function(x, digits, fit_indices = "both") {
   for (q in 1:dim(x$FRP)[3]) {
     cat(paste("For category", q, "\n"))
     y <- x$FRP[, , q]
-    colnames(y) <- paste(x$msg, 1:x$Nclass)
-    rownames(y) <- paste("Field", 1:x$Nfield)
+    colnames(y) <- paste(x$msg, 1:x$n_class)
+    rownames(y) <- paste("Field", 1:x$n_field)
     print(y, digits = digits)
   }
 
@@ -153,21 +153,21 @@ print_nominal_biclustering_case <- function(x, digits, fit_indices = "both") {
     paste("Latent", x$msg, "Ditribution"),
     paste(x$msg, "Membership Distribution")
   )
-  colnames(y) <- paste(x$msg, 1:x$Nclass)
+  colnames(y) <- paste(x$msg, 1:x$n_class)
   print(round(y, digits))
 
   cat("Latent Field Distribution\n")
   y <- matrix(x$LFD, byrow = T, nrow = 1)
   rownames(y) <- "N of Items"
-  colnames(y) <- paste("Field", 1:x$Nfield)
+  colnames(y) <- paste("Field", 1:x$n_field)
   print(round(y, digits))
 
   cat("\nModel Fit Indices\n")
-  cat(paste("Number of Latent", x$msg, ":", x$Nclass))
-  cat(paste("\nNumber of Latent Field:", x$Nfield))
-  cat(paste("\nNumber of EM cycle:", x$N_Cycle, "\n"))
+  cat(paste("Number of Latent", x$msg, ":", x$n_class))
+  cat(paste("\nNumber of Latent Field:", x$n_field))
+  cat(paste("\nNumber of EM cycle:", x$n_cycle, "\n"))
   y <- unclass(x$TestFitIndices)
-  y$LogLik <- x$LogLik
+  y$log_lik <- x$log_lik
   y <- t(as.data.frame(y))
   colnames(y) <- "value"
   print(round(y, digits))
@@ -188,8 +188,8 @@ print_ordinal_biclustering_case <- function(x, digits, fit_indices = "both") {
   for (q in 1:dim(x$FRP)[3]) {
     cat(paste("For category", q, "\n"))
     y <- x$FRP[, , q]
-    colnames(y) <- paste(x$msg, 1:x$Nclass)
-    rownames(y) <- paste("Field", 1:x$Nfield)
+    colnames(y) <- paste(x$msg, 1:x$n_class)
+    rownames(y) <- paste("Field", 1:x$n_field)
     print(y, digits = digits)
   }
   y <- rbind(x$TRP, x$LRD, x$CMD)
@@ -198,24 +198,24 @@ print_ordinal_biclustering_case <- function(x, digits, fit_indices = "both") {
     paste("Latent", x$msg, "Ditribution"),
     paste(x$msg, "Membership Distribution")
   )
-  colnames(y) <- paste(x$msg, 1:x$Nclass)
+  colnames(y) <- paste(x$msg, 1:x$n_class)
   print(round(y, digits))
   cat("Latent Field Distribution\n")
   y <- matrix(x$LFD, byrow = T, nrow = 1)
   rownames(y) <- "N of Items"
-  colnames(y) <- paste("Field", 1:x$Nfield)
+  colnames(y) <- paste("Field", 1:x$n_field)
   print(round(y, digits))
 
   cat("Boundary field reference profile\n")
   cat("Weighted\n")
   y <- x$BFRP$Weighted
-  colnames(y) <- paste(x$msg, 1:x$Nclass)
-  rownames(y) <- paste("Field", 1:x$Nfield)
+  colnames(y) <- paste(x$msg, 1:x$n_class)
+  rownames(y) <- paste("Field", 1:x$n_field)
   print(round(y, digits))
   cat("Observed\n")
   y <- x$BFRP$Observed
-  colnames(y) <- paste(x$msg, 1:x$Nclass)
-  rownames(y) <- paste("Field", 1:x$Nfield)
+  colnames(y) <- paste(x$msg, 1:x$n_class)
+  rownames(y) <- paste("Field", 1:x$n_field)
   print(round(y, digits))
 
   cat("\nField Reference Profile Indices\n")
@@ -223,11 +223,11 @@ print_ordinal_biclustering_case <- function(x, digits, fit_indices = "both") {
   print(x$FRPIndex, digits = digits)
 
   cat("\nModel Fit Indices\n")
-  cat(paste("Number of Latent", x$msg, ":", x$Nclass))
-  cat(paste("\nNumber of Latent Field:", x$Nfield))
-  cat(paste("\nNumber of EM cycle:", x$N_Cycle, "\n"))
+  cat(paste("Number of Latent", x$msg, ":", x$n_class))
+  cat(paste("\nNumber of Latent Field:", x$n_field))
+  cat(paste("\nNumber of EM cycle:", x$n_cycle, "\n"))
   y <- unclass(x$TestFitIndices)
-  y$LogLik <- x$LogLik
+  y$log_lik <- x$log_lik
   y <- t(as.data.frame(y))
   colnames(y) <- "value"
   print(round(y, digits))
@@ -250,19 +250,19 @@ print_irm_case <- function(x, digits) {
     "Test Reference Profile",
     "Latent class Ditribution"
   )
-  colnames(y) <- paste("class", 1:x$Nclass)
+  colnames(y) <- paste("class", 1:x$n_class)
   print(round(y, digits))
 
   cat("Latent Field Distribution\n")
   y <- matrix(x$LFD, byrow = T, nrow = 1)
   rownames(y) <- "N of Items"
-  colnames(y) <- paste("Field", 1:x$Nfield)
+  colnames(y) <- paste("Field", 1:x$n_field)
   print(round(y, digits))
 
   cat("\nModel Fit Indices\n")
-  cat(paste("Number of Latent Class :", x$Nclass))
-  cat(paste("\nNumber of Latent Field:", x$Nfield))
-  cat(paste("\nNumber of EM cycle:", x$N_Cycle, "\n"))
+  cat(paste("Number of Latent Class :", x$n_class))
+  cat(paste("\nNumber of Latent Field:", x$n_field))
+  cat(paste("\nNumber of EM cycle:", x$n_cycle, "\n"))
   y <- unclass(x$TestFitIndices)
   y <- t(as.data.frame(y))
   colnames(y) <- "value"

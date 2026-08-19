@@ -508,9 +508,6 @@ Biclustering.ordinal <- function(U,
     n_class = ncls,
     n_field = nfld,
     n_cycle = emt,
-    Nclass = ncls,
-    Nfield = nfld,
-    N_Cycle = emt,
     LFD = flddist,
     LRD = clsdist,
     LCD = clsdist,
@@ -529,9 +526,7 @@ Biclustering.ordinal <- function(U,
     TestFitIndices = FitIndices,
     log_lik = test_log_lik, # New naming convention
     SOACflg = SOACflg,
-    WOACflg = WOACflg,
-    # Deprecated fields (for backward compatibility)
-    LogLik = test_log_lik
+    WOACflg = WOACflg
   ), class = c("exametrika", "ordinalBiclustering"))
 
   return(ret)

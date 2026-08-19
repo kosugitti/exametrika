@@ -27,8 +27,8 @@
 #'  \item{nobs}{Sample size. The number of rows in the dataset.}
 #'  \item{testlength}{Length of the test. The number of items included in the test.}
 #'  \item{msg}{A character string indicating the model type. }
-#'  \item{Nclass}{Optimal number of classes.}
-#'  \item{Nfield}{Optimal number of fields.}
+#'  \item{n_class}{Optimal number of classes.}
+#'  \item{n_field}{Optimal number of fields.}
 #'  \item{crr}{Correct Response Rate}
 #'  \item{ItemLabel}{Label of Items}
 #'  \item{FieldLabel}{Label of Fields}
@@ -391,8 +391,6 @@ LDB <- function(U, na = NULL, Z = NULL, w = NULL,
     nobs = nobs,
     n_rank = ncls,
     n_field = nfld,
-    Nrank = ncls,
-    Nfield = nfld,
     crr = crr(tmp),
     ItemLabel = tmp$ItemLabel,
     FieldLabel = FieldLabel,

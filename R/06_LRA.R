@@ -23,8 +23,8 @@
 #'  \item{msg}{A character string indicating the model type. }
 #'  \item{testlength}{Length of the test (number of items).}
 #'  \item{nobs}{Sample size (number of rows in the dataset).}
-#'  \item{Nrank}{Number of latent ranks specified.}
-#'  \item{N_Cycle}{Number of EM algorithm iterations performed.}
+#'  \item{n_rank}{Number of latent ranks specified.}
+#'  \item{n_cycle}{Number of EM algorithm iterations performed.}
 #'  \item{converge}{Logical value indicating whether the algorithm converged within maxiter iterations}
 #'  \item{TRP}{Test Reference Profile vector showing expected scores at each rank.}
 #'  \item{LRD}{Latent Rank Distribution vector showing the number of examinees at each rank.}
@@ -250,10 +250,7 @@ LRA.binary <- function(U,
     IRPIndex = IRPIndex,
     ItemFitIndices = FitIndices$item,
     TestFitIndices = FitIndices$test,
-    log_lik = FitIndices$test$model_log_like,
-    # Deprecated fields (for backward compatibility)
-    Nrank = ncls,
-    N_Cycle = fit$iter
+    log_lik = FitIndices$test$model_log_like
   ), class = c("exametrika", "LRA"))
   return(ret)
 }

@@ -150,9 +150,9 @@ An object of class "exametrika" and "Biclustering" containing:
 \item{mic}{Logical value indicating whether monotonicity constraint was applied}
 \item{testlength}{Number of items in the test}
 \item{nobs}{Number of examinees in the dataset}
-\item{Nclass}{Number of latent classes/ranks specified}
-\item{Nfield}{Number of latent fields specified}
-\item{N_Cycle}{Number of EM iterations performed}
+\item{n_class}{Number of latent classes/ranks specified}
+\item{n_field}{Number of latent fields specified}
+\item{n_cycle}{Number of EM iterations performed}
 \item{converge}{Logical value indicating wheter the algorithm converged within maxiter iterasions}
 \item{LFD}{Latent Field Distribution - counts of items assigned to each field}
 \item{LRD/LCD}{Latent Rank/Class Distribution - counts of examinees assigned to each class/rank}

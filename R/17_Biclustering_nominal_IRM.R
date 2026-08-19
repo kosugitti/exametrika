@@ -278,9 +278,6 @@ Biclustering_IRM.nominal <- function(U,
     n_class = ncls,
     n_field = nfld,
     n_cycle = EMt,
-    Nclass = ncls,
-    Nfield = nfld,
-    N_Cycle = EMt,
     LFD = flddist,
     LRD = clsdist,
     LCD = clsdist,
@@ -293,9 +290,7 @@ Biclustering_IRM.nominal <- function(U,
     ClassEstimated = cls,
     Students = StudentRank,
     TestFitIndices = FitIndices,
-    log_lik = testell,
-    # Deprecated fields (for backward compatibility)
-    LogLik = testell
+    log_lik = testell
   ), class = c("exametrika", "nominalBiclustering"))
 
   return(ret)

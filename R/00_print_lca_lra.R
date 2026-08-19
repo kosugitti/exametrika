@@ -123,15 +123,15 @@ print_lca_case <- function(x, digits) {
     "Latent Class Ditribution",
     "Class Membership Distribution"
   )
-  colnames(y) <- paste("Class", 1:x$Nclass)
+  colnames(y) <- paste("Class", 1:x$n_class)
   print(round(y, digits))
   cat("\nItem Fit Indices\n")
   y <- unclass(x$ItemFitIndices)
   y <- as.data.frame(y)
   print(round(y, digits))
   cat("\nModel Fit Indices\n")
-  cat(paste("Number of Latent class:", x$Nclass))
-  cat(paste("\nNumber of EM cycle:", x$N_Cycle, "\n"))
+  cat(paste("Number of Latent class:", x$n_class))
+  cat(paste("\nNumber of EM cycle:", x$n_cycle, "\n"))
   y <- unclass(x$TestFitIndices)
   y <- t(as.data.frame(y))
   colnames(y) <- "value"
@@ -156,15 +156,15 @@ print_lra_case <- function(x, digits) {
     "Latent Rank Ditribution",
     "Rank Membership Distribution"
   )
-  colnames(y) <- paste("Rank", 1:x$Nrank)
+  colnames(y) <- paste("Rank", 1:x$n_rank)
   print(round(y, digits))
   cat("\nItem Fit Indices\n")
   y <- unclass(x$ItemFitIndices)
   y <- as.data.frame(y)
   print(round(y, digits))
   cat("\nModel Fit Indices\n")
-  cat(paste("Number of Latent rank:", x$Nrank))
-  cat(paste("\nNumber of EM cycle:", x$N_Cycle, "\n"))
+  cat(paste("Number of Latent rank:", x$n_rank))
+  cat(paste("\nNumber of EM cycle:", x$n_cycle, "\n"))
   y <- unclass(x$TestFitIndices)
   y <- t(as.data.frame(y))
   colnames(y) <- "value"
@@ -188,15 +188,15 @@ print_lra_ordinal_case <- function(x, digits, fit_indices = "both") {
     "Latent Rank Ditribution",
     "Rank Membership Distribution"
   )
-  colnames(y) <- paste("Rank", 1:x$Nrank)
+  colnames(y) <- paste("Rank", 1:x$n_rank)
   print(round(y, digits))
   cat("\nItem Fit Indices\n")
   y <- unclass(x$ItemFitIndices)
   y <- as.data.frame(y)
   print(round(y, digits))
   cat("\nModel Fit Indices\n")
-  cat(paste("Number of Latent rank:", x$Nrank))
-  cat(paste("\nNumber of EM cycle:", x$N_Cycle, "\n"))
+  cat(paste("Number of Latent rank:", x$n_rank))
+  cat(paste("\nNumber of EM cycle:", x$n_cycle, "\n"))
   y <- unclass(x$TestFitIndices)
   y <- t(as.data.frame(y))
   colnames(y) <- "value"
@@ -225,15 +225,15 @@ print_lra_rated_case <- function(x, digits) {
     "Latent Rank Ditribution",
     "Rank Membership Distribution"
   )
-  colnames(y) <- paste("Rank", 1:x$Nrank)
+  colnames(y) <- paste("Rank", 1:x$n_rank)
   print(round(y, digits))
   cat("\nItem Fit Indices\n")
   y <- unclass(x$ItemFitIndices)
   y <- as.data.frame(y)
   print(round(y, digits))
   cat("\nModel Fit Indices\n")
-  cat(paste("Number of Latent rank:", x$Nrank))
-  cat(paste("\nNumber of EM cycle:", x$N_Cycle, "\n"))
+  cat(paste("Number of Latent rank:", x$n_rank))
+  cat(paste("\nNumber of EM cycle:", x$n_cycle, "\n"))
   y <- unclass(x$TestFitIndices)
   y <- t(as.data.frame(y))
   colnames(y) <- "value"

@@ -142,10 +142,18 @@ test_that("Nominal IRM Test Fit Indices", {
 
 test_that("Nominal IRM Backward Compatibility", {
   # Deprecated field names should still work
-  expect_equal(result_nirm$Nclass, result_nirm$n_class)
-  expect_equal(result_nirm$Nfield, result_nirm$n_field)
-  expect_equal(result_nirm$N_Cycle, result_nirm$n_cycle)
-  expect_equal(result_nirm$LogLik, result_nirm$log_lik)
+  # 2.0.0 で削除: $Nclass はもう無く，$n_class だけが残る
+  expect_null(result_nirm$Nclass)
+  expect_false(is.null(result_nirm$n_class))
+  # 2.0.0 で削除: $Nfield はもう無く，$n_field だけが残る
+  expect_null(result_nirm$Nfield)
+  expect_false(is.null(result_nirm$n_field))
+  # 2.0.0 で削除: $N_Cycle はもう無く，$n_cycle だけが残る
+  expect_null(result_nirm$N_Cycle)
+  expect_false(is.null(result_nirm$n_cycle))
+  # 2.0.0 で削除: $LogLik はもう無く，$log_lik だけが残る
+  expect_null(result_nirm$LogLik)
+  expect_false(is.null(result_nirm$log_lik))
 
   # LRD should equal LCD (alias)
   expect_equal(result_nirm$LRD, result_nirm$LCD)

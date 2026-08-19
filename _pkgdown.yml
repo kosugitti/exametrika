@@ -157,14 +157,8 @@ reference:
     desc: Model fit index computation
     contents:
     - calcFitIndices
-
-  - title: Deprecated
-    desc: Functions deprecated since v1.5.0 (to be removed in v2.0.0)
-    contents:
-    - IRM
-    - StrLearningGA_BNM
-    - StrLearningPBIL_BNM
-    - StrLearningPBIL_LDLRA
+    - M2
+    - add_M2
 
   - title: S3 Methods
     desc: Plot and print methods for exametrika objects

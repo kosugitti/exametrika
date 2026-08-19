@@ -8,10 +8,10 @@ plot_common_profiles <- function(x, type, value, plotItemID, plotStudentID, test
     # Item Reference Profile ----------------------------------------
     msg <- x$msg
     params <- x$IRP[plotItemID, ]
-    if (is.null(x$Nclass)) {
-      steps <- x$Nrank
+    if (is.null(x$n_class)) {
+      steps <- x$n_rank
     } else {
-      steps <- x$Nclass
+      steps <- x$n_class
     }
     for (i in 1:nrow(params)) {
       y <- params[i, ]
@@ -58,7 +58,7 @@ plot_common_profiles <- function(x, type, value, plotItemID, plotStudentID, test
     call_plot(
       plot,
       list(
-        x = 1:x$Nfield, y = RRV[1, ],
+        x = 1:x$n_field, y = RRV[1, ],
         type = "n",
         ylim = c(0, 1.1),
         xlab = "Field",
@@ -68,18 +68,18 @@ plot_common_profiles <- function(x, type, value, plotItemID, plotStudentID, test
       ),
       dots
     )
-    call_plot(graphics::axis, list(side = 1, at = 1:x$Nfield, labels = colnames(RRV)), dots)
-    for (i in 1:x$Nclass) {
-      call_plot(graphics::lines, list(x = 1:x$Nfield, y = RRV[i, ], type = "o", lty = i), dots)
-      for (j in 1:x$Nfield) {
+    call_plot(graphics::axis, list(side = 1, at = 1:x$n_field, labels = colnames(RRV)), dots)
+    for (i in 1:x$n_class) {
+      call_plot(graphics::lines, list(x = 1:x$n_field, y = RRV[i, ], type = "o", lty = i), dots)
+      for (j in 1:x$n_field) {
         text(j, RRV[i, j], labels = i, pos = 3, offset = 0.5, cex = 0.8)
       }
     }
     legend("top",
       legend = rownames(RRV),
-      lty = 1:x$Nclass,
+      lty = 1:x$n_class,
       lwd = 2,
-      ncol = x$Nclass,
+      ncol = x$n_class,
       bty = "n"
     )
   }
@@ -109,10 +109,10 @@ plot_common_profiles <- function(x, type, value, plotItemID, plotStudentID, test
     }
     msg <- x$msg
 
-    if (is.null(x$Nclass)) {
-      steps <- x$Nrank
+    if (is.null(x$n_class)) {
+      steps <- x$n_rank
     } else {
-      steps <- x$Nclass
+      steps <- x$n_class
     }
     names.arg <- 1:steps
 
@@ -166,10 +166,10 @@ plot_common_profiles <- function(x, type, value, plotItemID, plotStudentID, test
       target2 <- x$RMD
     }
     msg <- x$msg
-    if (is.null(x$Nclass)) {
-      steps <- x$Nrank
+    if (is.null(x$n_class)) {
+      steps <- x$n_rank
     } else {
-      steps <- x$Nclass
+      steps <- x$n_class
     }
     bp <- call_plot(
       graphics::barplot,
@@ -204,10 +204,10 @@ plot_common_profiles <- function(x, type, value, plotItemID, plotStudentID, test
   if (type == "CMP" | type == "RMP") {
     # Class Membership Profile ----------------------------------------
     msg <- x$msg
-    if (is.null(x$Nclass)) {
-      steps <- x$Nrank
+    if (is.null(x$n_class)) {
+      steps <- x$n_rank
     } else {
-      steps <- x$Nclass
+      steps <- x$n_class
     }
     params <- x$Students[plotStudentID, 1:steps, drop = FALSE]
     for (i in 1:NROW(params)) {
@@ -345,7 +345,7 @@ IC_RP_BR_plot <- function(x, type, plotItemID, dots = list()) {
       ),
       dots
     )
-    call_plot(graphics::axis, list(side = 1, at = 1:ncol(slice), labels = 1:x$Nrank), dots)
+    call_plot(graphics::axis, list(side = 1, at = 1:ncol(slice), labels = 1:x$n_rank), dots)
     for (j in 1:nrow(slice)) {
       call_plot(graphics::lines, list(x = slice[j, ], lty = j), dots)
       text(

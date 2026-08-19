@@ -210,7 +210,7 @@ Biclustering.default <- function(U, na = NULL, Z = NULL, w = NULL, ...) {
 #'   pre-specified labels would defeat the purpose of fixing them.
 #' @param mic Logical; if TRUE, forces Field Reference Profiles to be monotonically
 #' increasing. Default is FALSE.
-#' @param maxiter Maximum number of EM algorithm iterations. Default is 100.
+#' @param maxiter Maximum number of EM algorithm iterations. Default is 1000.
 #' @param verbose Logical; if TRUE, displays progress during estimation. Default is FALSE.
 #' @param beta1 Beta distribution parameter 1 for prior density of field reference matrix. Default is 1.
 #' @param beta2 Beta distribution parameter 2 for prior density of field reference matrix. Default is 1.
@@ -250,7 +250,7 @@ Biclustering.binary <- function(U,
                                 conf = NULL,
                                 conf_class = NULL,
                                 mic = FALSE,
-                                maxiter = 100,
+                                maxiter = 1000,
                                 verbose = FALSE,
                                 beta1 = 1,
                                 beta2 = 1, ...) {
@@ -352,8 +352,7 @@ Biclustering.binary <- function(U,
   test_log_lik <- -Inf
   old_test_log_lik <- -Inf
   emt <- 0
-  # Raised from 100 with the tolerance tightened to 1e-8 (see NEWS).
-  maxemt <- 1000
+  maxemt <- maxiter
 
   fld0 <- pmin(ceiling(1:testlength / (testlength / nfld)), nfld)
   crr_order <- order(crr(tmp), decreasing = TRUE)

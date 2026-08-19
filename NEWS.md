@@ -8,6 +8,13 @@ planned for 2.0.0 ride along, so that the break happens once.
 
 ## Bug Fixes (2.0.0, continued)
 
+- **`Biclustering()` ignored `maxiter` on binary data.** The binary branch set
+  its own iteration cap to 1000 outright, so the argument was accepted and
+  discarded; the polytomous branches always passed it through. The default is
+  now 1000 to match what the function has actually been doing, so results do not
+  change for anyone who left the argument alone, and the help says 1000 rather
+  than 100.
+
 - **`LRA(method = "GTM")` ignored `maxiter`.** The GTM branch called the EM loop
   without passing the argument on, so it always stopped at `emclus()`'s default
   of 100 cycles no matter what the caller asked for -- while the help said the

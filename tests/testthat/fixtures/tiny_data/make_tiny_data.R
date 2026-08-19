@@ -75,3 +75,23 @@ stopifnot(!any(apply(U, 2, function(c) length(unique(c)) < 2)))
 out <- data.frame(ID = sprintf("S%03d", seq_len(n)), U, check.names = FALSE)
 colnames(out) <- c("ID", sprintf("Item%02d", seq_len(j)))
 write.csv(out, "tinyLRA.csv", row.names = FALSE, quote = FALSE)
+
+# --- tinyBicl: 二値・150名x12項目・3クラス x 3フィールド・欠測なし ---
+# 人と項目の双方に構造を植える。クラスは順序的に並べるので Ranklustering も走る。
+set.seed(20260819)
+n <- 150
+j <- 12
+ncls <- 3
+nfld <- 3
+cls <- rep(seq_len(ncls), length.out = n)
+fld <- rep(seq_len(nfld), length.out = j)
+pi_fc <- rbind(
+  c(0.20, 0.45, 0.70),
+  c(0.35, 0.60, 0.85),
+  c(0.10, 0.35, 0.60)
+)
+U <- matrix(rbinom(n * j, 1, t(pi_fc[fld, ][, cls])), n, j)
+stopifnot(!any(apply(U, 2, function(c) length(unique(c)) < 2)))
+out <- data.frame(ID = sprintf("S%03d", seq_len(n)), U, check.names = FALSE)
+colnames(out) <- c("ID", sprintf("Item%02d", seq_len(j)))
+write.csv(out, "tinyBicl.csv", row.names = FALSE, quote = FALSE)

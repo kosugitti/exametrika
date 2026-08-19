@@ -15,7 +15,8 @@
 # point.
 
 tiny_rough <- dataFormat(read.csv(
-  test_path("fixtures", "tiny_data", "tinyRough.csv"), check.names = FALSE
+  test_path("fixtures", "tiny_data", "tinyRough.csv"),
+  check.names = FALSE
 ))
 
 for (mic_on in c(FALSE, TRUE)) {
@@ -34,14 +35,17 @@ for (mic_on in c(FALSE, TRUE)) {
 
     test_that(sprintf("tiny LRA %s matches the log-likelihood and cycles", label), {
       expect_equal(fit$TestFitIndices$model_log_like,
-        key("Log-Likelihood(Analysis Model)"), tolerance = 1e-10)
+        key("Log-Likelihood(Analysis Model)"),
+        tolerance = 1e-10
+      )
       expect_equal(fit$n_cycle, as.integer(key("N of EM Cycles")))
       expect_true(fit$converge)
     })
 
     test_that(sprintf("tiny LRA %s matches the item reference profiles", label), {
       expect_matrix_equal(fit$IRP, ref_item[, grep("^IRP ", names(ref_item))],
-        tolerance = 1e-10)
+        tolerance = 1e-10
+      )
     })
 
     test_that(sprintf("tiny LRA %s matches the rank distributions", label), {

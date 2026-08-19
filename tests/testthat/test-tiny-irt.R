@@ -13,7 +13,8 @@
 # meet.
 
 tiny_common <- dataFormat(read.csv(
-  test_path("fixtures", "tiny_data", "tinyCommon.csv"), check.names = FALSE
+  test_path("fixtures", "tiny_data", "tinyCommon.csv"),
+  check.names = FALSE
 ))
 
 irt_cols <- list(

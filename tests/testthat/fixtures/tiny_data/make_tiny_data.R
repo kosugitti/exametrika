@@ -37,8 +37,10 @@ fld <- rep(1:3, length.out = j)
 # 項目ごとに難易度を揺らす。揺らさないと総得点の分布に山ができ，stanine(9段階)の
 # 分位境界が重複して警告が出る。実データでは出ない警告なので，出さない形にする。
 jit <- seq(-0.9, 0.9, length.out = j)
-P <- plogis(outer(seq(-sep, sep, length.out = 3)[fld] + jit,
-                  seq(-sep, sep, length.out = 3), "+"))
+P <- plogis(outer(
+  seq(-sep, sep, length.out = 3)[fld] + jit,
+  seq(-sep, sep, length.out = 3), "+"
+))
 U <- matrix(rbinom(n * j, 1, t(P[, cls])), n, j)
 stopifnot(!any(apply(U, 2, function(col) length(unique(col))) < 2))
 common <- data.frame(ID = sprintf("S%03d", seq_len(n)), U, check.names = FALSE)

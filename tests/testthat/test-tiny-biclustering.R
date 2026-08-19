@@ -13,14 +13,19 @@
 # and it disagreed by 6.3 in log-likelihood.
 
 tiny_common_bicl <- dataFormat(read.csv(
-  test_path("fixtures", "tiny_data", "tinyCommon.csv"), check.names = FALSE
+  test_path("fixtures", "tiny_data", "tinyCommon.csv"),
+  check.names = FALSE
 ))
 
 bicl_arms <- list(
-  list(name = "Bicl", label = "Biclustering", sheet = "Bicluster",
-       args = list(method = "B")),
-  list(name = "Rankl", label = "Ranklustering", sheet = "Rankluster",
-       args = list(method = "R", estimation = "GTM"))
+  list(
+    name = "Bicl", label = "Biclustering", sheet = "Bicluster",
+    args = list(method = "B")
+  ),
+  list(
+    name = "Rankl", label = "Ranklustering", sheet = "Rankluster",
+    args = list(method = "R", estimation = "GTM")
+  )
 )
 
 for (arm_i in bicl_arms) {
@@ -45,19 +50,27 @@ for (arm_i in bicl_arms) {
 
     test_that(sprintf("tiny %s matches the benchmark and null models", arm$label), {
       expect_equal(fit$TestFitIndices$bench_log_like,
-        key("Log-Likelihood(Benchmark Model)"), tolerance = 1e-10)
+        key("Log-Likelihood(Benchmark Model)"),
+        tolerance = 1e-10
+      )
       expect_equal(fit$TestFitIndices$null_log_like,
-        key("Log-Likelihood(Null Model)"), tolerance = 1e-10)
+        key("Log-Likelihood(Null Model)"),
+        tolerance = 1e-10
+      )
     })
   })
 }
 
 test_that("the two arms give different answers on this data", {
   # otherwise the blocks above would assert the same thing twice
-  b <- suppressMessages(Biclustering(tiny_common_bicl, ncls = 3, nfld = 3,
-    method = "B", mic = TRUE, verbose = FALSE))
-  r <- suppressMessages(Biclustering(tiny_common_bicl, ncls = 3, nfld = 3,
-    method = "R", estimation = "GTM", mic = TRUE, verbose = FALSE))
+  b <- suppressMessages(Biclustering(tiny_common_bicl,
+    ncls = 3, nfld = 3,
+    method = "B", mic = TRUE, verbose = FALSE
+  ))
+  r <- suppressMessages(Biclustering(tiny_common_bicl,
+    ncls = 3, nfld = 3,
+    method = "R", estimation = "GTM", mic = TRUE, verbose = FALSE
+  ))
   expect_gt(max(abs(as.matrix(b$FRP) - as.matrix(r$FRP))), 1e-3)
 })
 

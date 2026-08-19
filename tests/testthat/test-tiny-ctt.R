@@ -19,7 +19,8 @@
 # byte, so a disagreement here is the implementation, not the pipeline.
 
 tiny_ctt <- dataFormat(read.csv(
-  test_path("fixtures", "tiny_data", "tinyCTT.csv"), check.names = FALSE
+  test_path("fixtures", "tiny_data", "tinyCTT.csv"),
+  check.names = FALSE
 ))
 ctt_test <- load_ref("TinyCTT_Test.csv")
 ctt_item <- load_ref("TinyCTT_Item.csv")

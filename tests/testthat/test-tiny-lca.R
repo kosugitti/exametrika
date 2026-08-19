@@ -15,7 +15,8 @@
 # attempt took.
 
 tiny_lca <- dataFormat(read.csv(
-  test_path("fixtures", "tiny_data", "tinyLCA.csv"), check.names = FALSE
+  test_path("fixtures", "tiny_data", "tinyLCA.csv"),
+  check.names = FALSE
 ))
 lca_fit <- LCA(tiny_lca, ncls = 3, verbose = FALSE)
 lca_test <- load_ref("TinyLCA_Test.csv")
@@ -70,7 +71,8 @@ miss_item <- load_ref("TinyMissing_Item.csv")
 miss_key <- function(k) as.numeric(miss_test[miss_test[[1]] == k, 2])
 
 test_that("tiny LCA counts respondents and correct responses around the gaps", {
-  expect_equal(unname(colSums(tiny_missing$Z)),
+  expect_equal(
+    unname(colSums(tiny_missing$Z)),
     as.numeric(miss_item[["Number of Respondents"]])
   )
   expect_equal(as.numeric(crr(tiny_missing)),

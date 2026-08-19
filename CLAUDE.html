@@ -39,7 +39,7 @@
 <h2 id="package-overview">Package Overview<a class="anchor" aria-label="anchor" href="#package-overview"></a></h2>
 <p><code>exametrika</code> is an R package for Test Data Engineering based on Shojima (2022, <a href="ISBN:978-9811699856" class="uri">ISBN:978-9811699856</a>). It provides psychometric analysis tools: CTT, IRT, GRM, LCA, LRA, Biclustering, BNM, LDLRA, LDB, BINET.</p>
 <ul><li>
-<strong>Current version</strong>: 2.0.0 (dev; CRAN submission early September 2026, after the A3 simulation)</li>
+<strong>Current version</strong>: 2.0.0 (dev; <strong>ready to submit</strong> – the A3 simulation that set the September date finished 2026-08-17, and the &gt;= 1 month CRAN cadence has been clear since mid-August)</li>
 <li>
 <strong>CRAN version</strong>: 1.15.0 (accepted/published 2026-07)</li>
 <li>
@@ -192,6 +192,46 @@ docs/                # .gitignore'd (removed from repo); pkgdown site deployed t
 </div>
 <div class="section level2">
 <h2 id="known-technical-debt">Known Technical Debt<a class="anchor" aria-label="anchor" href="#known-technical-debt"></a></h2>
+<div class="section level3">
+<h3 id="テストデータの極小化--mathematica-参照値ごと-2026-08-19-着手着実に急がない">テストデータの極小化 — Mathematica 参照値ごと (2026-08-19 着手・<strong>着実に。急がない</strong>)<a class="anchor" aria-label="anchor" href="#%E3%83%86%E3%82%B9%E3%83%88%E3%83%87%E3%83%BC%E3%82%BF%E3%81%AE%E6%A5%B5%E5%B0%8F%E5%8C%96--mathematica-%E5%8F%82%E7%85%A7%E5%80%A4%E3%81%94%E3%81%A8-2026-08-19-%E7%9D%80%E6%89%8B%E7%9D%80%E5%AE%9F%E3%81%AB%E6%80%A5%E3%81%8C%E3%81%AA%E3%81%84"></a></h3>
+<p>CRAN Windows の検査は 566 秒(上限600)まで詰めたが，これ以上は「多数のブロックを薄く削る」 しかない形になった。方針はユーザ決定: <strong>構造検査への格下げはせず，極小データを Mathematica 側でも解いて参照値を再生成し，数値一致でハードに縛ったまま速くする</strong>。</p>
+<p>計画と試作の記録は <strong><code>develop/tiny_fixtures_plan.md</code></strong>(git 管理外・Dropbox 同期)。</p>
+<p><strong>5章完了 (2026-08-19)</strong>: Ch05 LCA(120x8・1e-13・欠測版も)・Ch04 IRT(200x10・1e-3)・ Ch03 CTT(150x10・指標ごと)・Ch06 LRA(120x10・1e-13)・Ch07 Bicl/Rankl(150x12・1e-2)。 <strong>この過程で maxiter を無視する実バグを2件発見</strong>(<code>LRA(method="GTM")</code> と二値 <code><a href="reference/Biclustering.html">Biclustering()</a></code>)。</p>
+<p><strong>章ごとに許容誤差の相場が違う。</strong>同じ EM を同じ不動点まで回す章(LCA/LRA)は 1e-13， 最適化の収束判定が違う章(IRT)は 1e-3 で<strong>データを増やしても縮まらない</strong>，CTT は <strong>指標ごとに分ける</strong>(閉じた式は機械精度・数値探索は 1e-5)。LCA の感覚で一律に厳しくすると 通らないテストを書くことになる。</p>
+<p><strong>Ch07 は原理的に機械精度へ届かない。</strong>対数の中の定数が Mathematica は <code>Exp[-testlength]</code>， 本パッケージは <code>.Machine$double.eps</code>。35項目なら同じ桁だが12項目だと10桁違う。 → 定数を通らない量(bench/null 対数尤度・<strong>EM 周期数</strong>)で縛る。周期数は E/M ステップが 変われば必ず動くので実は最も鋭い。</p>
+<p><strong>12GNT / 13NNT は極小化できない。</strong>BatchGNT/BatchNNT の <code>.nb</code>(2.4MB)に<strong>データが直接 埋め込まれている</strong>(<code>Import</code>/<code>ReadList</code>/<code>Get</code> すべて0件)。実データ版のまま残す。</p>
+<p><strong>踏んだ落とし穴</strong>: (1) <code>skip_on_cran()</code> は<strong>ファイル冒頭の準備コードを飛ばさない</strong>—— 重い適合が file scope にあると効かないので遅延評価にする。(2) <strong>単調な構造を植てると mic の区別がつかない</strong>——標本誤差で凹凸が出る大きさにし「2系統が違う」ことも検査する。 (3) 欠測のないデータに <code>na = -99</code> を付けない。(4) Ranklustering の既定推定法は 2.0.0 から <code>isotonic</code>——GTM の参照値と比べるなら明示する。(5) 参照値は<strong>行番号でなく名前で引く</strong>。</p>
+</div>
+<div class="section level3">
+<h3 id="spell_check-の信号対雑音比を上げる-2026-08-19200-リリースを機に急がない">spell_check() の信号対雑音比を上げる (2026-08-19・<strong>2.0.0 リリースを機に。急がない</strong>)<a class="anchor" aria-label="anchor" href="#spell_check-%E3%81%AE%E4%BF%A1%E5%8F%B7%E5%AF%BE%E9%9B%91%E9%9F%B3%E6%AF%94%E3%82%92%E4%B8%8A%E3%81%92%E3%82%8B-2026-08-19200-%E3%83%AA%E3%83%AA%E3%83%BC%E3%82%B9%E3%82%92%E6%A9%9F%E3%81%AB%E6%80%A5%E3%81%8C%E3%81%AA%E3%81%84"></a></h3>
+<p>いまの <code>devtools::spell_check()</code> は <strong>318語を指摘し，そのうち本物の誤字は11件</strong>。 <code>inst/WORDLIST</code> は136語で 2025-02 から更新されていない。<strong>登録しすぎではなく，登録が 追いついていない。</strong></p>
+<p>埋もれた実害: <code>Biclustering.Rd</code> の <code>wheter</code> / <code>iterasions</code> が利用者向けヘルプに長く残って いた（2026-08-19 に修正）。318件の中では見えない。</p>
+<p>指摘の内訳:</p>
+<table class="table"><colgroup><col width="33%"><col width="33%"><col width="33%"></colgroup><thead><tr><th>出所</th>
+<th>件数</th>
+<th>性質</th>
+</tr></thead><tbody><tr><td><code>NEWS.md</code></td>
+<td>158</td>
+<td>過去の履歴。<strong>直さない方針</strong>を 2026-08-19 に決めた</td>
+</tr><tr><td><code>guide-ja.Rmd</code></td>
+<td>124</td>
+<td>
+<strong>日本語</strong>。hunspell が形態素を単語として拾うだけで，原理的に永久にノイズ</td>
+</tr><tr><td>Rd / README / vignettes</td>
+<td>36</td>
+<td>
+<code>FCRP</code> <code>ICRP</code> <code>FCBR</code> <code>Chatterjee</code> <code>Foygel</code> <code>Drton</code> 等，正当な用語</td>
+</tr></tbody></table><p><strong>やること</strong>:</p>
+<ol style="list-style-type: decimal"><li>
+<code>guide-ja.Rmd</code> を検査対象から外す（日本語 vignette に英語の綴り検査は意味がない）</li>
+<li>
+<code>NEWS.md</code> を検査対象から外す（直さないものを毎回報告させない）</li>
+<li>残る36件の正当な用語を <code>inst/WORDLIST</code> に登録</li>
+</ol><p>これで<strong>指摘がほぼゼロになり，次に何か出たら本物</strong>という状態になる。<code>spell_check()</code> が道具 として機能し始める。</p>
+<ol start="4" style="list-style-type: decimal"><li><strong><code>use_release_issue()</code> のチェックリストに「WORDLIST を更新する」を足す</strong></li>
+</ol><p>4 が再発防止の要。今回 <code>wheter</code> が長く残ったのは，WORDLIST が更新されず指摘が積み上がって <strong>誰も読まなくなった</strong>からである。道具として機能させるには，毎回の release で見直される 仕掛けが要る。</p>
+<p><strong>やる時機: <code>submit_cran()</code> を押した直後</strong>（2026-08-19 決定）。CRAN の判定待ちで手が空くうえ， <code>inst/WORDLIST</code> は<strong>開発者側の道具</strong>で利用者の動作に関わらないので，提出済みの tarball には 影響しない（次の版から新しい WORDLIST が載るだけ）。<strong>提出前には触らない</strong>——ファイルを 触れば <code>check</code> を回し直すことになり，検査時間の詰めと混ざる。作業は30分程度。</p>
+</div>
 <div class="section level3">
 <h3 id="todo-items-teststestthattest-lra-ordinalr">TODO Items (<code>tests/testthat/test-lra-ordinal.R</code>)<a class="anchor" aria-label="anchor" href="#todo-items-teststestthattest-lra-ordinalr"></a></h3>
 <ul><li>
@@ -393,6 +433,24 @@ docs/                # .gitignore'd (removed from repo); pkgdown site deployed t
 <li>
 <strong>BNM/LDLRA structure search sped up (2026-07-22, commit aeb1f2b)</strong> — <code><a href="reference/BNM_GA.html">BNM_GA()</a></code>/<code><a href="reference/BNM_PBIL.html">BNM_PBIL()</a></code>/<code><a href="reference/LDLRA_PBIL.html">LDLRA_PBIL()</a></code> fitness evaluation moved to BIC-only kernels (<code>BNM_fit_BIC()</code>, <code>LD_param_est(fit_only = TRUE)</code>) with once-per-run benchmark statistics (<code>BNM_bench_stats()</code>); <code><a href="reference/BNM.html">BNM()</a></code>’s PIRP counting vectorised (<code>BNM_pirp_counts()</code>). <code>BNM_PBIL(J35S515)</code> ~22x, <code>LDLRA_PBIL</code> ~14x cumulative. Results <code><a href="https://rdrr.io/r/base/identical.html" class="external-link">identical()</a></code> to the previous implementation. Details under “Known Technical Debt” and in <code>NEWS.md</code> / <code>WORKLOG.md</code>.</li>
 <li>Downstream: ggExametrika v1.1.2 (audit release, ready) will be submitted after this version is accepted, so its GRM information plots match the fixed parent</li>
+</ul></div>
+<div class="section level3">
+<h3 id="id_200-の提出前に踏んだ地雷-2026-08-19次回も効く">2.0.0 の提出前に踏んだ地雷 (2026-08-19・次回も効く)<a class="anchor" aria-label="anchor" href="#id_200-%E3%81%AE%E6%8F%90%E5%87%BA%E5%89%8D%E3%81%AB%E8%B8%8F%E3%82%93%E3%81%A0%E5%9C%B0%E9%9B%B7-2026-08-19%E6%AC%A1%E5%9B%9E%E3%82%82%E5%8A%B9%E3%81%8F"></a></h3>
+<ul><li><p><strong>計画を実装済みと思い込まない。</strong>NEWS もマージコミットも「非推奨名を削除した」と書いて いたが，<strong>一度も削除されていなかった</strong>。pkgdown の索引を直そうとして気づいた。CRAN 向け 文書に書く前に，<code>grep -c "^export(名前)" NAMESPACE</code> の類で<strong>実物を確認する</strong>。</p></li>
+<li><p><strong><code>R CMD check</code> が通ることは，やるべきことをやった証拠にならない。</strong>何も消していなければ 壊れようがない。</p></li>
+<li><p><strong>win-builder の <code>Status: OK</code> は「提出しても通る」ではない。</strong>10分の checktime 上限は 提出時の incoming 検査で適用される。win-builder はビルドと検査が通るかを見るだけ。 <strong>必ずログの <code>checking tests</code> の秒数を見る。</strong></p></li>
+<li>
+<p><strong>Windows が遅いのは参照BLAS。</strong>CRAN の Windows 版 R は SIMD もキャッシュブロッキングも 無い参照実装を同梱する。<strong>行列分解を含むテストだけが桁違いに遅くなる</strong>（M2 は項目数の3乗）。 実測: 同じ Linux 機で <code>test-lca.R</code> が OpenBLAS 1スレッド 64秒 / 参照BLAS 1222秒。 <strong>代役の作り方</strong>:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="va">LD_PRELOAD</span><span class="op">=</span>/usr/lib/x86_64-linux-gnu/lapack/liblapack.so.3:/usr/lib/x86_64-linux-gnu/blas/libblas.so.3 <span class="ex">Rscript</span> ...</span></code></pre></div>
+<p><strong>ただし絶対時間の代役にはならない。</strong>BLAS 律速の部分が支配的なあいだは一致するが （修正前 1378秒 対 1315秒），それを取り除くとずれる（修正後 189秒 対 422秒）。 <strong>使いどころは「どのテストが BLAS で重いか」の特定と順位づけ。</strong>最終判断は win-builder。</p>
+</li>
+<li><p><strong>重いテストは <code>skip_on_cran()</code> の前に「データを小さくできないか」を見る。</strong>主張が構造的 （母数の数え方・オブジェクトの大きさ・caveat の文言）なら大きなデータは要らない。 caveat は <code>$model</code> と <code>$estimation</code> だけで決まる純粋な関数だったので，生成した 120x12 で 0.29 秒で足りた。<strong>同梱データは増やさず，テストファイル内で種を固定して生成する。</strong></p></li>
+<li>
+<p><strong><code>list(...)</code> から行を消すと空要素が残る。</strong><code>list(a = 1, )</code> は構文エラー。カンマが</p>
+<ol style="list-style-type: lower-alpha"><li>素の行末，(b) 孤立コメントの手前，(c) 行内コメントの手前 の3パターンある。</li>
+</ol></li>
+<li><p><strong><code>develop/myBiber.bib</code> は相対 symlink</strong>（<code>../../../myBiber.bib</code>）。絶対パスにすると ユーザ名が焼き込まれて他機で <code>R CMD build</code> が落ちる。<code>.Rbuildignore</code> に <code>^develop$</code> が あっても落ちる——<strong>build は先に全体をコピーしてから除外を適用する</strong>。</p></li>
+<li><p><strong>NEWS.md の履歴部分の誤字は直さない。</strong>あれは「そのとき何を出したか」の記録。 現行の Rd/roxygen の誤字は直す。</p></li>
 </ul></div>
 <div class="section level3">
 <h3 id="version-policy-decided-2026-07-26">Version policy (decided 2026-07-26)<a class="anchor" aria-label="anchor" href="#version-policy-decided-2026-07-26"></a></h3>

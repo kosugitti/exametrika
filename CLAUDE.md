@@ -6,8 +6,9 @@
 (2022, <ISBN:978-9811699856>). It provides psychometric analysis tools:
 CTT, IRT, GRM, LCA, LRA, Biclustering, BNM, LDLRA, LDB, BINET.
 
-- **Current version**: 2.0.0 (dev; CRAN submission early September 2026,
-  after the A3 simulation)
+- **Current version**: 2.0.0 (dev; **ready to submit** – the A3
+  simulation that set the September date finished 2026-08-17, and the
+  \>= 1 month CRAN cadence has been clear since mid-August)
 - **CRAN version**: 1.15.0 (accepted/published 2026-07)
 - **GitHub Release**: v1.15.0 (2026-07-15, latest) / v1.14.0
   (2026-06-14)
@@ -214,6 +215,93 @@ It does NOT sort classes by correct rate the way `Biclustering.rated`
 does — LCA classes are unordered, and sorting would imply otherwise.
 
 ## Known Technical Debt
+
+### テストデータの極小化 — Mathematica 参照値ごと (2026-08-19 着手・**着実に。急がない**)
+
+CRAN Windows の検査は 566
+秒(上限600)まで詰めたが，これ以上は「多数のブロックを薄く削る」
+しかない形になった。方針はユーザ決定:
+**構造検査への格下げはせず，極小データを Mathematica
+側でも解いて参照値を再生成し，数値一致でハードに縛ったまま速くする**。
+
+計画と試作の記録は **`develop/tiny_fixtures_plan.md`**(git
+管理外・Dropbox 同期)。
+
+**5章完了 (2026-08-19)**: Ch05 LCA(120x8・1e-13・欠測版も)・Ch04
+IRT(200x10・1e-3)・ Ch03 CTT(150x10・指標ごと)・Ch06
+LRA(120x10・1e-13)・Ch07 Bicl/Rankl(150x12・1e-2)。 **この過程で maxiter
+を無視する実バグを2件発見**(`LRA(method="GTM")` と二値
+[`Biclustering()`](https://kosugitti.github.io/exametrika/reference/Biclustering.md))。
+
+**章ごとに許容誤差の相場が違う。**同じ EM
+を同じ不動点まで回す章(LCA/LRA)は 1e-13，
+最適化の収束判定が違う章(IRT)は 1e-3
+で**データを増やしても縮まらない**，CTT は
+**指標ごとに分ける**(閉じた式は機械精度・数値探索は 1e-5)。LCA
+の感覚で一律に厳しくすると 通らないテストを書くことになる。
+
+**Ch07 は原理的に機械精度へ届かない。**対数の中の定数が Mathematica は
+`Exp[-testlength]`， 本パッケージは
+`.Machine$double.eps`。35項目なら同じ桁だが12項目だと10桁違う。 →
+定数を通らない量(bench/null 対数尤度・**EM 周期数**)で縛る。周期数は E/M
+ステップが 変われば必ず動くので実は最も鋭い。
+
+**12GNT / 13NNT は極小化できない。**BatchGNT/BatchNNT の
+`.nb`(2.4MB)に**データが直接
+埋め込まれている**(`Import`/`ReadList`/`Get`
+すべて0件)。実データ版のまま残す。
+
+**踏んだ落とし穴**: (1) `skip_on_cran()`
+は**ファイル冒頭の準備コードを飛ばさない**—— 重い適合が file scope
+にあると効かないので遅延評価にする。(2) **単調な構造を植てると mic
+の区別がつかない**——標本誤差で凹凸が出る大きさにし「2系統が違う」ことも検査する。
+(3) 欠測のないデータに `na = -99` を付けない。(4) Ranklustering
+の既定推定法は 2.0.0 から `isotonic`——GTM
+の参照値と比べるなら明示する。(5) 参照値は**行番号でなく名前で引く**。
+
+### spell_check() の信号対雑音比を上げる (2026-08-19・**2.0.0 リリースを機に。急がない**)
+
+いまの `devtools::spell_check()` は
+**318語を指摘し，そのうち本物の誤字は11件**。 `inst/WORDLIST` は136語で
+2025-02 から更新されていない。**登録しすぎではなく，登録が
+追いついていない。**
+
+埋もれた実害: `Biclustering.Rd` の `wheter` / `iterasions`
+が利用者向けヘルプに長く残って いた（2026-08-19
+に修正）。318件の中では見えない。
+
+指摘の内訳:
+
+| 出所 | 件数 | 性質 |
+|----|----|----|
+| `NEWS.md` | 158 | 過去の履歴。**直さない方針**を 2026-08-19 に決めた |
+| `guide-ja.Rmd` | 124 | **日本語**。hunspell が形態素を単語として拾うだけで，原理的に永久にノイズ |
+| Rd / README / vignettes | 36 | `FCRP` `ICRP` `FCBR` `Chatterjee` `Foygel` `Drton` 等，正当な用語 |
+
+**やること**:
+
+1.  `guide-ja.Rmd` を検査対象から外す（日本語 vignette
+    に英語の綴り検査は意味がない）
+2.  `NEWS.md` を検査対象から外す（直さないものを毎回報告させない）
+3.  残る36件の正当な用語を `inst/WORDLIST` に登録
+
+これで**指摘がほぼゼロになり，次に何か出たら本物**という状態になる。`spell_check()`
+が道具 として機能し始める。
+
+4.  **`use_release_issue()` のチェックリストに「WORDLIST
+    を更新する」を足す**
+
+4 が再発防止の要。今回 `wheter` が長く残ったのは，WORDLIST
+が更新されず指摘が積み上がって
+**誰も読まなくなった**からである。道具として機能させるには，毎回の
+release で見直される 仕掛けが要る。
+
+**やる時機: `submit_cran()` を押した直後**（2026-08-19 決定）。CRAN
+の判定待ちで手が空くうえ， `inst/WORDLIST`
+は**開発者側の道具**で利用者の動作に関わらないので，提出済みの tarball
+には 影響しない（次の版から新しい WORDLIST
+が載るだけ）。**提出前には触らない**——ファイルを 触れば `check`
+を回し直すことになり，検査時間の詰めと混ざる。作業は30分程度。
 
 ### TODO Items (`tests/testthat/test-lra-ordinal.R`)
 
@@ -688,6 +776,64 @@ does — LCA classes are unordered, and sorting would imply otherwise.
 - Downstream: ggExametrika v1.1.2 (audit release, ready) will be
   submitted after this version is accepted, so its GRM information plots
   match the fixed parent
+
+### 2.0.0 の提出前に踏んだ地雷 (2026-08-19・次回も効く)
+
+- **計画を実装済みと思い込まない。**NEWS
+  もマージコミットも「非推奨名を削除した」と書いて
+  いたが，**一度も削除されていなかった**。pkgdown
+  の索引を直そうとして気づいた。CRAN 向け
+  文書に書く前に，`grep -c "^export(名前)" NAMESPACE`
+  の類で**実物を確認する**。
+
+- **`R CMD check`
+  が通ることは，やるべきことをやった証拠にならない。**何も消していなければ
+  壊れようがない。
+
+- **win-builder の `Status: OK` は「提出しても通る」ではない。**10分の
+  checktime 上限は 提出時の incoming 検査で適用される。win-builder
+  はビルドと検査が通るかを見るだけ。 **必ずログの `checking tests`
+  の秒数を見る。**
+
+- **Windows が遅いのは参照BLAS。**CRAN の Windows 版 R は SIMD
+  もキャッシュブロッキングも
+  無い参照実装を同梱する。**行列分解を含むテストだけが桁違いに遅くなる**（M2
+  は項目数の3乗）。 実測: 同じ Linux 機で `test-lca.R` が OpenBLAS
+  1スレッド 64秒 / 参照BLAS 1222秒。 **代役の作り方**:
+
+  ``` bash
+  LD_PRELOAD=/usr/lib/x86_64-linux-gnu/lapack/liblapack.so.3:/usr/lib/x86_64-linux-gnu/blas/libblas.so.3 Rscript ...
+  ```
+
+  **ただし絶対時間の代役にはならない。**BLAS
+  律速の部分が支配的なあいだは一致するが （修正前 1378秒 対
+  1315秒），それを取り除くとずれる（修正後 189秒 対 422秒）。
+  **使いどころは「どのテストが BLAS
+  で重いか」の特定と順位づけ。**最終判断は win-builder。
+
+- **重いテストは `skip_on_cran()`
+  の前に「データを小さくできないか」を見る。**主張が構造的
+  （母数の数え方・オブジェクトの大きさ・caveat
+  の文言）なら大きなデータは要らない。 caveat は `$model` と
+  `$estimation` だけで決まる純粋な関数だったので，生成した 120x12 で
+  0.29
+  秒で足りた。**同梱データは増やさず，テストファイル内で種を固定して生成する。**
+
+- **`list(...)` から行を消すと空要素が残る。**`list(a = 1, )`
+  は構文エラー。カンマが
+
+  1.  素の行末，(b) 孤立コメントの手前，(c) 行内コメントの手前
+      の3パターンある。
+
+- **`develop/myBiber.bib` は相対
+  symlink**（`../../../myBiber.bib`）。絶対パスにすると
+  ユーザ名が焼き込まれて他機で `R CMD build` が落ちる。`.Rbuildignore`
+  に `^develop$` が あっても落ちる——**build
+  は先に全体をコピーしてから除外を適用する**。
+
+- **NEWS.md
+  の履歴部分の誤字は直さない。**あれは「そのとき何を出したか」の記録。
+  現行の Rd/roxygen の誤字は直す。
 
 ### Version policy (decided 2026-07-26)
 

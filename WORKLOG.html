@@ -2080,6 +2080,116 @@ LDLRA_PBIL J15S500 (15.3秒) 09_LDLRA.R#55 50.7% / #54 28.3% / #50 5.4%
 <p>CRAN版v1.15.0公開済。開発版v1.16.0(8/15目処)=GRM監査修正済＋LRA.ordinal混在カテゴリ対応済＋アイソトニックLRA/バイクラ実装済・新デフォルト(二値PAVA/多値Fenchel双対・memory: project_isotonic_latent_rank)＋双対ソルバC++化(ソルバ単体509x)＋BNM/LDLRA構造探索をBIC専用カーネル化(BNM_PBIL 22x・LDLRA_PBIL累積14x・全結果identical・C++不要と結論)。全テスト5232 pass。次のボトルネックはemclus E-step。Title変更(issue#32)未着手・v2.0.0多値BNM設計中。LCA.nominal/ratedは実装完了。EM収束判定の3欠陥(番兵exp(J)・監視量が期待対数事後・許容誤差1e-4)を荘島実装まで遡って修正し，Mathematica側も同時修正して倍精度一致・参照フィクスチャ30件を再生成(本の数値とは一致しなくなる＝破壊的変更)。IRTは解析的勾配で4.5倍速。全テスト5284 pass。M2実装済(R/24_M2.R・LCA/LRA/バイクラの3腕に対応・add_M2でマージン系適合度を別建て表示)。荘島先生から著作の数値変更を承認する返信＋M2への指摘3点(飽和モデルの言い方・パタン系とマージン系を混ぜるな・M3の示唆)を反映済。開発版は破壊的変更の規模からv2.0.0に改番し，非推奨名削除も同梱して9月上旬提出予定(下流2パッケージと同時)。A3シミュは7/21設計への差分を確定(尤度ベース比較・配分の偏り追加・停電対策の再開設計・M2は密版で全腕記録するが論文には書かない)。次=M2をバイクラ/LRAへ拡張→生成コードとパイロット→8月上旬に本実行。詳細→Git/exametrika/{CLAUDE,WORKLOG}.md</p>
 </blockquote>
 </div>
+<div class="section level2">
+<h2 id="id_2026-08-19--200-非推奨名を実際に削除しwindows-の検査時間22分を189秒へ">2026-08-19 — 2.0.0: 非推奨名を実際に削除し，Windows の検査時間22分を189秒へ<a class="anchor" aria-label="anchor" href="#id_2026-08-19--200-%E9%9D%9E%E6%8E%A8%E5%A5%A8%E5%90%8D%E3%82%92%E5%AE%9F%E9%9A%9B%E3%81%AB%E5%89%8A%E9%99%A4%E3%81%97windows-%E3%81%AE%E6%A4%9C%E6%9F%BB%E6%99%82%E9%96%9322%E5%88%86%E3%82%92189%E7%A7%92%E3%81%B8"></a></h2>
+<p>pkgdown の失敗を追いかけたところ，<strong>2.0.0 の目玉である非推奨名の削除が一度も実行されて いなかった</strong>ことが判明した。そこから芋づる式に，削除の実施・下流の本当の検証・Windows の 検査時間という3つの問題が出た。<strong>pkgdown を無視していたら，虚偽の申告を添えて，しかも 検査時間で弾かれる版を提出していた。</strong></p>
+<div class="section level3">
+<h3 id="発端-pkgdown-が落ちる">発端: pkgdown が落ちる<a class="anchor" aria-label="anchor" href="#%E7%99%BA%E7%AB%AF-pkgdown-%E3%81%8C%E8%90%BD%E3%81%A1%E3%82%8B"></a></h3>
+<p><code>_pkgdown.yml</code> の索引に <code>M2</code> と <code>add_M2</code> が無い，という単純な失敗。ところが直そうとして 索引を開いたら，<code>Deprecated</code> 節に「2.0.0 で削除予定」として4関数が<strong>まだ載っていた</strong>。 実物を確認すると export も Rd も R の定義も全部生きており，旧フィールド名も R/ に111箇所 残っていた。</p>
+<p><strong><code>cran-comments.md</code> に「削除済み」と書いてしまっていた。</strong>CLAUDE.md の「2.0.0 に含める」 という<strong>計画</strong>を実装済みと思い込み，実物を確認せずに CRAN 向け文書へ書いた。マージコミット のメッセージにも同じ記述が入っていた。<code>R CMD check</code> が通っていたのは当然で，何も消して いないのだから壊れようがない。<strong>下流2本の「検証済み」も削除前の状態で回していたので無意味 だった。</strong></p>
+</div>
+<div class="section level3">
+<h3 id="削除の実施3段階に分けた">削除の実施（3段階に分けた）<a class="anchor" aria-label="anchor" href="#%E5%89%8A%E9%99%A4%E3%81%AE%E5%AE%9F%E6%96%BD3%E6%AE%B5%E9%9A%8E%E3%81%AB%E5%88%86%E3%81%91%E3%81%9F"></a></h3>
+<p>まとめてやると，失敗したとき原因が「読み替えの誤り」か「消しすぎ」か切り分けられないため。</p>
+<ol style="list-style-type: decimal"><li>
+<strong>内部の読み出し80箇所を snake_case へ</strong>。別名がまだ生きているので<strong>意味は変わらない</strong>。 ここでテストが通ることが，読み替えが正しいことの証明になる</li>
+<li>
+<strong>別名の定義49行を削除</strong>。ここで初めて破壊的変更になる</li>
+<li>
+<strong>非推奨4関数を削除</strong>し，NAMESPACE と Rd を再生成</li>
+</ol><p><strong>構文を3回壊した。</strong><code>list(...)</code> から行を消すと空要素が残る。パターンは3つあった: (a) 素の末尾カンマ，(b) 孤立した <code># Deprecated fields</code> コメントの陰のカンマ， (c) 行内コメント付きの <code>log_lik = testell, # New naming convention</code>。 毎回テストで検出でき，段階を分けた判断が正しかったことが確かめられた。</p>
+<p>後方互換テストは<strong>主張を反転</strong>させた（<code>expect_equal(旧, 新)</code> → <code>expect_null(旧)</code> + 新名が存在すること）。<code><a href="reference/GridSearch.html">GridSearch()</a></code> の <code>"LogLik"</code> は残した——あれは <code>index</code> 引数の <strong>入力エイリアス</strong>で，返り値のフィールドではない。</p>
+</div>
+<div class="section level3">
+<h3 id="下流の再検証今度は本当に">下流の再検証（今度は本当に）<a class="anchor" aria-label="anchor" href="#%E4%B8%8B%E6%B5%81%E3%81%AE%E5%86%8D%E6%A4%9C%E8%A8%BC%E4%BB%8A%E5%BA%A6%E3%81%AF%E6%9C%AC%E5%BD%93%E3%81%AB"></a></h3>
+<table class="table"><thead><tr><th></th>
+<th>結果</th>
+</tr></thead><tbody><tr><td>shinyExametrika</td>
+<td>
+<strong>無修正で通過</strong>。<code>safe_field()</code> が新名を先に試す</td>
+</tr><tr><td>ggExametrika</td>
+<td>
+<strong>テスト3箇所が失敗</strong>。出荷コードは無傷</td>
+</tr></tbody></table><p>ggExametrika の <code>R/</code> は <code>.first_non_null(data$n_class, data$Nclass, ...)</code> の形で新名を先に 試すので，削除は第2引数を NULL にするだけ。壊れたのは <code>test-DAG-plots.R</code> が旧名を直接 読んでいた3箇所のみで，そちらを修正して全通過（別リポジトリでコミット・push 済）。</p>
+<p><strong><code>ggExametrika</code> は exametrika を <code>Suggests</code> に置いている</strong>（Imports ではない）。lockstep 提出は不要と確定した。</p>
+</div>
+<div class="section level3">
+<h3 id="windows-の検査時間-22分本日最大の問題">Windows の検査時間 22分（本日最大の問題）<a class="anchor" aria-label="anchor" href="#windows-%E3%81%AE%E6%A4%9C%E6%9F%BB%E6%99%82%E9%96%93-22%E5%88%86%E6%9C%AC%E6%97%A5%E6%9C%80%E5%A4%A7%E3%81%AE%E5%95%8F%E9%A1%8C"></a></h3>
+<p>win-builder が <code>Status: OK</code> を返したが，<strong>checking tests に22分</strong>（全体1531秒中1320秒） かかっていた。v1.13.0 は <code>Overall checktime 11 min &gt; 10 min</code> で自動棄却されている。 <strong><code>Status: OK</code> は「提出しても通る」を意味しない</strong>——win-builder はビルドと検査が通るかを 見るだけで，10分の上限は提出時の incoming 検査で適用される。</p>
+<p><code>skip_on_cran()</code> は効いていた（SKIP 21・“On CRAN”）。それでも22分だった。</p>
+<div class="section level4">
+<h4 id="原因-参照blas--m2">原因: 参照BLAS × M2<a class="anchor" aria-label="anchor" href="#%E5%8E%9F%E5%9B%A0-%E5%8F%82%E7%85%A7blas--m2"></a></h4>
+<p>BLAS を差し替えて同じ Linux 機で測ると，一点に集中していた。</p>
+<table class="table"><thead><tr><th></th>
+<th>test-lca.R</th>
+<th>全体</th>
+</tr></thead><tbody><tr><td>OpenBLAS 1スレッド</td>
+<td>64秒</td>
+<td>215秒</td>
+</tr><tr><td><strong>参照BLAS</strong></td>
+<td><strong>1222秒</strong></td>
+<td><strong>1378秒</strong></td>
+</tr><tr><td>（win-builder 実測）</td>
+<td>—</td>
+<td>1315秒</td>
+</tr></tbody></table><p><strong>他の37本はほとんど変わらない</strong>（test-grm.R は 26.6→26.9秒）。M2 は周辺共分散行列の Cholesky 分解を行い，<strong>コストは項目数の3乗</strong>で効く。CRAN の Windows 版 R が同梱する 参照実装の BLAS は SIMD もキャッシュブロッキングも持たない素朴な三重ループなので， <strong>大きな行列分解でだけ桁違いに遅くなる</strong>。<code>test-lca.R</code> の3ブロックだけが <code>J35S500</code> （35項目）で M2 を計算していた。</p>
+<p><strong>見立てを2回外した。</strong>(1)「BLAS のスレッド数の差」→ 1スレッドに絞っても3倍にしかならず， 効いていたのは<strong>単スレッドあたりの実装品質</strong>。(2)「全ファイルに手を入れる規模」→ OpenBLAS での測定から比例配分で見積もったためで，実際には<strong>非線形に一点集中</strong>していた。参照BLASで 測り直して初めて見えた。</p>
+</div>
+<div class="section level4">
+<h4 id="対処-データを小さくするskip-は増やさない">対処: データを小さくする（skip は増やさない）<a class="anchor" aria-label="anchor" href="#%E5%AF%BE%E5%87%A6-%E3%83%87%E3%83%BC%E3%82%BF%E3%82%92%E5%B0%8F%E3%81%95%E3%81%8F%E3%81%99%E3%82%8Bskip-%E3%81%AF%E5%A2%97%E3%82%84%E3%81%95%E3%81%AA%E3%81%84"></a></h4>
+<table class="table"><colgroup><col width="50%"><col width="50%"></colgroup><thead><tr><th>ブロック</th>
+<th>対処</th>
+</tr></thead><tbody><tr><td>M2 の母数の数え方</td>
+<td>
+<code>J35S500</code> → <code>J20S600</code>。期待値を <code>(ncat - 1)</code> に一般化</td>
+</tr><tr><td>M2 オブジェクトの大きさ</td>
+<td>
+<code>J35S500</code> → <code>J20S600</code>
+</td>
+</tr><tr><td>caveat の文言</td>
+<td><strong>その場で生成する 120x12 の合成データ</strong></td>
+</tr></tbody></table><p>3つ目が鍵だった。<code>m2_caveat_biclustering()</code> を読むと <strong>caveat は <code>$model</code> と <code>$estimation</code> だけで決まる純粋な関数</strong>で，データの中身も大きさも一切関係ない。<strong>0.29秒で4つの主張すべてが 再現する。</strong>同梱データは増やさず，テストファイル内で種を固定して生成する形にした （<code>data/</code> に足すと配布物が太り，文書化も要り，公開APIの一部になる）。</p>
+<p><strong>結果: 参照BLAS で 1378秒 → 189秒（7.3倍）。<code>skip_on_cran()</code> は一つも増やしていない。</strong> macOS の全テスト（NOT_CRAN=true）でも 293秒 → 207秒。</p>
+</div>
+<div class="section level4">
+<h4 id="副産物-参照blasでの計測ただし絶対時間の代役にはならない">副産物: 参照BLASでの計測（ただし絶対時間の代役にはならない）<a class="anchor" aria-label="anchor" href="#%E5%89%AF%E7%94%A3%E7%89%A9-%E5%8F%82%E7%85%A7blas%E3%81%A7%E3%81%AE%E8%A8%88%E6%B8%AC%E3%81%9F%E3%81%A0%E3%81%97%E7%B5%B6%E5%AF%BE%E6%99%82%E9%96%93%E3%81%AE%E4%BB%A3%E5%BD%B9%E3%81%AB%E3%81%AF%E3%81%AA%E3%82%89%E3%81%AA%E3%81%84"></a></h4>
+<div class="sourceCode" id="cb19"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb19-1"><a href="#cb19-1" tabindex="-1"></a><span class="va">LD_PRELOAD</span><span class="op">=</span>/usr/lib/x86_64-linux-gnu/lapack/liblapack.so.3:/usr/lib/x86_64-linux-gnu/blas/libblas.so.3 <span class="ex">Rscript</span> ...</span></code></pre></div>
+<p><strong>2026-08-19 追記・訂正</strong>: 修正前は 1378秒 対 win-builder 1315秒でほぼ一致したので「Windows の 代役が手に入った」と書いたが，<strong>言い過ぎだった</strong>。修正後は <strong>189秒 対 422秒で2.2倍ずれる</strong>。 一致していたのは <strong>BLAS 律速の部分が支配的だったあいだだけ</strong>で，それを取り除くと残りは Windows 固有の遅さ（CPU・I/O）が効く領域になり比例しなくなる。</p>
+<p><strong>使いどころ: どのテストが BLAS で重いかの特定と，重い順の順位づけ。絶対時間の予測には 使えない。</strong>最終判断は win-builder に投げるしかない。</p>
+</div>
+</div>
+<div class="section level3">
+<h3 id="その他">その他<a class="anchor" aria-label="anchor" href="#%E3%81%9D%E3%81%AE%E4%BB%96"></a></h3>
+<ul><li>
+<strong>Title を <code>Test Data Engineering</code> へ</strong>（issue #32・close 済）。CRAN incoming の書式検査も通過</li>
+<li>
+<strong><code>NEWS.md</code> に Removals 節</strong>を新設（削除した関数とフィールドの対応表）</li>
+<li>
+<strong><code>cran-comments.md</code> を 2.0.0 用に全面改稿</strong>。書く前に裏を取って<strong>2件の誤りを訂正</strong>した: 非推奨警告は 1.9.0 からではなく<strong>関数名 1.7.0 / フィールド名 1.8.0</strong> から， ggExametrika は Imports ではなく <strong>Suggests</strong>
+</li>
+<li>
+<strong><code>Biclustering.Rd</code> の綴り2件を修正</strong>（<code>wheter</code>→<code>whether</code>, <code>iterasions</code>→<code>iterations</code>）。 <code>spell_check()</code> が拾った。<strong>NEWS.md の履歴部分の誤字9件はそのまま残す</strong>——あれは 「そのとき何を出したか」の記録で，後から書き換えると履歴としての正確さが損なわれる （皮肉にも <code>Conditonal</code> の行は過去に誤字を直したという記録そのもの）</li>
+<li>
+<strong><code>develop/myBiber.bib</code> が Newton 専用の絶対パス symlink だった</strong> （<code>/Users/newton/Dropbox/myBiber.bib</code>）。Pythagoras ではリンク切れで <code>R CMD build</code> が 落ちる。<strong>相対パス（<code>../../../myBiber.bib</code>）に張り替えて両機で解決可能にした。</strong> <code>.Rbuildignore</code> に <code>^develop$</code> があっても落ちるのは，<strong><code>R CMD build</code> が先に全体を 一時ディレクトリへコピーしてから除外を適用する</strong>ため</li>
+<li>
+<code>styler::style_pkg()</code> は113ファイルすべて変更なし</li>
+<li>pkgdown は削除コミットで復旧し，以後連続成功</li>
+</ul></div>
+<div class="section level3">
+<h3 id="検証の状態">検証の状態<a class="anchor" aria-label="anchor" href="#%E6%A4%9C%E8%A8%BC%E3%81%AE%E7%8A%B6%E6%85%8B"></a></h3>
+<pre><code>devtools::check(cran = TRUE)   0 errors / 0 warnings / 0 notes   (Newton・Pythagoras)
+R CMD check --as-cran          0 errors / 0 warnings             (NOTEは環境起因のHTML Tidy)
+テスト                          FAIL 0 / SKIP 21（従来どおり増やしていない）
+rhub / win-devel               本日の版で流し直し中</code></pre>
+</div>
+<div class="section level3">
+<h3 id="次-6">次<a class="anchor" aria-label="anchor" href="#%E6%AC%A1-6"></a></h3>
+<ul><li>rhub と win-devel の結果を待ち，<strong><code>cran-comments.md</code> の Test environments を実測へ書き換える</strong> （いまの記述は旧版から引き継いだ未実施の申告で，そのままでは出せない）</li>
+<li>
+<code>git tag v2.0.0</code> → GitHub Release → <code>submit_cran()</code>（<strong>最後は本人が押す</strong>）</li>
+<li>受理後に Discussions で日英2本の告知</li>
+</ul></div>
+</div>
 </div>
 
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

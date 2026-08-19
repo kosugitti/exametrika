@@ -25,7 +25,7 @@ Biclustering(
   conf = NULL,
   conf_class = NULL,
   mic = FALSE,
-  maxiter = 100,
+  maxiter = 1000,
   verbose = FALSE,
   beta1 = 1,
   beta2 = 1,

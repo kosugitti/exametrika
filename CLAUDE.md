@@ -170,6 +170,17 @@ rated = nominal + correct answer (multiple-choice tests); ordinal = Likert-type 
 
 ## Known Technical Debt
 
+### テストデータの極小化 — Mathematica 参照値ごと (2026-08-19 着手・**着実に。急がない**)
+
+CRAN Windows の検査は 566 秒(上限600)まで詰めたが，これ以上は「多数のブロックを薄く削る」
+しかない形になった。方針はユーザ決定: **構造検査への格下げはせず，極小データを Mathematica
+側でも解いて参照値を再生成し，数値一致でハードに縛ったまま速くする**。
+
+計画と試作の記録は **`develop/tiny_fixtures_plan.md`**。試作(Ch05 LCA)で確定したこと:
+極小(120x8)でも欠測なしなら **LL が 1e-13 で一致**する。**欠測と混ぜると別の局所解に落ちる**
+(bench/null は一致＝取り込みは同一。割れるのは EM の到達点)。極小フィクスチャは欠測なしを
+基本とする。
+
 ### spell_check() の信号対雑音比を上げる (2026-08-19・**2.0.0 リリースを機に。急がない**)
 
 いまの `devtools::spell_check()` は **318語を指摘し，そのうち本物の誤字は11件**。
@@ -196,7 +207,16 @@ rated = nominal + correct answer (multiple-choice tests); ordinal = Likert-type 
 これで**指摘がほぼゼロになり，次に何か出たら本物**という状態になる。`spell_check()` が道具
 として機能し始める。
 
-**提出直前には触らない。**2.0.0 が受理されてから，リリース作業の一環として片づける。
+4. **`use_release_issue()` のチェックリストに「WORDLIST を更新する」を足す**
+
+4 が再発防止の要。今回 `wheter` が長く残ったのは，WORDLIST が更新されず指摘が積み上がって
+**誰も読まなくなった**からである。道具として機能させるには，毎回の release で見直される
+仕掛けが要る。
+
+**やる時機: `submit_cran()` を押した直後**（2026-08-19 決定）。CRAN の判定待ちで手が空くうえ，
+`inst/WORDLIST` は**開発者側の道具**で利用者の動作に関わらないので，提出済みの tarball には
+影響しない（次の版から新しい WORDLIST が載るだけ）。**提出前には触らない**——ファイルを
+触れば `check` を回し直すことになり，検査時間の詰めと混ざる。作業は30分程度。
 
 ### TODO Items (`tests/testthat/test-lra-ordinal.R`)
 - **L149**: Investigate `nobs` handling unification — R uses per-item nobs

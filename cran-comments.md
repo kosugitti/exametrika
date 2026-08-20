@@ -1,9 +1,11 @@
 ## Test environments
 
-* local macOS (aarch64-apple-darwin25.0.0), R 4.6.1: 0 errors, 0 warnings, 0 notes
+* local macOS (aarch64-apple-darwin25.0.0), R 4.6.1: 0 errors, 0 warnings,
+  1 NOTE (HTML manual validation, an artifact of the local HTML Tidy version;
+  not reported by win-builder, R-hub or CI)
 * GitHub Actions: ubuntu (R-devel, R-release, R-oldrel), macOS (R-release),
   Windows (R-release), all with the full test suite (`NOT_CRAN=true`,
-  5,291 tests, 0 skipped): OK
+  3,507 assertions, 0 skipped): OK
 * R-hub v2: linux, macos-arm64, windows (R-devel): OK
 * win-builder R-devel (2026-08-20): OK, check time 460 s
   (limit 600 s; tests 113 s)

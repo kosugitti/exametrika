@@ -3406,3 +3406,96 @@ rhub / win-devel               本日の版で流し直し中
   （いまの記述は旧版から引き継いだ未実施の申告で，そのままでは出せない）
 - `git tag v2.0.0` → GitHub Release → `submit_cran()`（**最後は本人が押す**）
 - 受理後に Discussions で日英2本の告知
+
+## 2026-08-20（v2.0.0 を CRAN へ提出・審査待ち）
+
+- **v2.0.0 を CRAN へ提出した（本人が送信）**。確認メール「CRAN Submission of exametrika 2.0.0 - Confirmation Link」が 10:22 JST に到着し，確認リンクも押下済み。**現在は CRAN 側の審査中**。
+- 提出は `submit_cran()` ではなく **web フォーム（CRAN.R-project.org/submit.html）経由**。そのため
+  - `CRAN-SUBMISSION` は **1.15.0 のまま**（`usethis` が書き換えるファイルなので更新されていない）
+  - **`v2.0.0` の git tag と GitHub Release は未作成**
+  受理の連絡が来たら，この2点を作ってから告知に進む。
+- 提出前の宿題は片づいていた。`cran-comments.md` の Test environments は 477d4b2 で**実測値へ書き換え済み**（win-builder R-devel 2026-08-20：OK・検査時間460秒／上限600秒・うちテスト113秒。R-hub v2 の linux/macos-arm64/windows も OK）。
+
+### 次
+
+- **CRAN の審査結果を待つ**。通れば `git tag v2.0.0` → GitHub Release → Discussions で日英2本の告知。
+- 指摘が来た場合は修正して再提出（再提出の間隔制限に注意）。
+- 受理後に着手する宿題＝`spell_check()` の整備（318件の指摘のうち本物は11件。NEWS と日本語 vignette を対象外にして WORDLIST を更新する。急がない）。
+- 多値BNM は v2.1.0 送りのまま。
+
+
+## 2026-08-20 提出当日: テストの二層化・ビルド経路の是正・提出・WORDLIST整備
+
+### CRAN 提出
+
+v2.0.0 を提出し確認リンクも押下済み(01:22 提出 → 01:23 confirm)。**審査結果待ち**。
+web フォーム経由で出したので `CRAN-SUBMISSION` は 1.15.0 のまま。tag と GitHub
+Release は受理後に作る。
+
+### テストを二層化した(恒久方針・`fe40004`)
+
+**win-builder 566 秒の内訳を実測した**: tests 351s(62%) / vignettes 58s /
+R code 30s / PDF 15s / 他~110s。テストは v1.7.0 の 2,773 行から 9,236 行へ増えて
+おり，**個別の削減では再発する**形になっていた。方針を立てた:
+
+> **CRAN のテストは動作確認，品質保証は CI と手元。**
+
+- Tier 1 (CRAN で走る) = tiny フィクスチャ + 各関数のスモーク。予算 8 秒以内。
+- Tier 2 (skip_on_cran) = フルサイズ参照照合・再現性・重い回帰。**CI で全数走る**
+  (`R-CMD-check.yaml` に `NOT_CRAN: true` を明示。実測 5 環境すべて SKIP 0 / PASS 3507)。
+
+結果: CRAN 側は手元逐次 38 秒 → **17 秒**，どのファイルも 1.5 秒以下。
+`Config/testthat/parallel: true` も有効化(実時間 39→19 秒)。方針は CLAUDE.md に記録。
+
+**この過程で `tinyCommon` を作り直した**(項目ごとの難易度に揺らぎを入れて得点分布を
+滑らかに。stanine の警告 4 件が消えた)。Mathematica の参照値も再生成し照合済み
+(IRT 1e-4 台・FRP 1e-7 台・EM 周期数は完全一致)。
+
+**部分化を試して戻した例もある**: `test-glasso.R` は 500 行に削るとポリコリック
+行列の条件が悪化して BCD の検査が落ちる。フルのまま遅延化 + skip とし，理由を
+ファイル内に書いた。
+
+### 事実誤認を1件撤回した
+
+「同じ tarball で 885/835 が出た＝win-builder 側が揺れている」と述べていたが，
+**メールを全件取り直したところ 8/19 の 5 回(1531→634→584→580→566)は全て
+tarball 側の変更に対応して動いていた**。撤回して方針を立て直した。
+(なお 885/835 自体は実在した。私の最初の検索が不完全だった。)
+
+### **Dropbox が git 削除済みファイルを働き木に復活させた(`350fd7c`)**
+
+win-devel が 2 回続けて 9 件の失敗を返した。原因は**削除済みの旧テスト 5 本
+(`test-irt-tiny.R` 等)が Dropbox 経由で働き木に戻り，tarball に混入**したこと。
+旧 10 項目データ × 再生成した 15 項目参照値で当然落ちる。**ローカル検査は残骸が
+届く前の rsync コピーで通っていた**のですり抜けた。断続的に起こる(1 回目混入 →
+一時消滅 → 2 回目再混入)。
+
+対策: `tools/build_pkg.R` を**`git status --porcelain` が空でなければ停止 →
+`git archive HEAD` を Dropbox の外へ書き出し → その木で check/win-devel/submit**
+に書き換えた。**ビルドは git ではなくディスクを信じる**ので，Dropbox 配下の
+働き木は tarball の源として使えない。
+
+### 提出前の総点検で見つけた誤り
+
+- cran-comments の「5,291 tests」は**汚染 tarball の数字**だった → CI 実測 3,507 へ。
+- 「local: 0 notes」も誤り(実際は HTML Tidy の 1 NOTE) → 正直に明記。
+- NEWS の 2.0.0 見出しが開発中の体裁のまま(`(development; ...)`・Bug Fixes が 2 節に
+  分裂) → リリース体裁に統合し Removals を先頭へ。
+
+最終確認: win-builder **OK・460 秒**(遅いマシンで。tests 113 秒)/ 手元 as-cran
+1 NOTE / CI 5 環境 success / R-hub 3 プラットフォーム success。
+
+### WORDLIST 整備(`bb995e9`〜`9eefa2f`) — 提出直後の宿題を完了
+
+`tools/spell_check.R` を新設し guide-ja.Rmd(日本語)と NEWS.md(履歴)を対象外に。
+**DESCRIPTION は Title/Description の本文だけを見る**(生ファイル検査だと
+`LinkingTo` 等のフィールド名を拾い続けるモグラ叩きになる)。WORDLIST は 136 → 225 語。
+`release_bullets()` を追加して `use_release_issue()` のチェックリストに
+「WORDLIST 更新」「git archive からのみビルド」が毎回載るようにした。
+**指摘ゼロが正常状態**になったので，次に出たら本物。
+
+### 次
+
+- **CRAN の審査結果待ち**。通れば tag → GitHub Release → Discussions(日英2本)。
+- 指摘が来たら修正して再提出(間隔制限に注意)。
+- 多値BNM は v2.1.0 送りのまま。

@@ -161,7 +161,13 @@ R code 30s / PDF 15s / 他~110s。手元逐次 38 秒 = Windows 倍率約9倍(�
   and reformats `Biclustering.Rd` during `roxygenise()`/`devtools::test()`; revert those
   files with `git checkout` before committing.
 - After CRAN acceptance: git tag → GitHub Release → Discussions announcements (JA/EN),
-  in that order (same flow as v1.13.x/v1.14.0).
+  in that order (same flow as v1.13.x/v1.14.0/v2.0.0).
+- `devtools::submit_cran()` cannot run non-interactively: `yesno()` aborts with
+  "Called from non-interactive context". Submitting from the web form
+  (https://xmpalantir.wu.ac.at/cransubmit/) is equivalent — paste the contents of
+  `cran-comments.md` into the Optional comment field, since the file is
+  `.Rbuildignore`d and never reaches CRAN inside the tarball. Note that a web-form
+  submission leaves `CRAN-SUBMISSION` untouched.
 - Windows R-devel enforces a 10-minute overall checktime; heavy real-data fit tests
   (J*S* regressions) must carry `skip_on_cran()`.
 
@@ -521,7 +527,7 @@ mic の区別がつかない**——標本誤差で凹凸が出る大きさに�
   cost, not the tests.
 - See `WORKLOG.md` (2026-07-01) and `.claude/CLAUDE.md` for full detail
 
-### v2.0.0 (dev; renamed from 1.16.0 on 2026-07-26, see below)
+### v2.0.0 (CRAN, **accepted and published 2026-08-20**; renamed from 1.16.0 on 2026-07-26, see below)
 - **GRM bug fixes (2026-07-16 audit; committed f3d9557; see NEWS.md)**:
   - `grm_iif()` rewritten to the correct Samejima (1969) item information on the
     logistic metric used by estimation (old code: cumulative-probability

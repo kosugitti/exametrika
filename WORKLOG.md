@@ -3499,3 +3499,44 @@ win-devel が 2 回続けて 9 件の失敗を返した。原因は**削除済�
 - **CRAN の審査結果待ち**。通れば tag → GitHub Release → Discussions(日英2本)。
 - 指摘が来たら修正して再提出(間隔制限に注意)。
 - 多値BNM は v2.1.0 送りのまま。
+
+## 2026-08-20（承前・**v2.0.0 受理・公開**）→ 告知一式と ggExametrika 提出
+
+朝10:23(JST)に提出した v2.0.0 が同日19:42に受理された。**指摘ゼロの一発通過**で、
+所要は約9時間。CRAN のパッケージページも Version 2.0.0 / Published 2026-08-20 /
+Title「Test Data Engineering」で反映を確認した(Issue #32 のタイトル変更が世に出た)。
+
+### 告知(手順は memory: release_announcement_workflow のとおり)
+
+- tag `v2.0.0` を作成して push
+- Release: https://github.com/kosugitti/exametrika/releases/tag/v2.0.0 (`--latest`)
+- Discussions JA: https://github.com/kosugitti/exametrika/discussions/37
+- Discussions EN: https://github.com/kosugitti/exametrika/discussions/38
+  (Announcements カテゴリ `DIC_kwDOJS6L084CZbQk`・repositoryId `R_kgDOJS6L0w` は前回と同じ値)
+- SNS は殿が手で投稿。**投稿用の CLI は手元に無い**ので、文面を用意して渡す形になる
+
+Release ノートの組み立ては「なぜメジャーか(EM収束修正で全EM系モデルの推定値が動き、
+Shojima(2022) の数値を再現しなくなる)」を最初に置き、破壊的変更 → 主な修正 →
+新機能 → 性能 → テスト二層化、の順。**数字が入る行が一番読まれる**ので、
+ARI 1.00→0.55・約300倍・16秒対80分は本文に残した。
+
+### ggExametrika 1.1.2 の提出(同日)
+
+exametrika 2.0.0 が CRAN に載ったことで cran-comments の記述が事実になり、提出条件が
+揃った。`cran-comments.md` に「exametrika 2.0.0 は 2026-08-20 に CRAN 公開済み」と
+「win-builder 再実測 413秒・status OK」を追記してコミット(`1783172`)、git archive から
+tarball を作って提出。20:20 に確認完了(殿がリンクを押下)。
+
+**`devtools::submit_cran()` は非対話環境では使えない。**`yesno()` が
+「Called from non-interactive context」で停止する。Rscript から投げても同じ。
+提出フォーム(https://xmpalantir.wu.ac.at/cransubmit/)を直接使えば同じことができる。
+**`cran-comments.md` の中身は Optional comment 欄に貼る**(tarball には入らないため。
+`.Rbuildignore` で除外されており、CRAN が読むのはこの欄の文字列である)。
+
+### 次
+
+- **ggExametrika 1.1.2 の審査結果待ち**。通れば tag → Release → 告知。
+- `CRAN-SUBMISSION` が 1.15.0 のまま取り残されている(web フォーム提出では更新されない)。
+  次に `devtools::submit_cran()` を対話的に使うときに自然に更新される。
+- 多値BNM は v2.1.0 送りのまま。テストデータの極小化と spell_check の整理は
+  「2.0.0 を機に・急がない」棚に置いたまま生きている。

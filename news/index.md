@@ -516,6 +516,13 @@ input alias for the criterion name, not a field on the result.
 
 ### Internal (no user-visible behavior change)
 
+- Spell-checking became usable again: `tools/spell_check.R` skips the
+  Japanese vignette (morphemes are permanent hunspell noise) and
+  `NEWS.md` (history is not edited), `inst/WORDLIST` was brought up to
+  date (136 -\> 228 words), and `release_bullets()` reminds every
+  release to keep it so. Zero findings is now the normal state, so the
+  next finding is a real typo.
+
 - Restructured the test suite around a two-tier policy: CRAN runs tiny
   Mathematica-verified fixtures plus a smoke test per user-facing
   function, while full-size reference comparisons, reproducibility runs

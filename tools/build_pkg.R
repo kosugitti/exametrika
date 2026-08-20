@@ -14,7 +14,7 @@ pacman::p_load(styler, devtools, rhub)
 ## --- A. 開発側(働き木)。差分が出たらコミットしてから B へ進む ---
 styler::style_pkg()
 devtools::document()
-devtools::spell_check()
+source("tools/spell_check.R")
 
 ## --- B. 検査・提出側(コミット済みの木だけを使う) ---
 dirty <- system2("git", c("status", "--porcelain"), stdout = TRUE)

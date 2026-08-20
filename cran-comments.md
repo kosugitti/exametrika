@@ -1,8 +1,12 @@
 ## Test environments
 
-* local macOS (aarch64-apple-darwin25.0.0): R 4.6.1
-* R-hub v2: linux (R-release), macos-arm64 (R-release), windows (R-release)
-* win-builder: R-devel
+* local macOS (aarch64-apple-darwin25.0.0), R 4.6.1: 0 errors, 0 warnings, 0 notes
+* GitHub Actions: ubuntu (R-devel, R-release, R-oldrel), macOS (R-release),
+  Windows (R-release), all with the full test suite (`NOT_CRAN=true`,
+  5,291 tests, 0 skipped): OK
+* R-hub v2: linux, macos-arm64, windows (R-devel): OK
+* win-builder R-devel (2026-08-20): OK, check time 460 s
+  (limit 600 s; tests 113 s)
 
 ## R CMD check results
 
@@ -88,7 +92,10 @@ prefers the current name.
 
 ## Check time
 
-The heaviest real-data fit tests in `test-grm.R` and `test-irm.R` remain wrapped
-in `skip_on_cran()` (introduced in 1.13.1) and continue to run locally and on
-R-hub / win-devel via `NOT_CRAN`, so coverage outside CRAN is unchanged. The test
-suite runs in about 135s wall / 54s elapsed locally (5,323 passing, 21 skipped).
+Version 1.13.0 was rejected at "Overall checktime 11 min > 10 min" on Windows.
+The test suite is now two-tiered: CRAN runs small synthetic fixtures
+(cross-validated against the reference Mathematica implementation) plus a smoke
+test per user-facing function, while the full-size reference comparisons and
+reproducibility runs carry `skip_on_cran()` and run on every push in CI
+(GitHub Actions, three platforms, `NOT_CRAN=true`) and locally. win-builder
+measured the whole check at 460 s with tests at 113 s.

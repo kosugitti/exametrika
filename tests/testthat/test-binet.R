@@ -31,28 +31,39 @@ fieldFile <- test_path("fixtures", "auxiliary_data", "FixFieldBINET.csv")
 edgeFile <- test_path("fixtures", "auxiliary_data", "EdgesBINET.csv")
 FieldData <- read.csv(fieldFile)
 conf <- FieldData[, 2]
-tgt <- BINET(
-  U = J35S515,
-  ncls = 13, nfld = 12,
-  conf = conf, adj_file = edgeFile
-)
+# The Mathematica references are full-data only, so the reference blocks are
+# CI-only (lazy accessor + skip_on_cran). A CRAN-side smoke on the full data
+# stays at the end of this file: BINET has no tiny fixture because its 13x12
+# class/field structure needs the real dataset to be identified.
+.tgt <- NULL
+tgt_model <- function() {
+  if (is.null(.tgt)) {
+    .tgt <<- BINET(
+      U = J35S515,
+      ncls = 13, nfld = 12,
+      conf = conf, adj_file = edgeFile
+    )
+  }
+  return(.tgt)
+}
 
 # test1 Test ------------------------------------------------------
 
 test_that("Test Info", {
+  skip_on_cran()
   expect <- Test[16:31, 2] |>
     unlist() |>
     unname() |>
     as.numeric()
   expect <- expect[c(5, 1, 2, 6, 3, 7, 4, 8:16)]
-  result <- tgt$MG_FitIndices |> as.numeric()
+  result <- tgt_model()$MG_FitIndices |> as.numeric()
   expect_equal(result, expect, tolerance = 1e-4)
   expect <- Test[16:31, 3] |>
     unlist() |>
     unname() |>
     as.numeric()
   expect <- expect[c(5, 1, 2, 6, 3, 7, 4, 8:16)]
-  result <- tgt$SM_FitIndices |> as.numeric()
+  result <- tgt_model()$SM_FitIndices |> as.numeric()
   expect_equal(result, expect, tolerance = 1e-4)
 })
 
@@ -60,6 +71,7 @@ test_that("Test Info", {
 # CCRR ------------------------------------------------------
 
 test_that("Conditional Correct Response Rate", {
+  skip_on_cran()
   for (i in 1:12) {
     st <- (i - 1) * 14 + 1
     ed <- st + 12
@@ -68,7 +80,7 @@ test_that("Conditional Correct Response Rate", {
       unname() |>
       na.omit() |>
       as.numeric()
-    result <- tgt$PSRP[[i]] |>
+    result <- tgt_model()$PSRP[[i]] |>
       unlist() |>
       as.numeric() |>
       na.omit() |>
@@ -79,16 +91,17 @@ test_that("Conditional Correct Response Rate", {
 
 # LDPSR ------------------------------------------------------
 test_that("LDPSR", {
+  skip_on_cran()
   expect <- LDPSR[, 1] |>
     unlist() |>
     unname() |>
     as.numeric()
-  result <- tgt$LDPSR[, 1]
+  result <- tgt_model()$LDPSR[, 1]
   expect_equal(result, expect, tolerance = 1e-4)
   expect <- LDPSR[, 2:4] |>
     unlist() |>
     as.vector()
-  result <- tgt$LDPSR[, 2:4] |>
+  result <- tgt_model()$LDPSR[, 2:4] |>
     unlist() |>
     as.vector()
   expect_equal(result, expect, tolerance = 1e-4)
@@ -97,7 +110,7 @@ test_that("LDPSR", {
     unname() |>
     na.omit() |>
     as.numeric()
-  result <- tgt$LDPSR[, 6:10] |>
+  result <- tgt_model()$LDPSR[, 6:10] |>
     unlist() |>
     unname() |>
     na.omit() |>
@@ -108,7 +121,7 @@ test_that("LDPSR", {
     unname() |>
     na.omit() |>
     as.numeric()
-  result <- tgt$LDPSR[, 11:15] |>
+  result <- tgt_model()$LDPSR[, 11:15] |>
     unlist() |>
     unname() |>
     na.omit() |>
@@ -118,59 +131,61 @@ test_that("LDPSR", {
 
 # LDPSR ------------------------------------------------------
 test_that("Marginal Bicluster", {
+  skip_on_cran()
   expect <- MB[1:12, 2:14] |>
     unlist() |>
     unname() |>
     as.numeric()
-  result <- tgt$FRP |> as.numeric()
+  result <- tgt_model()$FRP |> as.numeric()
   expect_equal(result, expect, tolerance = 1e-4)
   expect <- MB[1:12, 15] |>
     unlist() |>
     unname() |>
     as.numeric()
-  result <- tgt$LFD |> as.numeric()
+  result <- tgt_model()$LFD |> as.numeric()
   expect_equal(result, expect, tolerance = 1e-4)
   expect <- MB[13, 2:14] |>
     unlist() |>
     unname() |>
     as.numeric()
-  result <- tgt$TRP |> as.numeric()
+  result <- tgt_model()$TRP |> as.numeric()
   expect_equal(result, expect, tolerance = 1e-4)
   expect <- MB[14, 2:14] |>
     unlist() |>
     unname() |>
     as.numeric()
-  result <- tgt$LCD |> as.numeric()
+  result <- tgt_model()$LCD |> as.numeric()
   expect_equal(result, expect, tolerance = 1e-4)
   expect <- MB[15, 2:14] |>
     unlist() |>
     unname() |>
     as.numeric()
-  result <- tgt$CMD |> as.numeric()
+  result <- tgt_model()$CMD |> as.numeric()
   expect_equal(result, expect, tolerance = 1e-4)
 })
 
 # Students ------------------------------------------------------------
 
 test_that("Students", {
+  skip_on_cran()
   expect <- Student[, 6:18] |>
     unlist() |>
     as.vector()
-  result <- tgt$Students[, 1:13] |>
+  result <- tgt_model()$Students[, 1:13] |>
     unlist() |>
     as.vector()
   expect_equal(result, expect, tolerance = 1e-4)
   expect <- Student[, 19] |>
     unlist() |>
     as.vector()
-  result <- tgt$Students[, 14] |>
+  result <- tgt_model()$Students[, 14] |>
     unlist() |>
     as.vector()
   expect_equal(result, expect, tolerance = 1e-4)
   expect <- Student[, 20:24] |>
     unlist() |>
     as.vector()
-  result <- tgt$NextStage |>
+  result <- tgt_model()$NextStage |>
     unlist() |>
     as.vector()
   expect_equal(result, expect, tolerance = 1e-4)
@@ -179,6 +194,7 @@ test_that("Students", {
 # adj_list input path -------------------------------------------------
 
 test_that("BINET works with adj_list input", {
+  skip_on_cran()
   # Build adj_list from the same edge data used in adj_file
   edges_data <- data.frame(
     From = c(1, 2, 3, 4, 5, 7, 2, 4, 6, 8, 10, 6, 6, 11, 8, 9, 12),
@@ -209,23 +225,24 @@ test_that("BINET works with adj_list input", {
   )
 
   # Results should match adj_file version
-  expect_equal(tgt_list$log_lik, tgt$log_lik, tolerance = 1e-8)
-  expect_equal(tgt_list$FRP, tgt$FRP, tolerance = 1e-8)
-  expect_equal(tgt_list$TRP, tgt$TRP, tolerance = 1e-8)
-  expect_equal(tgt_list$LCD, tgt$LCD, tolerance = 1e-8)
-  expect_equal(tgt_list$CMD, tgt$CMD, tolerance = 1e-8)
-  expect_equal(tgt_list$all_adj, tgt$all_adj)
-  expect_equal(tgt_list$Students, tgt$Students, tolerance = 1e-8)
+  expect_equal(tgt_list$log_lik, tgt_model()$log_lik, tolerance = 1e-8)
+  expect_equal(tgt_list$FRP, tgt_model()$FRP, tolerance = 1e-8)
+  expect_equal(tgt_list$TRP, tgt_model()$TRP, tolerance = 1e-8)
+  expect_equal(tgt_list$LCD, tgt_model()$LCD, tolerance = 1e-8)
+  expect_equal(tgt_list$CMD, tgt_model()$CMD, tolerance = 1e-8)
+  expect_equal(tgt_list$all_adj, tgt_model()$all_adj)
+  expect_equal(tgt_list$Students, tgt_model()$Students, tolerance = 1e-8)
 
   # all_g should have Field edge attribute
   e_df <- igraph::as_data_frame(tgt_list$all_g)
   expect_true("Field" %in% colnames(e_df))
-  expect_equal(nrow(e_df), nrow(igraph::as_data_frame(tgt$all_g)))
+  expect_equal(nrow(e_df), nrow(igraph::as_data_frame(tgt_model()$all_g)))
 })
 
 # g_list input path ---------------------------------------------------
 
 test_that("BINET works with g_list input", {
+  skip_on_cran()
   # Build g_list from the same adj_list used above
   edges_data <- data.frame(
     From = c(1, 2, 3, 4, 5, 7, 2, 4, 6, 8, 10, 6, 6, 11, 8, 9, 12),
@@ -256,12 +273,26 @@ test_that("BINET works with g_list input", {
   )
 
   # Results should match adj_file version
-  expect_equal(tgt_glist$log_lik, tgt$log_lik, tolerance = 1e-8)
-  expect_equal(tgt_glist$FRP, tgt$FRP, tolerance = 1e-8)
-  expect_equal(tgt_glist$TRP, tgt$TRP, tolerance = 1e-8)
-  expect_equal(tgt_glist$all_adj, tgt$all_adj)
+  expect_equal(tgt_glist$log_lik, tgt_model()$log_lik, tolerance = 1e-8)
+  expect_equal(tgt_glist$FRP, tgt_model()$FRP, tolerance = 1e-8)
+  expect_equal(tgt_glist$TRP, tgt_model()$TRP, tolerance = 1e-8)
+  expect_equal(tgt_glist$all_adj, tgt_model()$all_adj)
 
   # all_g should have Field edge attribute
   e_df <- igraph::as_data_frame(tgt_glist$all_g)
   expect_true("Field" %in% colnames(e_df))
+})
+
+### CRAN smoke -----------------------------------------------------------
+
+test_that("BINET runs and returns its structure", {
+  fit <- BINET(
+    U = J35S515,
+    ncls = 13, nfld = 12,
+    conf = conf, adj_file = edgeFile
+  )
+  expect_s3_class(fit, "exametrika")
+  expect_true(is.finite(fit$TestFitIndices$model_log_like))
+  expect_equal(length(fit$TRP), 13)
+  expect_true(all(fit$FRP >= 0 & fit$FRP <= 1, na.rm = TRUE))
 })

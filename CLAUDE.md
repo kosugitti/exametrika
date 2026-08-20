@@ -114,6 +114,32 @@ docs/                # .gitignore'd (removed from repo); pkgdown site deployed t
 
 ## Testing
 
+### 二層テスト方針 (2026-08-20 確立・恒久ルール)
+
+**CRAN のテストは動作確認，品質保証は CI と手元。**両層とも tarball に同梱され，
+`skip_on_cran()` が環境変数 `NOT_CRAN` の有無で自動的に振り分ける。
+
+- **Tier 1 (CRAN で走る)**: tiny フィクスチャ(Mathematica照合済)＋各関数のスモーク。
+  **予算 = 手元逐次 8 秒以内**(win-builder 換算 約9倍=70秒)。CRAN と win-builder では
+  NOT_CRAN が立たないのでこれだけが走る。
+- **Tier 2 (CRAN では skip)**: フルサイズ参照照合・再現性・重い回帰。GitHub Actions
+  (R-CMD-check.yaml, 3 OS, push ごと, **NOT_CRAN=true を明示**)と手元の
+  `devtools::test()` で毎回全件走る。検査の質は落ちない。
+
+運用ルール:
+1. 新しいテストは必ず CRAN 構成 (`env -u NOT_CRAN Rscript ...`) で時間を測る。
+   **0.5 秒を超えるブロックは skip_on_cran()** にして，tiny データのスモークを添える。
+2. **ファイル冒頭(トップレベル)にモデル推定を書かない。**skip_on_cran() は test_that の
+   中しか守らない。遅延アクセサ(`.cache <- NULL; model <- function() ...`)にする。
+3. win-devel を測定器代わりに連投しない。リリース前は「手元 as-cran ＋ 必要なら
+   Al-khwa LD_PRELOAD(BLAS負荷の順位付け) ＋ win-devel 1回」で足りる。
+
+背景 (2026-08-20 実測): win-builder 566秒の内訳は tests 351s(62%) / vignettes 58s /
+R code 30s / PDF 15s / 他~110s。手元逐次 38 秒 = Windows 倍率約9倍(参照BLAS)。
+テストは v1.7.0 の 2,773 行から 9,236 行へ増えており，個別の削減では再発する。
+なお 8/19 の win-builder 5 回(1531→634→584→580→566)は全て tarball 側の変更に対応して
+動いた——**「win-builder 側の揺れ」の証拠はない**。
+
 - **Framework**: testthat (edition 3)
 - **Reference data**: Mathematica implementation outputs in `tests/testthat/fixtures/mathematica_reference/`
   (85 CSV files) used for cross-validation

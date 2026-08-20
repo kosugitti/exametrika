@@ -148,49 +148,60 @@ test_that("LCA Students", {
 ### S3 dispatch -------------------------------------------------------------
 
 test_that("LCA dispatches on response type", {
-  expect_true(inherits(full_model(), "LCA"))
+  # dispatch is about classes, not estimates, so tiny/subset data suffices
+  expect_true(inherits(LCA(tiny_bin, ncls = 3), "LCA"))
   # raw input and a pre-formatted object take the same route
   raw_tiny <- read.csv(test_path("fixtures", "tiny_data", "tinyLCA.csv"), check.names = FALSE)
   expect_equal(LCA(raw_tiny, na = -99, ncls = 3)$log_lik, LCA(tiny_bin, ncls = 3)$log_lik)
   # every response type now has a method, each with its own return class
-  expect_true(inherits(LCA(J21S300, ncls = 2), "ratedLCA"))
-  expect_true(inherits(LCA(dataFormat(head_cols(J20S600, 12), response.type = "nominal"), ncls = 2), "nominalLCA"))
+  expect_true(inherits(LCA(head_rows_dat(J21S300, 100), ncls = 2), "ratedLCA"))
+  expect_true(inherits(
+    LCA(head_rows_dat(dataFormat(head_cols(J20S600, 12), response.type = "nominal"), 150), ncls = 2),
+    "nominalLCA"
+  ))
 })
 
 ### Nominal LCA -------------------------------------------------------------
 
 nominal_data <- dataFormat(head_cols(J20S600, 12), response.type = "nominal")
-nominal_model <- LCA(nominal_data, ncls = 3)
+.nominal <- NULL
+nominal_model <- function() {
+  if (is.null(.nominal)) .nominal <<- LCA(nominal_data, ncls = 3)
+  return(.nominal)
+}
 
 test_that("nominal LCA returns its own class and converges", {
-  expect_s3_class(nominal_model, "exametrika")
-  expect_true(inherits(nominal_model, "nominalLCA"))
-  expect_true(nominal_model$converge)
-  expect_equal(nominal_model$n_class, 3)
+  skip_on_cran()
+  expect_s3_class(nominal_model(), "exametrika")
+  expect_true(inherits(nominal_model(), "nominalLCA"))
+  expect_true(nominal_model()$converge)
+  expect_equal(nominal_model()$n_class, 3)
 })
 
 test_that("nominal LCA category profiles are proper distributions", {
-  probs <- nominal_model$ICRP[, paste0("class", 1:3)]
+  skip_on_cran()
+  probs <- nominal_model()$ICRP[, paste0("class", 1:3)]
   expect_true(all(probs >= 0))
   # every (item, class) column of category probabilities sums to 1
   for (cl in paste0("class", 1:3)) {
-    sums <- tapply(nominal_model$ICRP[[cl]], nominal_model$ICRP$ItemLabel, sum)
+    sums <- tapply(nominal_model()$ICRP[[cl]], nominal_model()$ICRP$ItemLabel, sum)
     expect_equal(as.numeric(sums), rep(1, ncol(nominal_data$Q)), tolerance = 1e-8)
   }
   # one row per (item, category), so ragged category counts stay aligned
-  expect_equal(nrow(nominal_model$ICRP), sum(nominal_data$categories))
+  expect_equal(nrow(nominal_model()$ICRP), sum(nominal_data$categories))
 })
 
 test_that("nominal LCA reports information criteria only", {
-  fit <- nominal_model$TestFitIndices
+  skip_on_cran()
+  fit <- nominal_model()$TestFitIndices
   expect_true(is.na(fit$bench_log_like))
   expect_true(all(is.na(c(fit$model_Chi_sq, fit$model_df, fit$CFI, fit$RMSEA))))
   expect_true(all(is.finite(c(fit$AIC, fit$BIC, fit$CAIC))))
   # information criteria follow the -2 log L + k penalty convention here,
   # not the chi-square based one used on the binary path
   nparam <- 3 * sum(nominal_data$categories - 1)
-  expect_equal(fit$AIC, -2 * nominal_model$log_lik + 2 * nparam)
-  expect_equal(fit$BIC, -2 * nominal_model$log_lik + nparam * log(nominal_model$nobs))
+  expect_equal(fit$AIC, -2 * nominal_model()$log_lik + 2 * nparam)
+  expect_equal(fit$BIC, -2 * nominal_model()$log_lik + nparam * log(nominal_model()$nobs))
 })
 
 test_that("nominal LCA handles ragged category counts", {
@@ -228,22 +239,25 @@ test_that("binary data recovers the same solution through the nominal engine", {
 })
 
 test_that("nominal LCA prints", {
-  expect_output(print(nominal_model), "Item Category Reference Profile")
-  expect_output(print(nominal_model), "Number of Latent class")
+  skip_on_cran()
+  expect_output(print(nominal_model()), "Item Category Reference Profile")
+  expect_output(print(nominal_model()), "Number of Latent class")
 })
 
 test_that("nominal LCA plots", {
+  skip_on_cran()
   pdf(NULL)
   on.exit(dev.off(), add = TRUE)
-  expect_silent(plot(nominal_model, type = "ICRP", items = 1:2, nc = 1, nr = 2))
-  expect_silent(plot(nominal_model, type = "LCD"))
-  expect_silent(plot(nominal_model, type = "CMP", students = 1:2, nc = 1, nr = 2))
+  expect_silent(plot(nominal_model(), type = "ICRP", items = 1:2, nc = 1, nr = 2))
+  expect_silent(plot(nominal_model(), type = "LCD"))
+  expect_silent(plot(nominal_model(), type = "CMP", students = 1:2, nc = 1, nr = 2))
   # types that need a correct-response rate are not defined without a key
-  expect_error(plot(nominal_model, type = "IRP"), "does not correspond")
+  expect_error(plot(nominal_model(), type = "IRP"), "does not correspond")
 })
 
 test_that("nominal data given to LRA is handed to LCA", {
-  expect_message(m <- LRA(nominal_data, nrank = 4), "Latent ranks require ordered")
+  small_nominal <- head_rows_dat(nominal_data, 150)
+  expect_message(m <- LRA(small_nominal, nrank = 4), "Latent ranks require ordered")
   expect_true(inherits(m, "nominalLCA"))
   # nrank is the LRA spelling of ncls and must not be dropped
   expect_equal(m$n_class, 4)
@@ -251,53 +265,62 @@ test_that("nominal data given to LRA is handed to LCA", {
 
 ### Rated LCA ---------------------------------------------------------------
 
-rated_model <- LCA(J21S300, ncls = 3)
+.rated <- NULL
+rated_model <- function() {
+  if (is.null(.rated)) .rated <<- LCA(J21S300, ncls = 3)
+  return(.rated)
+}
 
 test_that("rated LCA estimates through the nominal engine", {
-  expect_true(inherits(rated_model, "ratedLCA"))
-  expect_true(rated_model$converge)
+  skip_on_cran()
+  expect_true(inherits(rated_model(), "ratedLCA"))
+  expect_true(rated_model()$converge)
   # the estimation is the nominal one, so the category profiles must match
   nom <- dataFormat(J21S300)
   nom$response.type <- "nominal"
   n <- LCA(nom, ncls = 3)
-  expect_equal(rated_model$ICRP[, paste0("class", 1:3)], n$ICRP[, paste0("class", 1:3)])
-  expect_equal(rated_model$log_lik_nominal, n$log_lik)
+  expect_equal(rated_model()$ICRP[, paste0("class", 1:3)], n$ICRP[, paste0("class", 1:3)])
+  expect_equal(rated_model()$log_lik_nominal, n$log_lik)
 })
 
 test_that("rated LCA IRP is the keyed category probability", {
+  skip_on_cran()
   dat <- dataFormat(J21S300)
   ncat <- as.vector(dat$categories)
   offset <- c(0, cumsum(ncat)[-length(ncat)])
-  keyed <- as.matrix(rated_model$ICRP[offset + dat$CA, paste0("class", 1:3)])
-  expect_equal(unname(rated_model$IRP), unname(keyed))
-  expect_true(all(rated_model$IRP >= 0 & rated_model$IRP <= 1))
+  keyed <- as.matrix(rated_model()$ICRP[offset + dat$CA, paste0("class", 1:3)])
+  expect_equal(unname(rated_model()$IRP), unname(keyed))
+  expect_true(all(rated_model()$IRP >= 0 & rated_model()$IRP <= 1))
   # TRP is the weighted item sum of the IRP
-  expect_equal(rated_model$TRP, as.vector(t(rated_model$IRP) %*% dat$w))
+  expect_equal(rated_model()$TRP, as.vector(t(rated_model()$IRP) %*% dat$w))
 })
 
 test_that("rated LCA reports both layers of fit", {
+  skip_on_cran()
   # binary layer keeps the chi-square based indices
-  expect_true(all(is.finite(unlist(rated_model$TestFitIndices[c(
+  expect_true(all(is.finite(unlist(rated_model()$TestFitIndices[c(
     "model_Chi_sq", "model_df", "CFI", "RMSEA", "AIC"
   )]))))
   # nominal layer has information criteria only
-  expect_true(is.na(rated_model$TestFitIndicesNominal$model_Chi_sq))
-  expect_true(is.finite(rated_model$TestFitIndicesNominal$BIC))
+  expect_true(is.na(rated_model()$TestFitIndicesNominal$model_Chi_sq))
+  expect_true(is.finite(rated_model()$TestFitIndicesNominal$BIC))
 })
 
 test_that("rated LCA does not sort classes by correct rate", {
+  skip_on_cran()
   # Biclustering.rated sorts; LCA must not, because its classes are unordered.
   # The seedless EM is deterministic, so an unsorted TRP is evidence enough.
-  expect_false(identical(rated_model$TRP, sort(rated_model$TRP)))
+  expect_false(identical(rated_model()$TRP, sort(rated_model()$TRP)))
 })
 
 test_that("rated LCA prints and plots", {
+  skip_on_cran()
   pdf(NULL)
   on.exit(dev.off(), add = TRUE)
-  expect_output(print(rated_model), "Binary layer")
-  expect_output(print(rated_model), "Nominal layer")
+  expect_output(print(rated_model()), "Binary layer")
+  expect_output(print(rated_model()), "Nominal layer")
   for (ty in c("IRP", "TRP", "ICRP", "LCD", "CMP")) {
-    expect_silent(plot(rated_model, type = ty, items = 1:2, students = 1:2, nc = 1, nr = 2))
+    expect_silent(plot(rated_model(), type = ty, items = 1:2, students = 1:2, nc = 1, nr = 2))
   }
 })
 
@@ -361,6 +384,7 @@ test_that("M2 is zero when the data match the model exactly", {
 })
 
 test_that("the Jacobian loses rank as (ncls - 1)(ncls - 2) / 2", {
+  skip_on_cran()
   # With the class proportions fixed, the second-order margins see the class
   # deviations only through their Gram matrix, which is invariant to rotations
   # of the (ncls - 1)-dimensional class space.
@@ -374,7 +398,7 @@ test_that("the Jacobian loses rank as (ncls - 1)(ncls - 2) / 2", {
 })
 
 test_that("M2 works from a fitted LCA and prints", {
-  dat <- dataFormat(head_cols(J20S600, 12), response.type = "nominal")
+  dat <- head_rows_dat(dataFormat(head_cols(J20S600, 12), response.type = "nominal"), 150)
   fit <- LCA(dat, ncls = 3)
   r <- M2(fit, verbose = FALSE)
   expect_true(inherits(r, "M2"))
@@ -383,12 +407,13 @@ test_that("M2 works from a fitted LCA and prints", {
     sum(outer(dat$categories - 1, dat$categories - 1)[upper.tri(diag(ncol(dat$Q)))]))
   expect_output(print(r), "Limited-information")
   # rated data goes through the same path
-  expect_true(inherits(M2(LCA(J21S300, ncls = 2), verbose = FALSE), "M2"))
+  expect_true(inherits(M2(LCA(head_rows_dat(J21S300, 100), ncls = 2), verbose = FALSE), "M2"))
   # models without a maximum likelihood fit of this kind are refused
   expect_error(M2(LCA(tiny_bin, ncls = 3)), "available for models fitted")
 })
 
 test_that("add_M2 attaches margin-based fit indices without touching the others", {
+  skip_on_cran()
   dat <- dataFormat(head_cols(J20S600, 12), response.type = "nominal")
   fit <- LCA(dat, ncls = 3)
   fit2 <- add_M2(fit, verbose = FALSE)
@@ -412,6 +437,7 @@ test_that("add_M2 attaches margin-based fit indices without touching the others"
 })
 
 test_that("print shows both worlds of fit indices, and either alone", {
+  skip_on_cran()
   dat <- dataFormat(head_cols(J20S600, 12), response.type = "nominal")
   fit <- add_M2(LCA(dat, ncls = 3), verbose = FALSE)
   expect_output(print(fit), "Response-pattern based")
@@ -431,6 +457,7 @@ test_that("add_M2 refuses models it cannot handle", {
 ### M2 for LRA and Biclustering ---------------------------------------------
 
 test_that("M2 for ordinal LRA matches LCA in structure", {
+  skip_on_cran()
   dat <- dataFormat(J5S1000)
   a <- M2(suppressMessages(LRA(dat, nrank = 3, method = "isotonic")), verbose = FALSE)
   b <- M2(suppressMessages(LCA(dat, ncls = 3)), verbose = FALSE)
@@ -441,6 +468,7 @@ test_that("M2 for ordinal LRA matches LCA in structure", {
 })
 
 test_that("the Jacobian rank deficiency follows the same rule for LRA", {
+  skip_on_cran()
   dat <- dataFormat(J5S1000)
   for (k in 2:4) {
     r <- M2(suppressMessages(LRA(dat, nrank = k, method = "isotonic")), verbose = FALSE)
@@ -449,6 +477,7 @@ test_that("the Jacobian rank deficiency follows the same rule for LRA", {
 })
 
 test_that("M2 for biclustering counts field-shared parameters", {
+  skip_on_cran()
   # J20S600 (20 items, 4 categories) rather than J35S500: the assertion is about
   # how the parameters are counted, not about the data, and M2 on 35 items costs
   # roughly 130x more under the reference BLAS that CRAN's Windows build uses.
@@ -479,12 +508,13 @@ test_that("the shared Jacobian doubles the derivative within a field", {
 
 test_that("biclustering M2 refuses ragged category counts", {
   # J5S1000 has 4/3/4/3/4 categories; a field profile cannot serve them all
-  dat <- dataFormat(J5S1000)
+  dat <- head_rows_dat(dataFormat(J5S1000), 200)
   fit <- suppressMessages(Biclustering(dat, ncls = 3, nfld = 2, method = "B"))
   expect_error(M2(fit, verbose = FALSE), "same number of categories")
 })
 
 test_that("the M2 object stays small whatever the item count", {
+  skip_on_cran()
   # the simulation keeps one of these per fit, so it must not carry the
   # residual vector or anything else that grows with m
   dat <- dataFormat(J20S600)
@@ -495,6 +525,7 @@ test_that("the M2 object stays small whatever the item count", {
 })
 
 test_that("add_M2 works for LRA and biclustering, with an honest caveat", {
+  skip_on_cran()
   dat <- dataFormat(J5S1000)
 
   # ordinal LRA: order restriction can bind, so the p value is descriptive
@@ -542,6 +573,7 @@ test_that("biclustering caveats name the reason that applies", {
 })
 
 test_that("the margin baseline does not depend on the model family", {
+  skip_on_cran()
   # the independence model is fitted to the data, not to the model, so the
   # same data gives the same baseline whichever arm was run
   dat <- dataFormat(J5S1000)

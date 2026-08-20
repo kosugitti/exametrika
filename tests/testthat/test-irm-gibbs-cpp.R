@@ -35,9 +35,13 @@ setup_state <- function(dat) {
     tab <- table(x)
     as.integer(names(which.max(tab)))
   })
+  # index classes by position among the observed modes, not by the category
+  # value itself: on a row subset some categories are nobody's mode, and the
+  # raw value would index past ncls0 columns
+  cls_index <- match(mode_cat, sort(unique(mode_cat)))
   ncls0 <- length(unique(mode_cat))
   cls01 <- matrix(0, nobs, ncls0)
-  for (i in seq_len(nobs)) cls01[i, mode_cat[i]] <- 1
+  for (i in seq_len(nobs)) cls01[i, cls_index[i]] <- 1
   fld01 <- diag(nitems)
   list(
     Uq = Uq, Z = dat$Z, cls01 = cls01, fld01 = fld01,
@@ -65,8 +69,16 @@ run_C <- function(s, max_iter, seed = 42) {
   )
 }
 
-# nominal data
-state_nom <- setup_state(dataFormat(J20S600))
+# nominal data. The parity claim is about our own arithmetic (C++ vs R), not
+# about the data, so the always-on blocks use a 150-row subset; the CI-only
+# long-run blocks keep the full datasets, which is where sub-LSB divergence
+# would show first (see the header comment).
+state_nom <- setup_state(head_rows_dat(dataFormat(J20S600), 150))
+.state_nom_full <- NULL
+state_nom_full <- function() {
+  if (is.null(.state_nom_full)) .state_nom_full <<- setup_state(dataFormat(J20S600))
+  return(.state_nom_full)
+}
 
 test_that("nominal IRM Gibbs: C++ matches R after 1 iteration", {
   rR <- run_R(state_nom, max_iter = 1)
@@ -85,8 +97,8 @@ test_that("nominal IRM Gibbs: C++ matches R after 1 iteration", {
 test_that("nominal IRM Gibbs: C++ matches R after 10 iterations", {
   # An equivalence check between the C++ and R paths. It costs two full runs and verifies our own arithmetic, not the platform. Runs locally.
   skip_on_cran()
-  rR <- run_R(state_nom, max_iter = 10)
-  rC <- run_C(state_nom, max_iter = 10)
+  rR <- run_R(state_nom_full(), max_iter = 10)
+  rC <- run_C(state_nom_full(), max_iter = 10)
   expect_equal(rC$ncls, rR$ncls)
   expect_equal(rC$nfld, rR$nfld)
   expect_equal(rC$cls, rR$cls)
@@ -102,7 +114,12 @@ test_that("nominal IRM Gibbs: C++ matches R with different seed", {
 })
 
 # ordinal data
-state_ord <- setup_state(dataFormat(J35S500))
+state_ord <- setup_state(head_rows_dat(dataFormat(J35S500), 150))
+.state_ord_full <- NULL
+state_ord_full <- function() {
+  if (is.null(.state_ord_full)) .state_ord_full <<- setup_state(dataFormat(J35S500))
+  return(.state_ord_full)
+}
 
 test_that("ordinal IRM Gibbs: C++ matches R after 1 iteration", {
   rR <- run_R(state_ord, max_iter = 1)
@@ -117,20 +134,21 @@ test_that("ordinal IRM Gibbs: C++ matches R after 1 iteration", {
 test_that("ordinal IRM Gibbs: C++ matches R after 5 iterations", {
   # An equivalence check between the C++ and R paths. It costs two full runs and verifies our own arithmetic, not the platform. Runs locally.
   skip_on_cran()
-  rR <- run_R(state_ord, max_iter = 5)
-  rC <- run_C(state_ord, max_iter = 5)
+  rR <- run_R(state_ord_full(), max_iter = 5)
+  rC <- run_C(state_ord_full(), max_iter = 5)
   expect_equal(rC$cls, rR$cls)
   expect_equal(rC$fld, rR$fld)
 })
 
 test_that("Biclustering_IRM nominal end-to-end (C++ default) is reproducible", {
   set.seed(42)
-  r1 <- Biclustering_IRM(J20S600,
+  small <- head_rows_dat(dataFormat(J20S600), 150)
+  r1 <- Biclustering_IRM(small,
     gamma_c = 1, gamma_f = 1,
     maxiter = 30, verbose = FALSE
   )
   set.seed(42)
-  r2 <- Biclustering_IRM(J20S600,
+  r2 <- Biclustering_IRM(small,
     gamma_c = 1, gamma_f = 1,
     maxiter = 30, verbose = FALSE
   )

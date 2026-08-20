@@ -54,3 +54,16 @@ expect_numeric_equal <- function(actual, expected, tolerance = 1e-4) {
     as.numeric()
   expect_equal(actual, expected, tolerance = tolerance)
 }
+
+#' 整形済みデータの先頭 n 行を取る
+#'
+#' 構造的な主張(クラス・次元・和が1・再現性)は行数に依存しないので，
+#' CRAN で走るブロックはこれで小さくする。メタデータ(response.type,
+#' categories, CA)は保たれる。
+head_rows_dat <- function(x, n) {
+  x$ID <- x$ID[seq_len(n)]
+  for (f in c("Q", "U", "Z")) {
+    if (!is.null(x[[f]])) x[[f]] <- x[[f]][seq_len(n), , drop = FALSE]
+  }
+  return(x)
+}

@@ -4,7 +4,12 @@ library(exametrika)
 ### Data: J21S300 (rated, 21 items, 300 students, 4 categories)
 
 ### Setup - run model once and share across tests
-result_rirm <- Biclustering_IRM(J21S300, gamma_c = 1, gamma_f = 1, seed = 123, verbose = FALSE)
+# Structural claims (dimensions, sums to 1, valid ranges, reproducibility)
+# do not depend on the row count, so the CRAN-side fixture is a 150-row
+# subset. The full-data run survives as a CI-only smoke at the end of
+# this file (two-tier test policy, see CLAUDE.md).
+dat_rat <- head_rows_dat(J21S300, 150)
+result_rirm <- Biclustering_IRM(dat_rat, gamma_c = 1, gamma_f = 1, seed = 123, verbose = FALSE)
 
 test_that("Rated IRM Basic Execution", {
   # Basic structure checks
@@ -43,7 +48,7 @@ test_that("Rated IRM Dimensions Consistency", {
 
   # Check basic dimensions
   expect_equal(nitems, 21)
-  expect_equal(nobs, 300)
+  expect_equal(nobs, 150)
   expect_true(nfld >= 1 && nfld <= nitems)
   expect_true(ncls >= 2)
 
@@ -213,8 +218,8 @@ test_that("Rated IRM Backward Compatibility", {
 })
 
 test_that("Rated IRM Seed Reproducibility", {
-  result_a <- Biclustering_IRM(J21S300, gamma_c = 1, gamma_f = 1, seed = 42, verbose = FALSE)
-  result_b <- Biclustering_IRM(J21S300, gamma_c = 1, gamma_f = 1, seed = 42, verbose = FALSE)
+  result_a <- Biclustering_IRM(dat_rat, gamma_c = 1, gamma_f = 1, seed = 42, verbose = FALSE)
+  result_b <- Biclustering_IRM(dat_rat, gamma_c = 1, gamma_f = 1, seed = 42, verbose = FALSE)
 
   expect_equal(result_a$n_class, result_b$n_class)
   expect_equal(result_a$n_field, result_b$n_field)
@@ -232,7 +237,7 @@ test_that("Rated IRM Seed Reproducibility", {
 })
 
 test_that("Rated IRM Seed NULL Does Not Set Seed", {
-  result_null <- Biclustering_IRM(J21S300, gamma_c = 1, gamma_f = 1, seed = NULL, verbose = FALSE)
+  result_null <- Biclustering_IRM(dat_rat, gamma_c = 1, gamma_f = 1, seed = NULL, verbose = FALSE)
   expect_s3_class(result_null, "exametrika")
   expect_true("ratedBiclustering" %in% class(result_null))
   expect_true(!is.null(result_null$n_class))
@@ -249,9 +254,9 @@ test_that("Rated IRM S3 Dispatch Works", {
 })
 
 test_that("Rated IRM Q U Z Matrices Stored Correctly", {
-  expect_equal(dim(result_rirm$Q), c(300, 21))
-  expect_equal(dim(result_rirm$U), c(300, 21))
-  expect_equal(dim(result_rirm$Z), c(300, 21))
+  expect_equal(dim(result_rirm$Q), c(150, 21))
+  expect_equal(dim(result_rirm$U), c(150, 21))
+  expect_equal(dim(result_rirm$Z), c(150, 21))
 
   # Z values should be 0 or 1
   expect_true(all(result_rirm$Z %in% c(0, 1)))
@@ -302,4 +307,15 @@ test_that("Rated IRM FieldAnalysis Structure", {
 
 test_that("Rated IRM print method runs without error", {
   expect_no_error(capture.output(print(result_rirm)))
+})
+
+### CI-only: full-data smoke ------------------------------------------------
+
+test_that("rated IRM full-data run keeps its structure (CI only)", {
+  skip_on_cran()
+  full <- Biclustering_IRM(J21S300, gamma_c = 1, gamma_f = 1, seed = 123, verbose = FALSE)
+  expect_s3_class(full, "exametrika")
+  expect_true(all(abs(rowSums(full$ClassMembership) - 1) < 1e-8))
+  expect_true(all(abs(rowSums(full$FieldMembership) - 1) < 1e-8))
+  expect_true(all(full$FRP >= 0 & full$FRP <= 1))
 })

@@ -114,6 +114,8 @@ test_that("GRM model fitting works correctly", {
 })
 
 test_that("GRM performance is acceptable", {
+  # a timing canary is meaningless on machines we do not control
+  skip_on_cran()
   # Create medium-sized dataset
   set.seed(999)
   medium_data <- matrix(sample(1:4, 200, replace = TRUE), nrow = 50, ncol = 4)
@@ -189,9 +191,11 @@ test_that("GRM works correctly with uniform category counts (apply/table bug reg
   # The fix uses lapply(seq_len(nitems), function(j) table(X[, j])) instead.
 
   # Create data where ALL items have the same number of categories (5)
+  # The bug lives in the data-preparation layer (apply/table simplification),
+  # so the smallest uniform-category frame that reaches it is enough.
   set.seed(42)
-  nobs <- 80
-  nitems <- 4
+  nobs <- 50
+  nitems <- 3
   uniform_data <- matrix(sample(1:5, nobs * nitems, replace = TRUE),
     nrow = nobs, ncol = nitems
   )

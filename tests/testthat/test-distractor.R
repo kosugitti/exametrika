@@ -4,10 +4,13 @@ library(exametrika)
 ### Data: J21S300 (rated, 21 items, 300 students, 4 categories)
 
 ### Setup - run models once and share across tests
-result_lra <- LRA(J21S300, nrank = 5, mic = TRUE, verbose = FALSE)
+# Structural claims (table shapes, sums to 1, valid ranges) do not depend on
+# the row count; 150 rows keep every cell populated for 5 ranks x 4 categories.
+dat_da <- head_rows_dat(J21S300, 150)
+result_lra <- LRA(dat_da, nrank = 5, mic = TRUE, verbose = FALSE)
 da_lra <- DistractorAnalysis(result_lra)
 
-result_bic <- Biclustering(J21S300,
+result_bic <- Biclustering(dat_da,
   ncls = 5, nfld = 3, method = "R",
   maxiter = 300, verbose = FALSE
 )

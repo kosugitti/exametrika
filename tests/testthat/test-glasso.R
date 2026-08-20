@@ -1,8 +1,21 @@
 # Tests for Graphical Lasso
 
-### Setup (full J15S3810 for numerical stability)
+### Setup (full J15S3810 -- subsetting was tried on 2026-08-20 and reverted:
+### the subset polychoric matrix is ill-conditioned and the BCD checks fail).
+### The polychoric matrix is computed lazily so that CRAN only pays for it if
+### a non-skipped block needs it; the three end-to-end Glasso() fits share one
+### cached run.
 tmp <- J15S3810
-S_test <- PolychoricCorrelationMatrix(tmp)
+.S_test <- NULL
+S_test <- function() {
+  if (is.null(.S_test)) .S_test <<- PolychoricCorrelationMatrix(tmp)
+  return(.S_test)
+}
+.glasso_fit <- NULL
+glasso_fit <- function() {
+  if (is.null(.glasso_fit)) .glasso_fit <<- Glasso(tmp, n_lambda = 10)
+  return(.glasso_fit)
+}
 
 
 test_that("soft_thresholding works correctly", {
@@ -14,22 +27,22 @@ test_that("soft_thresholding works correctly", {
 
 
 test_that("glasso_one at lambda = 0 matches solve(S)", {
-  res <- glasso_one(S_test, lambda = 0, eps = 1e-8, max_iter = 200)
+  res <- glasso_one(S_test(), lambda = 0, eps = 1e-8, max_iter = 200)
   expect_true(res$converged)
-  expect_equal(res$Theta, unname(solve(S_test)), tolerance = 1e-4)
+  expect_equal(res$Theta, unname(solve(S_test())), tolerance = 1e-4)
 })
 
 
 test_that("glasso_one at large lambda yields diagonal Theta", {
-  big_lambda <- max(abs(S_test - diag(diag(S_test)))) * 2
-  res <- glasso_one(S_test, lambda = big_lambda)
+  big_lambda <- max(abs(S_test() - diag(diag(S_test())))) * 2
+  res <- glasso_one(S_test(), lambda = big_lambda)
   off_diag <- res$Theta[upper.tri(res$Theta)]
   expect_true(all(abs(off_diag) < 1e-6))
 })
 
 
 test_that("glasso_one returns expected structure", {
-  res <- glasso_one(S_test, lambda = 0.1)
+  res <- glasso_one(S_test(), lambda = 0.1)
   expect_named(res, c("Theta", "W", "Beta", "niter", "converged"))
   expect_true(is.matrix(res$Theta))
   expect_true(is.logical(res$converged))
@@ -37,15 +50,16 @@ test_that("glasso_one returns expected structure", {
 
 
 test_that("compute_EBIC_glasso returns scalar", {
-  Theta_hat <- glasso_one(S_test, lambda = 0.1)$Theta
-  ebic <- compute_EBIC_glasso(S_test, Theta_hat, n = 200, p = 15, gamma = 0.5)
+  Theta_hat <- glasso_one(S_test(), lambda = 0.1)$Theta
+  ebic <- compute_EBIC_glasso(S_test(), Theta_hat, n = 200, p = 15, gamma = 0.5)
   expect_length(ebic, 1)
   expect_true(is.numeric(ebic))
 })
 
 
 test_that("Glasso returns expected structure", {
-  res <- Glasso(tmp, n_lambda = 10)
+  skip_on_cran()
+  res <- glasso_fit()
   expect_s3_class(res, "exametrika")
   expect_named(res, c("theta", "W", "lambda_opt", "gamma", "ebic_opt", "n_edge", "path"))
   expect_true(is.matrix(res$theta))
@@ -54,13 +68,15 @@ test_that("Glasso returns expected structure", {
 
 
 test_that("Glasso theta is symmetric", {
-  res <- Glasso(tmp, n_lambda = 10)
+  skip_on_cran()
+  res <- glasso_fit()
   expect_lt(max(abs(res$theta - t(res$theta))), 1e-8)
 })
 
 
 test_that("Glasso path has the expected length", {
-  res <- Glasso(tmp, n_lambda = 10)
+  skip_on_cran()
+  res <- glasso_fit()
   expect_equal(nrow(res$path), 10)
   expect_named(res$path, c("lambda", "ebic", "n_edge"))
 })
@@ -79,10 +95,11 @@ test_that("Glasso rejects non-ordinal data", {
 # lambda search while returning the best solution found so far.
 
 test_that("glasso_one returns converged = FALSE when BCD diverges", {
+  skip_on_cran()
   # Inject NaN into S directly to force BCD to produce NaN values.
   # Previously this crashed at `if (diff < eps)` with
   # "missing value where TRUE/FALSE needed".
-  S_bad <- S_test
+  S_bad <- S_test()
   S_bad[1, 2] <- NaN
   S_bad[2, 1] <- NaN
   res <- glasso_one(S_bad, lambda = 0.1, max_iter = 20)
@@ -92,6 +109,7 @@ test_that("glasso_one returns converged = FALSE when BCD diverges", {
 
 
 test_that("Glasso early-break wiring: warn + best solution + NA path", {
+  skip_on_cran()
   # End-to-end check that the divergence machinery on the Glasso() side
   # is wired up: when `glasso_one()` reports `converged = FALSE` mid-grid,
   # Glasso() must (a) emit a warning, (b) break the lambda loop, and
@@ -116,7 +134,7 @@ test_that("Glasso early-break wiring: warn + best solution + NA path", {
   assign("glasso_one", patched, envir = ns)
 
   expect_warning(
-    res <- Glasso(J15S3810, n_lambda = 10),
+    res <- Glasso(tmp, n_lambda = 10),
     "diverged"
   )
   # A valid best solution must still be returned.

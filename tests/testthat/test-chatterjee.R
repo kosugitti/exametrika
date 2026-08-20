@@ -27,6 +27,7 @@ test_that("chatterjee_xi detects functional dependence", {
 
 
 test_that("chatterjee_xi handles large n without integer overflow", {
+  skip_on_cran()
   set.seed(42)
   n <- 5000
   x <- sample(1:4, n, replace = TRUE)

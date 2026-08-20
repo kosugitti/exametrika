@@ -29,6 +29,10 @@ jobs:
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
       R_KEEP_PKG_SOURCE: yes
+      # Tier 2 tests (skip_on_cran) must run here: CI is where the full
+      # validation suite lives. check-r-package sets this by default, but the
+      # two-tier test policy depends on it, so it is pinned explicitly.
+      NOT_CRAN: true
 
     steps:
       - uses: actions/checkout@v4

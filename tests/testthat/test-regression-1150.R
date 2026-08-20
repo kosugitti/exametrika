@@ -94,6 +94,7 @@ test_that("regression: BNM()$crr uses the missing-masked crr", {
 # prior was hardcoded to Beta(1,1); beta1/beta2 args were added.
 test_that("regression: BINET() runs on missing data and accepts beta1/beta2", {
   skip_on_cran()
+  skip_on_cran()
   conf <- read.csv(
     test_path("fixtures", "auxiliary_data", "FixFieldBINET.csv")
   )[, 2]
@@ -126,6 +127,7 @@ test_that("regression: BINET() runs on missing data and accepts beta1/beta2", {
 # NEWS: print.exametrika() had no GridSearch case (always crashed); tie
 # handling read the wrong row/col; max_ncls = 1 tested ncls = 2 anyway.
 test_that("regression: print(GridSearch()) works and bad grids stop", {
+  skip_on_cran()
   gs <- suppressMessages(
     GridSearch(J15S500, max_ncls = 3, max_nfld = 3, verbose = FALSE)
   )
@@ -165,6 +167,7 @@ test_that("regression: BNM() flags cyclic graphs as non-acyclic", {
 # also covers raw-matrix input (item: response.type read from raw arg).
 test_that("regression: LDB() accepts vector, matrix and data.frame conf", {
   skip_on_cran()
+  skip_on_cran()
   conf_vec <- read.csv(
     test_path("fixtures", "auxiliary_data", "FixFieldLDB.csv")
   )[, 2]
@@ -191,6 +194,7 @@ test_that("regression: LDB() accepts vector, matrix and data.frame conf", {
 # Rank; also covers raw-matrix response.type passthrough.
 test_that("regression: LDLRA() raw input and method='C' label", {
   skip_on_cran()
+  skip_on_cran()
   dag <- test_path("fixtures", "auxiliary_data", "DAG_file.csv")
   rawU <- dataFormat(J12S5000)$U
 
@@ -216,6 +220,7 @@ test_that("regression: Biclustering() nominal is invariant to a +1 code shift", 
 })
 
 test_that("regression: ordinal Biclustering()/IRM invariant to a +1 code shift", {
+  skip_on_cran()
   set.seed(42)
   N <- 150
   J <- 8
@@ -245,6 +250,7 @@ test_that("regression: ordinal Biclustering()/IRM invariant to a +1 code shift",
 # NEWS: a -1 sentinel used as a raw array index set every category but the
 # first to 1; results must stay finite under missingness.
 test_that("regression: Biclustering_IRM() ordinal is finite with missing data", {
+  skip_on_cran()
   set.seed(42)
   N <- 150
   J <- 8

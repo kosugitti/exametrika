@@ -419,6 +419,16 @@ that is an input alias for the criterion name, not a field on the result.
 
 ## Internal (no user-visible behavior change)
 
+- Restructured the test suite around a two-tier policy: CRAN runs tiny
+  Mathematica-verified fixtures plus a smoke test per user-facing function,
+  while full-size reference comparisons, reproducibility runs and heavy
+  regressions carry `skip_on_cran()` and run on every push in CI
+  (GitHub Actions, three platforms, `NOT_CRAN=true` pinned) and locally.
+  The CRAN-side suite now takes ~17 s sequentially on an M-series laptop
+  (was 38 s), with no test file above 1.5 s, keeping the Windows check
+  comfortably inside CRAN's 10-minute limit. Enabled
+  `Config/testthat/parallel: true`. No user-facing behaviour changes.
+
 - Renamed the internal helper `iso_surv()` in `R/00_isotonic_CORE.R` to
   `iso_upper_cum()`. It computes the upper-cumulative (boundary) probabilities
   `S_cb = P(>= category b+1)`; the old name suggested a survival function,

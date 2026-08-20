@@ -4,7 +4,12 @@ library(exametrika)
 ### Data: J20S600 (nominal, 20 items, 600 students, 4 categories)
 
 ### Setup - run model once and share across tests
-result_nirm <- Biclustering_IRM(J20S600, gamma_c = 1, gamma_f = 1, seed = 123, verbose = FALSE)
+# Structural claims (dimensions, sums to 1, valid ranges, reproducibility)
+# do not depend on the row count, so the CRAN-side fixture is a 150-row
+# subset. The full-data run survives as a CI-only smoke at the end of
+# this file (two-tier test policy, see CLAUDE.md).
+dat_nom <- head_rows_dat(J20S600, 150)
+result_nirm <- Biclustering_IRM(dat_nom, gamma_c = 1, gamma_f = 1, seed = 123, verbose = FALSE)
 
 test_that("Nominal IRM Basic Execution", {
   # Basic structure checks
@@ -36,7 +41,7 @@ test_that("Nominal IRM Dimensions Consistency", {
   # Check basic dimensions
 
   expect_equal(nitems, 20)
-  expect_equal(nobs, 600)
+  expect_equal(nobs, 150)
   expect_true(nfld >= 1 && nfld <= nitems)
   expect_true(ncls >= 2)
 
@@ -164,8 +169,8 @@ test_that("Nominal IRM Backward Compatibility", {
 
 test_that("Nominal IRM Seed Reproducibility", {
   # Same seed should produce identical results
-  result_a <- Biclustering_IRM(J20S600, gamma_c = 1, gamma_f = 1, seed = 42, verbose = FALSE)
-  result_b <- Biclustering_IRM(J20S600, gamma_c = 1, gamma_f = 1, seed = 42, verbose = FALSE)
+  result_a <- Biclustering_IRM(dat_nom, gamma_c = 1, gamma_f = 1, seed = 42, verbose = FALSE)
+  result_b <- Biclustering_IRM(dat_nom, gamma_c = 1, gamma_f = 1, seed = 42, verbose = FALSE)
 
   expect_equal(result_a$n_class, result_b$n_class)
   expect_equal(result_a$n_field, result_b$n_field)
@@ -180,7 +185,7 @@ test_that("Nominal IRM Seed Reproducibility", {
 test_that("Nominal IRM Seed NULL Does Not Set Seed", {
   # With seed = NULL, the function should not call set.seed()
   # and the results should depend on the current RNG state.
-  result_null <- Biclustering_IRM(J20S600, gamma_c = 1, gamma_f = 1, seed = NULL, verbose = FALSE)
+  result_null <- Biclustering_IRM(dat_nom, gamma_c = 1, gamma_f = 1, seed = NULL, verbose = FALSE)
   expect_s3_class(result_null, "exametrika")
   expect_true("nominalBiclustering" %in% class(result_null))
   expect_true(!is.null(result_null$n_class))
@@ -202,19 +207,19 @@ test_that("Nominal IRM S3 Dispatch Works", {
 test_that("Nominal IRM Alpha Parameter Validation", {
   # alpha must be positive
   expect_error(
-    Biclustering_IRM(J20S600, gamma_c = 1, gamma_f = 1, alpha = 0, seed = 123, verbose = FALSE),
+    Biclustering_IRM(dat_nom, gamma_c = 1, gamma_f = 1, alpha = 0, seed = 123, verbose = FALSE),
     "alpha must be positive"
   )
   expect_error(
-    Biclustering_IRM(J20S600, gamma_c = 1, gamma_f = 1, alpha = -1, seed = 123, verbose = FALSE),
+    Biclustering_IRM(dat_nom, gamma_c = 1, gamma_f = 1, alpha = -1, seed = 123, verbose = FALSE),
     "alpha must be positive"
   )
 })
 
 test_that("Nominal IRM Q and Z Matrices Stored Correctly", {
   # Q and Z should be stored in the result
-  expect_equal(dim(result_nirm$Q), c(600, 20))
-  expect_equal(dim(result_nirm$Z), c(600, 20))
+  expect_equal(dim(result_nirm$Q), c(150, 20))
+  expect_equal(dim(result_nirm$Z), c(150, 20))
 
   # Z values should be 0 or 1
   expect_true(all(result_nirm$Z %in% c(0, 1)))
@@ -240,4 +245,15 @@ test_that("Nominal IRM Students Matrix Structure", {
 
   # Estimate column should match ClassEstimated
   expect_equal(unname(as.numeric(students[, "Estimate"])), unname(result_nirm$ClassEstimated))
+})
+
+### CI-only: full-data smoke ------------------------------------------------
+
+test_that("nominal IRM full-data run keeps its structure (CI only)", {
+  skip_on_cran()
+  full <- Biclustering_IRM(J20S600, gamma_c = 1, gamma_f = 1, seed = 123, verbose = FALSE)
+  expect_s3_class(full, "exametrika")
+  expect_true(all(abs(rowSums(full$ClassMembership) - 1) < 1e-8))
+  expect_true(all(abs(rowSums(full$FieldMembership) - 1) < 1e-8))
+  expect_true(all(full$FRP >= 0 & full$FRP <= 1))
 })

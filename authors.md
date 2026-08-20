@@ -8,7 +8,7 @@
 ## Citation
 
 Source:
-[`DESCRIPTION`](https://github.com/kosugitti/exametrika/blob/main/DESCRIPTION)
+[`DESCRIPTION`](https://github.com/kosugitti/exametrika/blob/v2.0.0/DESCRIPTION)
 
 Koji Kosugi (2026). *exametrika: Test Data Engineering*. R package
 version 2.0.0, <https://kosugitti.github.io/exametrika/>.

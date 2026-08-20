@@ -2,6 +2,8 @@
 
 ## exametrika 2.0.0
 
+CRAN release: 2026-08-20
+
 The version number was raised to 2.0.0 because the EM convergence fix
 below changes the estimates of every EM-based model: the same code on
 the same data now returns different numbers, and no longer the numbers

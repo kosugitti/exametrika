@@ -134,6 +134,15 @@ docs/                # .gitignore'd (removed from repo); pkgdown site deployed t
 </ul></div>
 <div class="section level2">
 <h2 id="testing">Testing<a class="anchor" aria-label="anchor" href="#testing"></a></h2>
+<div class="section level3">
+<h3 id="二層テスト方針-2026-08-20-確立恒久ルール">二層テスト方針 (2026-08-20 確立・恒久ルール)<a class="anchor" aria-label="anchor" href="#%E4%BA%8C%E5%B1%A4%E3%83%86%E3%82%B9%E3%83%88%E6%96%B9%E9%87%9D-2026-08-20-%E7%A2%BA%E7%AB%8B%E6%81%92%E4%B9%85%E3%83%AB%E3%83%BC%E3%83%AB"></a></h3>
+<p><strong>CRAN のテストは動作確認，品質保証は CI と手元。</strong>両層とも tarball に同梱され， <code>skip_on_cran()</code> が環境変数 <code>NOT_CRAN</code> の有無で自動的に振り分ける。</p>
+<ul><li>
+<strong>Tier 1 (CRAN で走る)</strong>: tiny フィクスチャ(Mathematica照合済)＋各関数のスモーク。 <strong>予算 = 手元逐次 8 秒以内</strong>(win-builder 換算 約9倍=70秒)。CRAN と win-builder では NOT_CRAN が立たないのでこれだけが走る。</li>
+<li>
+<strong>Tier 2 (CRAN では skip)</strong>: フルサイズ参照照合・再現性・重い回帰。GitHub Actions (R-CMD-check.yaml, 3 OS, push ごと, <strong>NOT_CRAN=true を明示</strong>)と手元の <code>devtools::test()</code> で毎回全件走る。検査の質は落ちない。</li>
+</ul><p>運用ルール: 1. 新しいテストは必ず CRAN 構成 (<code>env -u NOT_CRAN Rscript ...</code>) で時間を測る。 <strong>0.5 秒を超えるブロックは skip_on_cran()</strong> にして，tiny データのスモークを添える。 2. <strong>ファイル冒頭(トップレベル)にモデル推定を書かない。</strong>skip_on_cran() は test_that の 中しか守らない。遅延アクセサ(<code>.cache &lt;- NULL; model &lt;- function() ...</code>)にする。 3. win-devel を測定器代わりに連投しない。リリース前は「手元 as-cran ＋ 必要なら Al-khwa LD_PRELOAD(BLAS負荷の順位付け) ＋ win-devel 1回」で足りる。</p>
+<p>背景 (2026-08-20 実測): win-builder 566秒の内訳は tests 351s(62%) / vignettes 58s / R code 30s / PDF 15s / 他~110s。手元逐次 38 秒 = Windows 倍率約9倍(参照BLAS)。 テストは v1.7.0 の 2,773 行から 9,236 行へ増えており，個別の削減では再発する。 なお 8/19 の win-builder 5 回(1531→634→584→580→566)は全て tarball 側の変更に対応して 動いた——<strong>「win-builder 側の揺れ」の証拠はない</strong>。</p>
 <ul><li>
 <strong>Framework</strong>: testthat (edition 3)</li>
 <li>
@@ -151,6 +160,7 @@ docs/                # .gitignore'd (removed from repo); pkgdown site deployed t
 <li>
 <strong>R CMD check</strong>: 0 errors | 0 warnings | 0 notes</li>
 </ul></div>
+</div>
 <div class="section level2">
 <h2 id="release-process-notes">Release Process Notes<a class="anchor" aria-label="anchor" href="#release-process-notes"></a></h2>
 <ul><li>CRAN cadence: leave at least 1 month between accepted submissions.</li>

@@ -137,7 +137,8 @@
 </ul></div>
 <div class="section level3">
 <h3 id="internal-no-user-visible-behavior-change-2-0-0">Internal (no user-visible behavior change)<a class="anchor" aria-label="anchor" href="#internal-no-user-visible-behavior-change-2-0-0"></a></h3>
-<ul><li>Renamed the internal helper <code>iso_surv()</code> in <code>R/00_isotonic_CORE.R</code> to <code>iso_upper_cum()</code>. It computes the upper-cumulative (boundary) probabilities <code>S_cb = P(&gt;= category b+1)</code>; the old name suggested a survival function, which is not the concept being used here.</li>
+<ul><li><p>Restructured the test suite around a two-tier policy: CRAN runs tiny Mathematica-verified fixtures plus a smoke test per user-facing function, while full-size reference comparisons, reproducibility runs and heavy regressions carry <code>skip_on_cran()</code> and run on every push in CI (GitHub Actions, three platforms, <code>NOT_CRAN=true</code> pinned) and locally. The CRAN-side suite now takes ~17 s sequentially on an M-series laptop (was 38 s), with no test file above 1.5 s, keeping the Windows check comfortably inside CRAN’s 10-minute limit. Enabled <code>Config/testthat/parallel: true</code>. No user-facing behaviour changes.</p></li>
+<li><p>Renamed the internal helper <code>iso_surv()</code> in <code>R/00_isotonic_CORE.R</code> to <code>iso_upper_cum()</code>. It computes the upper-cumulative (boundary) probabilities <code>S_cb = P(&gt;= category b+1)</code>; the old name suggested a survival function, which is not the concept being used here.</p></li>
 </ul></div>
 <div class="section level3">
 <h3 id="improvements-2-0-0">Improvements<a class="anchor" aria-label="anchor" href="#improvements-2-0-0"></a></h3>

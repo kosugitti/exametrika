@@ -6,9 +6,11 @@
 (2022, <ISBN:978-9811699856>). It provides psychometric analysis tools:
 CTT, IRT, GRM, LCA, LRA, Biclustering, BNM, LDLRA, LDB, BINET.
 
-- **Current version**: 2.0.0 (dev; **ready to submit** – the A3
-  simulation that set the September date finished 2026-08-17, and the
-  \>= 1 month CRAN cadence has been clear since mid-August)
+- **Current version**: 2.0.0 (**submitted to CRAN 2026-08-20, under
+  review**; confirmation link clicked. Submitted through the web form,
+  not `submit_cran()`, so `CRAN-SUBMISSION` still reads 1.15.0 and **the
+  `v2.0.0` tag and GitHub Release are not created yet** – do both once
+  it is accepted, then announce in Discussions)
 - **CRAN version**: 1.15.0 (accepted/published 2026-07)
 - **GitHub Release**: v1.15.0 (2026-07-15, latest) / v1.14.0
   (2026-06-14)

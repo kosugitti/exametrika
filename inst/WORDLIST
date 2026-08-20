@@ -48,6 +48,7 @@ customise
 dataFormat
 det
 dichotomization
+dimensionality
 distractor
 Distractor
 Divgi
@@ -66,6 +67,8 @@ elements'
 emclus
 Erlbaum
 et
+exametrika
+Exametrika
 examinee
 examinees
 exploratively
@@ -105,6 +108,7 @@ IRF
 IRFs
 IRM
 IRP
+IRT
 isotonic
 ITC
 itemset
@@ -128,7 +132,6 @@ LDPSR
 LDR
 lik
 Likert
-LinkingTo
 loglik
 LogLik
 LRA
@@ -144,7 +147,6 @@ Mifflin
 monotonicity
 Motwani
 Multigroup
-mvtnorm
 na
 nc
 ncls
@@ -159,7 +161,6 @@ nrank
 NRS
 Olivares
 Olsson
-ORCID
 PBIL
 PCM
 PIRP
@@ -178,16 +179,12 @@ rankclustering
 ranklustering
 Ranklustering
 Rasch
-Rcpp
 Rdata
 RDO
 regularisation
 RFI
-rmarkdown
 RMP
 RMSEA
-roxygen
-Roxygen
 RRV
 RUO
 Samejima
@@ -221,7 +218,6 @@ TRF
 TRP
 Tsur
 Ullman
-VignetteBuilder
 WOAC
 Wugalter
 Xj

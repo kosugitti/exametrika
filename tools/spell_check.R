@@ -10,7 +10,6 @@
 pacman::p_load(spelling)
 
 files <- c(
-  "DESCRIPTION",
   "README.md",
   list.files("man", pattern = "[.]Rd$", full.names = TRUE),
   setdiff(
@@ -23,5 +22,15 @@ result <- spelling::spell_check_files(
   ignore = readLines("inst/WORDLIST"),
   lang = "en-US"
 )
+# DESCRIPTION は生テキストで検査するとフィールド名(LinkingTo 等)まで拾うので，
+# 利用者が読む Title と Description の本文だけを見る。
+desc <- read.dcf("DESCRIPTION", fields = c("Title", "Description"))
+desc_bad <- hunspell::hunspell(
+  paste(desc, collapse = "\n"),
+  dict = "en_US",
+  ignore = readLines("inst/WORDLIST")
+)[[1]]
+
 print(result)
-if (nrow(result) == 0) message("綴り検査: 指摘なし")
+if (length(desc_bad) > 0) cat("DESCRIPTION(Title/Description):", desc_bad, "\n")
+if (nrow(result) == 0 && length(desc_bad) == 0) message("綴り検査: 指摘なし")

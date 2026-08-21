@@ -30,7 +30,7 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="logo.png" class="logo" alt=""><h1>exametrika Work Log</h1>
-      <small class="dont-index">Source: <a href="https://github.com/kosugitti/exametrika/blob/v2.0.0/WORKLOG.md" class="external-link"><code>WORKLOG.md</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/kosugitti/exametrika/blob/main/WORKLOG.md" class="external-link"><code>WORKLOG.md</code></a></small>
     </div>
 
 <div id="exametrika-work-log" class="section level1">
@@ -2254,6 +2254,33 @@ rhub / win-devel               本日の版で流し直し中</code></pre>
 <strong>CRAN の審査結果待ち</strong>。通れば tag → GitHub Release → Discussions(日英2本)。</li>
 <li>指摘が来たら修正して再提出(間隔制限に注意)。</li>
 <li>多値BNM は v2.1.0 送りのまま。</li>
+</ul></div>
+</div>
+<div class="section level2">
+<h2 id="id_2026-08-20承前v200-受理公開-告知一式と-ggexametrika-提出">2026-08-20（承前・<strong>v2.0.0 受理・公開</strong>）→ 告知一式と ggExametrika 提出<a class="anchor" aria-label="anchor" href="#id_2026-08-20%E6%89%BF%E5%89%8Dv200-%E5%8F%97%E7%90%86%E5%85%AC%E9%96%8B-%E5%91%8A%E7%9F%A5%E4%B8%80%E5%BC%8F%E3%81%A8-ggexametrika-%E6%8F%90%E5%87%BA"></a></h2>
+<p>朝10:23(JST)に提出した v2.0.0 が同日19:42に受理された。<strong>指摘ゼロの一発通過</strong>で、 所要は約9時間。CRAN のパッケージページも Version 2.0.0 / Published 2026-08-20 / Title「Test Data Engineering」で反映を確認した(Issue #32 のタイトル変更が世に出た)。</p>
+<div class="section level3">
+<h3 id="告知手順は-memory-release_announcement_workflow-のとおり">告知(手順は memory: release_announcement_workflow のとおり)<a class="anchor" aria-label="anchor" href="#%E5%91%8A%E7%9F%A5%E6%89%8B%E9%A0%86%E3%81%AF-memory-release_announcement_workflow-%E3%81%AE%E3%81%A8%E3%81%8A%E3%82%8A"></a></h3>
+<ul><li>tag <code>v2.0.0</code> を作成して push</li>
+<li>Release: <a href="https://github.com/kosugitti/exametrika/releases/tag/v2.0.0" class="external-link uri">https://github.com/kosugitti/exametrika/releases/tag/v2.0.0</a> (<code>--latest</code>)</li>
+<li>Discussions JA: <a href="https://github.com/kosugitti/exametrika/discussions/37" class="external-link uri">https://github.com/kosugitti/exametrika/discussions/37</a>
+</li>
+<li>Discussions EN: <a href="https://github.com/kosugitti/exametrika/discussions/38" class="external-link uri">https://github.com/kosugitti/exametrika/discussions/38</a> (Announcements カテゴリ <code>DIC_kwDOJS6L084CZbQk</code>・repositoryId <code>R_kgDOJS6L0w</code> は前回と同じ値)</li>
+<li>SNS は殿が手で投稿。<strong>投稿用の CLI は手元に無い</strong>ので、文面を用意して渡す形になる</li>
+</ul><p>Release ノートの組み立ては「なぜメジャーか(EM収束修正で全EM系モデルの推定値が動き、 Shojima(2022) の数値を再現しなくなる)」を最初に置き、破壊的変更 → 主な修正 → 新機能 → 性能 → テスト二層化、の順。<strong>数字が入る行が一番読まれる</strong>ので、 ARI 1.00→0.55・約300倍・16秒対80分は本文に残した。</p>
+</div>
+<div class="section level3">
+<h3 id="ggexametrika-112-の提出同日">ggExametrika 1.1.2 の提出(同日)<a class="anchor" aria-label="anchor" href="#ggexametrika-112-%E3%81%AE%E6%8F%90%E5%87%BA%E5%90%8C%E6%97%A5"></a></h3>
+<p>exametrika 2.0.0 が CRAN に載ったことで cran-comments の記述が事実になり、提出条件が 揃った。<code>cran-comments.md</code> に「exametrika 2.0.0 は 2026-08-20 に CRAN 公開済み」と 「win-builder 再実測 413秒・status OK」を追記してコミット(<code>1783172</code>)、git archive から tarball を作って提出。20:20 に確認完了(殿がリンクを押下)。</p>
+<p><strong><code>devtools::submit_cran()</code> は非対話環境では使えない。</strong><code>yesno()</code> が 「Called from non-interactive context」で停止する。Rscript から投げても同じ。 提出フォーム(<a href="https://xmpalantir.wu.ac.at/cransubmit/)%E3%82%92%E7%9B%B4%E6%8E%A5%E4%BD%BF%E3%81%88%E3%81%B0%E5%90%8C%E3%81%98%E3%81%93%E3%81%A8%E3%81%8C%E3%81%A7%E3%81%8D%E3%82%8B" class="external-link uri">https://xmpalantir.wu.ac.at/cransubmit/)を直接使えば同じことができる</a>。 <strong><code>cran-comments.md</code> の中身は Optional comment 欄に貼る</strong>(tarball には入らないため。 <code>.Rbuildignore</code> で除外されており、CRAN が読むのはこの欄の文字列である)。</p>
+</div>
+<div class="section level3">
+<h3 id="次-9">次<a class="anchor" aria-label="anchor" href="#%E6%AC%A1-9"></a></h3>
+<ul><li>
+<strong>ggExametrika 1.1.2 の審査結果待ち</strong>。通れば tag → Release → 告知。</li>
+<li>
+<code>CRAN-SUBMISSION</code> が 1.15.0 のまま取り残されている(web フォーム提出では更新されない)。 次に <code>devtools::submit_cran()</code> を対話的に使うときに自然に更新される。</li>
+<li>多値BNM は v2.1.0 送りのまま。テストデータの極小化と spell_check の整理は 「2.0.0 を機に・急がない」棚に置いたまま生きている。</li>
 </ul></div>
 </div>
 </div>

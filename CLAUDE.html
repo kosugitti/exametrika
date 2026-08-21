@@ -30,7 +30,7 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="logo.png" class="logo" alt=""><h1>CLAUDE.md - Development Guide for exametrika</h1>
-      <small class="dont-index">Source: <a href="https://github.com/kosugitti/exametrika/blob/v2.0.0/CLAUDE.md" class="external-link"><code>CLAUDE.md</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/kosugitti/exametrika/blob/main/CLAUDE.md" class="external-link"><code>CLAUDE.md</code></a></small>
     </div>
 
 <div id="claudemd---development-guide-for-exametrika" class="section level1">
@@ -167,7 +167,9 @@ docs/                # .gitignore'd (removed from repo); pkgdown site deployed t
 <li>
 <code>tools/build_pkg.R</code> ends with <code>devtools::submit_cran()</code> — never <code><a href="https://rdrr.io/r/base/source.html" class="external-link">source()</a></code> the whole file; run the steps individually and call <code>submit_cran()</code> by hand on submission day.</li>
 <li>Local roxygen2 8.0.0 rewrites <code>DESCRIPTION</code> (RoxygenNote → <code>Config/roxygen2/version</code>) and reformats <code>Biclustering.Rd</code> during <code>roxygenise()</code>/<code>devtools::test()</code>; revert those files with <code>git checkout</code> before committing.</li>
-<li>After CRAN acceptance: git tag → GitHub Release → Discussions announcements (JA/EN), in that order (same flow as v1.13.x/v1.14.0).</li>
+<li>After CRAN acceptance: git tag → GitHub Release → Discussions announcements (JA/EN), in that order (same flow as v1.13.x/v1.14.0/v2.0.0).</li>
+<li>
+<code>devtools::submit_cran()</code> cannot run non-interactively: <code>yesno()</code> aborts with “Called from non-interactive context”. Submitting from the web form (<a href="https://xmpalantir.wu.ac.at/cransubmit/" class="external-link uri">https://xmpalantir.wu.ac.at/cransubmit/</a>) is equivalent — paste the contents of <code>cran-comments.md</code> into the Optional comment field, since the file is <code>.Rbuildignore</code>d and never reaches CRAN inside the tarball. Note that a web-form submission leaves <code>CRAN-SUBMISSION</code> untouched.</li>
 <li>Windows R-devel enforces a 10-minute overall checktime; heavy real-data fit tests (J<em>S</em> regressions) must carry <code>skip_on_cran()</code>.</li>
 </ul></div>
 <div class="section level2">
@@ -418,7 +420,7 @@ docs/                # .gitignore'd (removed from repo); pkgdown site deployed t
 <li>See <code>WORKLOG.md</code> (2026-07-01) and <code>.claude/CLAUDE.md</code> for full detail</li>
 </ul></div>
 <div class="section level3">
-<h3 id="v200-dev-renamed-from-1160-on-2026-07-26-see-below">v2.0.0 (dev; renamed from 1.16.0 on 2026-07-26, see below)<a class="anchor" aria-label="anchor" href="#v200-dev-renamed-from-1160-on-2026-07-26-see-below"></a></h3>
+<h3 id="v200-cran-accepted-and-published-2026-08-20-renamed-from-1160-on-2026-07-26-see-below">v2.0.0 (CRAN, <strong>accepted and published 2026-08-20</strong>; renamed from 1.16.0 on 2026-07-26, see below)<a class="anchor" aria-label="anchor" href="#v200-cran-accepted-and-published-2026-08-20-renamed-from-1160-on-2026-07-26-see-below"></a></h3>
 <ul><li>
 <strong>GRM bug fixes (2026-07-16 audit; committed f3d9557; see NEWS.md)</strong>:
 <ul><li>

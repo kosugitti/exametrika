@@ -156,10 +156,34 @@ docs/                # .gitignore'd (removed from repo); pkgdown site deployed t
 <li>
 <strong>Build config</strong>: <code>.Rbuildignore</code> excludes <code>develop/</code>, <code>docs/</code>, <code>.claude/</code>, <code>CLAUDE.md</code>, <code>tools/</code>, <code>.github/</code>, etc. Tests and inst are NOT excluded (fixed in v1.10.0)</li>
 <li>
-<strong>Current status</strong>: ~4,900 tests, all passing locally. On CRAN (Windows checktime limit), the slowest blocks in <code>test-grm.R</code> (J15S3810 GRM, nitems&gt;=8 underflow regression) and <code>test-irm.R</code> (J35S515 Gibbs reproducibility) are wrapped in <code>skip_on_cran()</code> (added in v1.13.1).</li>
+<strong>Current status</strong> (2.0.0 時点): CI 5 環境で <strong>PASS 3,507 / SKIP 0</strong>(<code>NOT_CRAN=true</code>)。 CRAN 構成(Tier 1 のみ)は手元逐次 <strong>17 秒</strong>でどのファイルも 1.5 秒以下，win-builder 460 秒。</li>
 <li>
-<strong>R CMD check</strong>: 0 errors | 0 warnings | 0 notes</li>
+<strong>R CMD check</strong>: 0 errors | 0 warnings。手元のみ 1 NOTE(HTML Tidy のバージョン差による マニュアル検証スキップ)で，win-builder・R-hub・CI では出ない。</li>
 </ul></div>
+<div class="section level3">
+<h3 id="tiny-フィクスチャと-mathematica-参照値-2026-08-1920-完了恒久の知見">tiny フィクスチャと Mathematica 参照値 (2026-08-19〜20 完了・<strong>恒久の知見</strong>)<a class="anchor" aria-label="anchor" href="#tiny-%E3%83%95%E3%82%A3%E3%82%AF%E3%82%B9%E3%83%81%E3%83%A3%E3%81%A8-mathematica-%E5%8F%82%E7%85%A7%E5%80%A4-2026-08-1920-%E5%AE%8C%E4%BA%86%E6%81%92%E4%B9%85%E3%81%AE%E7%9F%A5%E8%A6%8B"></a></h3>
+<p>Tier 1 が使う極小データは，<strong>構造検査へ格下げせず，極小データを Mathematica 側でも解いて 参照値を再生成し，数値一致でハードに縛ったまま速くした</strong>もの。作った経緯と試作は <code>develop/tiny_fixtures_plan.md</code>(git 管理外・Dropbox 同期)。</p>
+<p><strong>対象5章</strong>: Ch05 LCA(120x8・1e-13・欠測版も)・Ch04 IRT(200x10・1e-3)・ Ch03 CTT(150x10・指標ごと)・Ch06 LRA(120x10・1e-13)・Ch07 Bicl/Rankl(150x12・1e-2)。 <code>tinyCommon</code> は 2026-08-20 に作り直した(項目ごとの難易度に揺らぎを入れて得点分布を 滑らかにし，stanine の警告 4 件を消した。参照値も再生成して照合済み)。 <strong>この作業中に maxiter を無視する実バグを2件見つけた</strong>(<code>LRA(method="GTM")</code> と二値 <code><a href="reference/Biclustering.html">Biclustering()</a></code>)——極小化は速度のためだけの作業ではない。</p>
+<p><strong>章ごとに許容誤差の相場が違う。</strong>同じ EM を同じ不動点まで回す章(LCA/LRA)は 1e-13， 最適化の収束判定が違う章(IRT)は 1e-3 で<strong>データを増やしても縮まらない</strong>，CTT は <strong>指標ごとに分ける</strong>(閉じた式は機械精度・数値探索は 1e-5)。LCA の感覚で一律に厳しくすると 通らないテストを書くことになる。</p>
+<p><strong>Ch07 は原理的に機械精度へ届かない。</strong>対数の中の定数が Mathematica は <code>Exp[-testlength]</code>， 本パッケージは <code>.Machine$double.eps</code>。35項目なら同じ桁だが12項目だと10桁違う。 → 定数を通らない量(bench/null 対数尤度・<strong>EM 周期数</strong>)で縛る。周期数は E/M ステップが 変われば必ず動くので実は最も鋭い。</p>
+<p><strong>12GNT / 13NNT は極小化できない。</strong>BatchGNT/BatchNNT の <code>.nb</code>(2.4MB)に<strong>データが直接 埋め込まれている</strong>(<code>Import</code>/<code>ReadList</code>/<code>Get</code> すべて0件)。実データ版のまま残す。</p>
+<p><strong>部分化して戻した例</strong>: <code>test-glasso.R</code> は 500 行に削るとポリコリック行列の条件が悪化して BCD の検査が落ちる。フルのまま遅延化 + skip とし，理由をファイル内に書いた。 <strong>削ることが目的ではない</strong>——Tier 2 へ送れば済む。</p>
+<p><strong>踏んだ落とし穴</strong>: (1) <code>skip_on_cran()</code> は<strong>ファイル冒頭の準備コードを飛ばさない</strong>—— 重い適合が file scope にあると効かないので遅延評価にする。(2) <strong>単調な構造を植えると mic の区別がつかない</strong>——標本誤差で凹凸が出る大きさにし「2系統が違う」ことも検査する。 (3) 欠測のないデータに <code>na = -99</code> を付けない。(4) Ranklustering の既定推定法は 2.0.0 から <code>isotonic</code>——GTM の参照値と比べるなら明示する。(5) 参照値は<strong>行番号でなく名前で引く</strong>。</p>
+</div>
+<div class="section level3">
+<h3 id="スペルチェック-2026-08-20-整備済恒久ルール">スペルチェック (2026-08-20 整備済・恒久ルール)<a class="anchor" aria-label="anchor" href="#%E3%82%B9%E3%83%9A%E3%83%AB%E3%83%81%E3%82%A7%E3%83%83%E3%82%AF-2026-08-20-%E6%95%B4%E5%82%99%E6%B8%88%E6%81%92%E4%B9%85%E3%83%AB%E3%83%BC%E3%83%AB"></a></h3>
+<p><code>tools/spell_check.R</code> が正本。<code>devtools::spell_check()</code> を直接呼ばない。</p>
+<ul><li>
+<strong>検査対象から外すもの</strong>: <code>guide-ja.Rmd</code>(日本語 vignette に英語の綴り検査は無意味。 hunspell が形態素を単語として拾うだけ)と <code>NEWS.md</code>(過去の履歴は直さない方針)。</li>
+<li>
+<strong>DESCRIPTION は Title/Description の本文だけを見る。</strong>生ファイルを検査すると <code>LinkingTo</code> 等のフィールド名を延々拾うモグラ叩きになる。</li>
+<li>
+<code>inst/WORDLIST</code> は 136 → <strong>225 語</strong>(2026-08-20)。</li>
+<li>
+<strong>指摘ゼロが正常状態。</strong>次に何か出たら本物である。</li>
+</ul><p><strong>なぜこうしたか</strong>: 整備前は 318 語を指摘して本物の誤字は 11 件だった。内訳は NEWS.md 158 / guide-ja.Rmd 124 / 正当な用語 36。<strong>登録しすぎではなく登録が追いついて いなかった</strong>結果，誰も読まなくなり，<code>Biclustering.Rd</code> の <code>wheter</code> / <code>iterasions</code> が 利用者向けヘルプに長く残っていた(2026-08-19 に修正)。</p>
+<p><strong>再発防止</strong>: <code>release_bullets()</code> を置いてあるので <code>usethis::use_release_issue()</code> の チェックリストに「WORDLIST を更新する」「git archive からのみビルドする」が毎回載る。 道具として機能させるには毎回の release で見直される仕掛けが要る。</p>
+</div>
 </div>
 <div class="section level2">
 <h2 id="release-process-notes">Release Process Notes<a class="anchor" aria-label="anchor" href="#release-process-notes"></a></h2>
@@ -203,47 +227,28 @@ docs/                # .gitignore'd (removed from repo); pkgdown site deployed t
 <p>“n/a” means <strong>not applicable</strong>, not unimplemented (decided 2026-07-22): - <code>LRA.nominal</code> cannot exist. A rank ordering has to be anchored in the category ordering (higher ranks favour higher categories); nominal labels give it nothing to attach to. Nominal data passed to <code><a href="reference/LRA.html">LRA()</a></code> is handed to <code><a href="reference/LCA.html">LCA.nominal()</a></code> with a message. The same argument rules out the isotonic estimator for nominal data: its constraint lives on cumulative probabilities <code>P(&gt;= q)</code>, and “&gt;= q” needs ordered categories to mean anything. - “via nominal” (LCA, ordinal): latent classes carry no order, so the category ordering has nothing to attach to either — estimation <em>is</em> the nominal one, and <code><a href="reference/LCA.html">LCA()</a></code> says so before delegating. A genuinely ordinal LCA would have to put the order inside the category profiles (see Future Work); it is not a wrapper. - <code>LCA.rated</code> calls <code><a href="reference/LCA.html">LCA.nominal()</a></code> and adds the correct-answer post-processing: <code>IRP[j, c] = rho[j, CA[j] | c]</code> (model-implied, not the empirical class-assignment rate <code>Biclustering.rated</code> uses), <code>TRP</code> as its weighted item sum, and a binary layer of fit indices alongside the nominal one. It does NOT sort classes by correct rate the way <code>Biclustering.rated</code> does — LCA classes are unordered, and sorting would imply otherwise.</p>
 </div>
 <div class="section level2">
+<h2 id="removed-in-200-質問されたときの対応表">Removed in 2.0.0 (質問されたときの対応表)<a class="anchor" aria-label="anchor" href="#removed-in-200-%E8%B3%AA%E5%95%8F%E3%81%95%E3%82%8C%E3%81%9F%E3%81%A8%E3%81%8D%E3%81%AE%E5%AF%BE%E5%BF%9C%E8%A1%A8"></a></h2>
+<p>非推奨だった名前は <strong>2.0.0 で実際に削除済み</strong>。1.7.0/1.8.0 から警告を出し続けていたもの。</p>
+<table class="table"><colgroup><col width="50%"><col width="50%"></colgroup><thead><tr><th>削除された名前</th>
+<th>代替</th>
+</tr></thead><tbody><tr><td><code>IRM()</code></td>
+<td><code><a href="reference/Biclustering_IRM.html">Biclustering_IRM()</a></code></td>
+</tr><tr><td><code>StrLearningGA_BNM()</code></td>
+<td><code><a href="reference/BNM_GA.html">BNM_GA()</a></code></td>
+</tr><tr><td><code>StrLearningPBIL_BNM()</code></td>
+<td><code><a href="reference/BNM_PBIL.html">BNM_PBIL()</a></code></td>
+</tr><tr><td><code>StrLearningPBIL_LDLRA()</code></td>
+<td><code><a href="reference/LDLRA_PBIL.html">LDLRA_PBIL()</a></code></td>
+</tr><tr><td>
+<code>$Nclass</code> / <code>$Nfield</code> / <code>$Nrank</code> / <code>$N_Cycle</code> / <code>$LogLik</code>
+</td>
+<td>
+<code>$n_class</code> / <code>$n_field</code> / <code>$n_rank</code> / <code>$n_cycle</code> / <code>$log_lik</code>
+</td>
+</tr></tbody></table><p><code><a href="reference/GridSearch.html">GridSearch()</a></code> の <code>index</code> 引数は <code>"LogLik"</code> を今も受け付ける(結果のフィールド名ではなく 規準名の入力エイリアスなので別物)。</p>
+</div>
+<div class="section level2">
 <h2 id="known-technical-debt">Known Technical Debt<a class="anchor" aria-label="anchor" href="#known-technical-debt"></a></h2>
-<div class="section level3">
-<h3 id="テストデータの極小化--mathematica-参照値ごと-2026-08-19-着手着実に急がない">テストデータの極小化 — Mathematica 参照値ごと (2026-08-19 着手・<strong>着実に。急がない</strong>)<a class="anchor" aria-label="anchor" href="#%E3%83%86%E3%82%B9%E3%83%88%E3%83%87%E3%83%BC%E3%82%BF%E3%81%AE%E6%A5%B5%E5%B0%8F%E5%8C%96--mathematica-%E5%8F%82%E7%85%A7%E5%80%A4%E3%81%94%E3%81%A8-2026-08-19-%E7%9D%80%E6%89%8B%E7%9D%80%E5%AE%9F%E3%81%AB%E6%80%A5%E3%81%8C%E3%81%AA%E3%81%84"></a></h3>
-<p>CRAN Windows の検査は 566 秒(上限600)まで詰めたが，これ以上は「多数のブロックを薄く削る」 しかない形になった。方針はユーザ決定: <strong>構造検査への格下げはせず，極小データを Mathematica 側でも解いて参照値を再生成し，数値一致でハードに縛ったまま速くする</strong>。</p>
-<p>計画と試作の記録は <strong><code>develop/tiny_fixtures_plan.md</code></strong>(git 管理外・Dropbox 同期)。</p>
-<p><strong>5章完了 (2026-08-19)</strong>: Ch05 LCA(120x8・1e-13・欠測版も)・Ch04 IRT(200x10・1e-3)・ Ch03 CTT(150x10・指標ごと)・Ch06 LRA(120x10・1e-13)・Ch07 Bicl/Rankl(150x12・1e-2)。 <strong>この過程で maxiter を無視する実バグを2件発見</strong>(<code>LRA(method="GTM")</code> と二値 <code><a href="reference/Biclustering.html">Biclustering()</a></code>)。</p>
-<p><strong>章ごとに許容誤差の相場が違う。</strong>同じ EM を同じ不動点まで回す章(LCA/LRA)は 1e-13， 最適化の収束判定が違う章(IRT)は 1e-3 で<strong>データを増やしても縮まらない</strong>，CTT は <strong>指標ごとに分ける</strong>(閉じた式は機械精度・数値探索は 1e-5)。LCA の感覚で一律に厳しくすると 通らないテストを書くことになる。</p>
-<p><strong>Ch07 は原理的に機械精度へ届かない。</strong>対数の中の定数が Mathematica は <code>Exp[-testlength]</code>， 本パッケージは <code>.Machine$double.eps</code>。35項目なら同じ桁だが12項目だと10桁違う。 → 定数を通らない量(bench/null 対数尤度・<strong>EM 周期数</strong>)で縛る。周期数は E/M ステップが 変われば必ず動くので実は最も鋭い。</p>
-<p><strong>12GNT / 13NNT は極小化できない。</strong>BatchGNT/BatchNNT の <code>.nb</code>(2.4MB)に<strong>データが直接 埋め込まれている</strong>(<code>Import</code>/<code>ReadList</code>/<code>Get</code> すべて0件)。実データ版のまま残す。</p>
-<p><strong>踏んだ落とし穴</strong>: (1) <code>skip_on_cran()</code> は<strong>ファイル冒頭の準備コードを飛ばさない</strong>—— 重い適合が file scope にあると効かないので遅延評価にする。(2) <strong>単調な構造を植てると mic の区別がつかない</strong>——標本誤差で凹凸が出る大きさにし「2系統が違う」ことも検査する。 (3) 欠測のないデータに <code>na = -99</code> を付けない。(4) Ranklustering の既定推定法は 2.0.0 から <code>isotonic</code>——GTM の参照値と比べるなら明示する。(5) 参照値は<strong>行番号でなく名前で引く</strong>。</p>
-</div>
-<div class="section level3">
-<h3 id="spell_check-の信号対雑音比を上げる-2026-08-19200-リリースを機に急がない">spell_check() の信号対雑音比を上げる (2026-08-19・<strong>2.0.0 リリースを機に。急がない</strong>)<a class="anchor" aria-label="anchor" href="#spell_check-%E3%81%AE%E4%BF%A1%E5%8F%B7%E5%AF%BE%E9%9B%91%E9%9F%B3%E6%AF%94%E3%82%92%E4%B8%8A%E3%81%92%E3%82%8B-2026-08-19200-%E3%83%AA%E3%83%AA%E3%83%BC%E3%82%B9%E3%82%92%E6%A9%9F%E3%81%AB%E6%80%A5%E3%81%8C%E3%81%AA%E3%81%84"></a></h3>
-<p>いまの <code>devtools::spell_check()</code> は <strong>318語を指摘し，そのうち本物の誤字は11件</strong>。 <code>inst/WORDLIST</code> は136語で 2025-02 から更新されていない。<strong>登録しすぎではなく，登録が 追いついていない。</strong></p>
-<p>埋もれた実害: <code>Biclustering.Rd</code> の <code>wheter</code> / <code>iterasions</code> が利用者向けヘルプに長く残って いた（2026-08-19 に修正）。318件の中では見えない。</p>
-<p>指摘の内訳:</p>
-<table class="table"><colgroup><col width="33%"><col width="33%"><col width="33%"></colgroup><thead><tr><th>出所</th>
-<th>件数</th>
-<th>性質</th>
-</tr></thead><tbody><tr><td><code>NEWS.md</code></td>
-<td>158</td>
-<td>過去の履歴。<strong>直さない方針</strong>を 2026-08-19 に決めた</td>
-</tr><tr><td><code>guide-ja.Rmd</code></td>
-<td>124</td>
-<td>
-<strong>日本語</strong>。hunspell が形態素を単語として拾うだけで，原理的に永久にノイズ</td>
-</tr><tr><td>Rd / README / vignettes</td>
-<td>36</td>
-<td>
-<code>FCRP</code> <code>ICRP</code> <code>FCBR</code> <code>Chatterjee</code> <code>Foygel</code> <code>Drton</code> 等，正当な用語</td>
-</tr></tbody></table><p><strong>やること</strong>:</p>
-<ol style="list-style-type: decimal"><li>
-<code>guide-ja.Rmd</code> を検査対象から外す（日本語 vignette に英語の綴り検査は意味がない）</li>
-<li>
-<code>NEWS.md</code> を検査対象から外す（直さないものを毎回報告させない）</li>
-<li>残る36件の正当な用語を <code>inst/WORDLIST</code> に登録</li>
-</ol><p>これで<strong>指摘がほぼゼロになり，次に何か出たら本物</strong>という状態になる。<code>spell_check()</code> が道具 として機能し始める。</p>
-<ol start="4" style="list-style-type: decimal"><li><strong><code>use_release_issue()</code> のチェックリストに「WORDLIST を更新する」を足す</strong></li>
-</ol><p>4 が再発防止の要。今回 <code>wheter</code> が長く残ったのは，WORDLIST が更新されず指摘が積み上がって <strong>誰も読まなくなった</strong>からである。道具として機能させるには，毎回の release で見直される 仕掛けが要る。</p>
-<p><strong>やる時機: <code>submit_cran()</code> を押した直後</strong>（2026-08-19 決定）。CRAN の判定待ちで手が空くうえ， <code>inst/WORDLIST</code> は<strong>開発者側の道具</strong>で利用者の動作に関わらないので，提出済みの tarball には 影響しない（次の版から新しい WORDLIST が載るだけ）。<strong>提出前には触らない</strong>——ファイルを 触れば <code>check</code> を回し直すことになり，検査時間の詰めと混ざる。作業は30分程度。</p>
-</div>
 <div class="section level3">
 <h3 id="todo-items-teststestthattest-lra-ordinalr">TODO Items (<code>tests/testthat/test-lra-ordinal.R</code>)<a class="anchor" aria-label="anchor" href="#todo-items-teststestthattest-lra-ordinalr"></a></h3>
 <ul><li>
@@ -252,45 +257,10 @@ docs/                # .gitignore'd (removed from repo); pkgdown site deployed t
 <strong>L171</strong>: Related test-level nobs handling for ordinal LRA.</li>
 </ul></div>
 <div class="section level3">
-<h3 id="deprecated-functions-to-be-removed-in-v200">Deprecated Functions (to be removed in v2.0.0)<a class="anchor" aria-label="anchor" href="#deprecated-functions-to-be-removed-in-v200"></a></h3>
-<ul><li>
-<code>IRM()</code> → use <code><a href="reference/Biclustering_IRM.html">Biclustering_IRM()</a></code>
-</li>
-<li>
-<code>StrLearningGA_BNM()</code> → use <code><a href="reference/BNM_GA.html">BNM_GA()</a></code>
-</li>
-<li>
-<code>StrLearningPBIL_BNM()</code> → use <code><a href="reference/BNM_PBIL.html">BNM_PBIL()</a></code>
-</li>
-<li>
-<code>StrLearningPBIL_LDLRA()</code> → use <code><a href="reference/LDLRA_PBIL.html">LDLRA_PBIL()</a></code>
-</li>
-</ul></div>
-<div class="section level3">
-<h3 id="deprecated-field-names-to-be-removed-in-v200">Deprecated Field Names (to be removed in v2.0.0)<a class="anchor" aria-label="anchor" href="#deprecated-field-names-to-be-removed-in-v200"></a></h3>
-<ul><li>
-<code>Nclass</code> → <code>n_class</code>
-</li>
-<li>
-<code>Nfield</code> → <code>n_field</code>
-</li>
-<li>
-<code>Nrank</code> → <code>n_rank</code>
-</li>
-<li>
-<code>N_Cycle</code> → <code>n_cycle</code>
-</li>
-<li>
-<code>LogLik</code> → <code>log_lik</code>
-</li>
-</ul></div>
-<div class="section level3">
 <h3 id="future-work">Future Work<a class="anchor" aria-label="anchor" href="#future-work"></a></h3>
-<ul><li>Test-suite slimming before v2.0.0 BNM work: subsample heavy real-data tests, compress seed-sweep parity tests to a few representative seeds, isolate benchmarks into <code>tests/extra/</code> outside the <code>R CMD check</code> path</li>
-<li>Re-run Mathematica notebooks after the CAIC fix (wolframscript; needs <code>UsingFrontEnd[]</code> wrapper and <code>/Applications/Wolfram.app/Contents/MacOS</code> on PATH) → regenerate fixtures</li>
-<li>DESCRIPTION <code>Title:</code> → <code>Test Data Engineering</code> (issue #32, aligning with the book and the R Journal paper)</li>
+<ul><li>Re-run Mathematica notebooks after the CAIC fix (wolframscript; needs <code>UsingFrontEnd[]</code> wrapper and <code>/Applications/Wolfram.app/Contents/MacOS</code> on PATH) → regenerate fixtures</li>
 <li>
-<code>conf</code> → <code>conf_field</code> rename consideration (v2.0.0, together with the other field renames; note <code>conf</code> is also used by LCA/LRA for test equating)</li>
+<code>conf</code> → <code>conf_field</code> rename consideration (<strong>2.0.0 では見送った</strong>; do it with the next breaking change, together with any other renames. Note <code>conf</code> is also used by LCA/LRA for test equating)</li>
 <li>IRM Gibbs C++ phase 2: replace R-level <code>sample.int</code>/<code>rmultinom</code> calls with an RNG-order-compatible pure C++ implementation (~1.5-2x headroom)</li>
 <li>Further speedup of the ordinal isotonic path, if ever needed, must target the dual solver itself or the number of times it is called — NOT the E-step. Profiling <code>Biclustering(J35S500, ncls = 6, nfld = 5, method = "R", estimation = "isotonic")</code> after the C++ port puts 96% of self time still inside <code>iso_dual_map_cpp</code> and under 1% in all of the R code combined. The effective speedup on this workload is ~50x rather than the 500x measured on a single large table, because the model solves a small (ncls x ncat) table once per field per EM cycle (here 5 x 125 = 625 calls), so per-call overhead matters more than raw throughput. Inside the solver the cost is the two nested bisections: both run to <code>hi - lo &gt; 1e-10</code> from an initial width of 1, i.e. ~34 halvings each, and the outer one re-runs the inner one every step, so settling one theta costs ~2,300 <code>build_row</code> evaluations. A safeguarded Newton step for lambda would cut 34 to ~5 (~6x), and the same trick on the outer search might reach 10-20x overall — but that is a much smaller prize than the port itself just delivered, and Newton needs divergence handling at the boundary. Deliberately deferred (2026-07-21): revisit only if a simulation run turns out to be time-bound.</li>
 <li>BNM/LDLRA GA/PBIL acceleration: <strong>DONE 2026-07-22 (commit aeb1f2b), no C++ needed.</strong> Fitness evaluation goes through BIC-only kernels instead of the full model constructors:

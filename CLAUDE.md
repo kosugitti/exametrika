@@ -149,8 +149,66 @@ R code 30s / PDF 15s / 他~110s。手元逐次 38 秒 = Windows 倍率約9倍(�
   (coverage report), `pkgdown.yaml` (site deployment to gh-pages), `rhub.yaml` (R-hub v2)
 - **Build config**: `.Rbuildignore` excludes `develop/`, `docs/`, `.claude/`, `CLAUDE.md`,
   `tools/`, `.github/`, etc. Tests and inst are NOT excluded (fixed in v1.10.0)
-- **Current status**: ~4,900 tests, all passing locally. On CRAN (Windows checktime limit), the slowest blocks in `test-grm.R` (J15S3810 GRM, nitems>=8 underflow regression) and `test-irm.R` (J35S515 Gibbs reproducibility) are wrapped in `skip_on_cran()` (added in v1.13.1).
-- **R CMD check**: 0 errors | 0 warnings | 0 notes
+- **Current status** (2.0.0 時点): CI 5 環境で **PASS 3,507 / SKIP 0**(`NOT_CRAN=true`)。
+  CRAN 構成(Tier 1 のみ)は手元逐次 **17 秒**でどのファイルも 1.5 秒以下，win-builder 460 秒。
+- **R CMD check**: 0 errors | 0 warnings。手元のみ 1 NOTE(HTML Tidy のバージョン差による
+  マニュアル検証スキップ)で，win-builder・R-hub・CI では出ない。
+
+### tiny フィクスチャと Mathematica 参照値 (2026-08-19〜20 完了・**恒久の知見**)
+
+Tier 1 が使う極小データは，**構造検査へ格下げせず，極小データを Mathematica 側でも解いて
+参照値を再生成し，数値一致でハードに縛ったまま速くした**もの。作った経緯と試作は
+`develop/tiny_fixtures_plan.md`(git 管理外・Dropbox 同期)。
+
+**対象5章**: Ch05 LCA(120x8・1e-13・欠測版も)・Ch04 IRT(200x10・1e-3)・
+Ch03 CTT(150x10・指標ごと)・Ch06 LRA(120x10・1e-13)・Ch07 Bicl/Rankl(150x12・1e-2)。
+`tinyCommon` は 2026-08-20 に作り直した(項目ごとの難易度に揺らぎを入れて得点分布を
+滑らかにし，stanine の警告 4 件を消した。参照値も再生成して照合済み)。
+**この作業中に maxiter を無視する実バグを2件見つけた**(`LRA(method="GTM")` と二値
+`Biclustering()`)——極小化は速度のためだけの作業ではない。
+
+**章ごとに許容誤差の相場が違う。**同じ EM を同じ不動点まで回す章(LCA/LRA)は 1e-13，
+最適化の収束判定が違う章(IRT)は 1e-3 で**データを増やしても縮まらない**，CTT は
+**指標ごとに分ける**(閉じた式は機械精度・数値探索は 1e-5)。LCA の感覚で一律に厳しくすると
+通らないテストを書くことになる。
+
+**Ch07 は原理的に機械精度へ届かない。**対数の中の定数が Mathematica は `Exp[-testlength]`，
+本パッケージは `.Machine$double.eps`。35項目なら同じ桁だが12項目だと10桁違う。
+→ 定数を通らない量(bench/null 対数尤度・**EM 周期数**)で縛る。周期数は E/M ステップが
+変われば必ず動くので実は最も鋭い。
+
+**12GNT / 13NNT は極小化できない。**BatchGNT/BatchNNT の `.nb`(2.4MB)に**データが直接
+埋め込まれている**(`Import`/`ReadList`/`Get` すべて0件)。実データ版のまま残す。
+
+**部分化して戻した例**: `test-glasso.R` は 500 行に削るとポリコリック行列の条件が悪化して
+BCD の検査が落ちる。フルのまま遅延化 + skip とし，理由をファイル内に書いた。
+**削ることが目的ではない**——Tier 2 へ送れば済む。
+
+**踏んだ落とし穴**: (1) `skip_on_cran()` は**ファイル冒頭の準備コードを飛ばさない**——
+重い適合が file scope にあると効かないので遅延評価にする。(2) **単調な構造を植えると
+mic の区別がつかない**——標本誤差で凹凸が出る大きさにし「2系統が違う」ことも検査する。
+(3) 欠測のないデータに `na = -99` を付けない。(4) Ranklustering の既定推定法は 2.0.0 から
+`isotonic`——GTM の参照値と比べるなら明示する。(5) 参照値は**行番号でなく名前で引く**。
+
+### スペルチェック (2026-08-20 整備済・恒久ルール)
+
+`tools/spell_check.R` が正本。`devtools::spell_check()` を直接呼ばない。
+
+- **検査対象から外すもの**: `guide-ja.Rmd`(日本語 vignette に英語の綴り検査は無意味。
+  hunspell が形態素を単語として拾うだけ)と `NEWS.md`(過去の履歴は直さない方針)。
+- **DESCRIPTION は Title/Description の本文だけを見る。**生ファイルを検査すると
+  `LinkingTo` 等のフィールド名を延々拾うモグラ叩きになる。
+- `inst/WORDLIST` は 136 → **225 語**(2026-08-20)。
+- **指摘ゼロが正常状態。**次に何か出たら本物である。
+
+**なぜこうしたか**: 整備前は 318 語を指摘して本物の誤字は 11 件だった。内訳は
+NEWS.md 158 / guide-ja.Rmd 124 / 正当な用語 36。**登録しすぎではなく登録が追いついて
+いなかった**結果，誰も読まなくなり，`Biclustering.Rd` の `wheter` / `iterasions` が
+利用者向けヘルプに長く残っていた(2026-08-19 に修正)。
+
+**再発防止**: `release_bullets()` を置いてあるので `usethis::use_release_issue()` の
+チェックリストに「WORDLIST を更新する」「git archive からのみビルドする」が毎回載る。
+道具として機能させるには毎回の release で見直される仕掛けが要る。
 
 ## Release Process Notes
 
@@ -200,75 +258,22 @@ rated = nominal + correct answer (multiple-choice tests); ordinal = Likert-type 
   the way `Biclustering.rated` does — LCA classes are unordered, and sorting would
   imply otherwise.
 
+## Removed in 2.0.0 (質問されたときの対応表)
+
+非推奨だった名前は **2.0.0 で実際に削除済み**。1.7.0/1.8.0 から警告を出し続けていたもの。
+
+| 削除された名前 | 代替 |
+|---|---|
+| `IRM()` | `Biclustering_IRM()` |
+| `StrLearningGA_BNM()` | `BNM_GA()` |
+| `StrLearningPBIL_BNM()` | `BNM_PBIL()` |
+| `StrLearningPBIL_LDLRA()` | `LDLRA_PBIL()` |
+| `$Nclass` / `$Nfield` / `$Nrank` / `$N_Cycle` / `$LogLik` | `$n_class` / `$n_field` / `$n_rank` / `$n_cycle` / `$log_lik` |
+
+`GridSearch()` の `index` 引数は `"LogLik"` を今も受け付ける(結果のフィールド名ではなく
+規準名の入力エイリアスなので別物)。
+
 ## Known Technical Debt
-
-### テストデータの極小化 — Mathematica 参照値ごと (2026-08-19 着手・**着実に。急がない**)
-
-CRAN Windows の検査は 566 秒(上限600)まで詰めたが，これ以上は「多数のブロックを薄く削る」
-しかない形になった。方針はユーザ決定: **構造検査への格下げはせず，極小データを Mathematica
-側でも解いて参照値を再生成し，数値一致でハードに縛ったまま速くする**。
-
-計画と試作の記録は **`develop/tiny_fixtures_plan.md`**(git 管理外・Dropbox 同期)。
-
-**5章完了 (2026-08-19)**: Ch05 LCA(120x8・1e-13・欠測版も)・Ch04 IRT(200x10・1e-3)・
-Ch03 CTT(150x10・指標ごと)・Ch06 LRA(120x10・1e-13)・Ch07 Bicl/Rankl(150x12・1e-2)。
-**この過程で maxiter を無視する実バグを2件発見**(`LRA(method="GTM")` と二値 `Biclustering()`)。
-
-**章ごとに許容誤差の相場が違う。**同じ EM を同じ不動点まで回す章(LCA/LRA)は 1e-13，
-最適化の収束判定が違う章(IRT)は 1e-3 で**データを増やしても縮まらない**，CTT は
-**指標ごとに分ける**(閉じた式は機械精度・数値探索は 1e-5)。LCA の感覚で一律に厳しくすると
-通らないテストを書くことになる。
-
-**Ch07 は原理的に機械精度へ届かない。**対数の中の定数が Mathematica は `Exp[-testlength]`，
-本パッケージは `.Machine$double.eps`。35項目なら同じ桁だが12項目だと10桁違う。
-→ 定数を通らない量(bench/null 対数尤度・**EM 周期数**)で縛る。周期数は E/M ステップが
-変われば必ず動くので実は最も鋭い。
-
-**12GNT / 13NNT は極小化できない。**BatchGNT/BatchNNT の `.nb`(2.4MB)に**データが直接
-埋め込まれている**(`Import`/`ReadList`/`Get` すべて0件)。実データ版のまま残す。
-
-**踏んだ落とし穴**: (1) `skip_on_cran()` は**ファイル冒頭の準備コードを飛ばさない**——
-重い適合が file scope にあると効かないので遅延評価にする。(2) **単調な構造を植てると
-mic の区別がつかない**——標本誤差で凹凸が出る大きさにし「2系統が違う」ことも検査する。
-(3) 欠測のないデータに `na = -99` を付けない。(4) Ranklustering の既定推定法は 2.0.0 から
-`isotonic`——GTM の参照値と比べるなら明示する。(5) 参照値は**行番号でなく名前で引く**。
-
-### spell_check() の信号対雑音比を上げる (2026-08-19・**2.0.0 リリースを機に。急がない**)
-
-いまの `devtools::spell_check()` は **318語を指摘し，そのうち本物の誤字は11件**。
-`inst/WORDLIST` は136語で 2025-02 から更新されていない。**登録しすぎではなく，登録が
-追いついていない。**
-
-埋もれた実害: `Biclustering.Rd` の `wheter` / `iterasions` が利用者向けヘルプに長く残って
-いた（2026-08-19 に修正）。318件の中では見えない。
-
-指摘の内訳:
-
-| 出所 | 件数 | 性質 |
-|---|---|---|
-| `NEWS.md` | 158 | 過去の履歴。**直さない方針**を 2026-08-19 に決めた |
-| `guide-ja.Rmd` | 124 | **日本語**。hunspell が形態素を単語として拾うだけで，原理的に永久にノイズ |
-| Rd / README / vignettes | 36 | `FCRP` `ICRP` `FCBR` `Chatterjee` `Foygel` `Drton` 等，正当な用語 |
-
-**やること**:
-
-1. `guide-ja.Rmd` を検査対象から外す（日本語 vignette に英語の綴り検査は意味がない）
-2. `NEWS.md` を検査対象から外す（直さないものを毎回報告させない）
-3. 残る36件の正当な用語を `inst/WORDLIST` に登録
-
-これで**指摘がほぼゼロになり，次に何か出たら本物**という状態になる。`spell_check()` が道具
-として機能し始める。
-
-4. **`use_release_issue()` のチェックリストに「WORDLIST を更新する」を足す**
-
-4 が再発防止の要。今回 `wheter` が長く残ったのは，WORDLIST が更新されず指摘が積み上がって
-**誰も読まなくなった**からである。道具として機能させるには，毎回の release で見直される
-仕掛けが要る。
-
-**やる時機: `submit_cran()` を押した直後**（2026-08-19 決定）。CRAN の判定待ちで手が空くうえ，
-`inst/WORDLIST` は**開発者側の道具**で利用者の動作に関わらないので，提出済みの tarball には
-影響しない（次の版から新しい WORDLIST が載るだけ）。**提出前には触らない**——ファイルを
-触れば `check` を回し直すことになり，検査時間の詰めと混ざる。作業は30分程度。
 
 ### TODO Items (`tests/testthat/test-lra-ordinal.R`)
 - **L149**: Investigate `nobs` handling unification — R uses per-item nobs
@@ -276,29 +281,12 @@ mic の区別がつかない**——標本誤差で凹凸が出る大きさに�
   for datasets with significant missing data (e.g., J15S3810).
 - **L171**: Related test-level nobs handling for ordinal LRA.
 
-### Deprecated Functions (to be removed in v2.0.0)
-- `IRM()` → use `Biclustering_IRM()`
-- `StrLearningGA_BNM()` → use `BNM_GA()`
-- `StrLearningPBIL_BNM()` → use `BNM_PBIL()`
-- `StrLearningPBIL_LDLRA()` → use `LDLRA_PBIL()`
-
-### Deprecated Field Names (to be removed in v2.0.0)
-- `Nclass` → `n_class`
-- `Nfield` → `n_field`
-- `Nrank` → `n_rank`
-- `N_Cycle` → `n_cycle`
-- `LogLik` → `log_lik`
-
 ### Future Work
-- Test-suite slimming before v2.0.0 BNM work: subsample heavy real-data tests,
-  compress seed-sweep parity tests to a few representative seeds, isolate benchmarks
-  into `tests/extra/` outside the `R CMD check` path
 - Re-run Mathematica notebooks after the CAIC fix (wolframscript; needs `UsingFrontEnd[]`
   wrapper and `/Applications/Wolfram.app/Contents/MacOS` on PATH) → regenerate fixtures
-- DESCRIPTION `Title:` → `Test Data Engineering` (issue #32, aligning with the book and
-  the R Journal paper)
-- `conf` → `conf_field` rename consideration (v2.0.0, together with the other field
-  renames; note `conf` is also used by LCA/LRA for test equating)
+- `conf` → `conf_field` rename consideration (**2.0.0 では見送った**; do it with the next
+  breaking change, together with any other renames. Note `conf` is also used by LCA/LRA
+  for test equating)
 - IRM Gibbs C++ phase 2: replace R-level `sample.int`/`rmultinom` calls with an
   RNG-order-compatible pure C++ implementation (~1.5-2x headroom)
 - Further speedup of the ordinal isotonic path, if ever needed, must target the

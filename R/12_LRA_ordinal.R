@@ -604,5 +604,6 @@ LRA.ordinal <- function(U,
     ItemReport = ItemReport,
     CatQuant = SelectRatioTable
   ), class = c("exametrika", "LRAordinal"))
+  ret <- label_result(ret, id = U$ID, item = U$ItemLabel, class_prefix = "Rank")
   return(ret)
 }

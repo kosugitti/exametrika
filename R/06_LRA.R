@@ -252,5 +252,6 @@ LRA.binary <- function(U,
     TestFitIndices = FitIndices$test,
     log_lik = FitIndices$test$model_log_like
   ), class = c("exametrika", "LRA"))
+  ret <- label_result(ret, id = tmp$ID, item = tmp$ItemLabel, class_prefix = "Rank")
   return(ret)
 }

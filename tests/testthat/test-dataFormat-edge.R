@@ -136,9 +136,9 @@ test_that("rated U matrix correctly scores against CA", {
   )
   result <- dataFormat(data, CA = c(2, 3))
   # item1: CA=2 → S2,S5,S8 correct
-  expect_equal(result$U[, 1], c(0, 1, 0, 0, 1, 0, 0, 1, 0, 0))
+  expect_equal(unname(result$U[, 1]), c(0, 1, 0, 0, 1, 0, 0, 1, 0, 0))
   # item2: CA=3 → S1,S2,S3,S10 correct
-  expect_equal(result$U[, 2], c(1, 1, 1, 0, 0, 0, 0, 0, 0, 1))
+  expect_equal(unname(result$U[, 2]), c(1, 1, 1, 0, 0, 0, 0, 0, 0, 1))
 })
 
 test_that("rated U matrix preserves missing as -1", {
@@ -148,11 +148,11 @@ test_that("rated U matrix preserves missing as -1", {
     item2 = c(3, 3, NA, 1, 1, 1, 2, 2, 2, 3)
   )
   result <- dataFormat(data, CA = c(2, 3))
-  expect_equal(result$U[2, 1], -1) # NA in item1 → -1 in U
-  expect_equal(result$U[3, 2], -1) # NA in item2 → -1 in U
+  expect_equal(unname(result$U[2, 1]), -1) # NA in item1 → -1 in U
+  expect_equal(unname(result$U[3, 2]), -1) # NA in item2 → -1 in U
   # Non-missing values still scored correctly
-  expect_equal(result$U[1, 1], 0) # 1 != CA(2)
-  expect_equal(result$U[1, 2], 1) # 3 == CA(3)
+  expect_equal(unname(result$U[1, 1]), 0) # 1 != CA(2)
+  expect_equal(unname(result$U[1, 2]), 1) # 3 == CA(3)
 })
 
 test_that("CA length mismatch causes error", {
@@ -1127,12 +1127,12 @@ test_that("numeric ID + CA + NA all at once", {
   expect_equal(ncol(result$U), 3)
   expect_equal(ncol(result$Q), 3)
   # Check missing preserved in U
-  expect_equal(result$U[2, 1], -1) # NA → -1
-  expect_equal(result$U[1, 2], -1) # NA → -1
+  expect_equal(unname(result$U[2, 1]), -1) # NA → -1
+  expect_equal(unname(result$U[1, 2]), -1) # NA → -1
   # Check correct scoring
-  expect_equal(result$U[1, 1], 0) # 1 != CA(2)
-  expect_equal(result$U[3, 2], 0) # 1 != CA(3)
-  expect_equal(result$U[4, 1], 1) # 2 == CA(2)
+  expect_equal(unname(result$U[1, 1]), 0) # 1 != CA(2)
+  expect_equal(unname(result$U[3, 2]), 0) # 1 != CA(3)
+  expect_equal(unname(result$U[4, 1]), 1) # 2 == CA(2)
 })
 
 test_that("custom na + CA + explicit id", {

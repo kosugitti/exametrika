@@ -293,5 +293,6 @@ Biclustering_IRM.nominal <- function(U,
     log_lik = testell
   ), class = c("exametrika", "nominalBiclustering"))
 
+  ret <- label_result(ret, id = tmp$ID, item = tmp$ItemLabel, class_prefix = msg)
   return(ret)
 }

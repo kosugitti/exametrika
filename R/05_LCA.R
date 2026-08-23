@@ -210,6 +210,7 @@ LCA.binary <- function(U, ncls = 2, na = NULL, Z = NULL, w = NULL, maxiter = 100
     TestFitIndices = FitIndices$test,
     log_lik = FitIndices$test$model_log_like
   ), class = c("exametrika", "LCA"))
+  ret <- label_result(ret, id = tmp$ID, item = tmp$ItemLabel, class_prefix = "Class")
   return(ret)
 }
 
@@ -359,6 +360,7 @@ LCA.nominal <- function(U, ncls = 2, na = NULL, Z = NULL, w = NULL, maxiter = 10
     TestFitIndices = FitIndices,
     log_lik = testell
   ), class = c("exametrika", "nominalLCA"))
+  ret <- label_result(ret, id = tmp$ID, item = tmp$ItemLabel, class_prefix = "Class")
   return(ret)
 }
 
@@ -452,5 +454,6 @@ LCA.rated <- function(U, ncls = 2, na = NULL, Z = NULL, w = NULL, maxiter = 1000
     log_lik = ell_binary,
     log_lik_nominal = ret_nom$log_lik
   ), class = c("exametrika", "ratedLCA"))
+  ret <- label_result(ret, id = tmp$ID, item = tmp$ItemLabel, class_prefix = "Class")
   return(ret)
 }

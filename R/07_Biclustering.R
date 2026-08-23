@@ -629,5 +629,6 @@ Biclustering.binary <- function(U,
     SOACflg = SOACflg,
     WOACflg = WOACflg
   ), class = c("exametrika", "Biclustering"))
+  ret <- label_result(ret, id = tmp$ID, item = tmp$ItemLabel, class_prefix = msg)
   return(ret)
 }

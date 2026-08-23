@@ -457,5 +457,6 @@ IRT <- function(U, model = 2, na = NULL, Z = NULL, w = NULL, verbose = FALSE) {
     TestFitIndices = FitIndices$test,
     log_lik = FitIndices$test$model_log_like
   ), class = c("exametrika", "IRT"))
+  ret <- label_result(ret, id = tmp$ID, item = tmp$ItemLabel, class_prefix = NULL)
   return(ret)
 }

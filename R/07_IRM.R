@@ -649,5 +649,6 @@ Biclustering_IRM.binary <- function(U, na = NULL, Z = NULL, w = NULL,
     # Deprecated fields (for backward compatibility)
     EM_Cycle = EMt
   ), class = c("exametrika", "IRM"))
+  ret <- label_result(ret, id = tmp$ID, item = tmp$ItemLabel, class_prefix = "Class")
   return(ret)
 }

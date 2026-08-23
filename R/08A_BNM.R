@@ -353,6 +353,7 @@ BNM <- function(U, na = NULL, Z = NULL, w = NULL,
     log_lik = model_loglike,
     CCRR_table = CCRR_table
   ), class = c("exametrika", "BNM"))
+  ret <- label_result(ret, id = tmp$ID, item = tmp$ItemLabel, class_prefix = NULL)
   return(ret)
 }
 

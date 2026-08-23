@@ -416,5 +416,6 @@ Biclustering_IRM.ordinal <- function(U,
     WOACflg = WOACflg
   ), class = c("exametrika", "ordinalBiclustering"))
 
+  ret <- label_result(ret, id = tmp$ID, item = tmp$ItemLabel, class_prefix = msg)
   return(ret)
 }

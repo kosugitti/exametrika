@@ -412,5 +412,6 @@ LDB <- function(U, na = NULL, Z = NULL, w = NULL,
     SOACflg = SOACflg,
     WOACflg = WOACflg
   ), class = c("exametrika", "LDB"))
+  ret <- label_result(ret, id = tmp$ID, item = tmp$ItemLabel, class_prefix = "Rank")
   return(ret)
 }

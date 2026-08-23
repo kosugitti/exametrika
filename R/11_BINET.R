@@ -589,5 +589,6 @@ BINET <- function(U, na = NULL, Z = NULL, w = NULL,
     SM_FitIndices = indices2,
     log_lik = indices$llm
   ), class = c("exametrika", "BINET"))
+  ret <- label_result(ret, id = tmp$ID, item = tmp$ItemLabel, class_prefix = "Class")
   return(ret)
 }

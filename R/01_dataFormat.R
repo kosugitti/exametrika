@@ -46,7 +46,9 @@ dataFormat <- function(data, na = NULL, id = NULL, Z = NULL, w = NULL,
                        response.type = NULL, CA = NULL) {
   # Check if the object is already formatted
   if (inherits(data, "exametrika")) {
-    return(data)
+    # Datasets shipped with the package were built before the row names were
+    # added, so label on the way through rather than regenerating the .rda files.
+    return(label_data_matrices(data))
   }
   if (!is.null(na) && is.na(na)) {
     na <- NULL
@@ -444,6 +446,11 @@ dataFormat <- function(data, na = NULL, id = NULL, Z = NULL, w = NULL,
     ret.list$U <- U
   }
 
+  # Respondent IDs on the rows of every response matrix, so that a result
+  # carrying one of them can be read without counting positions. The item
+  # labels are already the column names.
+  ret.list <- label_data_matrices(ret.list)
+
   # Return with appropriate class structure
   ret <- structure(ret.list, class = c("exametrika", "exametrikaData"))
   return(ret)
@@ -502,7 +509,9 @@ longdataFormat <- function(data, na = NULL,
                            response.type = NULL, CA = NULL) {
   # Check if already formatted
   if (inherits(data, "exametrika")) {
-    return(data)
+    # Datasets shipped with the package were built before the row names were
+    # added, so label on the way through rather than regenerating the .rda files.
+    return(label_data_matrices(data))
   }
 
   # Basic input checks
@@ -709,6 +718,8 @@ longdataFormat <- function(data, na = NULL,
       ret_list$CA <- CA
     }
   }
+
+  ret_list <- label_data_matrices(ret_list)
 
   # Return with appropriate class structure
   ret <- structure(ret_list,

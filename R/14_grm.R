@@ -400,5 +400,6 @@ GRM <- function(U, na = NULL, Z = NULL, w = NULL, verbose = FALSE) {
     ItemFitIndices = ItemFitIndices,
     TestFitIndices = TestFitIndices
   ), class = c("exametrika", "GRM"))
+  ret <- label_result(ret, id = tmp$ID, item = tmp$ItemLabel, class_prefix = NULL)
   return(ret)
 }

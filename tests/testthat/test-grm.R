@@ -345,8 +345,9 @@ test_that("GRM posterior ability estimates use the product likelihood", {
   EAP_ref <- as.numeric(post %*% quadrature)
   PSD_ref <- sqrt(as.numeric(post %*% quadrature^2) - EAP_ref^2)
 
-  expect_equal(fit$EAP, EAP_ref, tolerance = 1e-8)
-  expect_equal(fit$PSD, PSD_ref, tolerance = 1e-8)
+  # unname(): since 2.1.0 the ability estimates carry the respondent IDs.
+  expect_equal(unname(fit$EAP), EAP_ref, tolerance = 1e-8)
+  expect_equal(unname(fit$PSD), PSD_ref, tolerance = 1e-8)
 
   # The sum-posterior bug shrank the EAP scale to ~0.29; the correct
   # product posterior spreads it out

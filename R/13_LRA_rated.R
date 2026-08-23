@@ -646,5 +646,6 @@ LRA.rated <- function(U,
     ItemQuantileRef = QRVdf,
     CatQuant = SelectRatio
   ), class = c("exametrika", "LRArated"))
+  ret <- label_result(ret, id = U$ID, item = U$ItemLabel, class_prefix = "Rank")
   return(ret)
 }

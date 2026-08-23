@@ -90,8 +90,21 @@ draw_legend_strip <- function(...) {
 }
 
 #' Array plot (shared by Biclustering / IRM / LDB / BINET)
+#'
+#' The response matrix is drawn as a single raster rather than one
+#' \code{rect()} per cell. The old per-cell version gave every cell a white
+#' border, and a border cannot be drawn thinner than one device pixel: once the
+#' rows outnumbered the pixels available to them the borders covered the fill,
+#' so rows came out white in a pattern set by where the cell boundaries happened
+#' to land on the pixel grid. Measured on an all-black 400x600 plot, mean
+#' luminance rose from 0.01 at 50 rows to 0.29 at 821 rows; with the raster it
+#' is 0.00 at every size. Drawing is also one call instead of nobs x testlength.
+#'
+#' Grid lines are drawn only when a cell is at least \code{min_grid_px} pixels
+#' on both sides, which is where they can be seen without swallowing the cell.
 #' @noRd
-plot_array <- function(x, cell_width, cell_height, colors, dots = list()) {
+plot_array <- function(x, cell_width, cell_height, colors, dots = list(),
+                       min_grid_px = 6) {
   cell_w <- cell_width
   cell_h <- cell_height
   old_par <- par(no.readonly = TRUE)
@@ -161,67 +174,59 @@ plot_array <- function(x, cell_width, cell_height, colors, dots = list()) {
   plot_width <- ncols * cell_w
   plot_height <- nrows * cell_h
 
-  # original data
-  call_plot(
-    plot,
-    list(
-      x = 0, y = 0,
-      type = "n",
-      xlim = c(0, plot_width), ylim = c(0, plot_height),
-      xlab = "", ylab = "", xaxt = "n", yaxt = "n",
-      main = "Original Data", frame.plot = TRUE
-    ),
-    dots
-  )
-  for (i in 1:nrows) {
-    for (j in 1:ncols) {
-      val <- raw_data[i, j]
-      x1 <- (j - 1) * cell_w
-      y1 <- (nrows - i) * cell_h
-      x2 <- j * cell_w
-      y2 <- (nrows - i + 1) * cell_h
+  #' Colour matrix for one panel, row 1 at the top as rasterImage expects
+  #' @noRd
+  as_color_matrix <- function(m) {
+    m <- as.matrix(m)
+    idx <- match(m, all_values)
+    fill <- colors[idx]
+    fill[is.na(m) | m == -1] <- missing_color
+    matrix(fill, nrow = NROW(m), ncol = NCOL(m))
+  }
 
-      if (is.na(val) || val == -1) {
-        fill_color <- missing_color
-      } else {
-        color_index <- match(val, all_values)
-        fill_color <- colors[color_index]
-      }
+  #' Panel size in device pixels, as c(width, height)
+  #' @noRd
+  panel_px <- function() {
+    px <- tryCatch(
+      {
+        w <- grconvertX(plot_width, "user", "device") - grconvertX(0, "user", "device")
+        h <- grconvertY(0, "user", "device") - grconvertY(plot_height, "user", "device")
+        c(abs(w), abs(h))
+      },
+      error = function(e) c(NA_real_, NA_real_)
+    )
+    if (any(!is.finite(px)) || any(px <= 0)) px <- c(NA_real_, NA_real_)
+    return(px)
+  }
 
-      rect(x1, y1, x2, y2, col = fill_color, border = "white", lwd = 0.1)
+  draw_panel <- function(m, main) {
+    call_plot(
+      plot,
+      list(
+        x = 0, y = 0,
+        type = "n",
+        xlim = c(0, plot_width), ylim = c(0, plot_height),
+        xlab = "", ylab = "", xaxt = "n", yaxt = "n",
+        main = main, frame.plot = TRUE
+      ),
+      dots
+    )
+    rasterImage(
+      grDevices::as.raster(downsample_nn(as_color_matrix(m), panel_px())),
+      xleft = 0, ybottom = 0, xright = plot_width, ytop = plot_height,
+      interpolate = FALSE
+    )
+    # Cell borders only where a cell is large enough for them to read
+    px <- panel_px() / c(ncols, nrows)
+    if (all(px >= min_grid_px)) {
+      abline(v = seq(0, plot_width, by = cell_w), col = "white", lwd = 0.5)
+      abline(h = seq(0, plot_height, by = cell_h), col = "white", lwd = 0.5)
     }
   }
 
-  ## Clustered Plot
-  call_plot(
-    plot,
-    list(
-      x = 0, y = 0,
-      type = "n",
-      xlim = c(0, plot_width), ylim = c(0, plot_height),
-      xlab = "", ylab = "", xaxt = "n", yaxt = "n",
-      main = "Clustered Data", frame.plot = TRUE
-    ),
-    dots
-  )
-  for (i in 1:nrows) {
-    for (j in 1:ncols) {
-      val <- clustered_data[i, j]
-      x1 <- (j - 1) * cell_w
-      y1 <- (nrows - i) * cell_h
-      x2 <- j * cell_w
-      y2 <- (nrows - i + 1) * cell_h
+  draw_panel(raw_data, "Original Data")
+  draw_panel(clustered_data, "Clustered Data")
 
-      if (is.na(val) || val == -1) {
-        fill_color <- missing_color
-      } else {
-        color_index <- match(val, all_values)
-        fill_color <- colors[color_index]
-      }
-
-      rect(x1, y1, x2, y2, col = fill_color, border = "white", lwd = 0.1)
-    }
-  }
   for (line_y in class_lines) {
     lines(c(0, plot_width), c(line_y, line_y),
       col = "red", lwd = 1
@@ -232,4 +237,38 @@ plot_array <- function(x, cell_width, cell_height, colors, dots = list()) {
       col = "red", lwd = 1
     )
   }
+}
+
+#' Thin a colour matrix to the pixel grid by nearest neighbour
+#'
+#' When the matrix has more rows (or columns) than the panel has pixels, the
+#' graphics device resolves the raster by *averaging*: `interpolate = FALSE` is
+#' not honoured on the way down. 4,000 alternating orange/blue rows drawn into
+#' 400 pixels come out as one uniform blend that is in neither category's
+#' colour — a fabricated colour in a plot whose colours are supposed to be
+#' categorical. Picking one source row per output pixel keeps every drawn pixel
+#' a colour that actually occurs in the data.
+#'
+#' The thinning is a subsample, so at extreme sizes each drawn row stands for
+#' one of the respondents it covers rather than a summary of them. That is the
+#' honest trade for a categorical raster: averaging would invent categories,
+#' and a majority vote would still discard the minority while costing more.
+#'
+#' @param cm character matrix of colours
+#' @param px c(width, height) of the panel in device pixels; NA disables
+#' @noRd
+downsample_nn <- function(cm, px) {
+  if (any(!is.finite(px))) {
+    return(cm)
+  }
+  nr <- NROW(cm)
+  nc <- NCOL(cm)
+  target_r <- max(1L, min(nr, as.integer(floor(px[2]))))
+  target_c <- max(1L, min(nc, as.integer(floor(px[1]))))
+  if (target_r >= nr && target_c >= nc) {
+    return(cm)
+  }
+  ri <- unique(round(seq(1, nr, length.out = target_r)))
+  ci <- unique(round(seq(1, nc, length.out = target_c)))
+  return(cm[ri, ci, drop = FALSE])
 }

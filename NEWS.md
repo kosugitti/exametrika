@@ -1,3 +1,49 @@
+# exametrika 2.1.0 (development)
+
+## Bug Fixes
+
+- **Respondent IDs and item labels now reach every model's output.** They
+  survived only where the matrix a field happened to be derived from carried
+  dimnames, so which fields were labelled differed from model to model:
+  `Biclustering()` on ordinal data lost them completely (`FieldEstimated`,
+  `FieldMembership` and `ClassMembership` all came back as bare numbers), and
+  `ClassEstimated` was unnamed in every model, including the binary ones that
+  labelled everything else. The respondent axis was the more affected of the
+  two, which is the opposite of what the code looks like -- `Students` had its
+  row names set by hand, and nothing else did.
+
+  Labelling is now done once, in one place, immediately before each constructor
+  returns: respondent-indexed fields (`ClassEstimated`, `ClassMembership`,
+  `SmoothedMembership`, `Students`, `ability`, ...) take the IDs, item-indexed
+  fields (`FieldEstimated`, `FieldMembership`, ...) take the item labels, and the
+  membership matrices get column names (`Class1`/`Rank1`..., `Field1`...).
+  `dataFormat()` also puts the IDs on the rows of `U`, `Q` and `Z`; it already
+  put the item labels on the columns.
+
+  `FieldAnalysis` is deliberately excluded: its rows are sorted by correct
+  response rate and field, so attaching labels positionally would attach the
+  wrong ones. It keeps the labels it inherits, in its own order.
+
+  Only names are added -- no estimate changes.
+
+- **`plot(type = "Array")` no longer washes rows out to white.** Every cell was
+  drawn as a `rect()` with a white border, and a border cannot be thinner than
+  one device pixel: once the respondents outnumbered the pixels available to
+  them, the borders covered the fill. Which rows disappeared depended on where
+  the cell boundaries fell on the pixel grid, so the loss came out mottled
+  rather than uniform. Measured on an all-black 400x600 plot, mean luminance
+  rose from 0.01 at 50 rows to 0.29 at 821 rows -- roughly a third of the ink
+  gone at the sizes a real test data set reaches.
+
+## Performance
+
+- **The array plot is drawn as a single raster** (`rasterImage()`) instead of
+  one `rect()` call per cell. A 3,810 x 15 data set took 114,300 drawing calls
+  for the two panels and now takes two; the plot renders in 0.03 s. Cell
+  borders are drawn -- as grid lines, `nrows + ncols` of them rather than
+  `nrows * ncols` rectangles -- only when a cell is at least 6 device pixels on
+  both sides, which is where they can be seen without swallowing the cell.
+
 # exametrika 2.0.0
 
 The version number was raised to 2.0.0 because the EM convergence fix below

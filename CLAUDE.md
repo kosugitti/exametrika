@@ -6,14 +6,11 @@
 (2022, <ISBN:978-9811699856>). It provides psychometric analysis tools:
 CTT, IRT, GRM, LCA, LRA, Biclustering, BNM, LDLRA, LDB, BINET.
 
-- **Current version**: 2.0.0 (**submitted to CRAN 2026-08-20, under
-  review**; confirmation link clicked. Submitted through the web form,
-  not `submit_cran()`, so `CRAN-SUBMISSION` still reads 1.15.0 and **the
-  `v2.0.0` tag and GitHub Release are not created yet** – do both once
-  it is accepted, then announce in Discussions)
-- **CRAN version**: 1.15.0 (accepted/published 2026-07)
-- **GitHub Release**: v1.15.0 (2026-07-15, latest) / v1.14.0
-  (2026-06-14)
+- **Current version**: 2.1.0 (development)
+- **CRAN version**: 2.0.0 (accepted and published 2026-08-20). Submitted
+  through the web form, so `CRAN-SUBMISSION` still reads 1.15.0.
+- **GitHub Release**: v2.0.0 (2026-08-20, latest) / v1.15.0
+  (2026-07-15). Announcements: Discussions \#37 (JA) / \#38 (EN)
 - **License**: MIT
 - **Website**: <https://kosugitti.github.io/exametrika/>
 - **Language**: English (Japanese guide available as
@@ -796,6 +793,33 @@ does — LCA classes are unordered, and sorting would imply otherwise.
 - Downstream: ggExametrika v1.1.2 (audit release, ready) will be
   submitted after this version is accepted, so its GRM information plots
   match the fixed parent
+
+### v2.1.0 (development)
+
+- **出力へのラベル付けを一箇所に集約した
+  (`R/00_labels.R`)。**受験者ID・項目ラベルは 「派生元の行列がたまたま
+  dimnames を持ち回っていれば残る」偶然頼みで，**モデルごとに
+  当たり外れが違った**(順序バイクラは全滅・`ClassEstimated`
+  は全モデルで無名)。 `label_result()` を各コンストラクタの `return`
+  直前で1回呼ぶ形に変え，
+  [`dataFormat()`](https://kosugitti.github.io/exametrika/reference/dataFormat.md)
+  も `U`/`Q`/`Z` の行にIDを載せる(同梱データは古い .rda なので
+  **`inherits(data,"exametrika")`
+  の素通り経路でも貼る**)。棚卸しの結果は
+  20件中18件が解消，残る2件は仕様(CTTは `IfDeleted` 列に，ItemStatistics
+  はラベルそのもの)。 **`FieldAnalysis` は対象外**——CRR
+  とフィールドで並べ替えてあるので位置で貼ると誤る。 回帰テストは
+  `tests/testthat/test-labels.R`。
+- **Array プロットを
+  [`rasterImage()`](https://rdrr.io/r/graphics/rasterImage.html)
+  に変えた。**旧実装はセルごとに `rect(border="white", lwd=0.1)`
+  で，**1画素未満の枠は引けない**ため行が画素より
+  細くなると枠が塗りを食う。どの行が消えるかは画素格子との噛み合わせ次第でまだらになる。
+  実測(J12S5000・5000行を700px高で描画): 平均輝度 0.801(旧) 対
+  0.613(新)，真の黒率 0.562。 **インクの3〜4割が失われていた。**描画も
+  0.83秒 → 0.004秒(1パネルあたり)。
+  格子線はセルが6画素以上のときだけ引く(nrows+ncols
+  本の線で，nrows\*ncols 個の矩形ではない)。
 
 ### 2.0.0 の提出前に踏んだ地雷 (2026-08-19・次回も効く)
 

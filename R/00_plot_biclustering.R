@@ -174,8 +174,8 @@ plot_array <- function(x, cell_width, cell_height, colors, dots = list(),
   plot_width <- ncols * cell_w
   plot_height <- nrows * cell_h
 
-  #' Colour matrix for one panel, row 1 at the top as rasterImage expects
-  #' @noRd
+  # Colour matrix for one panel, row 1 at the top as rasterImage expects
+  # @noRd
   as_color_matrix <- function(m) {
     m <- as.matrix(m)
     idx <- match(m, all_values)
@@ -184,8 +184,8 @@ plot_array <- function(x, cell_width, cell_height, colors, dots = list(),
     matrix(fill, nrow = NROW(m), ncol = NCOL(m))
   }
 
-  #' Panel size in device pixels, as c(width, height)
-  #' @noRd
+  # Panel size in device pixels, as c(width, height)
+  # @noRd
   panel_px <- function() {
     px <- tryCatch(
       {

@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="index.html">exametrika</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.0.0.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.0.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -39,7 +39,7 @@
 <h2 id="package-overview">Package Overview<a class="anchor" aria-label="anchor" href="#package-overview"></a></h2>
 <p><code>exametrika</code> is an R package for Test Data Engineering based on Shojima (2022, <a href="ISBN:978-9811699856" class="uri">ISBN:978-9811699856</a>). It provides psychometric analysis tools: CTT, IRT, GRM, LCA, LRA, Biclustering, BNM, LDLRA, LDB, BINET.</p>
 <ul><li>
-<strong>Current version</strong>: 2.1.0 (development)</li>
+<strong>Current version</strong>: 2.0.1 (GitHub release; CRAN submission after 2026-09-20)</li>
 <li>
 <strong>CRAN version</strong>: 2.0.0 (accepted and published 2026-08-20). Submitted through the web form, so <code>CRAN-SUBMISSION</code> still reads 1.15.0.</li>
 <li>
@@ -426,11 +426,18 @@ docs/                # .gitignore'd (removed from repo); pkgdown site deployed t
 <li>Downstream: ggExametrika v1.1.2 (audit release, ready) will be submitted after this version is accepted, so its GRM information plots match the fixed parent</li>
 </ul></div>
 <div class="section level3">
-<h3 id="v210-development">v2.1.0 (development)<a class="anchor" aria-label="anchor" href="#v210-development"></a></h3>
+<h3 id="v201-github-2026-08-25-cran-提出は-2026-09-20-以降">v2.0.1 (GitHub 2026-08-25; CRAN 提出は 2026-09-20 以降)<a class="anchor" aria-label="anchor" href="#v201-github-2026-08-25-cran-%E6%8F%90%E5%87%BA%E3%81%AF-2026-09-20-%E4%BB%A5%E9%99%8D"></a></h3>
+<p><strong>バグ修正だけのパッチ</strong>。新機能はなく，推定値も変わらない。多値BNM(機能追加)を待たせると CRAN 版のラベル不具合が9月末まで残るので分けた。<strong>GitHub に先に出し，CRAN は受理から 1ヶ月の間隔(2.0.0 受理 2026-08-20)を空けてから提出する。</strong></p>
 <ul><li>
 <strong>出力へのラベル付けを一箇所に集約した (<code>R/00_labels.R</code>)。</strong>受験者ID・項目ラベルは 「派生元の行列がたまたま dimnames を持ち回っていれば残る」偶然頼みで，<strong>モデルごとに 当たり外れが違った</strong>(順序バイクラは全滅・<code>ClassEstimated</code> は全モデルで無名)。 <code>label_result()</code> を各コンストラクタの <code>return</code> 直前で1回呼ぶ形に変え， <code><a href="reference/dataFormat.html">dataFormat()</a></code> も <code>U</code>/<code>Q</code>/<code>Z</code> の行にIDを載せる(同梱データは古い .rda なので <strong><code>inherits(data,"exametrika")</code> の素通り経路でも貼る</strong>)。棚卸しの結果は 20件中18件が解消，残る2件は仕様(CTTは <code>IfDeleted</code> 列に，ItemStatistics はラベルそのもの)。 <strong><code>FieldAnalysis</code> は対象外</strong>——CRR とフィールドで並べ替えてあるので位置で貼ると誤る。 回帰テストは <code>tests/testthat/test-labels.R</code>。</li>
 <li>
 <strong>Array プロットを <code><a href="https://rdrr.io/r/graphics/rasterImage.html" class="external-link">rasterImage()</a></code> に変えた。</strong>旧実装はセルごとに <code>rect(border="white", lwd=0.1)</code> で，<strong>1画素未満の枠は引けない</strong>ため行が画素より 細くなると枠が塗りを食う。どの行が消えるかは画素格子との噛み合わせ次第でまだらになる。 実測(J12S5000・5000行を700px高で描画): 平均輝度 0.801(旧) 対 0.613(新)，真の黒率 0.562。 <strong>インクの3〜4割が失われていた。</strong>描画も 0.83秒 → 0.004秒(1パネルあたり)。 格子線はセルが6画素以上のときだけ引く(nrows+ncols 本の線で，nrows*ncols 個の矩形ではない)。</li>
+</ul></div>
+<div class="section level3">
+<h3 id="v210-計画">v2.1.0 (計画)<a class="anchor" aria-label="anchor" href="#v210-%E8%A8%88%E7%94%BB"></a></h3>
+<ul><li>
+<strong>多値BNM (StepReg / StepBNM・case C)</strong> が本命。詳細は Version policy の節。</li>
+<li>見送った小改善: 適合度規準の定義を <code><a href="https://rdrr.io/r/base/print.html" class="external-link">print()</a></code> に明示する / <code>TestFitIndices</code> に <code>criterion_scale</code> 属性を持たせ，異なる定義どうしの比較に警告を出す。</li>
 </ul></div>
 <div class="section level3">
 <h3 id="id_200-の提出前に踏んだ地雷-2026-08-19次回も効く">2.0.0 の提出前に踏んだ地雷 (2026-08-19・次回も効く)<a class="anchor" aria-label="anchor" href="#id_200-%E3%81%AE%E6%8F%90%E5%87%BA%E5%89%8D%E3%81%AB%E8%B8%8F%E3%82%93%E3%81%A0%E5%9C%B0%E9%9B%B7-2026-08-19%E6%AC%A1%E5%9B%9E%E3%82%82%E5%8A%B9%E3%81%8F"></a></h3>

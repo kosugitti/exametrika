@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">exametrika</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.0.0.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.0.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -34,9 +34,10 @@
     </div>
 
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="2.1.0" id="exametrika-210-development">exametrika 2.1.0 (development)<a class="anchor" aria-label="anchor" href="#exametrika-210-development"></a></h2>
+<h2 class="pkg-version" data-toc-text="2.0.1" id="exametrika-201">exametrika 2.0.1<a class="anchor" aria-label="anchor" href="#exametrika-201"></a></h2>
+<p>A patch release: two bug fixes, no new features and no change to any estimate. Released on GitHub first; the CRAN submission follows once the one-month cadence since 2.0.0 (accepted 2026-08-20) has passed.</p>
 <div class="section level3">
-<h3 id="bug-fixes-2-1-0">Bug Fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-2-1-0"></a></h3>
+<h3 id="bug-fixes-2-0-1">Bug Fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-2-0-1"></a></h3>
 <ul><li>
 <p><strong>Respondent IDs and item labels now reach every model’s output.</strong> They survived only where the matrix a field happened to be derived from carried dimnames, so which fields were labelled differed from model to model: <code><a href="../reference/Biclustering.html">Biclustering()</a></code> on ordinal data lost them completely (<code>FieldEstimated</code>, <code>FieldMembership</code> and <code>ClassMembership</code> all came back as bare numbers), and <code>ClassEstimated</code> was unnamed in every model, including the binary ones that labelled everything else. The respondent axis was the more affected of the two, which is the opposite of what the code looks like – <code>Students</code> had its row names set by hand, and nothing else did.</p>
 <p>Labelling is now done once, in one place, immediately before each constructor returns: respondent-indexed fields (<code>ClassEstimated</code>, <code>ClassMembership</code>, <code>SmoothedMembership</code>, <code>Students</code>, <code>ability</code>, …) take the IDs, item-indexed fields (<code>FieldEstimated</code>, <code>FieldMembership</code>, …) take the item labels, and the membership matrices get column names (<code>Class1</code>/<code>Rank1</code>…, <code>Field1</code>…). <code><a href="../reference/dataFormat.html">dataFormat()</a></code> also puts the IDs on the rows of <code>U</code>, <code>Q</code> and <code>Z</code>; it already put the item labels on the columns.</p>
@@ -46,7 +47,7 @@
 <li><p><strong><code>plot(type = "Array")</code> no longer washes rows out to white.</strong> Every cell was drawn as a <code><a href="https://rdrr.io/r/graphics/rect.html" class="external-link">rect()</a></code> with a white border, and a border cannot be thinner than one device pixel: once the respondents outnumbered the pixels available to them, the borders covered the fill. Which rows disappeared depended on where the cell boundaries fell on the pixel grid, so the loss came out mottled rather than uniform. Measured on an all-black 400x600 plot, mean luminance rose from 0.01 at 50 rows to 0.29 at 821 rows – roughly a third of the ink gone at the sizes a real test data set reaches.</p></li>
 </ul></div>
 <div class="section level3">
-<h3 id="performance-2-1-0">Performance<a class="anchor" aria-label="anchor" href="#performance-2-1-0"></a></h3>
+<h3 id="performance-2-0-1">Performance<a class="anchor" aria-label="anchor" href="#performance-2-0-1"></a></h3>
 <ul><li>
 <strong>The array plot is drawn as a single raster</strong> (<code><a href="https://rdrr.io/r/graphics/rasterImage.html" class="external-link">rasterImage()</a></code>) instead of one <code><a href="https://rdrr.io/r/graphics/rect.html" class="external-link">rect()</a></code> call per cell. A 3,810 x 15 data set took 114,300 drawing calls for the two panels and now takes two; the plot renders in 0.03 s. Cell borders are drawn – as grid lines, <code>nrows + ncols</code> of them rather than <code>nrows * ncols</code> rectangles – only when a cell is at least 6 device pixels on both sides, which is where they can be seen without swallowing the cell.</li>
 </ul></div>

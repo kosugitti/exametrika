@@ -6,7 +6,8 @@
 (2022, <ISBN:978-9811699856>). It provides psychometric analysis tools:
 CTT, IRT, GRM, LCA, LRA, Biclustering, BNM, LDLRA, LDB, BINET.
 
-- **Current version**: 2.1.0 (development)
+- **Current version**: 2.0.1 (GitHub release; CRAN submission after
+  2026-09-20)
 - **CRAN version**: 2.0.0 (accepted and published 2026-08-20). Submitted
   through the web form, so `CRAN-SUBMISSION` still reads 1.15.0.
 - **GitHub Release**: v2.0.0 (2026-08-20, latest) / v1.15.0
@@ -821,7 +822,12 @@ does — LCA classes are unordered, and sorting would imply otherwise.
   submitted after this version is accepted, so its GRM information plots
   match the fixed parent
 
-### v2.1.0 (development)
+### v2.0.1 (GitHub 2026-08-25; CRAN 提出は 2026-09-20 以降)
+
+**バグ修正だけのパッチ**。新機能はなく，推定値も変わらない。多値BNM(機能追加)を待たせると
+CRAN 版のラベル不具合が9月末まで残るので分けた。**GitHub
+に先に出し，CRAN は受理から 1ヶ月の間隔(2.0.0 受理
+2026-08-20)を空けてから提出する。**
 
 - **出力へのラベル付けを一箇所に集約した
   (`R/00_labels.R`)。**受験者ID・項目ラベルは 「派生元の行列がたまたま
@@ -847,6 +853,15 @@ does — LCA classes are unordered, and sorting would imply otherwise.
   0.83秒 → 0.004秒(1パネルあたり)。
   格子線はセルが6画素以上のときだけ引く(nrows+ncols
   本の線で，nrows\*ncols 個の矩形ではない)。
+
+### v2.1.0 (計画)
+
+- **多値BNM (StepReg / StepBNM・case C)** が本命。詳細は Version policy
+  の節。
+- 見送った小改善: 適合度規準の定義を
+  [`print()`](https://rdrr.io/r/base/print.html) に明示する /
+  `TestFitIndices` に `criterion_scale`
+  属性を持たせ，異なる定義どうしの比較に警告を出す。
 
 ### 2.0.0 の提出前に踏んだ地雷 (2026-08-19・次回も効く)
 

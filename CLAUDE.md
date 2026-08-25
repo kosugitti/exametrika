@@ -162,7 +162,16 @@ test_that の
 中しか守らない。遅延アクセサ(`.cache <- NULL; model <- function() ...`)にする。
 3. win-devel を測定器代わりに連投しない。リリース前は「手元 as-cran ＋
 必要なら Al-khwa LD_PRELOAD(BLAS負荷の順位付け) ＋ win-devel
-1回」で足りる。
+1回」で足りる。 4. **testthat
+は既定で10件失敗すると打ち切る。**`Maximum number of 10 failures reached, some test results may be missing.`
+が出ているログの件数を全数と読まない。 全数を知るには
+`TESTTHAT_MAX_FAILS=1000`。 5. **`devtools::test()` は自分で
+`NOT_CRAN=true` を立てる。**`env -u NOT_CRAN` を付けても
+無効なので，CRAN 構成の計測は
+[`testthat::test_file()`](https://testthat.r-lib.org/reference/test_file.html)
+側で `Sys.setenv(NOT_CRAN="false")` してから測る。 6. **親プロセスの CPU
+0% を「止まった」と読まない。**全数実行を2回 kill してしまった実績が
+ある(子のワーカは66%で回っていた)。`top` で子まで見る。
 
 背景 (2026-08-20 実測): win-builder 566秒の内訳は tests 351s(62%) /
 vignettes 58s / R code 30s / PDF 15s / 他~110s。手元逐次 38 秒 = Windows
@@ -324,6 +333,24 @@ class-assignment rate `Biclustering.rated` uses), `TRP` as its weighted
 item sum, and a binary layer of fit indices alongside the nominal one.
 It does NOT sort classes by correct rate the way `Biclustering.rated`
 does — LCA classes are unordered, and sorting would imply otherwise.
+
+## 適合度規準の定義は応答型で2系統ある (よく聞かれる)
+
+- **二値・順序・評定**:
+  `AIC = chi^2 - 2df`，`BIC = chi^2 - df*log(N)`(Shojima の定義)。 **χ²
+  が 2df を超えれば AIC
+  は正になる**——当てはまりが悪いか，収束しきっていないか，
+  クラス/フィールドを絞りすぎたかのいずれか。**正だから壊れているのではない。**
+  AIC が正で BIC
+  が負，という組み合わせも罰則の大きさの違いから普通に起こる。
+- **名義**:
+  飽和モデルを作れない(項目数とカテゴリ数が増えると反応パタンがほぼ全て一意)ので
+  χ² を出せず，`AIC = -2logL + k` に切り替わる。**この式は常に正**で，χ²
+  と df は `NA`。 **二値系の値とは水準が違うので比較できない。**
+- 見送った改善案(2026-08-24):
+  [`print()`](https://rdrr.io/r/base/print.html) に定義を1行添える /
+  `TestFitIndices` に `criterion_scale`
+  属性を持たせ，異なる定義どうしの比較に警告を出す。
 
 ## Removed in 2.0.0 (質問されたときの対応表)
 

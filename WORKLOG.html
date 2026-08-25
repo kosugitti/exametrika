@@ -2283,6 +2283,70 @@ rhub / win-devel               本日の版で流し直し中</code></pre>
 <li>多値BNM は v2.1.0 送りのまま。テストデータの極小化と spell_check の整理は 「2.0.0 を機に・急がない」棚に置いたまま生きている。</li>
 </ul></div>
 </div>
+<div class="section level2">
+<h2 id="id_2026-08-2324-210-開発開始-ラベルの全モデル対応array-プロットの-rasterimage-化">2026-08-23〜24 (2.1.0 開発開始) ラベルの全モデル対応・Array プロットの rasterImage 化<a class="anchor" aria-label="anchor" href="#id_2026-08-2324-210-%E9%96%8B%E7%99%BA%E9%96%8B%E5%A7%8B-%E3%83%A9%E3%83%99%E3%83%AB%E3%81%AE%E5%85%A8%E3%83%A2%E3%83%87%E3%83%AB%E5%AF%BE%E5%BF%9Carray-%E3%83%97%E3%83%AD%E3%83%83%E3%83%88%E3%81%AE-rasterimage-%E5%8C%96"></a></h2>
+<div class="section level3">
+<h3 id="発端">発端<a class="anchor" aria-label="anchor" href="#%E7%99%BA%E7%AB%AF"></a></h3>
+<p>殿から2件の指摘。(1) Array プロットで真っ白になる受験者がいる，(2) <code>FieldMembership</code> / <code>FieldEstimated</code> に項目名が反映されない。どちらも実在のバグだった。</p>
+</div>
+<div class="section level3">
+<h3 id="ラベルが届いていなかった範囲を機械的に棚卸しした">ラベルが届いていなかった範囲を機械的に棚卸しした<a class="anchor" aria-label="anchor" href="#%E3%83%A9%E3%83%99%E3%83%AB%E3%81%8C%E5%B1%8A%E3%81%84%E3%81%A6%E3%81%84%E3%81%AA%E3%81%8B%E3%81%A3%E3%81%9F%E7%AF%84%E5%9B%B2%E3%82%92%E6%A9%9F%E6%A2%B0%E7%9A%84%E3%81%AB%E6%A3%9A%E5%8D%B8%E3%81%97%E3%81%97%E3%81%9F"></a></h3>
+<p>全モデルの返り値を走査し，<strong>受験者軸(長さ=nobs)・項目軸(長さ=testlength)のフィールドを 自動判定してラベルの有無を数える</strong>監査スクリプトを書いた(<code>scratchpad/audit_labels.R</code>)。 <strong>58件中20件が無名</strong>。</p>
+<ul><li>
+<strong>順序バイクラスタリングは全滅</strong>(<code>FieldEstimated</code>・<code>FieldMembership</code>・<code>ClassMembership</code>)</li>
+<li>
+<strong><code>ClassEstimated</code> は全モデルで無名</strong>——二値でも。<code>SmoothedMembership</code> も同様</li>
+<li>
+<code>U</code>/<code>Q</code>/<code>Z</code> は行が無名(<code><a href="reference/dataFormat.html">dataFormat()</a></code> は列にだけ <code>ItemLabel</code> を貼っていた)</li>
+<li>
+<code>IRT$ability</code> は行が連番</li>
+</ul><p><strong>構造の問題は「明示的に貼っている場所が1箇所しかない」こと。</strong><code>rownames(StudentRank) &lt;- tmp$ID</code> だけが手書きで，そこから派生する <code>ClassEstimated</code> には何もしていない。他は<strong>元の行列が dimnames を持ち回っていれば残る偶然</strong>で，だから<strong>モデルごとに当たり外れが違った</strong>。</p>
+</div>
+<div class="section level3">
+<h3 id="対処-r00_labelsr-に集約">対処: <code>R/00_labels.R</code> に集約<a class="anchor" aria-label="anchor" href="#%E5%AF%BE%E5%87%A6-r00_labelsr-%E3%81%AB%E9%9B%86%E7%B4%84"></a></h3>
+<p><code>label_result()</code> を各コンストラクタの <code>return</code> 直前で1回呼ぶ(18ファイル)。 <code><a href="reference/dataFormat.html">dataFormat()</a></code> も <code>U</code>/<code>Q</code>/<code>Z</code> の行にIDを貼る。</p>
+<p><strong>同梱データは古い .rda なので <code>inherits(data,"exametrika")</code> の素通り経路にも貼る必要がある。</strong> ここを忘れると <code>J15S500</code> を直接渡した場合だけ無名のままになる。</p>
+<p><strong><code>FieldAnalysis</code> は対象外</strong>。CRR とフィールドで並べ替えてあるので位置で貼ると別の項目の 名前が付く。結果は 20件 → 2件(CTTは <code>IfDeleted</code> 列にラベルを持つ・<code>ItemStatistics$ItemLabel</code> はラベルそのもの)。数値は変わらない。</p>
+</div>
+<div class="section level3">
+<h3 id="array-プロット-白潰れの正体は1画素より細い枠は引けないこと">Array プロット: 白潰れの正体は「1画素より細い枠は引けない」こと<a class="anchor" aria-label="anchor" href="#array-%E3%83%97%E3%83%AD%E3%83%83%E3%83%88-%E7%99%BD%E6%BD%B0%E3%82%8C%E3%81%AE%E6%AD%A3%E4%BD%93%E3%81%AF1%E7%94%BB%E7%B4%A0%E3%82%88%E3%82%8A%E7%B4%B0%E3%81%84%E6%9E%A0%E3%81%AF%E5%BC%95%E3%81%91%E3%81%AA%E3%81%84%E3%81%93%E3%81%A8"></a></h3>
+<p>セルごとに <code>rect(border="white", lwd=0.1)</code> で描いていた。<strong><code>lwd</code> をいくら小さくしても デバイスは1画素未満の線を引けない</strong>ので，行が画素より細くなると上下の白枠が塗りを覆う。 どの行が消えるかは<strong>セル境界と画素格子の噛み合わせ</strong>で決まるのでまだらになる (「白い子がいる」という症状の説明)。</p>
+<p>実測(全黒・400x600): 平均輝度 50行 0.01 / 200行 0.04 / 500行 0.19 / <strong>821行 0.29</strong>。 枠を消せばどの行数でも 0.00。J12S5000(5000行)を700px高で描くと 0.801 対 0.613 (真の黒率0.562)＝<strong>インクの3〜4割が失われていた</strong>。</p>
+<p><code><a href="https://rdrr.io/r/graphics/rasterImage.html" class="external-link">rasterImage()</a></code> へ置き換え。描画は 0.83秒 → 0.004秒(1パネル)。格子線はセルが6画素以上の ときだけ引き，<code>nrows+ncols</code> 本の線で済ませる。</p>
+</div>
+<div class="section level3">
+<h3 id="多値カラー版の検証で見つけた第2の罠縮小時の平均">多値カラー版の検証で見つけた第2の罠(縮小時の平均)<a class="anchor" aria-label="anchor" href="#%E5%A4%9A%E5%80%A4%E3%82%AB%E3%83%A9%E3%83%BC%E7%89%88%E3%81%AE%E6%A4%9C%E8%A8%BC%E3%81%A7%E8%A6%8B%E3%81%A4%E3%81%91%E3%81%9F%E7%AC%AC2%E3%81%AE%E7%BD%A0%E7%B8%AE%E5%B0%8F%E6%99%82%E3%81%AE%E5%B9%B3%E5%9D%87"></a></h3>
+<p><strong><code><a href="https://rdrr.io/r/graphics/rasterImage.html" class="external-link">rasterImage()</a></code> は行数が出力画素数を超えると平均して潰す。<code>interpolate=FALSE</code> は 縮小方向では効かない。</strong>オレンジと青の交互4000行を400画素へ描くと，どちらでもない 一色の帯になる。カテゴリカルな図では<strong>凡例に無い色</strong>が生まれるので，ラスタ化の前に パネルの画素数まで最近傍で間引く(<code>downsample_nn()</code>)。間引きは部分抽出なので，極端な 行数では描かれた1行がその範囲の代表になる——平均はカテゴリを捏造し，多数決も少数派を 捨てるうえ高くつくので最近傍を採った。</p>
+<p>検証(多値4カテゴリ・J15S3810): 既知の色が画素の98.4%，描かれた比率 0.108/0.312/0.373/0.207 が実データの 0.112/0.316/0.364/0.207 と一致。</p>
+</div>
+<div class="section level3">
+<h3 id="踏んだ罠次回も効く">踏んだ罠(次回も効く)<a class="anchor" aria-label="anchor" href="#%E8%B8%8F%E3%82%93%E3%81%A0%E7%BD%A0%E6%AC%A1%E5%9B%9E%E3%82%82%E5%8A%B9%E3%81%8F"></a></h3>
+<ul><li>
+<strong>testthat は既定で10件失敗すると打ち切る。</strong><code>Maximum number of 10 failures reached, some test results may be missing.</code> が出ているログの件数を全数と読んではいけない。 全数を知るには <code>TESTTHAT_MAX_FAILS=1000</code>。</li>
+<li>
+<strong><code>devtools::test()</code> は自分で <code>NOT_CRAN=true</code> を立てる。</strong><code>env -u NOT_CRAN</code> を付けても 無効。CRAN 構成を測るなら <code><a href="https://testthat.r-lib.org/reference/test_file.html" class="external-link">testthat::test_file()</a></code> 側で <code>Sys.setenv(NOT_CRAN="false")</code>。</li>
+<li>
+<strong>quartz の PNG デバイスはカラープロファイルを適用して書き出す。</strong><code>#E69F00</code> はファイル上 では <code>#D47C0A</code> になる。画素値を指定色と直に突き合わせると「混色が出ている」と誤診する。 検証するなら<strong>同じデバイスで純色を描いて対応表を作ってから</strong>比べる(実際に一度誤診した)。</li>
+<li>
+<strong>親プロセスの CPU 0% を「止まった」と読むな。</strong>テストの全数実行を2回 kill した。 子のワーカは66%で回っていた。<code>top</code> で子まで見ること。</li>
+<li>
+<strong>roxygen は <code>#'</code> を直前のブロックの続きとして読む。</strong>関数本体の中の入れ子ヘルパに <code>#'</code> を付けたため <code>@noRd must not be followed by any text</code> が2件出た。本体内は <code>#</code>。</li>
+</ul></div>
+<div class="section level3">
+<h3 id="検証と成果物">検証と成果物<a class="anchor" aria-label="anchor" href="#%E6%A4%9C%E8%A8%BC%E3%81%A8%E6%88%90%E6%9E%9C%E7%89%A9"></a></h3>
+<p>全数(<code>NOT_CRAN=true</code>) <strong>43ファイル・3,527件成功・失敗0・スキップ0</strong>。落ちた13件は いずれも「名前が付いたことによる形の不一致」で値の不一致はゼロ，<code><a href="https://rdrr.io/r/base/unname.html" class="external-link">unname()</a></code> で対処。 新設 <code>tests/testthat/test-labels.R</code> は20件・CRAN構成で0.34秒。 コミット <code>3e9855f</code> / <code>a1efce5</code> / <code>bbfec43</code> / <code>d1ff4c9</code>，push 済み。</p>
+</div>
+<div class="section level3">
+<h3 id="派生-aic-が正になる件調査のみ修正なし">派生: AIC が正になる件(調査のみ・修正なし)<a class="anchor" aria-label="anchor" href="#%E6%B4%BE%E7%94%9F-aic-%E3%81%8C%E6%AD%A3%E3%81%AB%E3%81%AA%E3%82%8B%E4%BB%B6%E8%AA%BF%E6%9F%BB%E3%81%AE%E3%81%BF%E4%BF%AE%E6%AD%A3%E3%81%AA%E3%81%97"></a></h3>
+<p>殿から「バイクラスタリングの AIC が正の数になっている」との指摘。<strong>バグではない。</strong> 二値・順序・評定は <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mrow><mi mathvariant="normal">A</mi><mi mathvariant="normal">I</mi><mi mathvariant="normal">C</mi></mrow><mo>=</mo><msup><mi>χ</mi><mn>2</mn></msup><mo>−</mo><mn>2</mn><mrow><mi mathvariant="normal">d</mi><mi mathvariant="normal">f</mi></mrow></mrow><annotation encoding="application/x-tex">\mathrm{AIC} = \chi^2 - 2\mathrm{df}</annotation></semantics></math> なので，<strong>χ² が 2df を超えれば正</strong>。 名義だけは飽和モデルを作れないため <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>−</mi><mn>2</mn><mrow><mi mathvariant="normal">log</mi><mo>⁡</mo></mrow><mi>L</mi><mo>+</mo><mi>k</mi></mrow><annotation encoding="application/x-tex">-2\log L + k</annotation></semantics></math> に切り替わり，<strong>常に正</strong>(χ² と df は NA)。 順序は手元の4条件すべてで負になり，<code>AIC == chi_sq - 2*df</code> の一致も確認した。 <strong>紛らわしいのは事実</strong>なので，<code><a href="https://rdrr.io/r/base/print.html" class="external-link">print()</a></code> に定義を1行添える案を出したが，今回は見送り。</p>
+</div>
+<div class="section level3">
+<h3 id="次-10">次<a class="anchor" aria-label="anchor" href="#%E6%AC%A1-10"></a></h3>
+<ul><li>2.1.0 の本命は<strong>多値BNM(StepReg/StepBNM・case C)</strong>。</li>
+<li>CRAN 提出は<strong>9月20日以降</strong>(受理から1ヶ月)。<code>R CMD check --as-cran</code> と win-builder は未実施。</li>
+<li>見送った案: 適合度指標の定義を <code><a href="https://rdrr.io/r/base/print.html" class="external-link">print()</a></code> に明示する / <code>criterion_scale</code> 属性で異なる定義の 比較に警告を出す。</li>
+</ul></div>
+</div>
 </div>
 
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

@@ -1,34 +1,16 @@
-# exametrika 2.0.1
+# exametrika 2.1.0
 
-A patch release: two bug fixes, no new features and no change to any estimate.
+A minor release. The estimates returned by `LRA(method = "SOM")` change, so the
+fixes below could not ship as a patch. They came out of reading the R code
+against the Mathematica routine it was ported from
+(`Module_LRA.wl`): the port had grown a `seed` argument and a convergence
+report that the original never had, and had moved the monotonicity sort to the
+end of each epoch.
+
 Released on GitHub first; the CRAN submission follows once the one-month cadence
 since 2.0.0 (accepted 2026-08-20) has passed.
 
 ## Bug Fixes
-
-- **Respondent IDs and item labels now reach every model's output.** They
-  survived only where the matrix a field happened to be derived from carried
-  dimnames, so which fields were labelled differed from model to model:
-  `Biclustering()` on ordinal data lost them completely (`FieldEstimated`,
-  `FieldMembership` and `ClassMembership` all came back as bare numbers), and
-  `ClassEstimated` was unnamed in every model, including the binary ones that
-  labelled everything else. The respondent axis was the more affected of the
-  two, which is the opposite of what the code looks like -- `Students` had its
-  row names set by hand, and nothing else did.
-
-  Labelling is now done once, in one place, immediately before each constructor
-  returns: respondent-indexed fields (`ClassEstimated`, `ClassMembership`,
-  `SmoothedMembership`, `Students`, `ability`, ...) take the IDs, item-indexed
-  fields (`FieldEstimated`, `FieldMembership`, ...) take the item labels, and the
-  membership matrices get column names (`Class1`/`Rank1`..., `Field1`...).
-  `dataFormat()` also puts the IDs on the rows of `U`, `Q` and `Z`; it already
-  put the item labels on the columns.
-
-  `FieldAnalysis` is deliberately excluded: its rows are sorted by correct
-  response rate and field, so attaching labels positionally would attach the
-  wrong ones. It keeps the labels it inherits, in its own order.
-
-  Only names are added -- no estimate changes.
 
 - **The SOM method reused one frozen presentation order whenever `seed` was
   given.** `somclus()` reseeded inside the epoch loop with `set.seed(seed)`, so
@@ -68,15 +50,6 @@ since 2.0.0 (accepted 2026-08-20) has passed.
   simulation that called it silently lost its own stream. The state is now
   restored on exit.
 
-- **`plot(type = "Array")` no longer washes rows out to white.** Every cell was
-  drawn as a `rect()` with a white border, and a border cannot be thinner than
-  one device pixel: once the respondents outnumbered the pixels available to
-  them, the borders covered the fill. Which rows disappeared depended on where
-  the cell boundaries fell on the pixel grid, so the loss came out mottled
-  rather than uniform. Measured on an all-black 400x600 plot, mean luminance
-  rose from 0.01 at 50 rows to 0.29 at 821 rows -- roughly a third of the ink
-  gone at the sizes a real test data set reaches.
-
 ## Performance
 
 - **The SOM inner loop moved to C++** (`src/som_core.cpp`). One epoch of online
@@ -88,6 +61,49 @@ since 2.0.0 (accepted 2026-08-20) has passed.
   per-respondent sort that `mic` now requires would otherwise have made it
   twenty times slower). The rank posterior is also computed once after the
   schedule instead of every epoch, since only `BIC.check` reads it in between.
+
+# exametrika 2.0.1
+
+A patch release: two bug fixes, no new features and no change to any estimate.
+Released on GitHub first; the CRAN submission follows once the one-month cadence
+since 2.0.0 (accepted 2026-08-20) has passed.
+
+## Bug Fixes
+
+- **Respondent IDs and item labels now reach every model's output.** They
+  survived only where the matrix a field happened to be derived from carried
+  dimnames, so which fields were labelled differed from model to model:
+  `Biclustering()` on ordinal data lost them completely (`FieldEstimated`,
+  `FieldMembership` and `ClassMembership` all came back as bare numbers), and
+  `ClassEstimated` was unnamed in every model, including the binary ones that
+  labelled everything else. The respondent axis was the more affected of the
+  two, which is the opposite of what the code looks like -- `Students` had its
+  row names set by hand, and nothing else did.
+
+  Labelling is now done once, in one place, immediately before each constructor
+  returns: respondent-indexed fields (`ClassEstimated`, `ClassMembership`,
+  `SmoothedMembership`, `Students`, `ability`, ...) take the IDs, item-indexed
+  fields (`FieldEstimated`, `FieldMembership`, ...) take the item labels, and the
+  membership matrices get column names (`Class1`/`Rank1`..., `Field1`...).
+  `dataFormat()` also puts the IDs on the rows of `U`, `Q` and `Z`; it already
+  put the item labels on the columns.
+
+  `FieldAnalysis` is deliberately excluded: its rows are sorted by correct
+  response rate and field, so attaching labels positionally would attach the
+  wrong ones. It keeps the labels it inherits, in its own order.
+
+  Only names are added -- no estimate changes.
+
+- **`plot(type = "Array")` no longer washes rows out to white.** Every cell was
+  drawn as a `rect()` with a white border, and a border cannot be thinner than
+  one device pixel: once the respondents outnumbered the pixels available to
+  them, the borders covered the fill. Which rows disappeared depended on where
+  the cell boundaries fell on the pixel grid, so the loss came out mottled
+  rather than uniform. Measured on an all-black 400x600 plot, mean luminance
+  rose from 0.01 at 50 rows to 0.29 at 821 rows -- roughly a third of the ink
+  gone at the sizes a real test data set reaches.
+
+## Performance
 
 - **The array plot is drawn as a single raster** (`rasterImage()`) instead of
   one `rect()` call per cell. A 3,810 x 15 data set took 114,300 drawing calls

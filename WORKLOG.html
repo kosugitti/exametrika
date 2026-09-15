@@ -2347,6 +2347,176 @@ rhub / win-devel               本日の版で流し直し中</code></pre>
 <li>見送った案: 適合度指標の定義を <code><a href="https://rdrr.io/r/base/print.html" class="external-link">print()</a></code> に明示する / <code>criterion_scale</code> 属性で異なる定義の 比較に警告を出す。</li>
 </ul></div>
 </div>
+<div class="section level2">
+<h2 id="id_2026-09-06-日心のポスターを機に-isotonic-系のソースを精査コード変更なし">2026-09-06 日心のポスターを機に isotonic 系のソースを精査（コード変更なし）<a class="anchor" aria-label="anchor" href="#id_2026-09-06-%E6%97%A5%E5%BF%83%E3%81%AE%E3%83%9D%E3%82%B9%E3%82%BF%E3%83%BC%E3%82%92%E6%A9%9F%E3%81%AB-isotonic-%E7%B3%BB%E3%81%AE%E3%82%BD%E3%83%BC%E3%82%B9%E3%82%92%E7%B2%BE%E6%9F%BB%E3%82%B3%E3%83%BC%E3%83%89%E5%A4%89%E6%9B%B4%E3%81%AA%E3%81%97"></a></h2>
+<p>日本心理学会第90回大会（9/4-6）のポスター発表で「順序制約を仮定して解いているのに，必ずしも達成できないのはなぜか」という質問を受け，原因を特定するためにソースを読んだ。<strong>この日はコードを触っていない</strong>。大会全体の記録は <code>~/Dropbox/03_対外活動/日本心理学会/第90回大会2026/聴講メモ.md</code>。</p>
+<div class="section level3">
+<h3 id="原因確定制約をかけている量とsoacwoac-を判定している量が違う">原因（確定）＝制約をかけている量と，SOAC/WOAC を判定している量が違う<a class="anchor" aria-label="anchor" href="#%E5%8E%9F%E5%9B%A0%E7%A2%BA%E5%AE%9A%E5%88%B6%E7%B4%84%E3%82%92%E3%81%8B%E3%81%91%E3%81%A6%E3%81%84%E3%82%8B%E9%87%8F%E3%81%A8soacwoac-%E3%82%92%E5%88%A4%E5%AE%9A%E3%81%97%E3%81%A6%E3%81%84%E3%82%8B%E9%87%8F%E3%81%8C%E9%81%95%E3%81%86"></a></h3>
+<p><strong>制約自体は効いている。</strong></p>
+<ul><li>制約＝<code>R/16_Biclustering_ordinal.R:293</code> の <code>iso_dual_map(Mcount, tol = 1e-6)</code>。El Barmi &amp; Dykstra (1994) の Fenchel 双対座標上昇で，各フィールドの上側累積確率がランク方向に単調非減少になるよう制約付き MAP を解く。<code>viol_tol = 1e-6</code> で<strong>原始実行可能性まで確認してから停止</strong>するので，<code>model_esp = Σ q·BCRM</code> から作る <strong>FRP の違反 <code>FRPmic</code> は 0 になる</strong>
+</li>
+<li>ところが <strong><code>TRP</code> はモデル母数ではなく <code>BFRP1</code> から計算されている</strong>（<code>:454-458</code>, <code>:466</code>）。 <code>BFRP1[f,c] = Σ_q q·N_fcq·P_fcq / Σ_q N_fcq·P_fcq</code>，<code>N_fcq = t(fldmemb) %*% t(ZU[,,q]) %*% clsmemb</code>（事後重みつき観測度数）＝<strong>データ由来で制約の対象外</strong>
+</li>
+<li>判定が入れ子（<code>:480-485</code>）＝<code>if (TRPmic == 0) { WOAC &lt;- TRUE; if (FRPmic == 0) SOAC &lt;- TRUE }</code>。<strong>WOACが偽ならSOACは自動的に偽</strong>。よって<strong>全フィールドのFRPが完全に単調でも，経験的TRPが一箇所凹むだけで SOAC は FALSE</strong> になる</li>
+<li>
+<strong>傍証＝二値版は同じ問題を持たない</strong>。<code>R/07_Biclustering.R:522</code> は <code>TRP &lt;- colSums(PiFR * flddist)</code> ＝モデル母数 <code>PiFR</code> にクラス方向で一定の重みを掛けた和なので，FRP が単調なら TRP も必ず単調。<strong>多値版だけが別定義</strong>。既知の罠「ncls を増やすと SOAC が簡単に FALSE」も，<code>BFRP1</code> の度数が薄くなってノイズが乗るためで整合する</li>
+</ul></div>
+<div class="section level3">
+<h3 id="対処方針未着手">対処方針（未着手）<a class="anchor" aria-label="anchor" href="#%E5%AF%BE%E5%87%A6%E6%96%B9%E9%87%9D%E6%9C%AA%E7%9D%80%E6%89%8B"></a></h3>
+<ul><li>
+<strong>SOAC/WOAC の判定をモデル母数側へ揃える</strong>（TRP を <code>model_esp</code> から作る）。isotonic 指定時は定義上つねに SOAC が真になり，制約が効いていることが出力に表れる</li>
+<li>経験的 TRP は <code>TRP_empirical</code> として併記する。<strong>モデルとデータのずれの指標</strong>として使えるので捨てない</li>
+</ul></div>
+<div class="section level3">
+<h3 id="ついでに見つかった要確認事項">ついでに見つかった要確認事項<a class="anchor" aria-label="anchor" href="#%E3%81%A4%E3%81%84%E3%81%A7%E3%81%AB%E8%A6%8B%E3%81%A4%E3%81%8B%E3%81%A3%E3%81%9F%E8%A6%81%E7%A2%BA%E8%AA%8D%E4%BA%8B%E9%A0%85"></a></h3>
+<ol style="list-style-type: decimal"><li>
+<strong><code>BFRP1</code> の重みづけが二重ではないか</strong>。事後期待観測得点なら <code>Σ q·N / Σ N</code> のはずだが <code>P_fcq</code> を掛けている。素の経験平均は <code>BFRP2</code>（<code>mean(Z*Q)</code>）が別に持つ。何を意図した量かの確認が要る</li>
+<li>
+<strong><code>method="B"</code>（既定）だと <code>estimation="isotonic"</code> が黙って無視される</strong>（<code>:69</code> の <code>use_isotonic &lt;- (model == 2) &amp;&amp; (estimation == "isotonic")</code>）。仕様としては正しい（Biclustering のクラスは順序なし）が<strong>メッセージも警告も出ない</strong>。既定が <code>"B"</code> なので事故りうる → 警告を出すべき</li>
+<li>
+<strong>収束時のロールバックが片方だけ</strong>。<code>:354</code> で <code>BCRM &lt;- oldBCRM</code> するが <strong><code>BBRM</code> は新しいまま</strong>。以後 <code>testell</code> は <code>BCRM</code>，<code>nparam</code> は <code>BBRM</code> から計算されるので<strong>1反復ずれた組み合わせ</strong>になる。<code>R/07_Biclustering.R</code> も同型</li>
+<li>
+<strong>ソルバの反復上限のコメントが実装と食い違う</strong>。コメントは「ソルバは自前の上限（既定100）を持つ」だが，R 側ラッパ <code>iso_dual_map()</code> の既定が <code>maxiter = 1000</code> で，呼び出しが <code>iso_dual_map(Mcount, tol = 1e-6)</code> なので <strong>C++ の既定100は使われず1000が渡る</strong>。安全側なので実害はないが記述が実装と違う</li>
+</ol></div>
+<div class="section level3">
+<h3 id="機能追加要望ポスター来場者から">機能追加要望（ポスター来場者から）<a class="anchor" aria-label="anchor" href="#%E6%A9%9F%E8%83%BD%E8%BF%BD%E5%8A%A0%E8%A6%81%E6%9C%9B%E3%83%9D%E3%82%B9%E3%82%BF%E3%83%BC%E6%9D%A5%E5%A0%B4%E8%80%85%E3%81%8B%E3%82%89"></a></h3>
+<p><strong>「PiFR の推定が終わったあと，回答者のランク分けをするだけの機能（予測）が欲しい」</strong></p>
+<ul><li>現状 <code>predict</code> は NAMESPACE に一つも無い。実体は<strong>母数を固定した1回のEステップ</strong>で，IRT でいう項目母数固定のスコアリングと同じ。返り値に <code>FRP</code>(=BCRM) と <code>FieldMembership</code> があるので<strong>部品は揃っている</strong>
+</li>
+<li>API 案＝<code>predict(object, newdata, type = c("class","posterior","score"))</code>。返り値は <code>Students</code> と同じ形。同じ仕組みで Biclustering / Ranklustering の全データ型と LCA・LRA まで対応できる</li>
+<li>
+<strong>罠4つ</strong>＝(1)<strong>★<code>remap_category_codes()</code> の対応表が保存されていない</strong>。新データに出現しないカテゴリがあるとコードがずれる。<strong>適合時のマッピングをオブジェクトに保存する必要があり，返り値の構造変更を伴うのでやるなら早い方が得</strong> (2)項目の同一性（2.1.0 で <code>R/00_labels.R</code> にラベルを集約したので時期は良い） (3)欠測 <code>Z</code> の扱いを適合時と揃える (4)Ranklustering の GTM 経路で予測時にフィルタ平滑化を適用するか（isotonic 経路には無いので曖昧さなし。既定は生の事後確率が無難）</li>
+<li>
+<strong>副産物が大きい</strong>＝これがあると<strong>交差検証ができる</strong>。学習データで推定→検証データで対数尤度＝<strong>予測に基づくモデル選択</strong>。A3 の「格子探索は真の(C,F)を当てられない・規準面が単峰でない」に対して<strong>AIC/BIC とは別の規準</strong>を持ち込める可能性がある</li>
+</ul></div>
+<div class="section level3">
+<h3 id="次-11">次<a class="anchor" aria-label="anchor" href="#%E6%AC%A1-11"></a></h3>
+<ul><li>上の対処方針（SOAC 判定の統一）を最初に入れ，既存テストが通るかを見る。要確認事項2〜4もまとめて直す</li>
+<li>
+<code><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict()</a></code> は 2.1.0 の機能追加候補。<strong>罠1（カテゴリマッピングの保存）は返り値の構造変更を伴うので早い方が得</strong>
+</li>
+<li>2.1.0 の本命が多値BNM(case C)，CRAN 提出が 9/20 以降という方針は変更なし</li>
+</ul></div>
+</div>
+<div class="section level2">
+<h2 id="id_2026-09-10-リリース計画を確定201--210-に統合">2026-09-10 リリース計画を確定（2.0.1 → 2.1.0 に統合）<a class="anchor" aria-label="anchor" href="#id_2026-09-10-%E3%83%AA%E3%83%AA%E3%83%BC%E3%82%B9%E8%A8%88%E7%94%BB%E3%82%92%E7%A2%BA%E5%AE%9A201--210-%E3%81%AB%E7%B5%B1%E5%90%88"></a></h2>
+<p>9/6のisotonic精査で見つけた不具合のうち<strong>推定値が変わるものがある</strong>ため，パッチ版として用意していた 2.0.1 を <strong>2.1.0 に格上げして1本にまとめる</strong>方針とした。NEWSの「no change to any estimate」は撤回して書き直す。</p>
+<p><strong>判断の根拠</strong>: NEWSは自分で書いた文書であり，文言に合わせてバグの修正を先送りするのは順序が逆。版番号を上げてNEWSを直せば済む。</p>
+<div class="section level3">
+<h3 id="ロールバックの片落ち--実コードで確認し範囲を確定">ロールバックの片落ち — 実コードで確認し，範囲を確定<a class="anchor" aria-label="anchor" href="#%E3%83%AD%E3%83%BC%E3%83%AB%E3%83%90%E3%83%83%E3%82%AF%E3%81%AE%E7%89%87%E8%90%BD%E3%81%A1--%E5%AE%9F%E3%82%B3%E3%83%BC%E3%83%89%E3%81%A7%E7%A2%BA%E8%AA%8D%E3%81%97%E7%AF%84%E5%9B%B2%E3%82%92%E7%A2%BA%E5%AE%9A"></a></h3>
+<p><code>R/16_Biclustering_ordinal.R:353-356</code></p>
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/is.finite.html" class="external-link">is.finite</a></span><span class="op">(</span><span class="va">test_log_lik</span><span class="op">)</span> <span class="op">||</span> <span class="va">test_log_lik</span> <span class="op">-</span> <span class="va">old_test_log_lik</span> <span class="op">&lt;=</span> <span class="fl">0</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">BCRM</span> <span class="op">&lt;-</span> <span class="va">oldBCRM</span>      <span class="co"># BCRM だけ戻す</span></span>
+<span>  <span class="kw">break</span>                <span class="co"># BBRM は最後の反復のまま</span></span>
+<span><span class="op">}</span></span></code></pre></div>
+<ul><li>
+<code>testell</code>（<code>:366-370</code>）は <strong><code>BCRM</code></strong>（戻した値）から</li>
+<li>
+<code>nparam</code>（<code>:378-380</code>）は <strong><code>BBRM</code></strong>（戻していない値）から</li>
+<li>→ <strong>1反復ずれた組み合わせで AIC・BIC・df が出る</strong>
+</li>
+</ul><p><strong>影響範囲は思ったより狭い。</strong><code>nparam</code> が <code>BBRM</code> を使うのは <strong><code>use_isotonic</code> の分岐だけ</strong>。他の分岐（<code>ncls*nfld*(maxQ-1)</code> 等）は構造から決まるので影響しない。よって</p>
+<blockquote>
+<p><strong>多値バイクラ ＋ <code>method="R"</code> ＋ <code>estimation="isotonic"</code> のときの <code>nparam</code>／AIC／BIC／df</strong></p>
+</blockquote>
+<p>だけが対象。ただし<strong>この分岐は例外パスではない</strong>——<code>test_log_lik - old_test_log_lik &lt;= 0</code> は尤度が改善しなくなったとき，つまり<strong>通常の収束経路</strong>で，tolによる別の収束判定はない。<strong>ほぼ毎回通る</strong>。</p>
+<p><strong>★ 2026-09-06 の記述を訂正</strong>: 「<code>R/07_Biclustering.R</code> も同型」は<strong>誤り</strong>。二値版は <code>PiFR &lt;- oldPiFR</code>（<code>:503</code>）で戻し，<code>nparam</code> も <code>PiFR</code> から作る（<code>:581</code>）ので<strong>戻す変数と使う変数が一致しており，ずれない</strong>。<strong>多値版だけの問題</strong>。</p>
+<p><strong>修正自体は1行</strong>（<code>BBRM</code> も戻すか，<code>BCRM</code> から <code>:151</code> の漸化式で再構成）。<strong>重いのは検証</strong>——推定値が変わるので既存テストの期待値と Mathematica 由来の参照フィクスチャとの突合が要る。</p>
+</div>
+<div class="section level3">
+<h3 id="リリース計画">リリース計画<a class="anchor" aria-label="anchor" href="#%E3%83%AA%E3%83%AA%E3%83%BC%E3%82%B9%E8%A8%88%E7%94%BB"></a></h3>
+<table class="table"><colgroup><col width="33%"><col width="33%"><col width="33%"></colgroup><thead><tr><th>版</th>
+<th>内容</th>
+<th>時期</th>
+</tr></thead><tbody><tr><td><strong>2.1.0</strong></td>
+<td>①受験者ID/項目ラベルが全モデルの出力へ ②Arrayプロットのラスタ化 ③<strong>ロールバックの片落ち（多値版・数値に効く）</strong> ④<code>method="B"</code> で isotonic が黙って無視される→警告 ⑤maxiterのコメントと実装の食い違い ＋<strong>NEWS書き直し</strong>
+</td>
+<td><strong>9月末〜10月上旬</strong></td>
+</tr><tr><td><strong>2.2.0</strong></td>
+<td>
+<strong>SOAC/WOAC の判定をモデル母数側（<code>model_esp</code>）へ揃える</strong>（経験的TRPは <code>TRP_empirical</code> として併記）＋ <strong><code><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict()</a></code></strong>（母数固定の1回Eステップ。罠＝<code>remap_category_codes()</code> の対応表が未保存。副産物として交差検証によるモデル選択の道が開く）</td>
+<td>年内</td>
+</tr><tr><td><strong>2.3.0</strong></td>
+<td><strong>多値BNM（StepReg / case C）</strong></td>
+<td>年明け</td>
+</tr></tbody></table><p><strong>SOAC/WOACの判定変更を2.1.0に入れない理由</strong>: <code>TRP_empirical</code> の併記は<strong>出力仕様の変更</strong>で設計判断を含む。急ぐと雑になる。<code><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict()</a></code> も返り値の構造変更を伴うので，まとめて2.2.0で扱う。</p>
+</div>
+<div class="section level3">
+<h3 id="提出の段取り">提出の段取り<a class="anchor" aria-label="anchor" href="#%E6%8F%90%E5%87%BA%E3%81%AE%E6%AE%B5%E5%8F%96%E3%82%8A"></a></h3>
+<ul><li>CRAN再提出は <strong>2.0.0 の受理（2026-08-20）から1ヶ月＝9/20以降</strong>。ただし<strong>9/20は下限であって締切ではない</strong>
+</li>
+<li>残作業は <strong><code>R CMD check --as-cran</code> と win-builder</strong>（未実施）</li>
+<li>後期は<strong>水・金が研究日</strong>。<strong>9/25(金)か9/30(水)</strong>に通して提出する。塾合宿（9/17-19）から帰ったあとで落ち着いてやれる</li>
+<li>CRANの再提出間隔は1〜2ヶ月が目安。<strong>2.1.0を9月末に出したら，次は11月以降</strong>＝その間が2.2.0の開発期間</li>
+</ul></div>
+</div>
+<div class="section level2">
+<h2 id="id_2026-09-15-som-の移植ミスを潰し内側ループを-c-化210-へ繰り上げ">2026-09-15 SOM の移植ミスを潰し，内側ループを C++ 化（2.1.0 へ繰り上げ）<a class="anchor" aria-label="anchor" href="#id_2026-09-15-som-%E3%81%AE%E7%A7%BB%E6%A4%8D%E3%83%9F%E3%82%B9%E3%82%92%E6%BD%B0%E3%81%97%E5%86%85%E5%81%B4%E3%83%AB%E3%83%BC%E3%83%97%E3%82%92-c-%E5%8C%96210-%E3%81%B8%E7%B9%B0%E3%82%8A%E4%B8%8A%E3%81%92"></a></h2>
+<p>ベイズ塾合宿（9/19 の研究発表）の資料づくりで LRA の GTM と isotonic を比べていて， SOM だけが毎回「収束しなかったかもしれない」と警告を出すことに気づいたのが発端。 <code>R/00_EMclus.R</code> の <code>somclus()</code> を Mathematica 原典（<code>develop/mtmk15forVer13/mod/Module_LRA.wl</code>） と読み合わせ，移植の過程で入った食い違いを 5 件直した。</p>
+<div class="section level3">
+<h3 id="原典との照合で分かったこと">原典との照合で分かったこと<a class="anchor" aria-label="anchor" href="#%E5%8E%9F%E5%85%B8%E3%81%A8%E3%81%AE%E7%85%A7%E5%90%88%E3%81%A7%E5%88%86%E3%81%8B%E3%81%A3%E3%81%9F%E3%81%93%E3%81%A8"></a></h3>
+<p>本家の SOM は <code>maxT = 100</code> を走り切って黙って終わる。収束判定は存在しない。 提示順は <code>SeedRandom[Total[uuu] + somt]</code> で<strong>エポックごとに種を引き直す</strong>ので， データが同じなら結果は決まる（決定的）。R 版の <code>seed = NULL</code> 経路はこれを正確に 再現していた。</p>
+<ul><li>
+<strong>seed の凍結（R 独自のバグ）</strong>: <code>seed</code> を渡すと <code>set.seed(seed)</code> をループ内で毎回 呼ぶため，提示順が全エポックで同一になっていた。本家に <code>seed</code> 引数は無い。 <code>seed_base + somt</code> へ変更。<code>seed = NULL</code> の数値は従来と同一。</li>
+<li>
+<strong>収束報告（R 独自の設計ミス）</strong>: 判定が無いこと自体は本家どおりだが，R は完走を <code>converge = FALSE</code> ＋警告で報告していた。既定経路の警告を廃止。</li>
+<li>
+<strong><code>mic</code> の適用位置</strong>: 本家は学生 1 人の更新直後に <code>Sort /@ refmat</code>。R はエポック末に まとめて掛けており，勝者の決定に使う行列が別物になる＝別アルゴリズム。<code>conf</code> も 同じ位置へ揃えた（<code>conf</code> は本家に無い R 独自の機能）。</li>
+<li>
+<strong>タイブレーク</strong>: 本家 <code>Sort[...][[-1]]</code> は同値なら大きいランク。<code>which.max</code> は小さい ランクを返していたので向きを合わせた。</li>
+<li>
+<strong><code>.Random.seed</code> の破壊</strong>: 毎反復で <code>set.seed</code> を呼びながら戻していなかったため， 呼び出し側の乱数列を壊していた。<code>on.exit</code> で復帰。</li>
+<li>
+<strong>丸めは合わせない</strong>: 本家は <code>hhhmat</code> を <code>10^-6</code> で丸めるが，影響が軽微なので対応しない。</li>
+<li>
+<strong><code>maxiter</code> の既定</strong>: 本家は <code>maxT = 100</code> 固定。R は <code>LRA.binary</code> が 1000 を渡す。 <strong>1000 のまま据え置き</strong>と決めた。SOM では <code>maxiter</code> が焼きなましのスケジュールそのもの （<code>alpha</code> 1→0.01，<code>sigma</code> 1→0.12 を maxiter ステップで線形に落とす）なので， 増やすと「長く回す」ではなく「冷まし方を変える」ことになり，解が変わる。</li>
+</ul></div>
+<div class="section level3">
+<h3 id="mathematica-と数値を突合しない理由結論">Mathematica と数値を突合しない理由（結論）<a class="anchor" aria-label="anchor" href="#mathematica-%E3%81%A8%E6%95%B0%E5%80%A4%E3%82%92%E7%AA%81%E5%90%88%E3%81%97%E3%81%AA%E3%81%84%E7%90%86%E7%94%B1%E7%B5%90%E8%AB%96"></a></h3>
+<p><strong>SOM は乱数エンジンに依存するので，本家と同じ種を与えても提示順の系列が違い，一致しない。</strong> <code>tools/regen_fixtures.sh</code> に SOM（method = 1）の行が無いのはそのため。突合したくなったら， Mathematica 側から提示順 <code>is</code> を書き出して R に読ませれば決定的な比較はできるが， 荘島先生が SOM を推奨していないので割に合わない。代わりにテスト内へ独立に書いた 参照実装（<code>som_reference()</code>）との一致でアルゴリズムを固定した。</p>
+</div>
+<div class="section level3">
+<h3 id="c-化">C++ 化<a class="anchor" aria-label="anchor" href="#c-%E5%8C%96"></a></h3>
+<p><code>src/som_core.cpp</code> を新設し，1 エポック分の学生ループ（勝者判定・近傍更新・<code>conf</code>・<code>mic</code>・ 事前分布）を移した。<strong>提示順の生成と外側ループは R に残す</strong>。理由は (a) <code>set.seed</code> の 再現性を保つため，(b) <code>BIC.check</code> の早期停止が <code><a href="reference/ItemFit.html">ItemFit()</a></code> を呼ぶため。</p>
+<p>計測（J15S500・nrank = 6・maxiter = 1000）:</p>
+<table class="table"><thead><tr><th></th>
+<th>変更前</th>
+<th>R のソーティングネットワーク</th>
+<th>C++</th>
+</tr></thead><tbody><tr><td><code>mic = FALSE</code></td>
+<td>5.2 s</td>
+<td>5.2 s</td>
+<td><strong>1.89 s</strong></td>
+</tr><tr><td><code>mic = TRUE</code></td>
+<td>103.5 s</td>
+<td>7.1 s</td>
+<td><strong>2.57 s</strong></td>
+</tr></tbody></table><p><code>mic = TRUE</code> を学生ごとに直すと素朴な <code>t(apply(M, 1, sort))</code> では 20 倍遅くなる（50 万回の 並べ替え）。奇偶転置ソートで 7.1 秒まで落としたが，C++ 化で不要になったので削除した。 残る 1.9 秒はほぼ <code><a href="https://rdrr.io/r/base/Log.html" class="external-link">log()</a></code> の呼び出し回数（学生 1 人あたり 180 回 × 50 万人 = 9000 万回）で 決まっており，アルゴリズムを変えない限りこれ以上は詰まらない。 <code>postdist</code> を毎エポックではなくスケジュール終了後に 1 回だけ計算するようにも直した。</p>
+</div>
+<div class="section level3">
+<h3 id="テスト-1">テスト<a class="anchor" aria-label="anchor" href="#%E3%83%86%E3%82%B9%E3%83%88-1"></a></h3>
+<p><code>tests/testthat/test-lra-som.R</code>（新設・5 本）。SOM のテストはこれまで 1 本も無かった。 <strong>うち 1 本はテスト内に独立に書いた参照実装との数値一致</strong>で，これだけが提示順の凍結と <code>mic</code> の位置ずれを検出できる。変異テストで確認済み＝どちらを元に戻しても <code>test-lra-som.R:87</code> が落ち，他の 4 本は通ってしまう。</p>
+</div>
+<div class="section level3">
+<h3 id="リリース">リリース<a class="anchor" aria-label="anchor" href="#%E3%83%AA%E3%83%AA%E3%83%BC%E3%82%B9"></a></h3>
+<ul><li>
+<code>DESCRIPTION</code> を <strong>2.1.0</strong> へ繰り上げ。NEWS は <strong>2.0.1 の節を原文のまま残し，2.1.0 を新設</strong> （v2.0.1 のタグは GitHub に公開済みなので吸収しない）。</li>
+<li>全テスト 3536 件 pass。<code>git archive HEAD</code> した木で <code>R CMD check --as-cran</code> は <strong>0 errors / 0 warnings / 1 note</strong>。note は 2.0.1 の Array ラスタ化由来で <code>importFrom("graphics", "grconvertX", "grconvertY", "rasterImage")</code> の追加を促すもの。<strong>未対応</strong>。</li>
+<li>コミット <code>085a2dd</code>（fix）と <code>25db7d8</code>（docs）を main へ push 済み。</li>
+</ul></div>
+<div class="section level3">
+<h3 id="次回への引き継ぎ-2">次回への引き継ぎ<a class="anchor" aria-label="anchor" href="#%E6%AC%A1%E5%9B%9E%E3%81%B8%E3%81%AE%E5%BC%95%E3%81%8D%E7%B6%99%E3%81%8E-2"></a></h3>
+<ul><li>
+<strong>isotonic のロールバック片落ち修正（<code>16_Biclustering_ordinal.R:353</code>）は未着手</strong>。2.1.0 の 繰り上げのそもそもの理由がこれなので，提出前に必ず入れる。</li>
+<li>
+<code>graphics</code> の <code>importFrom</code> を足して note を消す。</li>
+<li>
+<strong>GitHub の Release（タグ v2.1.0）はまだ打っていない</strong>。中身が揃ってから。</li>
+<li>
+<code>rhub_check()</code> と <code>check_win_devel()</code> は未実施。9/25(金) か 9/30(水) に通して提出。</li>
+</ul></div>
+</div>
 </div>
 
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

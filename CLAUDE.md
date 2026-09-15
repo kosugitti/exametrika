@@ -6,8 +6,16 @@
 (2022, <ISBN:978-9811699856>). It provides psychometric analysis tools:
 CTT, IRT, GRM, LCA, LRA, Biclustering, BNM, LDLRA, LDB, BINET.
 
-- **Current version**: 2.0.1 (GitHub release; CRAN submission after
-  2026-09-20)
+- **Current version**: **2.1.0 in DESCRIPTION** (raised 2026-09-15). The
+  planned 2.0.1 patch became a minor release because estimates change:
+  the isotonic rollback fix does, and so do the SOM fixes of 2026-09-15.
+  NEWS keeps the 2.0.1 section as published and adds a new 2.1.0 section
+  on top (the v2.0.1 tag is already on GitHub). Plan and rationale:
+  `WORKLOG.md` 2026-09-10 and 2026-09-15. Submit to CRAN 2026-09-25 or
+  09-30 (the 2026-09-20 one-month mark is a floor, not a deadline).
+  `R CMD check --as-cran` passes locally with one pre-existing note
+  (`importFrom("graphics", ...)` for the 2.0.1 raster plot); rhub and
+  win-builder still to be run.
 - **CRAN version**: 2.0.0 (accepted and published 2026-08-20). Submitted
   through the web form, so `CRAN-SUBMISSION` still reads 1.15.0.
 - **GitHub Release**: v2.0.0 (2026-08-20, latest) / v1.15.0
@@ -372,6 +380,29 @@ does — LCA classes are unordered, and sorting would imply otherwise.
 
 ## Known Technical Debt
 
+### 順序制約(isotonic)まわり — 2026-09-06 のソース精査で判明。未修正
+
+経緯は `WORKLOG.md`
+2026-09-06。**制約自体は効いている**（`iso_dual_map()` が
+`viol_tol=1e-6` で原始実行可能性まで確認する）。問題は判定側。
+
+- **★SOAC/WOAC の判定がモデル母数を見ていない**。`TRP` が
+  `BFRP1`（事後重みつき観測度数×モデル確率）から作られており制約対象外（`R/16_Biclustering_ordinal.R:454-458, 466`）。判定は入れ子（`TRPmic==0`
+  が WOAC
+  の前提）なので，**FRPが完全に単調でも経験的TRPが一箇所凹むだけでSOACがFALSE**になる。**二値版
+  `R/07_Biclustering.R:522` は `colSums(PiFR * flddist)`
+  でモデル母数から作るためこの問題を持たない**。→ **TRP を `model_esp`
+  から作って揃える。経験的TRPは `TRP_empirical` として併記**
+- `BFRP1` の重みづけが二重ではないか（事後期待観測得点なら `Σ q·N / Σ N`
+  のはずだが `P_fcq` を掛けている。素の経験平均は `BFRP2`）
+- **`method="B"`（既定）だと `estimation="isotonic"`
+  が黙って無視される**（`:69`）。仕様としては正しいが**警告が無い**
+- **収束時のロールバックが片方だけ**＝`:354` で `BCRM <- oldBCRM` するが
+  `BBRM` は新しいまま。`testell` は BCRM，`nparam` は BBRM
+  から計算されるので**1反復ずれる**。`R/07_Biclustering.R` も同型
+- ソルバの反復上限のコメントが実装と食い違う（コメントは既定100，実際は
+  R 側ラッパの `maxiter=1000` が渡る）
+
 ### TODO Items (`tests/testthat/test-lra-ordinal.R`)
 
 - **L149**: Investigate `nobs` handling unification — R uses per-item
@@ -552,6 +583,21 @@ does — LCA classes are unordered, and sorting would imply otherwise.
   See `NEWS.md` and `test-lra-ordinal.R`.
 
 ## Roadmap
+
+### 検討中（2026-09-06・日心のポスターで受けた要望）
+
+- **[`predict()`](https://rdrr.io/r/stats/predict.html)
+  メソッド＝母数を固定して新しい回答者をランク分けする**。実体は**1回のEステップ**で，返り値の
+  `FRP`(=BCRM) と `FieldMembership` があれば作れる。API案は
+  `predict(object, newdata, type = c("class","posterior","score"))`
+  - **★最重要の罠＝`remap_category_codes()`
+    の対応表が保存されていない**。新データに出現しないカテゴリがあるとコードがずれる。**返り値の構造変更を伴うのでやるなら早い方が得**
+  - 他の罠＝項目の同一性（`R/00_labels.R`
+    にラベルを集約済みなので時期は良い）／欠測 `Z` の扱い／GTM
+    経路で予測時にフィルタ平滑化を適用するか（既定は生の事後確率が無難）
+  - **副産物＝交差検証ができる**。学習→検証の対数尤度による**予測に基づくモデル選択**。A3の「規準面が単峰でない」問題に対して
+    AIC/BIC とは別の規準を持ち込める可能性
+  - 設計メモ＝memory `project_exametrika_future` 項目7
 
 ### v1.9.0 (released, GitHub Release 2026-02-23)
 
@@ -854,14 +900,35 @@ CRAN 版のラベル不具合が9月末まで残るので分けた。**GitHub
   格子線はセルが6画素以上のときだけ引く(nrows+ncols
   本の線で，nrows\*ncols 個の矩形ではない)。
 
-### v2.1.0 (計画)
+### v2.1.0 (開発中・DESCRIPTION は繰り上げ済み)
 
-- **多値BNM (StepReg / StepBNM・case C)** が本命。詳細は Version policy
-  の節。
-- 見送った小改善: 適合度規準の定義を
-  [`print()`](https://rdrr.io/r/base/print.html) に明示する /
-  `TestFitIndices` に `criterion_scale`
-  属性を持たせ，異なる定義どうしの比較に警告を出す。
+**入っているもの (2026-09-15 時点)**
+
+- **SOM の移植ミス 5 件の修正と，内側ループの C++ 化**
+  (`src/som_core.cpp`)。詳細は `WORKLOG.md` 2026-09-15。`method = "SOM"`
+  の推定値が変わる (seed 指定時・`mic = TRUE`)。 **SOM
+  は本家と乱数エンジンが違うので Mathematica
+  参照との数値突合はしない**—— 代わりに `tests/testthat/test-lra-som.R`
+  の参照実装との一致でアルゴリズムを固定した。
+
+**入れる予定のもの**
+
+- **isotonic のロールバック片落ち修正**
+  (`16_Biclustering_ordinal.R:353`)。**繰り上げの
+  そもそもの理由なので提出前に必ず入れる。** 未着手。
+- `importFrom("graphics", "grconvertX", "grconvertY", "rasterImage")`
+  を足して `R CMD check` の note を消す。
+
+**見送った小改善**: 適合度規準の定義を
+[`print()`](https://rdrr.io/r/base/print.html) に明示する /
+`TestFitIndices` に `criterion_scale`
+属性を持たせ，異なる定義どうしの比較に警告を出す。
+
+**多値BNM (StepReg / StepBNM・case C) はこの版には入れない。**
+ホームの台帳では 2.3.0，2.2.0 は SOAC/WOAC 判定の `model_esp`
+側への移設・`TRP_empirical` の併記・
+[`predict()`](https://rdrr.io/r/stats/predict.html)。この節は以前 2.1.0
+の本命を多値BNM と書いていたが，台帳側が新しい。
 
 ### 2.0.0 の提出前に踏んだ地雷 (2026-08-19・次回も効く)
 

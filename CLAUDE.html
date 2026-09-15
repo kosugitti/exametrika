@@ -39,7 +39,7 @@
 <h2 id="package-overview">Package Overview<a class="anchor" aria-label="anchor" href="#package-overview"></a></h2>
 <p><code>exametrika</code> is an R package for Test Data Engineering based on Shojima (2022, <a href="ISBN:978-9811699856" class="uri">ISBN:978-9811699856</a>). It provides psychometric analysis tools: CTT, IRT, GRM, LCA, LRA, Biclustering, BNM, LDLRA, LDB, BINET.</p>
 <ul><li>
-<strong>Current version</strong>: 2.0.1 (GitHub release; CRAN submission after 2026-09-20)</li>
+<strong>Current version</strong>: <strong>2.1.0 in DESCRIPTION</strong> (raised 2026-09-15). The planned 2.0.1 patch became a minor release because estimates change: the isotonic rollback fix does, and so do the SOM fixes of 2026-09-15. NEWS keeps the 2.0.1 section as published and adds a new 2.1.0 section on top (the v2.0.1 tag is already on GitHub). Plan and rationale: <code>WORKLOG.md</code> 2026-09-10 and 2026-09-15. Submit to CRAN 2026-09-25 or 09-30 (the 2026-09-20 one-month mark is a floor, not a deadline). <code>R CMD check --as-cran</code> passes locally with one pre-existing note (<code>importFrom("graphics", ...)</code> for the 2.0.1 raster plot); rhub and win-builder still to be run.</li>
 <li>
 <strong>CRAN version</strong>: 2.0.0 (accepted and published 2026-08-20). Submitted through the web form, so <code>CRAN-SUBMISSION</code> still reads 1.15.0.</li>
 <li>
@@ -259,6 +259,21 @@ docs/                # .gitignore'd (removed from repo); pkgdown site deployed t
 <div class="section level2">
 <h2 id="known-technical-debt">Known Technical Debt<a class="anchor" aria-label="anchor" href="#known-technical-debt"></a></h2>
 <div class="section level3">
+<h3 id="順序制約isotonicまわり--2026-09-06-のソース精査で判明未修正">順序制約(isotonic)まわり — 2026-09-06 のソース精査で判明。未修正<a class="anchor" aria-label="anchor" href="#%E9%A0%86%E5%BA%8F%E5%88%B6%E7%B4%84isotonic%E3%81%BE%E3%82%8F%E3%82%8A--2026-09-06-%E3%81%AE%E3%82%BD%E3%83%BC%E3%82%B9%E7%B2%BE%E6%9F%BB%E3%81%A7%E5%88%A4%E6%98%8E%E6%9C%AA%E4%BF%AE%E6%AD%A3"></a></h3>
+<p>経緯は <code>WORKLOG.md</code> 2026-09-06。<strong>制約自体は効いている</strong>（<code>iso_dual_map()</code> が <code>viol_tol=1e-6</code> で原始実行可能性まで確認する）。問題は判定側。</p>
+<ul><li>
+<strong>★SOAC/WOAC の判定がモデル母数を見ていない</strong>。<code>TRP</code> が <code>BFRP1</code>（事後重みつき観測度数×モデル確率）から作られており制約対象外（<code>R/16_Biclustering_ordinal.R:454-458, 466</code>）。判定は入れ子（<code>TRPmic==0</code> が WOAC の前提）なので，<strong>FRPが完全に単調でも経験的TRPが一箇所凹むだけでSOACがFALSE</strong>になる。<strong>二値版 <code>R/07_Biclustering.R:522</code> は <code>colSums(PiFR * flddist)</code> でモデル母数から作るためこの問題を持たない</strong>。→ <strong>TRP を <code>model_esp</code> から作って揃える。経験的TRPは <code>TRP_empirical</code> として併記</strong>
+</li>
+<li>
+<code>BFRP1</code> の重みづけが二重ではないか（事後期待観測得点なら <code>Σ q·N / Σ N</code> のはずだが <code>P_fcq</code> を掛けている。素の経験平均は <code>BFRP2</code>）</li>
+<li>
+<strong><code>method="B"</code>（既定）だと <code>estimation="isotonic"</code> が黙って無視される</strong>（<code>:69</code>）。仕様としては正しいが<strong>警告が無い</strong>
+</li>
+<li>
+<strong>収束時のロールバックが片方だけ</strong>＝<code>:354</code> で <code>BCRM &lt;- oldBCRM</code> するが <code>BBRM</code> は新しいまま。<code>testell</code> は BCRM，<code>nparam</code> は BBRM から計算されるので<strong>1反復ずれる</strong>。<code>R/07_Biclustering.R</code> も同型</li>
+<li>ソルバの反復上限のコメントが実装と食い違う（コメントは既定100，実際は R 側ラッパの <code>maxiter=1000</code> が渡る）</li>
+</ul></div>
+<div class="section level3">
 <h3 id="todo-items-teststestthattest-lra-ordinalr">TODO Items (<code>tests/testthat/test-lra-ordinal.R</code>)<a class="anchor" aria-label="anchor" href="#todo-items-teststestthattest-lra-ordinalr"></a></h3>
 <ul><li>
 <strong>L149</strong>: Investigate <code>nobs</code> handling unification — R uses per-item nobs (<code>colSums(Z)</code>) while Mathematica uses total nobs. Affects RMSEA, CAIC, BIC for datasets with significant missing data (e.g., J15S3810).</li>
@@ -295,6 +310,19 @@ docs/                # .gitignore'd (removed from repo); pkgdown site deployed t
 </div>
 <div class="section level2">
 <h2 id="roadmap">Roadmap<a class="anchor" aria-label="anchor" href="#roadmap"></a></h2>
+<div class="section level3">
+<h3 id="検討中2026-09-06日心のポスターで受けた要望">検討中（2026-09-06・日心のポスターで受けた要望）<a class="anchor" aria-label="anchor" href="#%E6%A4%9C%E8%A8%8E%E4%B8%AD2026-09-06%E6%97%A5%E5%BF%83%E3%81%AE%E3%83%9D%E3%82%B9%E3%82%BF%E3%83%BC%E3%81%A7%E5%8F%97%E3%81%91%E3%81%9F%E8%A6%81%E6%9C%9B"></a></h3>
+<ul><li>
+<strong><code><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict()</a></code> メソッド＝母数を固定して新しい回答者をランク分けする</strong>。実体は<strong>1回のEステップ</strong>で，返り値の <code>FRP</code>(=BCRM) と <code>FieldMembership</code> があれば作れる。API案は <code>predict(object, newdata, type = c("class","posterior","score"))</code>
+<ul><li>
+<strong>★最重要の罠＝<code>remap_category_codes()</code> の対応表が保存されていない</strong>。新データに出現しないカテゴリがあるとコードがずれる。<strong>返り値の構造変更を伴うのでやるなら早い方が得</strong>
+</li>
+<li>他の罠＝項目の同一性（<code>R/00_labels.R</code> にラベルを集約済みなので時期は良い）／欠測 <code>Z</code> の扱い／GTM 経路で予測時にフィルタ平滑化を適用するか（既定は生の事後確率が無難）</li>
+<li>
+<strong>副産物＝交差検証ができる</strong>。学習→検証の対数尤度による<strong>予測に基づくモデル選択</strong>。A3の「規準面が単峰でない」問題に対して AIC/BIC とは別の規準を持ち込める可能性</li>
+<li>設計メモ＝memory <code>project_exametrika_future</code> 項目7</li>
+</ul></li>
+</ul></div>
 <div class="section level3">
 <h3 id="v190-released-github-release-2026-02-23">v1.9.0 (released, GitHub Release 2026-02-23)<a class="anchor" aria-label="anchor" href="#v190-released-github-release-2026-02-23"></a></h3>
 <ul><li>Polytomous Biclustering plots, Return value structure unification, pkgdown site migration, Vignettes, GridSearch/LRA/GRM bug fixes</li>
@@ -434,11 +462,18 @@ docs/                # .gitignore'd (removed from repo); pkgdown site deployed t
 <strong>Array プロットを <code><a href="https://rdrr.io/r/graphics/rasterImage.html" class="external-link">rasterImage()</a></code> に変えた。</strong>旧実装はセルごとに <code>rect(border="white", lwd=0.1)</code> で，<strong>1画素未満の枠は引けない</strong>ため行が画素より 細くなると枠が塗りを食う。どの行が消えるかは画素格子との噛み合わせ次第でまだらになる。 実測(J12S5000・5000行を700px高で描画): 平均輝度 0.801(旧) 対 0.613(新)，真の黒率 0.562。 <strong>インクの3〜4割が失われていた。</strong>描画も 0.83秒 → 0.004秒(1パネルあたり)。 格子線はセルが6画素以上のときだけ引く(nrows+ncols 本の線で，nrows*ncols 個の矩形ではない)。</li>
 </ul></div>
 <div class="section level3">
-<h3 id="v210-計画">v2.1.0 (計画)<a class="anchor" aria-label="anchor" href="#v210-%E8%A8%88%E7%94%BB"></a></h3>
+<h3 id="v210-開発中description-は繰り上げ済み">v2.1.0 (開発中・DESCRIPTION は繰り上げ済み)<a class="anchor" aria-label="anchor" href="#v210-%E9%96%8B%E7%99%BA%E4%B8%ADdescription-%E3%81%AF%E7%B9%B0%E3%82%8A%E4%B8%8A%E3%81%92%E6%B8%88%E3%81%BF"></a></h3>
+<p><strong>入っているもの (2026-09-15 時点)</strong></p>
 <ul><li>
-<strong>多値BNM (StepReg / StepBNM・case C)</strong> が本命。詳細は Version policy の節。</li>
-<li>見送った小改善: 適合度規準の定義を <code><a href="https://rdrr.io/r/base/print.html" class="external-link">print()</a></code> に明示する / <code>TestFitIndices</code> に <code>criterion_scale</code> 属性を持たせ，異なる定義どうしの比較に警告を出す。</li>
-</ul></div>
+<strong>SOM の移植ミス 5 件の修正と，内側ループの C++ 化</strong> (<code>src/som_core.cpp</code>)。詳細は <code>WORKLOG.md</code> 2026-09-15。<code>method = "SOM"</code> の推定値が変わる (seed 指定時・<code>mic = TRUE</code>)。 <strong>SOM は本家と乱数エンジンが違うので Mathematica 参照との数値突合はしない</strong>—— 代わりに <code>tests/testthat/test-lra-som.R</code> の参照実装との一致でアルゴリズムを固定した。</li>
+</ul><p><strong>入れる予定のもの</strong></p>
+<ul><li>
+<strong>isotonic のロールバック片落ち修正</strong> (<code>16_Biclustering_ordinal.R:353</code>)。<strong>繰り上げの そもそもの理由なので提出前に必ず入れる。</strong> 未着手。</li>
+<li>
+<code>importFrom("graphics", "grconvertX", "grconvertY", "rasterImage")</code> を足して <code>R CMD check</code> の note を消す。</li>
+</ul><p><strong>見送った小改善</strong>: 適合度規準の定義を <code><a href="https://rdrr.io/r/base/print.html" class="external-link">print()</a></code> に明示する / <code>TestFitIndices</code> に <code>criterion_scale</code> 属性を持たせ，異なる定義どうしの比較に警告を出す。</p>
+<p><strong>多値BNM (StepReg / StepBNM・case C) はこの版には入れない。</strong> ホームの台帳では 2.3.0，2.2.0 は SOAC/WOAC 判定の <code>model_esp</code> 側への移設・<code>TRP_empirical</code> の併記・ <code><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict()</a></code>。この節は以前 2.1.0 の本命を多値BNM と書いていたが，台帳側が新しい。</p>
+</div>
 <div class="section level3">
 <h3 id="id_200-の提出前に踏んだ地雷-2026-08-19次回も効く">2.0.0 の提出前に踏んだ地雷 (2026-08-19・次回も効く)<a class="anchor" aria-label="anchor" href="#id_200-%E3%81%AE%E6%8F%90%E5%87%BA%E5%89%8D%E3%81%AB%E8%B8%8F%E3%82%93%E3%81%A0%E5%9C%B0%E9%9B%B7-2026-08-19%E6%AC%A1%E5%9B%9E%E3%82%82%E5%8A%B9%E3%81%8F"></a></h3>
 <ul><li><p><strong>計画を実装済みと思い込まない。</strong>NEWS もマージコミットも「非推奨名を削除した」と書いて いたが，<strong>一度も削除されていなかった</strong>。pkgdown の索引を直そうとして気づいた。CRAN 向け 文書に書く前に，<code>grep -c "^export(名前)" NAMESPACE</code> の類で<strong>実物を確認する</strong>。</p></li>

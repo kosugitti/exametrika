@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">exametrika</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.0.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.1.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -30,9 +30,27 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.png" class="logo" alt=""><h1>Changelog</h1>
-      <small>Source: <a href="https://github.com/kosugitti/exametrika/blob/v2.0.1/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
+      <small>Source: <a href="https://github.com/kosugitti/exametrika/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="2.1.0" id="exametrika-210">exametrika 2.1.0<a class="anchor" aria-label="anchor" href="#exametrika-210"></a></h2>
+<p>A minor release. The estimates returned by <code>LRA(method = "SOM")</code> change, so the fixes below could not ship as a patch. They came out of reading the R code against the Mathematica routine it was ported from (<code>Module_LRA.wl</code>): the port had grown a <code>seed</code> argument and a convergence report that the original never had, and had moved the monotonicity sort to the end of each epoch.</p>
+<p>Released on GitHub first; the CRAN submission follows once the one-month cadence since 2.0.0 (accepted 2026-08-20) has passed.</p>
+<div class="section level3">
+<h3 id="bug-fixes-2-1-0">Bug Fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-2-1-0"></a></h3>
+<ul><li><p><strong>The SOM method reused one frozen presentation order whenever <code>seed</code> was given.</strong> <code>somclus()</code> reseeded inside the epoch loop with <code>set.seed(seed)</code>, so every epoch presented the respondents in exactly the same order. Online learning relies on that order being redrawn: with it fixed, the bias of one particular ordering is never averaged out. The original Mathematica routine reseeds each epoch with <code>SeedRandom[Total[uuu] + somt]</code>, and the <code>seed = NULL</code> path already matched it; only the user-supplied seed was affected. The epoch number is now added to the seed, so a run stays reproducible while the order changes from epoch to epoch. Estimates from <code>method = "SOM"</code> with an explicit <code>seed</code> change accordingly.</p></li>
+<li><p><strong><code>mic = TRUE</code> sorted the rank reference matrix once per epoch instead of once per respondent.</strong> The original applies <code>Sort /@ refmat</code> immediately after each respondent is presented, which changes the matrix that decides the next winner; deferring it to the end of the epoch is a different algorithm, not a cheaper form of the same one. The sort – and the <code>conf</code> constraint alongside it – now runs after every respondent. Estimates from <code>method = "SOM"</code> with <code>mic = TRUE</code> or <code>conf</code> change accordingly.</p></li>
+<li><p><strong>Ties in the SOM winner search are resolved toward the larger rank</strong>, as in the original (<code>Sort[Transpose[{mlrank, clsnum}]][[-1]]</code>). <code><a href="https://rdrr.io/r/base/which.min.html" class="external-link">which.max()</a></code> had been picking the smaller rank.</p></li>
+<li><p><strong><code>method = "SOM"</code> no longer warns that it may not have converged.</strong> SOM runs an annealing schedule for <code>maxiter</code> epochs and has no convergence criterion – neither does the original implementation – so finishing the schedule is normal termination. The warning fired on every default run and <code>converge</code> was always <code>FALSE</code>, which left no way to tell a healthy run from a broken one. <code>converge</code> is now <code>TRUE</code> unless <code>BIC.check</code> early stopping was requested and failed to trigger within ten times <code>maxiter</code>. The messages on that path, and the documentation of <code>BIC.check</code>, now describe it as early stopping rather than a convergence test; its threshold is unchanged.</p></li>
+<li><p><strong><code>LRA(method = "SOM")</code> no longer overwrites the caller’s random number stream.</strong> It reseeds once per epoch and never restored <code>.Random.seed</code>, so any simulation that called it silently lost its own stream. The state is now restored on exit.</p></li>
+</ul></div>
+<div class="section level3">
+<h3 id="performance-2-1-0">Performance<a class="anchor" aria-label="anchor" href="#performance-2-1-0"></a></h3>
+<ul><li>
+<strong>The SOM inner loop moved to C++</strong> (<code>src/som_core.cpp</code>). One epoch of online updates – winner search, neighbourhood update, <code>conf</code>, <code>mic</code> and the prior update – now runs in compiled code, while the presentation order is still drawn in R so that <code><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed()</a></code> keeps governing reproducibility. On <code>J15S500</code> with <code>nrank = 6</code> and <code>maxiter = 1000</code>, estimation went from 5.2 s to 1.9 s with <code>mic = FALSE</code>, and from 103.5 s to 2.6 s with <code>mic = TRUE</code> (the per-respondent sort that <code>mic</code> now requires would otherwise have made it twenty times slower). The rank posterior is also computed once after the schedule instead of every epoch, since only <code>BIC.check</code> reads it in between.</li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="2.0.1" id="exametrika-201">exametrika 2.0.1<a class="anchor" aria-label="anchor" href="#exametrika-201"></a></h2>
 <p>A patch release: two bug fixes, no new features and no change to any estimate. Released on GitHub first; the CRAN submission follows once the one-month cadence since 2.0.0 (accepted 2026-08-20) has passed.</p>

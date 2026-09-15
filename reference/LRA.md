@@ -112,16 +112,23 @@ LRA(
 
 - maxiter:
 
-  Maximum number of iterations for estimation. Default is 1000.
+  Maximum number of iterations for estimation. Default is 1000. For the
+  SOM method this also sets the length of the annealing schedule, so
+  changing it changes the solution rather than merely allowing more
+  iterations.
 
 - BIC.check:
 
-  For binary data with SOM method only. If TRUE, convergence is checked
-  using BIC values. Default is FALSE.
+  For binary data with SOM method only. If TRUE, estimation stops early
+  once the change in BIC falls below a threshold. This is an
+  early-stopping option, not a convergence test: SOM has no convergence
+  criterion. Default is FALSE.
 
 - seed:
 
   For binary data with SOM method only. Random seed for reproducibility.
+  It affects only which presentation orders are drawn, not the algorithm
+  itself.
 
 - verbose:
 
@@ -198,7 +205,9 @@ A list of class "exametrika" and the specific subclass (e.g., "LRA",
 - converge:
 
   Logical value indicating whether the algorithm converged within
-  maxiter iterations
+  maxiter iterations. The SOM method has no convergence criterion and
+  runs its annealing schedule to completion, so this is TRUE unless
+  BIC.check early stopping failed to trigger.
 
 - TRP:
 

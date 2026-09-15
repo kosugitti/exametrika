@@ -25,7 +25,9 @@
 #'  \item{nobs}{Sample size (number of rows in the dataset).}
 #'  \item{n_rank}{Number of latent ranks specified.}
 #'  \item{n_cycle}{Number of EM algorithm iterations performed.}
-#'  \item{converge}{Logical value indicating whether the algorithm converged within maxiter iterations}
+#'  \item{converge}{Logical value indicating whether the algorithm converged within maxiter
+#'  iterations. The SOM method has no convergence criterion and runs its annealing schedule
+#'  to completion, so this is TRUE unless BIC.check early stopping failed to trigger.}
 #'  \item{TRP}{Test Reference Profile vector showing expected scores at each rank.}
 #'  \item{LRD}{Latent Rank Distribution vector showing the number of examinees at each rank.}
 #'  \item{RMD}{Rank Membership Distribution vector showing the sum of probabilities for each rank.}
@@ -93,11 +95,18 @@ LRA.default <- function(U, na = NULL, Z = NULL, w = NULL, ...) {
 #' @param method For binary data only. One of "isotonic" (order-restricted EM;
 #'   rank ordering imposed by weighted PAVA in the M-step, no filter),
 #'   "GTM" (Gaussian Topographic Mapping; filter smoothing), or
-#'   "SOM" (Self-Organizing Maps). Default is "isotonic".
+#'   "SOM" (Self-Organizing Maps). Default is "isotonic". SOM is retained for
+#'   correspondence with the textbook; its results depend on the annealing schedule
+#'   set by maxiter, and "isotonic" is recommended for practical use.
 #' @param mic Logical; if TRUE, forces Item Reference Profiles to be monotonically increasing. Default is FALSE.
-#' @param maxiter Maximum number of iterations for estimation. Default is 1000.
-#' @param BIC.check For binary data with SOM method only. If TRUE, convergence is checked using BIC values. Default is FALSE.
+#' @param maxiter Maximum number of iterations for estimation. Default is 1000. For the SOM
+#'   method this also sets the length of the annealing schedule, so changing it changes the
+#'   solution rather than merely allowing more iterations.
+#' @param BIC.check For binary data with SOM method only. If TRUE, estimation stops early
+#'   once the change in BIC falls below a threshold. This is an early-stopping option, not a
+#'   convergence test: SOM has no convergence criterion. Default is FALSE.
 #' @param seed For binary data with SOM method only. Random seed for reproducibility.
+#'   It affects only which presentation orders are drawn, not the algorithm itself.
 #' @param verbose Logical; if TRUE, displays detailed progress during estimation. Default is FALSE.
 #' @param beta1 Beta distribution parameter 1 for prior density of rank reference matrix (GTM method only). Default is 1.
 #' @param beta2 Beta distribution parameter 2 for prior density of rank reference matrix (GTM method only). Default is 1.

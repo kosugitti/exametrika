@@ -30,6 +30,44 @@ since 2.0.0 (accepted 2026-08-20) has passed.
 
   Only names are added -- no estimate changes.
 
+- **The SOM method reused one frozen presentation order whenever `seed` was
+  given.** `somclus()` reseeded inside the epoch loop with `set.seed(seed)`, so
+  every epoch presented the respondents in exactly the same order. Online
+  learning relies on that order being redrawn: with it fixed, the bias of one
+  particular ordering is never averaged out. The original Mathematica routine
+  reseeds each epoch with `SeedRandom[Total[uuu] + somt]`, and the `seed = NULL`
+  path already matched it; only the user-supplied seed was affected. The epoch
+  number is now added to the seed, so a run stays reproducible while the order
+  changes from epoch to epoch. Estimates from `method = "SOM"` with an explicit
+  `seed` change accordingly.
+
+- **`mic = TRUE` sorted the rank reference matrix once per epoch instead of once
+  per respondent.** The original applies `Sort /@ refmat` immediately after each
+  respondent is presented, which changes the matrix that decides the next
+  winner; deferring it to the end of the epoch is a different algorithm, not a
+  cheaper form of the same one. The sort -- and the `conf` constraint alongside
+  it -- now runs after every respondent. Estimates from `method = "SOM"` with
+  `mic = TRUE` or `conf` change accordingly.
+
+- **Ties in the SOM winner search are resolved toward the larger rank**, as in
+  the original (`Sort[Transpose[{mlrank, clsnum}]][[-1]]`). `which.max()` had
+  been picking the smaller rank.
+
+- **`method = "SOM"` no longer warns that it may not have converged.** SOM runs
+  an annealing schedule for `maxiter` epochs and has no convergence criterion --
+  neither does the original implementation -- so finishing the schedule is
+  normal termination. The warning fired on every default run and `converge` was
+  always `FALSE`, which left no way to tell a healthy run from a broken one.
+  `converge` is now `TRUE` unless `BIC.check` early stopping was requested and
+  failed to trigger within ten times `maxiter`. The messages on that path, and
+  the documentation of `BIC.check`, now describe it as early stopping rather
+  than a convergence test; its threshold is unchanged.
+
+- **`LRA(method = "SOM")` no longer overwrites the caller's random number
+  stream.** It reseeds once per epoch and never restored `.Random.seed`, so any
+  simulation that called it silently lost its own stream. The state is now
+  restored on exit.
+
 - **`plot(type = "Array")` no longer washes rows out to white.** Every cell was
   drawn as a `rect()` with a white border, and a border cannot be thinner than
   one device pixel: once the respondents outnumbered the pixels available to
@@ -40,6 +78,16 @@ since 2.0.0 (accepted 2026-08-20) has passed.
   gone at the sizes a real test data set reaches.
 
 ## Performance
+
+- **The SOM inner loop moved to C++** (`src/som_core.cpp`). One epoch of online
+  updates -- winner search, neighbourhood update, `conf`, `mic` and the prior
+  update -- now runs in compiled code, while the presentation order is still
+  drawn in R so that `set.seed()` keeps governing reproducibility. On
+  `J15S500` with `nrank = 6` and `maxiter = 1000`, estimation went from 5.2 s to
+  1.9 s with `mic = FALSE`, and from 103.5 s to 2.6 s with `mic = TRUE` (the
+  per-respondent sort that `mic` now requires would otherwise have made it
+  twenty times slower). The rank posterior is also computed once after the
+  schedule instead of every epoch, since only `BIC.check` reads it in between.
 
 - **The array plot is drawn as a single raster** (`rasterImage()`) instead of
   one `rect()` call per cell. A 3,810 x 15 data set took 114,300 drawing calls

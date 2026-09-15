@@ -134,12 +134,17 @@ emclus <- function(U, Z, ncls, Fil, beta1, beta2, maxiter = 100, mic = FALSE,
 #' @param ncls number of latent ranks
 #' @param mic Monotonic increasing IRP option
 #' @param maxiter Maximum number of iterations.
-#' @param BIC.check If TRUE, convergence is checked using BIC values.
-#' @param seed Random seed for reproducibility.
+#' @param BIC.check If TRUE, stop early once the change in BIC falls below a
+#'   threshold. This is an early-stopping option, not a convergence test: SOM
+#'   has no convergence criterion and normally runs the full annealing schedule.
+#' @param seed Random seed for reproducibility. It does not change the algorithm;
+#'   the presentation order is redrawn every epoch either way.
 #' @param verbose verbose output Flag. default is FALSE
 #' @param conf Confirmatory IRP matrix (ncls x testlength). Non-NA values are
 #'   fixed, NA values are freely estimated. NULL means fully exploratory.
-#' @return A list with iter, converge, postDist, classRefMat (same structure as emclus)
+#' @return A list with iter, converge, postDist, classRefMat (same structure as emclus).
+#'   For SOM, converge is TRUE unless BIC.check early stopping was requested and
+#'   failed to trigger within ten times maxiter.
 #' @noRd
 
 somclus <- function(U, Z, ncls, mic = FALSE, maxiter = 100,
@@ -148,6 +153,12 @@ somclus <- function(U, Z, ncls, mic = FALSE, maxiter = 100,
   testlength <- NCOL(U)
   samplesize <- NROW(U)
   const <- exp(-testlength)
+
+  # Restore the caller's .Random.seed on exit; this function reseeds every epoch
+  if (exists(".Random.seed", envir = globalenv())) {
+    old_rng_state <- get(".Random.seed", envir = globalenv())
+    on.exit(assign(".Random.seed", old_rng_state, envir = globalenv()), add = TRUE)
+  }
 
   # Prepare confirmatory constraint (transposed to match RefMat: testlength x ncls)
   if (!is.null(conf)) {
@@ -185,6 +196,10 @@ somclus <- function(U, Z, ncls, mic = FALSE, maxiter = 100,
     RefMat[fixed_t] <- conf_t[fixed_t]
   }
 
+  # Base value for the per-epoch seed. `seed` only fixes which orders are drawn;
+  # it does not alter the algorithm.
+  seed_base <- if (is.null(seed)) sum(U) else seed
+
   oldBIC <- 1e5
   converge <- TRUE
   FLG <- TRUE
@@ -199,45 +214,41 @@ somclus <- function(U, Z, ncls, mic = FALSE, maxiter = 100,
 
     loglike <- 0
 
-    if (is.null(seed)) {
-      set.seed(sum(U) + somt)
-    } else {
-      set.seed(seed)
-    }
+    # Presentation order. The original implementation reseeds every epoch with
+    # SeedRandom[Total[uuu] + somt]. Adding somt keeps the run reproducible while
+    # letting the order change from epoch to epoch; without it every epoch would
+    # reuse one frozen order, which breaks the premise of online learning.
+    set.seed(seed_base + somt)
 
     is <- order(runif(samplesize, 1, 100))
 
-    for (s in 1:samplesize) {
-      ss <- is[s]
-      mlrank <- U[ss, ] %*% log(RefMat + const) + (1 - U[ss, ]) %*% log(1 - RefMat + const) + log(prior_list)
-      winner <- which.max(mlrank)
-      loglike <- loglike + mlrank[winner]
-      hhh <- matrix(rep(hhhmat[h_count, (ncls + 1 - winner):(2 * ncls - winner)], testlength),
-        nrow = testlength, byrow = T
-      )
-      RefMat <- RefMat + hhh * (U[ss, ] - RefMat)
-      prior_list <- prior_list + (kappa_list[h_count] / ncls)
-      prior_list[winner] <- prior_list[winner] - kappa_list[h_count]
-      prior_list[prior_list > 1] <- 1
-      prior_list[prior_list < const] <- const
-    }
+    # One epoch of online updates. The heavy inner loop over students lives in
+    # src/som_core.cpp; the presentation order is drawn above so that set.seed()
+    # still governs reproducibility.
+    epoch <- som_epoch_cpp(
+      RefMat = RefMat,
+      prior_list = prior_list,
+      U = U,
+      order = as.integer(is),
+      hhh_row = hhhmat[h_count, ],
+      kappa = kappa_list[h_count],
+      cnst = const,
+      mic = mic,
+      conf_t_ = if (is.null(conf)) NULL else conf_t,
+      fixed_t_ = if (is.null(conf)) NULL else fixed_t
+    )
+    RefMat <- epoch$RefMat
+    prior_list <- epoch$prior
 
-    # Apply confirmatory constraints before mic sort
-    if (!is.null(conf)) {
-      RefMat[fixed_t] <- conf_t[fixed_t]
-    }
-
-    if (mic) {
-      RefMat <- t(apply(RefMat, 1, sort))
-    }
-    llmat <- U %*% t(log(t(RefMat) + const)) + (Z * (1 - U)) %*%
-      t(log(1 - t(RefMat) + const))
-    postdist <- row_softmax(llmat)
-    item_ell <- item_log_lik(U, Z, postdist, t(RefMat))
     if (BIC.check) {
+      # Only the early-stopping path needs the posterior every epoch; the default
+      # path computes it once after the schedule is done (see below).
+      llmat <- U %*% t(log(t(RefMat) + const)) + (Z * (1 - U)) %*%
+        t(log(1 - t(RefMat) + const))
+      postdist <- row_softmax(llmat)
+      item_ell <- item_log_lik(U, Z, postdist, t(RefMat))
       if (somt > maxiter * 10) {
-        message("\nReached ten times the maximum number of iterations.")
-        message("Warning: Algorithm may not have converged. Interpret results with caution.")
+        message("\nEarly stopping did not trigger within ten times maxiter; estimation was cut off.")
         converge <- FALSE
         FLG <- FALSE
         break
@@ -246,19 +257,24 @@ somclus <- function(U, Z, ncls, mic = FALSE, maxiter = 100,
       diff <- abs(oldBIC - FI$test$BIC)
       oldBIC <- FI$test$BIC
       if (diff < 1e-4) {
-        message("\nConverged before reaching maximum iterations.")
+        message("\nEarly stopping: the change in BIC fell below the threshold.")
         FLG <- FALSE
         break
       }
     } else {
+      # SOM is designed to run its annealing schedule for maxiter epochs, and the
+      # original (Module_LRA.wl) has no convergence test either. Finishing the
+      # schedule is normal termination, not a failure to converge, so no warning.
       if (somt == maxiter) {
-        message("\nReached the maximum number of iterations.")
-        message("Warning: Algorithm may not have converged. Interpret results with caution.")
-        converge <- FALSE
         FLG <- FALSE
       }
     }
   }
+
+  # Posterior over ranks for the final reference matrix.
+  llmat <- U %*% t(log(t(RefMat) + const)) + (Z * (1 - U)) %*%
+    t(log(1 - t(RefMat) + const))
+  postdist <- row_softmax(llmat)
 
   ret <- list(
     iter = somt,

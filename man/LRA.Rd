@@ -73,11 +73,16 @@ smoothing). Default is "isotonic".}
 
 \item{mic}{Logical; if TRUE, forces Item Reference Profiles to be monotonically increasing. Default is FALSE.}
 
-\item{maxiter}{Maximum number of iterations for estimation. Default is 1000.}
+\item{maxiter}{Maximum number of iterations for estimation. Default is 1000. For the SOM
+method this also sets the length of the annealing schedule, so changing it changes the
+solution rather than merely allowing more iterations.}
 
-\item{BIC.check}{For binary data with SOM method only. If TRUE, convergence is checked using BIC values. Default is FALSE.}
+\item{BIC.check}{For binary data with SOM method only. If TRUE, estimation stops early
+once the change in BIC falls below a threshold. This is an early-stopping option, not a
+convergence test: SOM has no convergence criterion. Default is FALSE.}
 
-\item{seed}{For binary data with SOM method only. Random seed for reproducibility.}
+\item{seed}{For binary data with SOM method only. Random seed for reproducibility.
+It affects only which presentation orders are drawn, not the algorithm itself.}
 
 \item{verbose}{Logical; if TRUE, displays detailed progress during estimation. Default is FALSE.}
 
@@ -116,7 +121,9 @@ containing the following common elements:
 \item{nobs}{Sample size (number of rows in the dataset).}
 \item{n_rank}{Number of latent ranks specified.}
 \item{n_cycle}{Number of EM algorithm iterations performed.}
-\item{converge}{Logical value indicating whether the algorithm converged within maxiter iterations}
+\item{converge}{Logical value indicating whether the algorithm converged within maxiter
+iterations. The SOM method has no convergence criterion and runs its annealing schedule
+to completion, so this is TRUE unless BIC.check early stopping failed to trigger.}
 \item{TRP}{Test Reference Profile vector showing expected scores at each rank.}
 \item{LRD}{Latent Rank Distribution vector showing the number of examinees at each rank.}
 \item{RMD}{Rank Membership Distribution vector showing the sum of probabilities for each rank.}

@@ -265,7 +265,11 @@ Biclustering.ordinal <- function(U,
     }
 
     ## Maximization
+    # BBRM is saved alongside BCRM: the rollback below must restore both.
+    # nparam is counted from BBRM while test_log_lik comes from BCRM, so
+    # restoring only BCRM leaves the two one iteration apart.
     oldBCRM <- BCRM
+    oldBBRM <- BBRM
     Ufcq <- array(0, dim = c(nfld, ncls, maxQ))
     cUfcq <- array(0, dim = c(nfld, ncls, maxQ))
     for (q in 1:maxQ) {
@@ -352,6 +356,7 @@ Biclustering.ordinal <- function(U,
 
     if (!is.finite(test_log_lik) || test_log_lik - old_test_log_lik <= 0) {
       BCRM <- oldBCRM
+      BBRM <- oldBBRM
       if (!is.finite(test_log_lik)) converge <- FALSE
       break
     }

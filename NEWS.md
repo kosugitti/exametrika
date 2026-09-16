@@ -12,6 +12,22 @@ since 2.0.0 (accepted 2026-08-20) has passed.
 
 ## Bug Fixes
 
+- **Ordinal biclustering rolled back only half of its state.** When an EM sweep
+  failed to improve the likelihood, `Biclustering()` on ordinal data restored the
+  category reference array `BCRM` but left the boundary array `BBRM` at the
+  rejected values. The two are then one iteration apart, and since
+  `test_log_lik` is computed from `BCRM` while the shape-restricted parameter
+  count is read off `BBRM`, the reported `nparam`, `df`, `AIC`, `BIC` and `CAIC`
+  could describe a different iterate than the likelihood does. It affects
+  `method = "R"` with `estimation = "isotonic"` only; the other branches derive
+  the count from the filter matrix or the rank and field counts instead, and the
+  binary implementation rolls back the array it later reads. Both arrays are now
+  saved and restored together. In practice the rejected sweep differs from the
+  accepted one by around 1e-10 by the time the branch is reached, so the counted
+  number of distinct boundary levels -- and hence every figure above -- came out
+  unchanged in the cases tested; the fix removes the inconsistency rather than a
+  visible error.
+
 - **The SOM method reused one frozen presentation order whenever `seed` was
   given.** `somclus()` reseeded inside the epoch loop with `set.seed(seed)`, so
   every epoch presented the respondents in exactly the same order. Online

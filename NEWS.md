@@ -78,6 +78,12 @@ since 2.0.0 (accepted 2026-08-20) has passed.
   twenty times slower). The rank posterior is also computed once after the
   schedule instead of every epoch, since only `BIC.check` reads it in between.
 
+## Internal
+
+- `grconvertX()`, `grconvertY()` and `rasterImage()`, used by the rasterised
+  Array plot since 2.0.1, are now imported from **graphics** in `NAMESPACE`.
+  This clears the `R CMD check` note about undeclared global functions.
+
 # exametrika 2.0.1
 
 A patch release: two bug fixes, no new features and no change to any estimate.

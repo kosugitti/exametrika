@@ -51,6 +51,11 @@
 <ul><li>
 <strong>The SOM inner loop moved to C++</strong> (<code>src/som_core.cpp</code>). One epoch of online updates – winner search, neighbourhood update, <code>conf</code>, <code>mic</code> and the prior update – now runs in compiled code, while the presentation order is still drawn in R so that <code><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed()</a></code> keeps governing reproducibility. On <code>J15S500</code> with <code>nrank = 6</code> and <code>maxiter = 1000</code>, estimation went from 5.2 s to 1.9 s with <code>mic = FALSE</code>, and from 103.5 s to 2.6 s with <code>mic = TRUE</code> (the per-respondent sort that <code>mic</code> now requires would otherwise have made it twenty times slower). The rank posterior is also computed once after the schedule instead of every epoch, since only <code>BIC.check</code> reads it in between.</li>
 </ul></div>
+<div class="section level3">
+<h3 id="internal-2-1-0">Internal<a class="anchor" aria-label="anchor" href="#internal-2-1-0"></a></h3>
+<ul><li>
+<code><a href="https://rdrr.io/r/graphics/convertXY.html" class="external-link">grconvertX()</a></code>, <code><a href="https://rdrr.io/r/graphics/convertXY.html" class="external-link">grconvertY()</a></code> and <code><a href="https://rdrr.io/r/graphics/rasterImage.html" class="external-link">rasterImage()</a></code>, used by the rasterised Array plot since 2.0.1, are now imported from <strong>graphics</strong> in <code>NAMESPACE</code>. This clears the <code>R CMD check</code> note about undeclared global functions.</li>
+</ul></div>
 </div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="2.0.1" id="exametrika-201">exametrika 2.0.1<a class="anchor" aria-label="anchor" href="#exametrika-201"></a></h2>

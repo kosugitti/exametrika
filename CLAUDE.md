@@ -10,10 +10,11 @@ It provides psychometric analysis tools: CTT, IRT, GRM, LCA, LRA, Biclustering, 
   rollback fix does, and so do the SOM fixes of 2026-09-15. NEWS keeps the 2.0.1
   section as published and adds a new 2.1.0 section on top (the v2.0.1 tag is
   already on GitHub). Plan and rationale: `WORKLOG.md` 2026-09-10 and 2026-09-15.
-  Submit to CRAN 2026-09-25 or 09-30 (the 2026-09-20 one-month mark is a floor,
-  not a deadline). `R CMD check --as-cran` passes locally with one pre-existing
-  note (`importFrom("graphics", ...)` for the 2.0.1 raster plot); rhub and
-  win-builder still to be run.
+  Both pre-submission fixes are in (isotonic rollback `d8d039f`, graphics
+  importFrom `9dd7044`, pushed). `R CMD check --as-cran` from a `git archive`
+  tree: 0/0/1, the note being the local-only HTML Tidy one. Next: rhub and
+  win-builder on 2026-09-30, then submit to CRAN (the 2026-09-20 one-month mark
+  is a floor, not a deadline).
 - **CRAN version**: 2.0.0 (accepted and published 2026-08-20). Submitted through the web form, so `CRAN-SUBMISSION` still reads 1.15.0.
 - **GitHub Release**: v2.0.0 (2026-08-20, latest) / v1.15.0 (2026-07-15). Announcements: Discussions #37 (JA) / #38 (EN)
 - **License**: MIT

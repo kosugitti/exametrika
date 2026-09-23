@@ -3810,3 +3810,33 @@ Mathematica 側から提示順 `is` を書き出して R に読ませれば決�
 - `graphics` の `importFrom` を足して note を消す。
 - **GitHub の Release（タグ v2.1.0）はまだ打っていない**。中身が揃ってから。
 - `rhub_check()` と `check_win_devel()` は未実施。9/25(金) か 9/30(水) に通して提出。
+
+## 2026-09-24 提出前の修正2件が揃い，手元の as-cran が 0/0/1(既知)に
+
+### 9/16 分(WORKLOG への記入漏れを補う)
+
+- **isotonic のロールバック片落ちを修正**(`d8d039f`)。順序データの Biclustering で EM の
+  スイープが尤度を改善しなかったとき，`BCRM` だけ戻して `BBRM` を棄却値のまま残していた。
+  `test_log_lik` は `BCRM` から，形状制約つきの母数カウントは `BBRM` から計算するので，
+  nparam・df・AIC・BIC・CAIC が尤度と別の反復を指しうる。該当は `method = "R"` かつ
+  `estimation = "isotonic"` のみ。`oldBBRM` を退避して両方戻すようにした。
+  **実害はほぼ無い**＝分岐に入る時点で差は 1e-10 程度，`round(., 10)` で数える境界値の個数が
+  変わらず，試した条件では df も AIC も 1 ビットも動かなかった。NEWS の 2.1.0 Bug Fixes に記載済み。
+
+### 9/24
+
+- **`importFrom("graphics", grconvertX, grconvertY, rasterImage)` を追加**(`9dd7044`)。
+  2.0.1 の Array ラスタ化で使い始めた 3 関数の宣言漏れ。roxygen の `@importFrom`
+  (`R/00_exametrikaPlot.R`)に足して `NAMESPACE` を再生成。NEWS の 2.1.0 に **Internal** の節を新設して記録。
+- `git archive HEAD` を Dropbox 外(scratchpad)へ書き出した木で `R CMD build` →
+  `R CMD check --as-cran`(`_R_CHECK_CRAN_INCOMING_REMOTE_=false`)。
+  **0 errors / 0 warnings / 1 note**。残る note は手元の HTML Tidy が古いことによる既知のもので CRAN では出ない。
+  graphics の note は消えた。examples(--run-donttest 18 秒)・tests(10 秒)・vignettes・PDF マニュアルとも OK。
+- `9dd7044` を main へ push 済み。
+
+### 次回への引き継ぎ
+
+- **提出前に直すものは残っていない**。
+- **9/30(水)** に `rhub_check()` と `check_win_devel()`(tarball は必ず `git archive` から)→ CRAN 提出フォームから提出。
+  CRAN 側の incoming チェック(前回公開からの日数等)は今回の手元チェックでは切っているので win-builder で確認する。
+- 受理後に GitHub Release(タグ v2.1.0)と Discussions 告知(日英)。

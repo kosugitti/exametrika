@@ -3840,3 +3840,10 @@ Mathematica 側から提示順 `is` を書き出して R に読ませれば決�
 - **9/30(水)** に `rhub_check()` と `check_win_devel()`(tarball は必ず `git archive` から)→ CRAN 提出フォームから提出。
   CRAN 側の incoming チェック(前回公開からの日数等)は今回の手元チェックでは切っているので win-builder で確認する。
 - 受理後に GitHub Release(タグ v2.1.0)と Discussions 告知(日英)。
+
+### 9/24 追記：rhub・win-builder の結果
+
+- **win-builder(R-devel 2026-09-21 r90579 ucrt)＝Status: OK**(インストール43秒・チェック322秒)
+- **rhub(`9dd7044`)＝linux・windows(R-devel)とも成功，macos-arm64 のみ失敗**。原因はランナー側＝R 4.7 の macOS バイナリが無く依存を全部ソースビルドする途中で，**mvtnorm 1.4-2 の読み込みが `symbol not found in flat namespace '__FortranAModReal8'`**(flang-23 のランタイムがリンクされない)。exametrika のビルドまで到達しておらず無関係。cran-comments に一言書けば足りる
+- **`submit_cran` 前段の「働き木がクリーンではない」(MM CLAUDE.md/WORKLOG.md)は，中身ではなく `.git/index` だけが 03a1422 より前の状態に戻っていた**(12:53 に書き換わり＝Dropbox がもう一台の古い index を同期したとみられる)。`git diff HEAD` は空だったので `git reset`(mixed)で index だけ HEAD に合わせて解消
+- 次＝CRAN 提出(本人操作)。受理後に GitHub Release と告知

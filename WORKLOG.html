@@ -2517,6 +2517,46 @@ rhub / win-devel               本日の版で流し直し中</code></pre>
 <code>rhub_check()</code> と <code>check_win_devel()</code> は未実施。9/25(金) か 9/30(水) に通して提出。</li>
 </ul></div>
 </div>
+<div class="section level2">
+<h2 id="id_2026-09-24-提出前の修正2件が揃い手元の-as-cran-が-001既知に">2026-09-24 提出前の修正2件が揃い，手元の as-cran が 0/0/1(既知)に<a class="anchor" aria-label="anchor" href="#id_2026-09-24-%E6%8F%90%E5%87%BA%E5%89%8D%E3%81%AE%E4%BF%AE%E6%AD%A32%E4%BB%B6%E3%81%8C%E6%8F%83%E3%81%84%E6%89%8B%E5%85%83%E3%81%AE-as-cran-%E3%81%8C-001%E6%97%A2%E7%9F%A5%E3%81%AB"></a></h2>
+<div class="section level3">
+<h3 id="id_916-分worklog-への記入漏れを補う">9/16 分(WORKLOG への記入漏れを補う)<a class="anchor" aria-label="anchor" href="#id_916-%E5%88%86worklog-%E3%81%B8%E3%81%AE%E8%A8%98%E5%85%A5%E6%BC%8F%E3%82%8C%E3%82%92%E8%A3%9C%E3%81%86"></a></h3>
+<ul><li>
+<strong>isotonic のロールバック片落ちを修正</strong>(<code>d8d039f</code>)。順序データの Biclustering で EM の スイープが尤度を改善しなかったとき，<code>BCRM</code> だけ戻して <code>BBRM</code> を棄却値のまま残していた。 <code>test_log_lik</code> は <code>BCRM</code> から，形状制約つきの母数カウントは <code>BBRM</code> から計算するので， nparam・df・AIC・BIC・CAIC が尤度と別の反復を指しうる。該当は <code>method = "R"</code> かつ <code>estimation = "isotonic"</code> のみ。<code>oldBBRM</code> を退避して両方戻すようにした。 <strong>実害はほぼ無い</strong>＝分岐に入る時点で差は 1e-10 程度，<code>round(., 10)</code> で数える境界値の個数が 変わらず，試した条件では df も AIC も 1 ビットも動かなかった。NEWS の 2.1.0 Bug Fixes に記載済み。</li>
+</ul></div>
+<div class="section level3">
+<h3 id="id_924">9/24<a class="anchor" aria-label="anchor" href="#id_924"></a></h3>
+<ul><li>
+<strong><code>importFrom("graphics", grconvertX, grconvertY, rasterImage)</code> を追加</strong>(<code>9dd7044</code>)。 2.0.1 の Array ラスタ化で使い始めた 3 関数の宣言漏れ。roxygen の <code>@importFrom</code> (<code>R/00_exametrikaPlot.R</code>)に足して <code>NAMESPACE</code> を再生成。NEWS の 2.1.0 に <strong>Internal</strong> の節を新設して記録。</li>
+<li>
+<code>git archive HEAD</code> を Dropbox 外(scratchpad)へ書き出した木で <code>R CMD build</code> → <code>R CMD check --as-cran</code>(<code>_R_CHECK_CRAN_INCOMING_REMOTE_=false</code>)。 <strong>0 errors / 0 warnings / 1 note</strong>。残る note は手元の HTML Tidy が古いことによる既知のもので CRAN では出ない。 graphics の note は消えた。examples(–run-donttest 18 秒)・tests(10 秒)・vignettes・PDF マニュアルとも OK。</li>
+<li>
+<code>9dd7044</code> を main へ push 済み。</li>
+</ul></div>
+<div class="section level3">
+<h3 id="次回への引き継ぎ-3">次回への引き継ぎ<a class="anchor" aria-label="anchor" href="#%E6%AC%A1%E5%9B%9E%E3%81%B8%E3%81%AE%E5%BC%95%E3%81%8D%E7%B6%99%E3%81%8E-3"></a></h3>
+<ul><li>
+<strong>提出前に直すものは残っていない</strong>。</li>
+<li>
+<strong>9/30(水)</strong> に <code>rhub_check()</code> と <code>check_win_devel()</code>(tarball は必ず <code>git archive</code> から)→ CRAN 提出フォームから提出。 CRAN 側の incoming チェック(前回公開からの日数等)は今回の手元チェックでは切っているので win-builder で確認する。</li>
+<li>受理後に GitHub Release(タグ v2.1.0)と Discussions 告知(日英)。</li>
+</ul></div>
+<div class="section level3">
+<h3 id="id_924-追記rhubwin-builder-の結果">9/24 追記：rhub・win-builder の結果<a class="anchor" aria-label="anchor" href="#id_924-%E8%BF%BD%E8%A8%98rhubwin-builder-%E3%81%AE%E7%B5%90%E6%9E%9C"></a></h3>
+<ul><li>
+<strong>win-builder(R-devel 2026-09-21 r90579 ucrt)＝Status: OK</strong>(インストール43秒・チェック322秒)</li>
+<li>
+<strong>rhub(<code>9dd7044</code>)＝linux・windows(R-devel)とも成功，macos-arm64 のみ失敗</strong>。原因はランナー側＝R 4.7 の macOS バイナリが無く依存を全部ソースビルドする途中で，<strong>mvtnorm 1.4-2 の読み込みが <code>symbol not found in flat namespace '__FortranAModReal8'</code></strong>(flang-23 のランタイムがリンクされない)。exametrika のビルドまで到達しておらず無関係。cran-comments に一言書けば足りる</li>
+<li>
+<strong><code>submit_cran</code> 前段の「働き木がクリーンではない」(MM CLAUDE.md/WORKLOG.md)は，中身ではなく <code>.git/index</code> だけが 03a1422 より前の状態に戻っていた</strong>(12:53 に書き換わり＝Dropbox がもう一台の古い index を同期したとみられる)。<code>git diff HEAD</code> は空だったので <code>git reset</code>(mixed)で index だけ HEAD に合わせて解消</li>
+<li>次＝CRAN 提出(本人操作)。受理後に GitHub Release と告知</li>
+<li>
+<strong>9/24夜：<code>submit_cran</code> が「Uploading package &amp; comments」で2回とも10分以上固まり，中断</strong>。提出サーバ(xmpalantir.wu.ac.at)は応答していたので原因不明。確認メールは来ておらず未提出</li>
+<li>
+<strong><code>cran-comments.md</code> が 2.0.0 の内容のまま残っていた</strong>のを発見し 2.1.0 用に書き換え(<code>c4e2341</code>)</li>
+<li>次＝<strong>Web フォームから提出</strong>。tarball は <code>git archive</code> の木から作った <code>~/Dropbox/MobileTemp/exametrika_2.1.0.tar.gz</code>(2.3MB)</li>
+</ul></div>
+</div>
 </div>
 
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

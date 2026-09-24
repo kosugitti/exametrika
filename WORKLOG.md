@@ -4527,3 +4527,67 @@ Mathematica 由来の参照フィクスチャとの突合が要る。
   v2.1.0）はまだ打っていない**。中身が揃ってから。
 - `rhub_check()` と `check_win_devel()` は未実施。9/25(金) か 9/30(水)
   に通して提出。
+
+## 2026-09-24 提出前の修正2件が揃い，手元の as-cran が 0/0/1(既知)に
+
+### 9/16 分(WORKLOG への記入漏れを補う)
+
+- **isotonic のロールバック片落ちを修正**(`d8d039f`)。順序データの
+  Biclustering で EM の スイープが尤度を改善しなかったとき，`BCRM`
+  だけ戻して `BBRM` を棄却値のまま残していた。 `test_log_lik` は `BCRM`
+  から，形状制約つきの母数カウントは `BBRM` から計算するので，
+  nparam・df・AIC・BIC・CAIC が尤度と別の反復を指しうる。該当は
+  `method = "R"` かつ `estimation = "isotonic"` のみ。`oldBBRM`
+  を退避して両方戻すようにした。
+  **実害はほぼ無い**＝分岐に入る時点で差は 1e-10 程度，`round(., 10)`
+  で数える境界値の個数が 変わらず，試した条件では df も AIC も 1
+  ビットも動かなかった。NEWS の 2.1.0 Bug Fixes に記載済み。
+
+### 9/24
+
+- **`importFrom("graphics", grconvertX, grconvertY, rasterImage)`
+  を追加**(`9dd7044`)。 2.0.1 の Array ラスタ化で使い始めた 3
+  関数の宣言漏れ。roxygen の `@importFrom`
+  (`R/00_exametrikaPlot.R`)に足して `NAMESPACE` を再生成。NEWS の 2.1.0
+  に **Internal** の節を新設して記録。
+- `git archive HEAD` を Dropbox 外(scratchpad)へ書き出した木で
+  `R CMD build` →
+  `R CMD check --as-cran`(`_R_CHECK_CRAN_INCOMING_REMOTE_=false`)。 **0
+  errors / 0 warnings / 1 note**。残る note は手元の HTML Tidy
+  が古いことによる既知のもので CRAN では出ない。 graphics の note
+  は消えた。examples(–run-donttest 18 秒)・tests(10 秒)・vignettes・PDF
+  マニュアルとも OK。
+- `9dd7044` を main へ push 済み。
+
+### 次回への引き継ぎ
+
+- **提出前に直すものは残っていない**。
+- **9/30(水)** に `rhub_check()` と `check_win_devel()`(tarball は必ず
+  `git archive` から)→ CRAN 提出フォームから提出。 CRAN 側の incoming
+  チェック(前回公開からの日数等)は今回の手元チェックでは切っているので
+  win-builder で確認する。
+- 受理後に GitHub Release(タグ v2.1.0)と Discussions 告知(日英)。
+
+### 9/24 追記：rhub・win-builder の結果
+
+- **win-builder(R-devel 2026-09-21 r90579 ucrt)＝Status:
+  OK**(インストール43秒・チェック322秒)
+- **rhub(`9dd7044`)＝linux・windows(R-devel)とも成功，macos-arm64
+  のみ失敗**。原因はランナー側＝R 4.7 の macOS
+  バイナリが無く依存を全部ソースビルドする途中で，**mvtnorm 1.4-2
+  の読み込みが
+  `symbol not found in flat namespace '__FortranAModReal8'`**(flang-23
+  のランタイムがリンクされない)。exametrika
+  のビルドまで到達しておらず無関係。cran-comments に一言書けば足りる
+- **`submit_cran` 前段の「働き木がクリーンではない」(MM
+  CLAUDE.md/WORKLOG.md)は，中身ではなく `.git/index` だけが 03a1422
+  より前の状態に戻っていた**(12:53 に書き換わり＝Dropbox
+  がもう一台の古い index を同期したとみられる)。`git diff HEAD`
+  は空だったので `git reset`(mixed)で index だけ HEAD に合わせて解消
+- 次＝CRAN 提出(本人操作)。受理後に GitHub Release と告知
+- **9/24夜：`submit_cran` が「Uploading package &
+  comments」で2回とも10分以上固まり，中断**。提出サーバ(xmpalantir.wu.ac.at)は応答していたので原因不明。確認メールは来ておらず未提出
+- **`cran-comments.md` が 2.0.0 の内容のまま残っていた**のを発見し 2.1.0
+  用に書き換え(`c4e2341`)
+- 次＝**Web フォームから提出**。tarball は `git archive` の木から作った
+  `~/Dropbox/MobileTemp/exametrika_2.1.0.tar.gz`(2.3MB)

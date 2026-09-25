@@ -3850,3 +3850,20 @@ Mathematica 側から提示順 `is` を書き出して R に読ませれば決�
 - **9/24夜：`submit_cran` が「Uploading package & comments」で2回とも10分以上固まり，中断**。提出サーバ(xmpalantir.wu.ac.at)は応答していたので原因不明。確認メールは来ておらず未提出
 - **`cran-comments.md` が 2.0.0 の内容のまま残っていた**のを発見し 2.1.0 用に書き換え(`c4e2341`)
 - 次＝**Web フォームから提出**。tarball は `git archive` の木から作った `~/Dropbox/MobileTemp/exametrika_2.1.0.tar.gz`(2.3MB)
+
+## 2026-09-25 2.1.0 を CRAN へ提出・受理，Release と告知まで完了
+
+- **提出**: 9/24夜に `submit_cran()` が固まったため，Webフォームで提出(08:52 JST 確認リンク→08:53 提出通知)。09:08 に `[CRAN-pretest-publish]`「on its way to CRAN」で**自動チェックのみで受理**
+- 未pushだった docs コミット4本(`03a1422`・`0298471`・`c4e2341`・`3b41121`)を push
+- **GitHub Release `v2.1.0`**: タグは提出時の `3b41121`(`CRAN-SUBMISSION` のSHAと一致)。本文は NEWS 2.1.0 節の Bug Fixes 以降＋冒頭を CRAN 版向けに書き換え＋Test suite 節
+- **告知**: Discussions #40(JA)・#41(EN)。カッコは半角
+- **NEWS.md の 2.1.0 節に「Released on GitHub first; the CRAN submission follows ...」が残っている**(実際は最初から CRAN)。tarball に入っているので今回は触らず，**次の版で直す**
+- `CRAN-SUBMISSION` を 2.1.0 に更新してコミット(`4c0ffc4`)
+- **`tools/build_pkg.R` を最低限の形(10行)へ戻した**(`7ff0803`)。git archive への書き出しと `src` 変数は本人が「ダラダラして嫌」とのことで撤去し，`stopifnot(git status --porcelain が空)` の1行で Dropbox の復活ファイルを止める。`submit_cran()` は働き木から作る(gitignore 済みで Rbuildignore に無いファイルはすり抜ける点だけ注意)
+- SNS 用の文面(X 日英・Bluesky/Mastodon 日本語)を作って本人へ渡した(投稿は本人)
+- shinyExametrika を 2.1.0 で再デプロイ(詳細は shinyExametrika の WORKLOG)
+
+### 次
+
+- NEWS の 2.1.0 節の記述を直す(次の版で)
+- 2.2.0 = SOAC/WOAC 判定を model_esp 側へ＋`TRP_empirical` 併記＋`predict()`

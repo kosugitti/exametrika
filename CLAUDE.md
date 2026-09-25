@@ -5,18 +5,12 @@
 `exametrika` is an R package for Test Data Engineering based on Shojima (2022, ISBN:978-9811699856).
 It provides psychometric analysis tools: CTT, IRT, GRM, LCA, LRA, Biclustering, BNM, LDLRA, LDB, BINET.
 
-- **Current version**: **2.1.0 in DESCRIPTION** (raised 2026-09-15). The planned
-  2.0.1 patch became a minor release because estimates change: the isotonic
-  rollback fix does, and so do the SOM fixes of 2026-09-15. NEWS keeps the 2.0.1
-  section as published and adds a new 2.1.0 section on top (the v2.0.1 tag is
-  already on GitHub). Plan and rationale: `WORKLOG.md` 2026-09-10 and 2026-09-15.
-  Both pre-submission fixes are in (isotonic rollback `d8d039f`, graphics
-  importFrom `9dd7044`, pushed). `R CMD check --as-cran` from a `git archive`
-  tree: 0/0/1, the note being the local-only HTML Tidy one. Next: rhub and
-  win-builder on 2026-09-30, then submit to CRAN (the 2026-09-20 one-month mark
-  is a floor, not a deadline).
-- **CRAN version**: 2.0.0 (accepted and published 2026-08-20). Submitted through the web form, so `CRAN-SUBMISSION` still reads 1.15.0.
-- **GitHub Release**: v2.0.0 (2026-08-20, latest) / v1.15.0 (2026-07-15). Announcements: Discussions #37 (JA) / #38 (EN)
+- **Current version**: **2.1.0 (CRAN 受理 2026-09-25)**。DESCRIPTION は 2.1.0 のまま。次は 2.2.0
+  (SOAC/WOAC 判定を model_esp 側へ＋`TRP_empirical` 併記＋`predict()`)。**NEWS の 2.1.0 節に
+  「GitHub で先に出して CRAN は後から」という文が残っているが実際は最初から CRAN。次の版で直す**。
+- **CRAN version**: 2.1.0 (Webフォーム提出 → 2026-09-25 自動チェックのみで受理)。`CRAN-SUBMISSION` は 2.1.0 に更新済み。
+- **GitHub Release**: v2.1.0 (2026-09-25, latest)。Announcements: Discussions #40 (JA) / #41 (EN)
+- **Release script**: `tools/build_pkg.R` は最低限の10行。git archive 方式は撤去し，`git status --porcelain` が空でなければ止める1行で Dropbox の復活ファイルを防ぐ(本人の希望。冗長にしない)
 - **License**: MIT
 - **Website**: https://kosugitti.github.io/exametrika/
 - **Language**: English (Japanese guide available as `vignettes/guide-ja.Rmd`)
@@ -685,7 +679,7 @@ CRAN 版のラベル不具合が9月末まで残るので分けた。**GitHub �
   **インクの3〜4割が失われていた。**描画も 0.83秒 → 0.004秒(1パネルあたり)。
   格子線はセルが6画素以上のときだけ引く(nrows+ncols 本の線で，nrows*ncols 個の矩形ではない)。
 
-### v2.1.0 (開発中・DESCRIPTION は繰り上げ済み)
+### v2.1.0 (2026-09-25 CRAN 受理。以下は開発中のメモ)
 
 **入っているもの (2026-09-15 時点)**
 

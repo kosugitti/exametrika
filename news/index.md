@@ -2,6 +2,8 @@
 
 ## exametrika 2.1.0
 
+CRAN release: 2026-09-24
+
 A minor release. The estimates returned by `LRA(method = "SOM")` change,
 so the fixes below could not ship as a patch. They came out of reading
 the R code against the Mathematica routine it was ported from

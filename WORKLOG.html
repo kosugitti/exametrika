@@ -2557,6 +2557,32 @@ rhub / win-devel               本日の版で流し直し中</code></pre>
 <li>次＝<strong>Web フォームから提出</strong>。tarball は <code>git archive</code> の木から作った <code>~/Dropbox/MobileTemp/exametrika_2.1.0.tar.gz</code>(2.3MB)</li>
 </ul></div>
 </div>
+<div class="section level2">
+<h2 id="id_2026-09-25-210-を-cran-へ提出受理release-と告知まで完了">2026-09-25 2.1.0 を CRAN へ提出・受理，Release と告知まで完了<a class="anchor" aria-label="anchor" href="#id_2026-09-25-210-%E3%82%92-cran-%E3%81%B8%E6%8F%90%E5%87%BA%E5%8F%97%E7%90%86release-%E3%81%A8%E5%91%8A%E7%9F%A5%E3%81%BE%E3%81%A7%E5%AE%8C%E4%BA%86"></a></h2>
+<ul><li>
+<strong>提出</strong>: 9/24夜に <code>submit_cran()</code> が固まったため，Webフォームで提出(08:52 JST 確認リンク→08:53 提出通知)。09:08 に <code>[CRAN-pretest-publish]</code>「on its way to CRAN」で<strong>自動チェックのみで受理</strong>
+</li>
+<li>未pushだった docs コミット4本(<code>03a1422</code>・<code>0298471</code>・<code>c4e2341</code>・<code>3b41121</code>)を push</li>
+<li>
+<strong>GitHub Release <code>v2.1.0</code></strong>: タグは提出時の <code>3b41121</code>(<code>CRAN-SUBMISSION</code> のSHAと一致)。本文は NEWS 2.1.0 節の Bug Fixes 以降＋冒頭を CRAN 版向けに書き換え＋Test suite 節</li>
+<li>
+<strong>告知</strong>: Discussions #40(JA)・#41(EN)。カッコは半角</li>
+<li>
+<strong>NEWS.md の 2.1.0 節に「Released on GitHub first; the CRAN submission follows …」が残っている</strong>(実際は最初から CRAN)。tarball に入っているので今回は触らず，<strong>次の版で直す</strong>
+</li>
+<li>
+<code>CRAN-SUBMISSION</code> を 2.1.0 に更新してコミット(<code>4c0ffc4</code>)</li>
+<li>
+<strong><code>tools/build_pkg.R</code> を最低限の形(10行)へ戻した</strong>(<code>7ff0803</code>)。git archive への書き出しと <code>src</code> 変数は本人が「ダラダラして嫌」とのことで撤去し，<code>stopifnot(git status --porcelain が空)</code> の1行で Dropbox の復活ファイルを止める。<code>submit_cran()</code> は働き木から作る(gitignore 済みで Rbuildignore に無いファイルはすり抜ける点だけ注意)</li>
+<li>SNS 用の文面(X 日英・Bluesky/Mastodon 日本語)を作って本人へ渡した(投稿は本人)</li>
+<li>shinyExametrika を 2.1.0 で再デプロイ(詳細は shinyExametrika の WORKLOG)</li>
+</ul><div class="section level3">
+<h3 id="次-12">次<a class="anchor" aria-label="anchor" href="#%E6%AC%A1-12"></a></h3>
+<ul><li>NEWS の 2.1.0 節の記述を直す(次の版で)</li>
+<li>2.2.0 = SOAC/WOAC 判定を model_esp 側へ＋<code>TRP_empirical</code> 併記＋<code><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict()</a></code>
+</li>
+</ul></div>
+</div>
 </div>
 
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

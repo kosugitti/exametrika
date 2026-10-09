@@ -51,8 +51,11 @@ in factor format, the factor levels are converted to consecutive integers starti
 \item{ID}{The ID label given by the designated column or function.}
 \item{ItemLabel}{The item names given by the provided column names or function.}
 \item{Z}{Missing indicator matrix. \eqn{z_{ij}=1} indicates that item j is presented to Student i,
-while \eqn{z_{ij}=0} indicates item j is NOT presented to Student i.
-If the data contains NA values, -1 is assigned.}
+while \eqn{z_{ij}=0} indicates item j is NOT presented to Student i. \code{Z} is the
+only place where missingness is recorded: in \code{U} (binary and rated data) a
+missing cell holds 0, so that \code{U} alone counts correct responses and
+\code{Z * (1 - U)} counts incorrect ones; in \code{Q} (polytomous data) a
+missing cell holds -1.}
 \item{w}{Item weight vector}
 \item{response.type}{Character string indicating the type of response data:
 "binary", "ordinal", "rated", or "nominal"}

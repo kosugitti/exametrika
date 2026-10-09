@@ -57,7 +57,7 @@ polychoric_matrix_cpp <- function(data) {
     .Call(`_exametrika_polychoric_matrix_cpp`, data)
 }
 
-som_epoch_cpp <- function(RefMat, prior_list, U, order, hhh_row, kappa, cnst, mic, conf_t_ = NULL, fixed_t_ = NULL) {
-    .Call(`_exametrika_som_epoch_cpp`, RefMat, prior_list, U, order, hhh_row, kappa, cnst, mic, conf_t_, fixed_t_)
+som_epoch_cpp <- function(RefMat, prior_list, U, Z, order, hhh_row, kappa, cnst, mic, conf_t_ = NULL, fixed_t_ = NULL) {
+    .Call(`_exametrika_som_epoch_cpp`, RefMat, prior_list, U, Z, order, hhh_row, kappa, cnst, mic, conf_t_, fixed_t_)
 }
 

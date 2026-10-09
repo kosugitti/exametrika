@@ -35,7 +35,7 @@
 StudentAnalysis <- function(U, na = NULL, Z = NULL, w = NULL) {
   tmp <- dataFormat(data = U, na = na, Z = Z, w = w)
   NRS <- nrs(tmp)
-  NR <- NCOL(tmp$U) - rowSums(is.na(tmp$U))
+  NR <- rowSums(tmp$Z)
   PR <- passage(tmp)
   SS <- sscore(tmp)
   Ptile <- percentile(tmp)

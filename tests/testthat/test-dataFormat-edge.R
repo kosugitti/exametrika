@@ -148,8 +148,11 @@ test_that("rated U matrix preserves missing as -1", {
     item2 = c(3, 3, NA, 1, 1, 1, 2, 2, 2, 3)
   )
   result <- dataFormat(data, CA = c(2, 3))
-  expect_equal(unname(result$U[2, 1]), -1) # NA in item1 → -1 in U
-  expect_equal(unname(result$U[3, 2]), -1) # NA in item2 → -1 in U
+  # NA → 0 in U (missingness lives in Z only; 2.2.0)
+  expect_equal(unname(result$U[2, 1]), 0)
+  expect_equal(unname(result$U[3, 2]), 0)
+  expect_equal(unname(result$Z[2, 1]), 0)
+  expect_equal(unname(result$Z[3, 2]), 0)
   # Non-missing values still scored correctly
   expect_equal(unname(result$U[1, 1]), 0) # 1 != CA(2)
   expect_equal(unname(result$U[1, 2]), 1) # 3 == CA(3)
@@ -1126,9 +1129,11 @@ test_that("numeric ID + CA + NA all at once", {
   expect_equal(result$response.type, "rated")
   expect_equal(ncol(result$U), 3)
   expect_equal(ncol(result$Q), 3)
-  # Check missing preserved in U
-  expect_equal(unname(result$U[2, 1]), -1) # NA → -1
-  expect_equal(unname(result$U[1, 2]), -1) # NA → -1
+  # Missing cells are 0 in U and flagged in Z (2.2.0)
+  expect_equal(unname(result$U[2, 1]), 0)
+  expect_equal(unname(result$U[1, 2]), 0)
+  expect_equal(unname(result$Z[2, 1]), 0)
+  expect_equal(unname(result$Z[1, 2]), 0)
   # Check correct scoring
   expect_equal(unname(result$U[1, 1]), 0) # 1 != CA(2)
   expect_equal(unname(result$U[3, 2]), 0) # 1 != CA(3)
@@ -1145,7 +1150,8 @@ test_that("custom na + CA + explicit id", {
   expect_equal(result$response.type, "rated")
   expect_equal(result$ID, paste0("S", 1:15))
   expect_equal(unname(result$Q[2, 1]), -1) # 99 → -1
-  expect_equal(unname(result$U[2, 1]), -1) # missing preserved in U
+  expect_equal(unname(result$U[2, 1]), 0) # missing is 0 in U, flagged in Z (2.2.0)
+  expect_equal(unname(result$Z[2, 1]), 0)
 })
 
 # --- Regression: sample datasets still work ---

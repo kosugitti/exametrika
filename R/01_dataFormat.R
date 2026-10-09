@@ -30,8 +30,11 @@
 #' \item{ID}{The ID label given by the designated column or function.}
 #' \item{ItemLabel}{The item names given by the provided column names or function.}
 #' \item{Z}{Missing indicator matrix. \eqn{z_{ij}=1} indicates that item j is presented to Student i,
-#' while \eqn{z_{ij}=0} indicates item j is NOT presented to Student i.
-#' If the data contains NA values, -1 is assigned.}
+#' while \eqn{z_{ij}=0} indicates item j is NOT presented to Student i. \code{Z} is the
+#' only place where missingness is recorded: in \code{U} (binary and rated data) a
+#' missing cell holds 0, so that \code{U} alone counts correct responses and
+#' \code{Z * (1 - U)} counts incorrect ones; in \code{Q} (polytomous data) a
+#' missing cell holds -1.}
 #' \item{w}{Item weight vector}
 #' \item{response.type}{Character string indicating the type of response data:
 #'  "binary", "ordinal", "rated", or "nominal"}
@@ -50,7 +53,7 @@ dataFormat <- function(data, na = NULL, id = NULL, Z = NULL, w = NULL,
     # added, so label on the way through rather than regenerating the .rda files.
     return(label_data_matrices(data))
   }
-  if (!is.null(na) && is.na(na)) {
+  if (!is.null(na) && any(is.na(na))) {
     na <- NULL
   }
 
@@ -153,8 +156,12 @@ dataFormat <- function(data, na = NULL, id = NULL, Z = NULL, w = NULL,
       is_string_or_factor <- is.character(first_col)
     }
     is_consecutive <- is_consecutive_numbers(first_col)
+    # A numeric column that takes a different value in every row cannot be an
+    # item (responses repeat); treat it as an ID such as a student number.
+    is_unique_numeric <- is.numeric(first_col) && nrow(data) > 1 &&
+      !anyNA(first_col) && length(unique(first_col)) == nrow(data)
 
-    if (is_string_or_factor || is_consecutive) {
+    if (is_string_or_factor || is_consecutive || is_unique_numeric) {
       # First column is ID (strings, or unique consecutive integers)
       ID <- as.character(first_col)
       response.matrix <- data[, -1, drop = FALSE]
@@ -196,9 +203,23 @@ dataFormat <- function(data, na = NULL, id = NULL, Z = NULL, w = NULL,
   CategoryLabel <- list()
   if (is.data.frame(response.matrix)) {
     for (col in names(response.matrix)) {
+      v <- response.matrix[[col]]
+      if (is.character(v)) {
+        # a character column of digits is numeric data read as text; anything
+        # else is a labelled category and is treated like a factor
+        v[v %in% na] <- NA
+        num <- suppressWarnings(as.numeric(v))
+        if (all(is.na(num) == is.na(v))) {
+          response.matrix[[col]] <- num
+        } else {
+          response.matrix[[col]] <- factor(v)
+        }
+      }
       if (is.factor(response.matrix[[col]])) {
-        CategoryLabel[[col]] <- levels(response.matrix[[col]])
-        response.matrix[[col]] <- as.numeric(response.matrix[[col]])
+        # drop unused levels so that the labels line up with the observed codes
+        f <- droplevels(response.matrix[[col]])
+        CategoryLabel[[col]] <- levels(f)
+        response.matrix[[col]] <- as.numeric(f)
       }
     }
   }
@@ -210,10 +231,29 @@ dataFormat <- function(data, na = NULL, id = NULL, Z = NULL, w = NULL,
   }
 
   response.matrix <- as.matrix(response.matrix)
+  if (!is.null(na)) {
+    response.matrix[response.matrix %in% na] <- NA
+  }
+  # A character matrix (a missing-value symbol in a CSV column, or an ID column
+  # swept into as.matrix()) must become numeric here; left alone it reached
+  # the arithmetic downstream as text (2.2.0).
+  if (is.character(response.matrix)) {
+    num <- suppressWarnings(as.numeric(response.matrix))
+    bad <- is.na(num) & !is.na(response.matrix)
+    if (any(bad)) {
+      stop(
+        "Non-numeric response values found: ",
+        paste(utils::head(unique(response.matrix[bad]), 5), collapse = ", "),
+        ". Use `na =` for missing-value codes."
+      )
+    }
+    response.matrix <- matrix(num, nrow = nrow(response.matrix), dimnames = dimnames(response.matrix))
+  }
   response.matrix[is.na(response.matrix)] <- -1
 
   # Check if Z is indicator matrix
   if (!is.null(Z)) {
+    Z <- as.matrix(Z)
     if (!all(Z %in% c(0, 1))) {
       stop("The missing indicator matrix must contain only 0 or 1")
     }
@@ -311,11 +351,14 @@ dataFormat <- function(data, na = NULL, id = NULL, Z = NULL, w = NULL,
   }
 
   ### This function finally makes each matrix as follow:
-  # U is a matrix composed solely of 0s,1s and -1.
   # Z is the missing identifier matrix composed solely of 0s and 1s.
+  # Q (polytomous) keeps -1 in missing cells. U (binary, rated) carries 0 there:
+  # every consumer of U either sums it (correct counts) or masks it with Z,
+  # and a -1 sentinel in U silently subtracted one correct response per
+  # missing cell wherever Z was not applied (fixed in 2.2.0).
   if (!is.null(na)) {
-    ## na value specified
-    response.matrix <- ifelse(response.matrix == na, -1, response.matrix)
+    ## na value specified (already NA -> -1 above for character input)
+    response.matrix[response.matrix %in% na] <- -1
   }
 
   Z <- ifelse(response.matrix == -1, 0, 1)
@@ -364,6 +407,7 @@ dataFormat <- function(data, na = NULL, id = NULL, Z = NULL, w = NULL,
     response.matrix <- response.matrix[, keep, drop = FALSE]
     Z <- Z[, keep, drop = FALSE]
     ItemLabel <- ItemLabel[keep]
+    CategoryLabel <- CategoryLabel[intersect(names(CategoryLabel), ItemLabel)]
     w <- w[keep]
     if (!is.null(CA)) {
       CA <- CA[keep]
@@ -418,12 +462,16 @@ dataFormat <- function(data, na = NULL, id = NULL, Z = NULL, w = NULL,
     }
     U <- matrix(NA, nrow = nrow(response.matrix), ncol = ncol(response.matrix))
     for (i in 1:nrow(response.matrix)) {
-      U[i, ] <- ifelse(response.matrix[i, ] == -1, -1,
+      U[i, ] <- ifelse(response.matrix[i, ] == -1, 0,
         ifelse(response.matrix[i, ] == CA, 1, 0)
       )
     }
   }
 
+
+  # Factor columns were registered first, so put the labels back in item order
+  # (consumers read CategoryLabel by position).
+  CategoryLabel <- CategoryLabel[ItemLabel]
 
   # Create return list with appropriate matrix name based on response type
   ret.list <- list(
@@ -436,7 +484,9 @@ dataFormat <- function(data, na = NULL, id = NULL, Z = NULL, w = NULL,
   )
   # Add response matrix with appropriate name
   if (response.type == "binary") {
-    ret.list$U <- response.matrix
+    U_out <- response.matrix
+    U_out[Z == 0] <- 0
+    ret.list$U <- U_out
   } else {
     ret.list$Q <- response.matrix
     ret.list$CategoryLabel <- CategoryLabel
@@ -708,12 +758,20 @@ longdataFormat <- function(data, na = NULL,
 
   # Add response matrix with appropriate name
   if (response.type == "binary") {
-    ret_list$U <- response_matrix
+    U_out <- response_matrix
+    U_out[Z == 0] <- 0
+    ret_list$U <- U_out
   } else {
     ret_list$Q <- response_matrix
-    if (!is.null(CategoryLabel)) {
-      ret_list$CategoryLabel <- list(response = CategoryLabel)
-    }
+    # one label vector per item, as dataFormat() returns (consumers unlist
+    # them item by item)
+    cat_lab <- lapply(seq_len(ncol(response_matrix)), function(j) {
+      x <- response_matrix[, j]
+      codes <- sort(unique(x[x != -1]))
+      if (!is.null(CategoryLabel)) CategoryLabel[codes] else generate_category_labels(x, Qid_label[j])
+    })
+    names(cat_lab) <- Qid_label
+    ret_list$CategoryLabel <- cat_lab
     if (!is.null(CA)) {
       ret_list$CA <- CA
     }

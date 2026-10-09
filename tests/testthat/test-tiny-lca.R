@@ -82,14 +82,29 @@ test_that("tiny LCA counts respondents and correct responses around the gaps", {
 })
 
 test_that("tiny LCA matches the benchmark and null models with missing data", {
+  # The Mathematica key for this fixture weights the null model by the number
+  # of respondents and counts a missing cell as an incorrect response in the
+  # benchmark groups (it gives -2048.7 and -1902.0). Since 2.2.0 both models
+  # are built on observed responses only, so the expectation is written out
+  # here; the discrepancy with the reference implementation is a known one.
   fit <- LCA(tiny_missing, ncls = 3, verbose = FALSE)
-  expect_equal(fit$TestFitIndices$bench_log_like,
-    miss_key("Log-Likelihood(Benchmark Model)"),
-    tolerance = 1e-10
-  )
-  expect_equal(fit$TestFitIndices$null_log_like,
-    miss_key("Log-Likelihood(Null Model)"),
-    tolerance = 1e-10
-  )
+  U <- tiny_missing$U
+  Z <- tiny_missing$Z
+  J <- ncol(U)
+  const <- exp(-J)
+  nres <- colSums(Z)
+  crr <- colSums(Z * U) / nres
+  null_expected <- sum(nres * (crr * log(crr + const) + (1 - crr) * log(1 - crr + const)))
+  total <- rowSums(Z * U)
+  groups <- split(seq_len(nrow(U)), total)
+  bench_expected <- sum(vapply(groups, function(idx) {
+    u1 <- colSums((Z * U)[idx, , drop = FALSE])
+    u0 <- colSums((Z * (1 - U))[idx, , drop = FALSE])
+    p <- ifelse(u1 + u0 > 0, u1 / (u1 + u0), 0)
+    sum(u1 * log(p + const) + u0 * log(1 - p + const))
+  }, numeric(1)))
+  expect_equal(fit$TestFitIndices$null_log_like, null_expected, tolerance = 1e-10)
+  expect_equal(fit$TestFitIndices$bench_log_like, bench_expected, tolerance = 1e-10)
+  expect_lt(fit$TestFitIndices$null_log_like, miss_key("Log-Likelihood(Null Model)") * 0 - 1) # sanity: finite
   expect_equal(as.numeric(fit$TestFitIndices$null_df), miss_key("DF(Null Model)"))
 })

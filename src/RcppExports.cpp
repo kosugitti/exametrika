@@ -194,14 +194,15 @@ BEGIN_RCPP
 END_RCPP
 }
 // som_epoch_cpp
-List som_epoch_cpp(NumericMatrix RefMat, NumericVector prior_list, const NumericMatrix& U, const IntegerVector& order, const NumericVector& hhh_row, double kappa, double cnst, bool mic, Nullable<NumericMatrix> conf_t_, Nullable<LogicalMatrix> fixed_t_);
-RcppExport SEXP _exametrika_som_epoch_cpp(SEXP RefMatSEXP, SEXP prior_listSEXP, SEXP USEXP, SEXP orderSEXP, SEXP hhh_rowSEXP, SEXP kappaSEXP, SEXP cnstSEXP, SEXP micSEXP, SEXP conf_t_SEXP, SEXP fixed_t_SEXP) {
+List som_epoch_cpp(NumericMatrix RefMat, NumericVector prior_list, const NumericMatrix& U, const NumericMatrix& Z, const IntegerVector& order, const NumericVector& hhh_row, double kappa, double cnst, bool mic, Nullable<NumericMatrix> conf_t_, Nullable<LogicalMatrix> fixed_t_);
+RcppExport SEXP _exametrika_som_epoch_cpp(SEXP RefMatSEXP, SEXP prior_listSEXP, SEXP USEXP, SEXP ZSEXP, SEXP orderSEXP, SEXP hhh_rowSEXP, SEXP kappaSEXP, SEXP cnstSEXP, SEXP micSEXP, SEXP conf_t_SEXP, SEXP fixed_t_SEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< NumericMatrix >::type RefMat(RefMatSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type prior_list(prior_listSEXP);
     Rcpp::traits::input_parameter< const NumericMatrix& >::type U(USEXP);
+    Rcpp::traits::input_parameter< const NumericMatrix& >::type Z(ZSEXP);
     Rcpp::traits::input_parameter< const IntegerVector& >::type order(orderSEXP);
     Rcpp::traits::input_parameter< const NumericVector& >::type hhh_row(hhh_rowSEXP);
     Rcpp::traits::input_parameter< double >::type kappa(kappaSEXP);
@@ -209,7 +210,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< bool >::type mic(micSEXP);
     Rcpp::traits::input_parameter< Nullable<NumericMatrix> >::type conf_t_(conf_t_SEXP);
     Rcpp::traits::input_parameter< Nullable<LogicalMatrix> >::type fixed_t_(fixed_t_SEXP);
-    rcpp_result_gen = Rcpp::wrap(som_epoch_cpp(RefMat, prior_list, U, order, hhh_row, kappa, cnst, mic, conf_t_, fixed_t_));
+    rcpp_result_gen = Rcpp::wrap(som_epoch_cpp(RefMat, prior_list, U, Z, order, hhh_row, kappa, cnst, mic, conf_t_, fixed_t_));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -229,7 +230,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_exametrika_polychoric_likelihood_cpp", (DL_FUNC) &_exametrika_polychoric_likelihood_cpp, 2},
     {"_exametrika_polychoric_cpp", (DL_FUNC) &_exametrika_polychoric_cpp, 2},
     {"_exametrika_polychoric_matrix_cpp", (DL_FUNC) &_exametrika_polychoric_matrix_cpp, 1},
-    {"_exametrika_som_epoch_cpp", (DL_FUNC) &_exametrika_som_epoch_cpp, 10},
+    {"_exametrika_som_epoch_cpp", (DL_FUNC) &_exametrika_som_epoch_cpp, 11},
     {NULL, NULL, 0}
 };
 

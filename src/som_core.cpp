@@ -27,6 +27,7 @@ static inline void row_insertion_sort(NumericMatrix& ref, int j, int C) {
 List som_epoch_cpp(NumericMatrix RefMat,
                    NumericVector prior_list,
                    const NumericMatrix& U,
+                   const NumericMatrix& Z,
                    const IntegerVector& order,
                    const NumericVector& hhh_row,
                    double kappa,
@@ -57,6 +58,7 @@ List som_epoch_cpp(NumericMatrix RefMat,
       long double correct = 0.0L;
       long double incorrect = 0.0L;
       for (int j = 0; j < J; ++j) {
+        if (Z(s, j) == 0.0) continue; // missing cell: no evidence either way
         const double p = ref(j, c);
         correct += U(s, j) * std::log(p + cnst);
         incorrect += (1.0 - U(s, j)) * std::log(1.0 - p + cnst);
@@ -75,6 +77,7 @@ List som_epoch_cpp(NumericMatrix RefMat,
     for (int c = 0; c < C; ++c) {
       const double h = hhh_row[offset + c];
       for (int j = 0; j < J; ++j) {
+        if (Z(s, j) == 0.0) continue; // a missing cell must not pull the profile
         ref(j, c) += h * (U(s, j) - ref(j, c));
       }
     }

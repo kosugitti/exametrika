@@ -102,7 +102,8 @@ ItemFit <- function(U, Z, ell_A, nparam) {
   crr <- colSums(Z * U) / nrs
   const <- exp(-testlength)
   # Null model
-  ell_N <- nobs * crr * log(crr + const) + nobs * (1 - crr) * log(1 - crr + const)
+  # Observed responses only: nrs, not nobs, weights the null model (2.2.0).
+  ell_N <- nrs * crr * log(crr + const) + nrs * (1 - crr) * log(1 - crr + const)
   # Benchmark model
   total <- rowSums(Z * U)
   totalList <- sort(unique(total))
@@ -113,10 +114,11 @@ ItemFit <- function(U, Z, ell_A, nparam) {
   for (i in 1:nobs) {
     MsG[i, which(totalList == total[i])] <- 1
   }
-  ## PjG
+  ## PjG. Incorrect counts come from Z * (1 - U), not from the group size, so
+  ## that a missing cell is neither a correct nor an incorrect response (2.2.0).
   U1gj <- t(MsG) %*% (Z * U)
-  U0gj <- replicate(testlength, totalDist, simplify = "matrix") - U1gj
-  PjG <- U1gj / totalDist
+  U0gj <- t(MsG) %*% (Z * (1 - U))
+  PjG <- ifelse(U1gj + U0gj > 0, U1gj / (U1gj + U0gj), 0)
   ell_B <- colSums(U1gj * log(PjG + const) + U0gj * log(1 - PjG + const))
 
   # chisquares
@@ -226,13 +228,13 @@ TestFit <- function(U, Z, ell_A, nparam) {
   }
   ## PjG
   U1gj <- MsG %*% (Z * U)
-  U0gj <- replicate(nitem, totalDist, simplify = "matrix") - U1gj
-  PjG <- U1gj / totalDist
+  U0gj <- MsG %*% (Z * (1 - U))
+  PjG <- ifelse(U1gj + U0gj > 0, U1gj / (U1gj + U0gj), 0)
   ell_B <- colSums(U1gj * log(PjG + const) + U0gj * log(1 - PjG + const))
   ell_B <- sum(ell_B)
   bench_nparm <- ntotal * nitem
-  # Null model
-  ell_N <- nobs * crr * log(crr + const) + nobs * (1 - crr) * log(1 - crr + const)
+  # Null model, on observed responses only (2.2.0)
+  ell_N <- nres * crr * log(crr + const) + nres * (1 - crr) * log(1 - crr + const)
   ell_N <- sum(ell_N)
   null_nparam <- nitem
   df_B <- bench_nparm - null_nparam
@@ -289,14 +291,14 @@ TestFitSaturated <- function(U, Z, ell_A, nparam) {
   nres <- colSums(Z)
   nitem <- NCOL(U)
   nobs <- NROW(U)
-  crr <- colSums(U) / nres
+  crr <- colSums(Z * U) / nres
   const <- exp(-nitem)
   # Benchmark model
   ell_B <- 0
-  npattern <- length(as.numeric(table(apply(U, 1, paste, collapse = ""))))
+  npattern <- length(as.numeric(table(apply(ifelse(Z == 1, U, NA), 1, paste, collapse = ""))))
   bench_nparm <- npattern * nitem
-  # Null model
-  ell_N <- nobs * crr * log(crr + const) + nobs * (1 - crr) * log(1 - crr + const)
+  # Null model, on observed responses only (2.2.0)
+  ell_N <- nres * crr * log(crr + const) + nres * (1 - crr) * log(1 - crr + const)
   ell_N <- sum(ell_N)
   null_nparam <- nitem
   df_B <- bench_nparm - null_nparam

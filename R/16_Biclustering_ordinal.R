@@ -180,6 +180,9 @@ Biclustering.ordinal <- function(U,
   # Initialize smoothed_memb so that it is defined even when the EM loop
   # exits before reaching the smoothing step (e.g. immediate convergence).
   smoothed_memb <- matrix(0, nrow = nobs, ncol = ncls)
+  # The GTM filter feeds the M-step a smoothed membership; the bound monitored
+  # below is evaluated at the posterior itself, so those counts are recomputed.
+  use_smoothing <- (model == 2) && !use_isotonic && is.null(conf_class_mat)
   # iteration start ---------------------------------------------------------
   converge <- TRUE
   FLG <- TRUE
@@ -190,11 +193,12 @@ Biclustering.ordinal <- function(U,
       FLG <- FALSE
       break
     }
-    if (emt == maxemt) {
+    if (emt >= maxemt) {
       converge <- FALSE
       FLG <- FALSE
       message("\nReached the maximum number of iterations.")
       message("Warning: Algorithm may not have converged. Interpret results with caution.")
+      break
     }
 
     emt <- emt + 1
@@ -314,8 +318,11 @@ Biclustering.ordinal <- function(U,
         BBRM[, , q] <- cUfcq[, , q] / cUfcq[, , 1]
       }
 
-      ## Forced Ordering
-      if (mic) {
+      ## Forced Ordering. The same permutation is applied to the memberships so
+      ## that column c of the reference array and column c of the membership
+      ## keep describing the same respondents (before 2.2.0 only the profiles
+      ## moved). With conf_class the classes are fixed, so nothing is reordered.
+      if (mic && is.null(conf_class_mat)) {
         overall_order <- array(0, dim = ncls)
         for (i in 1:ncls) {
           total_expected <- 0
@@ -326,28 +333,44 @@ Biclustering.ordinal <- function(U,
           overall_order[i] <- total_expected
         }
         overall_order <- order(overall_order)
-        BBRM <- BBRM[, overall_order, ]
+        BBRM <- BBRM[, overall_order, , drop = FALSE]
+        clsmemb <- clsmemb[, overall_order, drop = FALSE]
+        smoothed_memb <- smoothed_memb[, overall_order, drop = FALSE]
       }
       for (q in 1:maxQ) {
         BCRM[, , q] <- BBRM[, , q] - BBRM[, , q + 1]
       }
     }
 
-    test_log_lik <- 0
-    for (q in 1:maxQ) {
-      observed_mask <- ZU[, , q] == 1
-      prob_leq_q1 <- t(fldmemb %*% BBRM[, , q] %*% t(clsmemb))
-      prob_leq_q2 <- t(fldmemb %*% BBRM[, , q + 1] %*% t(clsmemb))
-      prob_exact <- prob_leq_q1 - prob_leq_q2
-      test_log_lik <- test_log_lik + sum(log(pmax(prob_exact[observed_mask], const)))
+    # Monitor the evidence lower bound at the current (clsmemb, fldmemb, BCRM),
+    # plus the Dirichlet log-prior the M-step maximised (zero when alpha = 1).
+    # For plain Biclustering and for the isotonic Ranklustering every step is an
+    # exact coordinate ascent on this quantity, so it cannot decrease on a
+    # healthy iteration; the GTM filter and `mic` are not ascent steps, and
+    # there the rule below is a stopping rule only. The posterior-weighted
+    # per-cell predictive used before 2.2.0 had no such guarantee and, being a
+    # classification-type quantity, inflated with the number of blocks.
+    # See R/00_VariationalFit.R.
+    logP <- log(pmax(BCRM, 0) + const)
+    if (use_smoothing) {
+      Ufcq_post <- array(0, dim = c(nfld, ncls, maxQ))
+      for (q in 1:maxQ) {
+        Ufcq_post[, , q] <- (t(fldmemb) %*% t(ZU[, , q])) %*% clsmemb
+      }
+    } else {
+      Ufcq_post <- Ufcq
     }
+    test_log_lik <- sum(Ufcq_post * logP) +
+      membership_entropy(clsmemb) + membership_entropy(fldmemb) -
+      nobs * log(ncls) - nitems * log(nfld) +
+      (alpha - 1) * sum(logP)
 
     if (verbose) {
       message(
         sprintf(
           "\n%-80s",
           paste0(
-            "iter ", emt, " log_lik ", format(test_log_lik, digits = 6)
+            "iter ", emt, " elbo ", format(test_log_lik, digits = 6)
           )
         ),
         appendLF = FALSE
@@ -368,13 +391,6 @@ Biclustering.ordinal <- function(U,
 
 
   ### Model Fit
-  testell <- 0
-  for (q in 1:maxQ) {
-    pred_prob <- t(fldmemb %*% BCRM[, , q] %*% t(clsmemb))
-    observed_mask <- ZU[, , q] == 1
-    testell <- testell + sum(log(pmax(pred_prob[observed_mask], const)))
-  }
-
   if (use_isotonic) {
     # Shape-restricted df: distinct free boundary levels per field. The first
     # boundary P(>= 1) = 1 is fixed, so only thresholds 2..maxQ are counted;
@@ -388,6 +404,12 @@ Biclustering.ordinal <- function(U,
   } else {
     nparam <- ncls * nfld * (maxQ - 1)
   }
+
+  # The reported log-likelihood is the evidence lower bound at the final state
+  # (see the EM loop and R/00_VariationalFit.R); the same helper also returns
+  # the respondent-side marginal, the posterior entropies and ICL.
+  vb <- vb_fit_block(ZU, clsmemb, fldmemb, log(pmax(BCRM, 0) + const), nparam)
+  testell <- vb$elbo
 
   ptn <- apply(tmp$Q, 1, function(x) paste(x, collapse = ""))
   benchG <- as.numeric(as.factor(ptn))
@@ -425,11 +447,11 @@ Biclustering.ordinal <- function(U,
   df_B <- bench_nparam - null_nparam
   chi_B <- 2 * (ell_B - ell_N)
   # Analysis model
-  chi_A <- 2 * (ell_B - test_log_lik)
+  chi_A <- 2 * (ell_B - testell)
   df_A <- bench_nparam - nparam
   FitIndices <- structure(
     c(list(
-      model_log_like = test_log_lik,
+      model_log_like = testell,
       bench_log_like = ell_B,
       null_log_like = ell_N,
       model_Chi_sq = chi_A,
@@ -464,7 +486,8 @@ Biclustering.ordinal <- function(U,
 
   for (i in 1:ncls) {
     for (j in 1:nfld) {
-      BFRP2[j, i] <- mean(tmp$Z[cls == i, fld == j] * tmp$Q[cls == i, fld == j])
+      zz <- tmp$Z[cls == i, fld == j]
+      BFRP2[j, i] <- if (sum(zz) > 0) sum(zz * tmp$Q[cls == i, fld == j]) / sum(zz) else NA_real_
     }
   }
 
@@ -500,6 +523,8 @@ Biclustering.ordinal <- function(U,
 
 
   msg <- ifelse(model == 1, "Class", "Rank")
+  # Field x class/rank x category, named as the rated fits name theirs
+  dimnames(BCRM) <- list(paste0("Field", 1:nfld), paste0(msg, 1:ncls), paste0("Cat", 1:maxQ))
   ret <- structure(list(
     Q = tmp$Q,
     Z = tmp$Z,
@@ -529,7 +554,11 @@ Biclustering.ordinal <- function(U,
     Students = StudentRank,
     BFRP = list(Weighted = BFRP1, Observed = BFRP2),
     TestFitIndices = FitIndices,
-    log_lik = test_log_lik, # New naming convention
+    log_lik = testell, # the evidence lower bound; identical to elbo
+    elbo = vb$elbo,
+    log_lik_marginal = vb$log_lik_marginal,
+    entropy = vb$entropy,
+    ICL = vb$ICL,
     SOACflg = SOACflg,
     WOACflg = WOACflg
   ), class = c("exametrika", "ordinalBiclustering"))

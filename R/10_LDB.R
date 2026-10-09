@@ -27,7 +27,7 @@
 #'  \item{nobs}{Sample size. The number of rows in the dataset.}
 #'  \item{testlength}{Length of the test. The number of items included in the test.}
 #'  \item{msg}{A character string indicating the model type. }
-#'  \item{n_class}{Optimal number of classes.}
+#'  \item{n_rank}{Number of latent ranks.}
 #'  \item{n_field}{Optimal number of fields.}
 #'  \item{crr}{Correct Response Rate}
 #'  \item{ItemLabel}{Label of Items}
@@ -183,7 +183,7 @@ LDB <- function(U, na = NULL, Z = NULL, w = NULL,
            Please specify a graph for all classes.")
     }
     for (j in 1:ncls) {
-      g <- igraph::graph_from_adjacency_matrix(adj_list[[j]])
+      g <- igraph::graph_from_adjacency_matrix(adj_with_names(adj_list[[j]], FieldLabel))
       adj_list[[j]] <- fill_adj(g, FieldLabel)
     }
   }
@@ -243,7 +243,10 @@ LDB <- function(U, na = NULL, Z = NULL, w = NULL,
   fld <- ret.Biclustering$FieldEstimated
   csf <- tmp$U %*% ret.Biclustering$FieldMembership
   colnames(csf) <- FieldLabel
-  nsf <- matrix(rep(flddist, nobs), nrow = nobs, byrow = TRUE)
+  # Items observed per respondent and field (Z-weighted), not the field size:
+  # with missing data the latter counted every missing cell as an incorrect
+  # response (2.2.0).
+  nsf <- tmp$Z %*% ret.Biclustering$FieldMembership
   zeroVecS <- rep(0, nobs)
 
   #### SxRxF

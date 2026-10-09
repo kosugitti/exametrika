@@ -62,13 +62,14 @@ test_that("ordinal Biclustering field/class counts", {
 })
 
 test_that("ordinal Biclustering fit indices", {
-  # Values updated when the GTM filter smoothing was wired into the ordinal
-  # Ranklustering M-step (previously the smoothed membership was computed but
-  # never used in estimation). No Mathematica reference exists for ordinal
-  # Biclustering; these are regression snapshots of the fixed GTM path.
-  expect_equal(result_ord$TestFitIndices$RMSEA, 0.0526998, tolerance = 1e-3)
-  expect_equal(result_ord$TestFitIndices$AIC, 6720.284, tolerance = 1)
-  expect_equal(result_ord$TestFitIndices$BIC, -66683.20, tolerance = 1)
+  # Regression snapshots of the GTM path (no Mathematica reference exists for
+  # ordinal Biclustering). Values changed in 2.2.0 when the reported
+  # log-likelihood became the evidence lower bound (see NEWS); the EM is also
+  # monitored on that quantity, so the stopping point moved slightly.
+  expect_equal(result_ord$TestFitIndices$RMSEA, 0.0545661, tolerance = 1e-3)
+  expect_equal(result_ord$TestFitIndices$AIC, 8460.093, tolerance = 1e-4)
+  expect_equal(result_ord$TestFitIndices$BIC, -64943.395, tolerance = 1e-4)
+  expect_equal(result_ord$log_lik, result_ord$elbo)
 })
 
 
@@ -188,9 +189,11 @@ test_that("nominal Biclustering fit indices", {
   expect_true(is.na(result_nom$TestFitIndices$RMSEA))
   expect_true(is.na(result_nom$TestFitIndices$NFI))
   expect_true(is.na(result_nom$TestFitIndices$CFI))
-  # Information criteria are computed directly from log-likelihood
-  expect_equal(result_nom$TestFitIndices$AIC, 27943.98, tolerance = 1)
-  expect_equal(result_nom$TestFitIndices$BIC, 28260.56, tolerance = 1)
+  # Information criteria are computed directly from the reported
+  # log-likelihood, which is the evidence lower bound since 2.2.0 (see NEWS)
+  expect_equal(result_nom$TestFitIndices$AIC, 29933.173, tolerance = 1e-4)
+  expect_equal(result_nom$TestFitIndices$BIC, 30196.989, tolerance = 1e-4)
+  expect_equal(result_nom$log_lik, result_nom$elbo)
 })
 
 

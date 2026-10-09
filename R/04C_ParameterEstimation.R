@@ -223,6 +223,9 @@ PSD_item_params <- function(model, Lambda, quadrature, marginal_posttheta) {
 #'
 
 IRT <- function(U, model = 2, na = NULL, Z = NULL, w = NULL, verbose = FALSE) {
+  if (!is.numeric(model) || length(model) != 1 || !model %in% 2:4) {
+    stop("model must be 2 (2PL), 3 (3PL) or 4 (4PL).")
+  }
   # data format
   if (!inherits(U, "exametrika")) {
     tmp <- dataFormat(data = U, na = na, Z = Z, w = w)
@@ -360,6 +363,9 @@ IRT <- function(U, model = 2, na = NULL, Z = NULL, w = NULL, verbose = FALSE) {
           }
         )
       }
+      if (!optim_flg) {
+        stop("IRT: the optimiser failed for item ", j, " in ", max_attempt, " attempts.")
+      }
       itemloglike[j] <- result$value
       totalLogLike <- totalLogLike + itemloglike[j]
       if (model == 2) {
@@ -405,7 +411,8 @@ IRT <- function(U, model = 2, na = NULL, Z = NULL, w = NULL, verbose = FALSE) {
   EAP <- post_theta %*% quadrature
   tmpA <- matrix(rep(quadrature, NROW(tmp$U)), nrow = NROW(tmp$U), byrow = T)
   tmpB <- matrix(rep(EAP, length(quadrature)), nrow = NROW(tmp$U), byrow = F)
-  PSD <- sqrt(diag(post_theta %*% t((tmpA - tmpB)^2)))
+  # row-wise expectation; the former diag(post %*% t(.)) built an n x n matrix
+  PSD <- sqrt(rowSums(post_theta * (tmpA - tmpB)^2))
 
   ### Model fit
   ell_A <- item_model_loglike

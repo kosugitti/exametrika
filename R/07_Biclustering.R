@@ -126,6 +126,24 @@ build_conf_mat <- function(conf, nitems) {
 #'  \item{Students}{Data frame containing membership probabilities and classification information for each examinee}
 #'  \item{FieldAnalysis}{Matrix showing field analysis results with item-level information}
 #'  \item{TestFitIndices}{Model fit indices for evaluating the quality of the clustering solution}
+#'  \item{log_lik}{Log-likelihood the fit indices are built on. For binary data this is
+#'    the expected log-likelihood of the reference implementation; for nominal and
+#'    ordinal data it is the evidence lower bound (\code{elbo}) since 2.2.0. Rated
+#'    data report the binary layer here and the nominal layer with the suffix
+#'    \code{_nominal}.}
+#'  \item{elbo}{Evidence lower bound of the observed-data log-likelihood under the
+#'    posterior memberships the EM produced. Exact (equal to the observed-data
+#'    log-likelihood) for a one-mode model; a lower bound for biclustering, where
+#'    the respondent and item posteriors are taken independent. Since 2.2.0.}
+#'  \item{log_lik_marginal}{Observed-data log-likelihood of the respondent-side
+#'    mixture with the items fixed at their MAP field assignment. Equal to
+#'    \code{elbo} for a one-mode model.}
+#'  \item{entropy}{Posterior entropy of the memberships (named: \code{class},
+#'    and \code{field} for biclustering). \code{elbo} minus this is the expected
+#'    complete-data log-likelihood.}
+#'  \item{ICL}{Integrated completed likelihood criterion (Biernacki, Celeux and
+#'    Govaert, 2000) in its BIC-type approximation, on the same scale as AIC and
+#'    BIC (-2 log scale, smaller is better).}
 #'  \item{SOACflg}{Logical flag indicating whether Strongly Ordinal Alignment Condition is satisfied}
 #'  \item{WOACflg}{Logical flag indicating whether Weakly Ordinal Alignment Condition is satisfied}
 #' }
@@ -396,11 +414,12 @@ Biclustering.binary <- function(U,
       FLG <- FALSE
       break
     }
-    if (emt == maxemt) {
-      message("\nReached ten times the maximum number of iterations.")
+    if (emt >= maxemt) {
+      message("\nReached the maximum number of iterations.")
       message("Warning: Algorithm may not have converged. Interpret results with caution.")
       FLG <- FALSE
       converge <- FALSE
+      break
     }
     emt <- emt + 1
     old_test_log_lik <- test_log_lik
@@ -583,6 +602,11 @@ Biclustering.binary <- function(U,
     nparam <- ifelse(model == 1, ncls * nfld, sum(diag(Fil)) * nfld)
   }
   FitIndices <- TestFit(tmp$U, tmp$Z, test_log_lik, nparam)
+  # Variational quantities, reported alongside. The log_lik above and the fit
+  # indices built on it keep the reference implementation's expected
+  # log-likelihood; elbo adds the posterior entropies and the class/field
+  # prior constants to it. See R/00_VariationalFit.R.
+  vb <- vb_fit_block_binary(tmp$U, tmp$Z, clsmemb, fldmemb, PiFR, nparam, const)
 
   ### Field Analysis
   crr <- crr(tmp)
@@ -626,6 +650,10 @@ Biclustering.binary <- function(U,
     FieldAnalysis = fieldAnalysis,
     TestFitIndices = FitIndices,
     log_lik = test_log_lik,
+    elbo = vb$elbo,
+    log_lik_marginal = vb$log_lik_marginal,
+    entropy = vb$entropy,
+    ICL = vb$ICL,
     SOACflg = SOACflg,
     WOACflg = WOACflg
   ), class = c("exametrika", "Biclustering"))

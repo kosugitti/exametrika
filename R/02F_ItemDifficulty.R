@@ -187,8 +187,12 @@ ItemThreshold.ordinal <- function(U, na = NULL, Z = NULL, w = NULL) {
   U$Q[U$Z == 0] <- NA
   threshold <- vector("list", nitems)
   for (j in 1:nitems) {
-    tmp <- qnorm(cumsum(tabulate(U$Q[, j]) / sum(tabulate(U$Q[, j]))))
-    threshold[[j]] <- tmp[1:ncat[j] - 1]
+    # table() over the observed codes: tabulate() skips code 0 and leaves
+    # gaps for unused codes, which shifted every threshold (2.2.0)
+    q <- U$Q[, j]
+    tab <- table(factor(q, levels = sort(unique(q[!is.na(q)]))))
+    tmp <- qnorm(pmin(cumsum(tab / sum(tab)), 1))
+    threshold[[j]] <- tmp[seq_len(ncat[j] - 1)]
   }
   return(threshold)
 }
@@ -273,7 +277,9 @@ ItemEntropy.ordinal <- function(U, na = NULL, Z = NULL, w = NULL) {
   U$Q[U$Z == 0] <- NA
   entropy <- rep(0, nitems)
   for (j in 1:nitems) {
-    vec <- tabulate(U$Q[, j]) / sum(tabulate(U$Q[, j]))
+    q <- U$Q[, j]
+    tab <- table(factor(q, levels = sort(unique(q[!is.na(q)]))))
+    vec <- as.vector(tab / sum(tab))
     entropy[j] <- sum(vec * log(vec, base = ncat[j])) * -1
   }
   return(entropy)
@@ -330,7 +336,12 @@ ItemTotalCorr.default <- function(U, na = NULL, Z = NULL, w = NULL) {
   if (inherits(U, "exametrika")) {
     switch(U$response.type,
       "binary" = ItemTotalCorr.binary(U, na, Z, w),
-      "rated" = ItemTotalCorr.binary(U, na, Z, w),
+      "rated" = {
+        # scored responses live in U; the binary routines want a binary object
+        Ub <- U
+        Ub$response.type <- "binary"
+        ItemTotalCorr.binary(Ub, na, Z, w)
+      },
       "ordinal" = ItemTotalCorr.ordinal(U, na, Z, w),
       "nominal" = response_type_error(U$response.type, "ItemTotalCorr")
     )

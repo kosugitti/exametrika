@@ -55,8 +55,6 @@
 #'  \item{LFD}{Latent Field Distribution. see also [plot.exametrika]}
 #'  \item{CMD}{Class Membership Distribution.}
 #'  \item{FRP}{Marginal bicluster reference matrix.}
-#'  \item{FRPIndex}{Index of FFP includes the item location parameters B and Beta,
-#'  the slope parameters A and Alpha, and the monotonicity indices C and Gamma.}
 #'  \item{TRP}{Test Reference Profile}
 #'  \item{LDPSR}{A rearranged set of parameters for output. It includes
 #'  the field the items contained within that field, and the conditional
@@ -213,7 +211,7 @@ BINET <- function(U, na = NULL, Z = NULL, w = NULL,
            Please specify an adjacency matrix for all fields.")
     }
     for (j in 1:nfld) {
-      g <- igraph::graph_from_adjacency_matrix(adj_list[[j]])
+      g <- igraph::graph_from_adjacency_matrix(adj_with_names(adj_list[[j]], FieldLabel))
       adj_list[[j]] <- fill_adj(g, FieldLabel)
     }
   }

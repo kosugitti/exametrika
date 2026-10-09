@@ -243,6 +243,12 @@ GRM <- function(U, na = NULL, Z = NULL, w = NULL, verbose = FALSE) {
       trace = if (verbose) 1 else 0
     )
   )
+  if (result$convergence != 0) {
+    warning(
+      "GRM: the optimiser did not converge (optim code ", result$convergence,
+      "); interpret the estimates with caution."
+    )
+  }
   final_params <- target_to_params_grm(result$par, nitems, ncat)
 
   est_a <- final_params$a
@@ -266,6 +272,7 @@ GRM <- function(U, na = NULL, Z = NULL, w = NULL, verbose = FALSE) {
   # (product of item category probabilities, accumulated in log space;
   # missing responses are simply skipped)
   log_post <- matrix(log(quad_weight), nrow = nobs, ncol = nq, byrow = TRUE)
+  lPj_list <- vector("list", nitems)
   for (j in 1:nitems) {
     # K x nq matrix of category probabilities for item j
     Pj <- vapply(
@@ -274,6 +281,7 @@ GRM <- function(U, na = NULL, Z = NULL, w = NULL, verbose = FALSE) {
       numeric(ncat[j])
     )
     lPj <- log(pmax(Pj, 1e-300))
+    lPj_list[[j]] <- lPj
     resp <- dat[, j]
     ok <- which(!is.na(resp))
     log_post[ok, ] <- log_post[ok, ] + lPj[resp[ok], , drop = FALSE]
@@ -295,18 +303,15 @@ GRM <- function(U, na = NULL, Z = NULL, w = NULL, verbose = FALSE) {
   PSD <- sqrt(posterior_variance)
 
   # model fit
-  const <- 1e-16
-  ### Analysis model
+  ### Analysis model: expected log-likelihood under the posterior over theta,
+  ### sum_i sum_q P(theta_q | x_i) log P_j(x_ij | theta_q), as IRT() reports.
+  ### Plugging in each respondent's EAP (before 2.2.0) is not nested in the
+  ### benchmark model and produced negative chi-squares.
   ell_A <- rep(0, nitems)
   for (j in 1:nitems) {
-    for (i in 1:nobs) {
-      theta_i <- EAP[i]
-      resp <- dat[i, j]
-      if (!is.na(resp)) {
-        prob <- grm_prob(theta_i, est_a[j], est_b[[j]])[resp]
-        ell_A[j] <- ell_A[j] + log(prob + const)
-      }
-    }
+    resp <- dat[, j]
+    ok <- which(!is.na(resp))
+    ell_A[j] <- sum(post_theta[ok, , drop = FALSE] * lPj_list[[j]][resp[ok], , drop = FALSE])
   }
   ### Null model
   response_list <- lapply(seq_len(nitems), function(j) {

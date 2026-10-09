@@ -60,7 +60,7 @@ LogisticModel <- function(a = 1, b, c = 0, d = 1, theta) {
 #' The one-parameter logistic model is a model with only one parameter b.
 #' This model is a 2PLM model in which a is constrained to 1.
 #' This model is also called the Rasch model.
-#' @param b slope parameter
+#' @param b location (difficulty) parameter
 #' @param theta ability parameter
 #' @return Returns a numeric vector of probabilities between 0 and 1, representing
 #'   the probability of a correct response given the ability level theta. The probability

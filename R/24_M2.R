@@ -172,22 +172,41 @@ m2_delta <- function(profile, idx, ncat) {
   return(Delta)
 }
 
+#' @title Note on missing data for the caveat field
+#' @noRd
+m2_missing_note <- function(caveat, Z) {
+  if (is.null(Z) || !any(Z == 0)) {
+    return(caveat)
+  }
+  note <- sprintf(
+    "%.1f%% of the cells are missing: the margins use available cases and M2 is approximate.",
+    100 * mean(Z == 0)
+  )
+  if (is.null(caveat) || is.na(caveat)) note else paste(caveat, note)
+}
+
 #' @title Observed margins
 #' @noRd
 m2_p_obs <- function(Q, Z, idx) {
-  nobs <- nrow(Q)
+  # Available-case proportions: each margin is divided by the number of
+  # respondents who answered the item (pair) it involves, which is what the
+  # model probabilities are conditional on. Dividing by the full n (as before
+  # 2.2.0) scaled every margin of an item with missing data by its response
+  # rate and inflated M2 systematically.
   QZ <- Q
   QZ[Z == 0] <- NA
   p_single <- vapply(seq_len(nrow(idx$single)), function(k) {
     j <- idx$single[k, "item"]
-    return(sum(QZ[, j] == idx$single[k, "cat"], na.rm = TRUE) / nobs)
+    n_j <- sum(Z[, j] == 1)
+    return(sum(QZ[, j] == idx$single[k, "cat"], na.rm = TRUE) / max(n_j, 1))
   }, numeric(1))
   p_pair <- vapply(seq_len(nrow(idx$pair)), function(k) {
     j <- idx$pair[k, "item1"]
     jp <- idx$pair[k, "item2"]
+    n_jj <- sum(Z[, j] == 1 & Z[, jp] == 1)
     return(sum(QZ[, j] == idx$pair[k, "cat1"] & QZ[, jp] == idx$pair[k, "cat2"],
       na.rm = TRUE
-    ) / nobs)
+    ) / max(n_jj, 1))
   }, numeric(1))
   return(c(p_single, p_pair))
 }
@@ -393,7 +412,7 @@ M2 <- function(x, ...) {
 M2.default <- function(x, ...) {
   stop(
     "M2() is available for models fitted by maximum likelihood on polytomous ",
-    "data: currently LCA() on nominal or rated data."
+    "data: LCA() on nominal or rated data, LRA() on ordinal data, and Biclustering() on nominal or ordinal data."
   )
 }
 
@@ -453,7 +472,7 @@ m2_from_lca <- function(x, verbose = TRUE, gc = TRUE) {
 
   out <- m2_core(profile, ncat, nobs = x$nobs, Q = x$Q, Z = x$Z)
   out$n_class <- ncls
-  out$caveat <- NA_character_
+  out$caveat <- m2_missing_note(NA_character_, x$Z)
   m2_release(gc)
   return(structure(out, class = c("exametrika", "M2")))
 }
@@ -550,7 +569,7 @@ add_M2 <- function(x, ...) {
 add_M2.default <- function(x, ...) {
   stop(
     "add_M2() is available for models fitted by maximum likelihood on ",
-    "polytomous data: currently LCA() on nominal or rated data."
+    "polytomous data: LCA() on nominal or rated data, LRA() on ordinal data, and Biclustering() on nominal or ordinal data."
   )
 }
 
@@ -574,6 +593,7 @@ add_M2.ratedLCA <- function(x, verbose = TRUE, gc = TRUE, ...) {
 #' @export
 add_M2.LRAordinal <- function(x, verbose = TRUE, gc = TRUE, ...) {
   dat <- x$U
+  dat$Q <- remap_category_codes(dat$Q)
   x$TestFitIndicesM2 <- m2_indices_from(
     M2(x, verbose = verbose, gc = FALSE), dat$Q, dat$Z,
     as.vector(dat$categories), x$nobs, verbose
@@ -934,7 +954,7 @@ m2_from_biclustering <- function(x, verbose = TRUE, gc = TRUE) {
   m2_report_size(ncat, verbose)
   out <- m2_core_general(profile, ncat, nobs = x$nobs, Q = x$Q, Z = x$Z, field = field)
   out$n_class <- ncls
-  out$caveat <- m2_caveat_biclustering(x)
+  out$caveat <- m2_missing_note(m2_caveat_biclustering(x), x$Z)
   m2_release(gc)
   return(structure(out, class = c("exametrika", "M2")))
 }
@@ -943,6 +963,8 @@ m2_from_biclustering <- function(x, verbose = TRUE, gc = TRUE) {
 #' @export
 M2.LRAordinal <- function(x, verbose = TRUE, gc = TRUE, ...) {
   dat <- x$U
+  # LRA() keeps the raw codes; the ICRP rows follow the remapped 1..ncat order
+  dat$Q <- remap_category_codes(dat$Q)
   if (is.null(dat$Q) || is.null(dat$Z)) {
     stop("The fitted object does not carry the response data needed by M2().")
   }
@@ -953,7 +975,7 @@ M2.LRAordinal <- function(x, verbose = TRUE, gc = TRUE, ...) {
   m2_report_size(ncat, verbose)
   out <- m2_core_general(profile, ncat, nobs = x$nobs, Q = dat$Q, Z = dat$Z)
   out$n_class <- nrank
-  out$caveat <- m2_caveat_lra(x)
+  out$caveat <- m2_missing_note(m2_caveat_lra(x), dat$Z)
   m2_release(gc)
   return(structure(out, class = c("exametrika", "M2")))
 }

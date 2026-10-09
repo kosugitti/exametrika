@@ -136,9 +136,14 @@ GridSearch <- function(
   }
 
   # Valid indices and their optimization direction
-  minimize_indices <- c("model_Chi_sq", "RMSEA", "AIC", "CAIC", "BIC")
-  maximize_indices <- c("model_log_like", "NFI", "RFI", "IFI", "TLI", "CFI")
+  minimize_indices <- c("model_Chi_sq", "RMSEA", "AIC", "CAIC", "BIC", "ICL")
+  maximize_indices <- c("model_log_like", "NFI", "RFI", "IFI", "TLI", "CFI", "elbo", "log_lik_marginal")
   valid_indices <- c(minimize_indices, maximize_indices)
+  # ICL, elbo and log_lik_marginal live at the top level of a fit (2.2.0)
+  top_level_indices <- c("ICL", "elbo", "log_lik_marginal")
+  index_value <- function(result) {
+    if (index %in% top_level_indices) result[[index]] else result$TestFitIndices[[index]]
+  }
 
   if (!(index %in% valid_indices)) {
     stop(
@@ -207,7 +212,7 @@ GridSearch <- function(
             list(list(ncls = ncls, nfld = nfld))
           )
         } else {
-          ret[ncls - 1, nfld - 1] <- result$TestFitIndices[[index]]
+          ret[ncls - 1, nfld - 1] <- index_value(result)
         }
       }
       if (verbose) {
@@ -268,11 +273,10 @@ GridSearch <- function(
         message(sprintf("Executing ncls = %d...", ncls))
       }
 
-      args_list <- c(list(
-        U = obj,
-        ncls = ncls,
-        verbose = FALSE
-      ), extra_args)
+      # LRA() names the argument nrank; passing ncls left it at the default 2
+      # for every cell (2.2.0)
+      size_arg <- if (fun == "LRA") list(nrank = ncls) else list(ncls = ncls)
+      args_list <- c(list(U = obj, verbose = FALSE), size_arg, extra_args)
       # Tolerate per-cell errors (see Biclustering branch above for rationale).
       result <- tryCatch(do.call(fun, args_list),
         error = function(e) NULL
@@ -285,7 +289,7 @@ GridSearch <- function(
           list(list(ncls = ncls))
         )
       } else {
-        ret[i] <- result$TestFitIndices[[index]]
+        ret[i] <- index_value(result)
       }
     }
 
@@ -302,10 +306,8 @@ GridSearch <- function(
     # Run analysis with optimal parameters
     message("Running analysis with optimal parameters...")
     optimal_args <- c(
-      list(
-        U = obj,
-        ncls = optimal_ncls
-      ),
+      list(U = obj),
+      if (fun == "LRA") list(nrank = unname(optimal_ncls)) else list(ncls = unname(optimal_ncls)),
       extra_args
     )
     optimal_result <- do.call(fun, optimal_args)

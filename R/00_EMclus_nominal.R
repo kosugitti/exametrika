@@ -78,11 +78,12 @@ emclus_nominal <- function(Q, Z, ncls, ncat, alpha = 1, maxiter = 100,
       FLG <- FALSE
       break
     }
-    if (emt == maxiter) {
+    if (emt >= maxiter) {
       message("\nReached the maximum number of iterations (", maxiter, ").")
       message("Warning: Algorithm may not have converged. Interpret results with caution.")
       converge <- FALSE
       FLG <- FALSE
+      break
     }
 
     emt <- emt + 1
@@ -103,12 +104,14 @@ emclus_nominal <- function(Q, Z, ncls, ncat, alpha = 1, maxiter = 100,
     # ncat enters the Dirichlet denominator per item, so ragged counts stay
     # correctly normalised. With the default alpha = 1 both correction terms
     # vanish and this is the plain multinomial MLE.
-    denom <- rowSums(Ujcq, dims = 2) + (ncat * alpha - ncat)
-    denom <- pmax(denom, const)
-    profile <- (Ujcq + alpha - 1) / array(denom, dim = dim(Ujcq))
+    # The MAP numerator can go negative for alpha < 1; clamp it and renormalise
+    # so the profile stays a probability vector (as the ordinal M-step does).
+    numer <- pmax(Ujcq + alpha - 1, 1e-10)
     for (q in seq_len(maxQ)) {
-      profile[!valid_cat[, q], , q] <- 0
+      numer[!valid_cat[, q], , q] <- 0
     }
+    denom <- pmax(rowSums(numer, dims = 2), const)
+    profile <- numer / array(denom, dim = dim(numer))
 
     ## Observed-data log-likelihood of the mixture,
     ##   sum_s log sum_c (1/C) prod_j rho_{j q_sj | c},

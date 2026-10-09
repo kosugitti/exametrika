@@ -25,6 +25,21 @@
 #' \item{MembQuantile}{Cross-tabulation of rank membership probabilities and quantile groups.}
 #' \item{ItemQuantileRef}{Reference values for each item across quantile groups.}
 #' \item{CatQuant}{Response patterns across item categories and quantile groups.}
+#' \item{log_lik}{Expected log-posterior at the final EM cycle, the quantity the
+#'   EM monitors; the observed-data log-likelihood is \code{elbo}.}
+#' \item{elbo}{Evidence lower bound of the observed-data log-likelihood under the
+#'   posterior memberships the EM produced. Exact (equal to the observed-data
+#'   log-likelihood) for a one-mode model; a lower bound for biclustering, where
+#'   the respondent and item posteriors are taken independent. Since 2.2.0.}
+#' \item{log_lik_marginal}{Observed-data log-likelihood of the respondent-side
+#'   mixture with the items fixed at their MAP field assignment. Equal to
+#'   \code{elbo} for a one-mode model.}
+#' \item{entropy}{Posterior entropy of the memberships (named: \code{class},
+#'   and \code{field} for biclustering). \code{elbo} minus this is the expected
+#'   complete-data log-likelihood.}
+#' \item{ICL}{Integrated completed likelihood criterion (Biernacki, Celeux and
+#'   Govaert, 2000) in its BIC-type approximation, on the same scale as AIC and
+#'   BIC (-2 log scale, smaller is better).}
 #' }
 #'
 #' @examples
@@ -48,7 +63,7 @@
 LRA.rated <- function(U,
                       nrank = 2,
                       mic = FALSE,
-                      maxiter = 100,
+                      maxiter = 1000,
                       trapezoidal = 0,
                       eps = 1e-4,
                       minFreqRatio = 0,
@@ -153,7 +168,9 @@ LRA.rated <- function(U,
   use_Xij <- matrix(0, nrow = nobs, ncol = nitems)
   for (i in 1:nobs) {
     for (j in 1:nitems) {
-      if (U$Q[i, j] %in% usecategory[[j]]) {
+      if (U$Z[i, j] == 0) {
+        use_Xij[i, j] <- 0 # missing: matches no category, incl. the collapsed one
+      } else if (U$Q[i, j] %in% usecategory[[j]]) {
         use_Xij[i, j] <- U$Q[i, j]
       } else {
         use_Xij[i, j] <- collapse_indicator
@@ -196,7 +213,8 @@ LRA.rated <- function(U,
   quantileRefVec <- matrix(0, nrow = nitems, ncol = nquan)
   for (j in 1:nitems) {
     for (k in 1:nquan) {
-      quantileRefVec[j, k] <- mean(U$U[quantileRank == k, j])
+      sel <- quantileRank == k
+      quantileRefVec[j, k] <- sum(U$U[sel, j] * U$Z[sel, j]) / sum(U$Z[sel, j])
     }
   }
   quantileRefVec <- fill_empty_groups(quantileRefVec)
@@ -216,8 +234,12 @@ LRA.rated <- function(U,
     place0 <- (cumsum(ncat999) - ncat999 + 1)[j]
     place1 <- cumsum(ncat999[1:j])[j]
     for (q in 1:nquan) {
-      catquanRefbox999[[j]][, q] <- apply(Cijk999[quantileRank == q, j, ][, 1:ncat999[j]], 2, sum) / sum(U$Z[quantileRank == q, j])
-      quanRefbox[[j]][, q] <- apply(use_Cijk[quantileRank == q, j, ][, 1:useNcat[j]], 2, sum) / sum(U$Z[quantileRank == q, j])
+      sel <- quantileRank == q
+      # matrix(..., ncol = ) keeps the shape for a one-respondent group
+      m999 <- matrix(Cijk999[sel, j, , drop = FALSE], ncol = dim(Cijk999)[3])
+      muse <- matrix(use_Cijk[sel, j, , drop = FALSE], ncol = dim(use_Cijk)[3])
+      catquanRefbox999[[j]][, q] <- colSums(m999[, 1:ncat999[j], drop = FALSE]) / sum(U$Z[sel, j])
+      quanRefbox[[j]][, q] <- colSums(muse[, 1:useNcat[j], drop = FALSE]) / sum(U$Z[sel, j])
       ref_mat[place0:place1, q] <- catquanRefbox999[[j]][, q]
     }
     category_labels <- unlist(U$CategoryLabel[j])
@@ -353,7 +375,7 @@ LRA.rated <- function(U,
     if (abs(old_log_lik_satu - ij_log_lik_satu) < eps * abs(old_log_lik_satu)) {
       FLG <- FALSE
     }
-    if (iter_satu > maxiter) {
+    if (iter_satu >= maxiter) {
       converge_satu <- FALSE
       FLG <- FALSE
       message("\nReached the maximum number of iterations.")
@@ -448,7 +470,7 @@ LRA.rated <- function(U,
     if (abs(old_log_lik - ij_log_lik) < eps * abs(old_log_lik)) {
       FLG <- FALSE
     }
-    if (iter > maxiter) {
+    if (iter >= maxiter) {
       converge <- FALSE
       FLG <- FALSE
       message("\nReached the maximum number of iterations.")
@@ -491,7 +513,10 @@ LRA.rated <- function(U,
   testRefVec <- apply(catRefmat[design6, ], 2, sum)
 
   ## rank Profile
-  rankProf <- row_softmax(CijkMat %*% log(catRefmat + const) + logprior_NQmat)
+  llmat <- CijkMat %*% log(catRefmat + const) + logprior_NQmat
+  rankProf <- row_softmax(llmat)
+  # Expected log-posterior at the returned estimates (see LRA.ordinal; 2.2.0).
+  log_lik <- sum(rankProf * llmat)
 
   rankmemb <- apply(rankProf, 1, which.max)
   rankmemb01 <- sign(rankProf - apply(rankProf, 1, max)) + 1
@@ -541,6 +566,14 @@ LRA.rated <- function(U,
   # Fit indices -----------------------------------------------------
   itemdf <- (useNcat - 1) * (nitems - sum(diag(Fil)))
   testdf <- sum(itemdf)
+
+  # Observed-data log-likelihood, posterior entropy and ICL (see
+  # R/00_VariationalFit.R).
+  vb <- vb_fit_single(
+    CijkMat %*% log(catRefmat + const), rankProf,
+    sum(useNcat - 1) * sum(diag(Fil)),
+    log_prior = log(log_prior / sum(log_prior))
+  )
   null_itemdf <- (useNcat - 1) * (nitems - 1)
   null_testdf <- sum(null_itemdf)
 
@@ -644,7 +677,12 @@ LRA.rated <- function(U,
     ScoreReport = ScoreReport,
     ItemReport = ItemReport,
     ItemQuantileRef = QRVdf,
-    CatQuant = SelectRatio
+    CatQuant = SelectRatio,
+    log_lik = log_lik,
+    elbo = vb$elbo,
+    log_lik_marginal = vb$log_lik_marginal,
+    entropy = vb$entropy,
+    ICL = vb$ICL
   ), class = c("exametrika", "LRArated"))
   ret <- label_result(ret, id = U$ID, item = U$ItemLabel, class_prefix = "Rank")
   return(ret)

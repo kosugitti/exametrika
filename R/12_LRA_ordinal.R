@@ -33,6 +33,21 @@
 #' \item{RankQuantile}{Cross-tabulation of rank frequencies and quantile groups.}
 #' \item{MembQuantile}{Cross-tabulation of rank membership probabilities and quantile groups.}
 #' \item{CatQuant}{Response patterns across item categories and quantile groups.}
+#' \item{log_lik}{Expected log-posterior at the final EM cycle, the quantity the
+#'   EM monitors; the observed-data log-likelihood is \code{elbo}.}
+#' \item{elbo}{Evidence lower bound of the observed-data log-likelihood under the
+#'   posterior memberships the EM produced. Exact (equal to the observed-data
+#'   log-likelihood) for a one-mode model; a lower bound for biclustering, where
+#'   the respondent and item posteriors are taken independent. Since 2.2.0.}
+#' \item{log_lik_marginal}{Observed-data log-likelihood of the respondent-side
+#'   mixture with the items fixed at their MAP field assignment. Equal to
+#'   \code{elbo} for a one-mode model.}
+#' \item{entropy}{Posterior entropy of the memberships (named: \code{class},
+#'   and \code{field} for biclustering). \code{elbo} minus this is the expected
+#'   complete-data log-likelihood.}
+#' \item{ICL}{Integrated completed likelihood criterion (Biernacki, Celeux and
+#'   Govaert, 2000) in its BIC-type approximation, on the same scale as AIC and
+#'   BIC (-2 log scale, smaller is better).}
 #' }
 #'
 #' @examples
@@ -57,7 +72,7 @@ LRA.ordinal <- function(U,
                         nrank = 2,
                         method = "isotonic",
                         mic = FALSE,
-                        maxiter = 100,
+                        maxiter = 1000,
                         trapezoidal = 0,
                         alpha = 1,
                         eps = 1e-4,
@@ -139,8 +154,11 @@ LRA.ordinal <- function(U,
 
   for (j in 1:nitems) {
     for (q in 1:nquan) {
-      quanRefmat[j, , q] <- apply(YY[quantileRank == q, j, ], 2, sum) / apply(U$Z[quantileRank == q, ], 2, sum)[j]
-      catquanRefmat[j, , q] <- apply(UU[quantileRank == q, j, ], 2, sum) / apply(U$Z[quantileRank == q, ], 2, sum)[j]
+      sel <- quantileRank == q
+      # matrix(..., ncol = ) keeps the shape when a group has one respondent or
+      # the items have two categories (a bare index would drop a dimension)
+      quanRefmat[j, , q] <- colSums(matrix(YY[sel, j, , drop = FALSE], ncol = max(ncat) - 1)) / sum(U$Z[sel, j])
+      catquanRefmat[j, , q] <- colSums(matrix(UU[sel, j, , drop = FALSE], ncol = max(ncat))) / sum(U$Z[sel, j])
     }
   }
   # A score group can come out empty; borrow from the nearest one that did not
@@ -283,7 +301,7 @@ LRA.ordinal <- function(U,
     if (abs(old_log_like_satu - ij_log_lik_satu) < (eps * abs(old_log_like_satu))) {
       FLG <- FALSE
     }
-    if (iter_satu > maxiter) {
+    if (iter_satu >= maxiter) {
       converge_satu <- FALSE
       FLG <- FALSE
       message("\nReached the maximum number of iterations.")
@@ -361,7 +379,10 @@ LRA.ordinal <- function(U,
       refMatcore <- t(uuMat) %*% rankProf %*% Fil
       refMat111 <- design6 %*% refMatcore / design5 %*% refMatcore
 
-      if (sum(refMat111[1, ]) > sum(refMat111[nrank, ])) {
+      # Orient the ranks so that the last rank has the higher boundary
+      # probabilities. Columns are ranks; comparing rows (boundaries) here, as
+      # before 2.2.0, flipped the direction on almost every cycle.
+      if (sum(refMat111[, 1]) > sum(refMat111[, nrank])) {
         refMat111 <- refMat111[, ncol(refMat111):1]
       }
 
@@ -395,7 +416,7 @@ LRA.ordinal <- function(U,
     if (abs(old_log_like - ij_log_lik) < (eps * abs(old_log_like))) {
       FLG <- FALSE
     }
-    if (iter > maxiter) {
+    if (iter >= maxiter) {
       converge <- FALSE
       FLG <- FALSE
       message("\nReached the maximum number of iterations.")
@@ -405,7 +426,12 @@ LRA.ordinal <- function(U,
 
 
   # results ---------------------------------------------------------
-  rankProf <- row_softmax(uuMat %*% log(catRefMat + const) + logprior_NQmat)
+  llmat <- uuMat %*% log(catRefMat + const) + logprior_NQmat
+  rankProf <- row_softmax(llmat)
+  # Expected log-posterior at the returned estimates. Inside the loop it is
+  # evaluated before the M-step, i.e. one iterate behind catRefMat; reporting
+  # that value alongside the final profiles put the two out of step (2.2.0).
+  log_lik <- sum(rankProf * llmat)
 
   ## Item - Prob report
   boundary_report <- as.data.frame(refMat111)
@@ -489,6 +515,14 @@ LRA.ordinal <- function(U,
   testdf <- sum(itemdf)
   null_itemdf <- (ncat - 1) * (nitems - 1)
   null_testdf <- sum(null_itemdf)
+
+  # Observed-data log-likelihood, posterior entropy and ICL (see
+  # R/00_VariationalFit.R). The expected log-posterior monitored by the EM
+  # above is this value minus the entropy.
+  nparam_vb <- if (method == "isotonic") sum(item_free) else sum(ncat - 1) * sum(diag(Fil))
+  vb <- vb_fit_single(uuMat %*% log(catRefMat + const), rankProf, nparam_vb,
+    log_prior = log(log_prior / sum(log_prior))
+  )
 
   rankProf_satu <- row_softmax(uuMat %*% log(catRefMat_satu + const))
   Rank_satu <- apply(rankProf_satu, 1, which.max)
@@ -602,7 +636,12 @@ LRA.ordinal <- function(U,
     TestFitIndices = TestFitIndices,
     ScoreReport = ScoreReport,
     ItemReport = ItemReport,
-    CatQuant = SelectRatioTable
+    CatQuant = SelectRatioTable,
+    log_lik = log_lik,
+    elbo = vb$elbo,
+    log_lik_marginal = vb$log_lik_marginal,
+    entropy = vb$entropy,
+    ICL = vb$ICL
   ), class = c("exametrika", "LRAordinal"))
   ret <- label_result(ret, id = U$ID, item = U$ItemLabel, class_prefix = "Rank")
   return(ret)

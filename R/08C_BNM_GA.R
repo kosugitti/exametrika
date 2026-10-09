@@ -149,7 +149,7 @@ BNM_GA <- function(U, na = NULL, Z = NULL, w = NULL,
     }
 
     # Termination check
-    if (generation > maxGeneration) {
+    if (generation >= maxGeneration) {
       if (verbose) {
         message("The maximum generation has been reached")
       }
@@ -334,14 +334,9 @@ BNM_PBIL <- function(U, na = NULL, Z = NULL, w = NULL,
     stop("Check the estimate type. It should be set between 1 to 4.")
   }
 
-  RsI <- round(population * Rs)
-  # Elitism check
-  if (RsI < 0) {
-    RsI <- 0
-  } else if (RsI > population * Rs * 0.5) {
-    RsI <- round(population * Rs * 0.5)
-    warning("Too many survivers. Limit to ", RsI)
-  }
+  # Number of survivors. The old cap at population * Rs * 0.5 (a copy of the
+  # elitism check) was always hit, halved Rs and warned on every call.
+  RsI <- max(1L, min(round(population * Rs), population))
 
   # Elitism check
   if (elitism < 0) {
@@ -421,7 +416,7 @@ BNM_PBIL <- function(U, na = NULL, Z = NULL, w = NULL,
     gene <- (1 - Bm) * gene + Bm * (gene + u) / 2
 
     # Termination check
-    if (generation > maxGeneration) {
+    if (generation >= maxGeneration) {
       if (verbose) {
         message("The maximum generation has been reached")
       }

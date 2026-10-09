@@ -41,6 +41,19 @@
 #'    for members of that class.}
 #'  \item{ItemFitIndices}{Fit indices for each item. See also \code{\link{ItemFit}}.}
 #'  \item{TestFitIndices}{Overall fit indices for the test. See also \code{\link{TestFit}}.}
+#'  \item{elbo}{Evidence lower bound of the observed-data log-likelihood under the
+#'    posterior memberships the EM produced. Exact (equal to the observed-data
+#'    log-likelihood) for a one-mode model; a lower bound for biclustering, where
+#'    the respondent and item posteriors are taken independent. Since 2.2.0.}
+#'  \item{log_lik_marginal}{Observed-data log-likelihood of the respondent-side
+#'    mixture with the items fixed at their MAP field assignment. Equal to
+#'    \code{elbo} for a one-mode model.}
+#'  \item{entropy}{Posterior entropy of the memberships (named: \code{class},
+#'    and \code{field} for biclustering). \code{elbo} minus this is the expected
+#'    complete-data log-likelihood.}
+#'  \item{ICL}{Integrated completed likelihood criterion (Biernacki, Celeux and
+#'    Govaert, 2000) in its BIC-type approximation, on the same scale as AIC and
+#'    BIC (-2 log scale, smaller is better).}
 #' }
 #'
 #' @details
@@ -193,6 +206,12 @@ LCA.binary <- function(U, ncls = 2, na = NULL, Z = NULL, w = NULL, maxiter = 100
   # each Items
   ell_A <- item_log_lik(tmp$U, tmp$Z, fit$postDist, fit$classRefMat)
   FitIndices <- ItemFit(tmp$U, tmp$Z, ell_A, ncls)
+  # Observed-data log-likelihood, posterior entropy and ICL (see
+  # R/00_VariationalFit.R). For a one-mode model elbo is the exact marginal.
+  const_vb <- exp(-NCOL(tmp$U))
+  L_vb <- tmp$U %*% t(log(fit$classRefMat + const_vb)) +
+    (tmp$Z * (1 - tmp$U)) %*% t(log(1 - fit$classRefMat + const_vb))
+  vb <- vb_fit_single(L_vb, fit$postDist, ncls * NCOL(tmp$U))
 
   ret <- structure(list(
     msg = "Class",
@@ -208,7 +227,11 @@ LCA.binary <- function(U, ncls = 2, na = NULL, Z = NULL, w = NULL, maxiter = 100
     IRP = IRP,
     ItemFitIndices = FitIndices$item,
     TestFitIndices = FitIndices$test,
-    log_lik = FitIndices$test$model_log_like
+    log_lik = FitIndices$test$model_log_like,
+    elbo = vb$elbo,
+    log_lik_marginal = vb$log_lik_marginal,
+    entropy = vb$entropy,
+    ICL = vb$ICL
   ), class = c("exametrika", "LCA"))
   ret <- label_result(ret, id = tmp$ID, item = tmp$ItemLabel, class_prefix = "Class")
   return(ret)
@@ -315,6 +338,13 @@ LCA.nominal <- function(U, ncls = 2, na = NULL, Z = NULL, w = NULL, maxiter = 10
   # the count is the category profiles alone.
   nparam <- ncls * sum(ncat - 1)
   testell <- fit$log_lik
+  # Posterior entropy and ICL (see R/00_VariationalFit.R); elbo equals the
+  # observed-data log-likelihood that emclus_nominal() already returns.
+  L_vb <- matrix(0, nrow = nobs, ncol = ncls)
+  for (q in seq_len(maxQ)) {
+    L_vb <- L_vb + ZU[, , q] %*% log(fit$profile[, , q] + const)
+  }
+  vb <- vb_fit_single(L_vb, fit$clsmemb, nparam)
   AIC <- -2 * testell + 2 * nparam
   CAIC <- -2 * testell + nparam * (log(nobs) + 1)
   BIC <- -2 * testell + nparam * log(nobs)
@@ -358,7 +388,11 @@ LCA.nominal <- function(U, ncls = 2, na = NULL, Z = NULL, w = NULL, maxiter = 10
     CMD = as.vector(CMD),
     Students = StudentClass,
     TestFitIndices = FitIndices,
-    log_lik = testell
+    log_lik = testell,
+    elbo = vb$elbo,
+    log_lik_marginal = vb$log_lik_marginal,
+    entropy = vb$entropy,
+    ICL = vb$ICL
   ), class = c("exametrika", "nominalLCA"))
   ret <- label_result(ret, id = tmp$ID, item = tmp$ItemLabel, class_prefix = "Class")
   return(ret)
@@ -414,10 +448,17 @@ LCA.rated <- function(U, ncls = 2, na = NULL, Z = NULL, w = NULL, maxiter = 1000
   CA <- as.vector(tmp$CA)
 
   # --- Step 2: correct-category probabilities ----------------------------
-  # ICRP holds one row per (item, category) in item-major order, so the row of
-  # item j's keyed category is the offset of item j plus CA[j].
+  # ICRP holds one row per (item, category) in item-major order, in the order
+  # of the observed category codes (remap_category_codes). CA is a raw code, so
+  # it is converted to that position first; with 0-based or gappy codes the raw
+  # code pointed at another category (2.2.0).
   offset <- c(0, cumsum(ncat)[-nitems])
-  key_rows <- offset + CA
+  key_pos <- vapply(seq_len(nitems), function(j) {
+    codes <- sort(unique(tmp$Q[tmp$Z[, j] == 1, j]))
+    p <- match(CA[j], codes)
+    if (is.na(p)) 1L else p # unobserved key: dataFormat warned already
+  }, integer(1))
+  key_rows <- offset + key_pos
   IRP <- as.matrix(ret_nom$ICRP[key_rows, paste0("class", 1:ncls), drop = FALSE])
   rownames(IRP) <- tmp$ItemLabel
   colnames(IRP) <- paste0("IRP", 1:ncls)
@@ -452,7 +493,11 @@ LCA.rated <- function(U, ncls = 2, na = NULL, Z = NULL, w = NULL, maxiter = 1000
     TestFitIndices = FitIndices,
     TestFitIndicesNominal = ret_nom$TestFitIndices,
     log_lik = ell_binary,
-    log_lik_nominal = ret_nom$log_lik
+    log_lik_nominal = ret_nom$log_lik,
+    elbo_nominal = ret_nom$elbo,
+    log_lik_marginal_nominal = ret_nom$log_lik_marginal,
+    entropy_nominal = ret_nom$entropy,
+    ICL_nominal = ret_nom$ICL
   ), class = c("exametrika", "ratedLCA"))
   ret <- label_result(ret, id = tmp$ID, item = tmp$ItemLabel, class_prefix = "Class")
   return(ret)

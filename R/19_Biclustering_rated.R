@@ -15,7 +15,7 @@
 #'   * A vector with items and corresponding fields in sequence
 #'   * A field membership profile matrix (items x fields) with 0/1 values
 #'   * NULL (default) for exploratory analysis where field memberships are estimated
-#' @param maxiter Maximum number of EM algorithm iterations. Default is 100.
+#' @param maxiter Maximum number of EM algorithm iterations. Default is 1000.
 #' @param verbose Logical; if TRUE, displays progress during estimation. Default is FALSE.
 #' @param alpha Dirichlet distribution concentration parameter for prior density of field reference probabilities. Default is 1.
 #' @param ... Additional arguments passed to specific methods.
@@ -32,7 +32,7 @@ Biclustering.rated <- function(U,
                                method = "R",
                                conf = NULL,
                                conf_class = NULL,
-                               maxiter = 100,
+                               maxiter = 1000,
                                verbose = FALSE,
                                alpha = 1, ...) {
   tmp <- U
@@ -58,6 +58,9 @@ Biclustering.rated <- function(U,
   )
 
   # --- Step 2: Retrieve nominal results ---
+  # conf / conf_class override ncls and nfld inside the nominal fit
+  ncls <- ret_nom$n_class
+  nfld <- ret_nom$n_field
   fld <- ret_nom$FieldEstimated
   fldmemb <- ret_nom$FieldMembership
   fldmemb01 <- sign(fldmemb - apply(fldmemb, 1, max)) + 1
@@ -76,7 +79,8 @@ Biclustering.rated <- function(U,
   }
 
   clsmemb <- ret_nom$ClassMembership
-  ord <- order(colSums(t(tmp$U) %*% clsmemb) / colSums(clsmemb))
+  # correct-response rate per class over observed cells (not per respondent)
+  ord <- order(colSums(t(tmp$U * tmp$Z) %*% clsmemb) / colSums(t(tmp$Z) %*% clsmemb))
   clsmemb <- clsmemb[, ord]
   BCRM <- BCRM[, ord, ]
   cls <- apply(clsmemb, 1, which.max)
@@ -238,6 +242,10 @@ Biclustering.rated <- function(U,
     TestFitIndices_nominal = FitIndices_nominal,
     log_lik = test_log_lik_binary,
     log_lik_nominal = ret_nom$log_lik,
+    elbo_nominal = ret_nom$elbo,
+    log_lik_marginal_nominal = ret_nom$log_lik_marginal,
+    entropy_nominal = ret_nom$entropy,
+    ICL_nominal = ret_nom$ICL,
     SOACflg = SOACflg,
     WOACflg = WOACflg
   ), class = c("exametrika", "ratedBiclustering"))

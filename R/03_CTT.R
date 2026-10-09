@@ -100,7 +100,7 @@ AlphaIfDel <- function(x, delItem = NULL, na = NULL, Z = NULL, w = NULL) {
 
 #' @title Omega Coefficient
 #' @description
-#' This function computes Tau-Congeneric Measurement, also known as McDonald's tau coefficient, for a given data set.
+#' This function computes the omega coefficient of the tau-congeneric measurement model (McDonald, 1999) for a given data set.
 #' @references McDonald, R. P. (1999). Test theory: A unified treatment. Erlbaum.
 #' @param x This should be a data matrix or a Covariance/Phi/Tetrachoric matrix.
 #' @param Z This parameter represents a missing indicator matrix. It is only needed if 'x' is a data matrix.
@@ -121,17 +121,23 @@ OmegaCoefficient <- function(x, na = NULL, Z = NULL, w = NULL) {
   calcs <- function(V) {
     J <- NCOL(V)
     offdiagonal <- matrix(1, ncol = ncol(V), nrow = nrow(V)) - diag(nrow = nrow(V))
-    lam <- runif(J)
+    # Start from the first principal component: a random start made the value
+    # depend on the RNG state and, with three items, hit the iteration limit
+    # nine times out of ten (2.2.0).
+    e <- eigen(V, symmetric = TRUE)
+    lam <- sqrt(max(e$values[1], 1e-8)) * abs(e$vectors[, 1])
     # Define the function to minimize
     objective_function <- function(lam) {
       lammat <- outer(lam, lam)
       sum(offdiagonal * (lammat - V)^2)
     }
     # optimize
-    result <- optim(lam, objective_function, method = "BFGS")
-    # Error check
+    result <- optim(lam, objective_function, method = "BFGS", control = list(maxit = 1000))
     if (result$convergence != 0) {
-      stop(result$message)
+      warning(
+        "OmegaCoefficient: the optimiser did not converge (optim code ",
+        result$convergence, "); the value is returned as is."
+      )
     }
     lamest <- result$par
     Numerator <- sum(lamest)^2

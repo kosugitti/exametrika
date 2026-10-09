@@ -394,15 +394,14 @@ MutualInformation.binary <- function(U, na = NULL, Z = NULL, w = NULL, base = 2)
   L$L_01 <- P$S_01 / ((1 - p) %*% t(p))
   L$L_00 <- P$S_00 / ((1 - p) %*% t(1 - p))
 
-  # Calculate mutual information
-  MI <- P$S_00 * log(L$L_00, base = base) +
-    P$S_01 * log(L$L_01, base = base) +
-    P$S_10 * log(L$L_10, base = base) +
-    P$S_11 * log(L$L_11, base = base)
+  # Calculate mutual information. An empty cell contributes 0 (0 log 0), not
+  # NaN (2.2.0).
+  xlogl <- function(P, L) ifelse(P > 0, P * log(L, base = base), 0)
+  MI <- xlogl(P$S_00, L$L_00) + xlogl(P$S_01, L$L_01) +
+    xlogl(P$S_10, L$L_10) + xlogl(P$S_11, L$L_11)
 
   # Adjust diagonal elements
-  diag(MI) <- diag(P$S_00 * log(L$L_00, base = base) +
-    P$S_11 * log(L$L_11, base = base))
+  diag(MI) <- diag(xlogl(P$S_00, L$L_00) + xlogl(P$S_11, L$L_11))
 
   structure(MI, class = c("exametrika", "matrix"))
 }
@@ -441,7 +440,9 @@ MutualInformation.ordinal <- function(U, na = NULL, Z = NULL, w = NULL, base = 2
       rSum <- rowSums(tbl)
       for (k in 1:NROW(tbl)) {
         for (m in 1:NCOL(tbl)) {
-          mi <- mi + (tbl[k, m] * (log(tbl[k, m] / rSum[k] / cSum[m], base = tei)))
+          if (tbl[k, m] > 0) { # 0 log 0 = 0
+            mi <- mi + (tbl[k, m] * (log(tbl[k, m] / rSum[k] / cSum[m], base = tei)))
+          }
         }
       }
       mat[i, j] <- mi
@@ -652,7 +653,7 @@ polyserial <- function(x, y) {
   nobs <- length(y)
   ncat <- max(as.numeric(as.factor(y)))
 
-  tbl <- tabulate(y)
+  tbl <- as.vector(table(factor(y, levels = sort(unique(y)))))
   freq <- tbl / sum(tbl)
   cum_freq <- cumsum(freq)
 
@@ -696,7 +697,7 @@ PolychoricCorrelationMatrix.default <- function(U, na = NULL, Z = NULL, w = NULL
   } else {
     tmp <- U
   }
-  if (tmp$response.type != "ordinal") {
+  if (!tmp$response.type %in% c("ordinal", "rated")) {
     response_type_error(tmp$response.type, "PolychoricCorrelationMatrix")
   }
   PolychoricCorrelationMatrix.ordinal(tmp, na, Z, w)

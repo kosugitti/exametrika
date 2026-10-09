@@ -99,6 +99,10 @@ LD_param_est <- function(tmp, adj_list, classRefMat, ncls, smoothpost, beta1 = 2
   n_incorrect <- colSums(Z_expanded * (1 - U_expanded) * pat01 * smoothpost_expanded)
 
   refmat <- beta_posterior_mode(n_correct, n_correct + n_incorrect, beta1, beta2)
+  # A parent pattern that no respondent of that rank shows contributes nothing
+  # to the likelihood; with beta1 = beta2 = 1 its mode is 0/0, which used to
+  # stop the whole fit (2.2.0).
+  refmat[(n_correct + n_incorrect) == 0] <- 0.5
   if (anyNA(refmat)) {
     stop(
       "Estimation failed: some item-by-rank-by-parent-pattern cell has zero ",
@@ -201,7 +205,7 @@ LD_param_est <- function(tmp, adj_list, classRefMat, ncls, smoothpost, beta1 = 2
 #'  \item{TestFitIndices}{Overall fit index for the test.See also [TestFit]}
 #'  \item{Estimation_table}{Estimated parameters tables.}
 #'  \item{CCRR_table}{Correct Response Rate tables}
-#'  \item{Studens}{Student information. It includes estimated class
+#'  \item{Students}{Student information. It includes estimated class
 #'  membership, probability of class membership, RUO, and RDO.}
 #' }
 #' @examples
@@ -323,7 +327,7 @@ LDLRA <- function(U, na = NULL, Z = NULL, w = NULL,
            Please specify a graph for all classes.")
     }
     for (j in 1:ncls) {
-      g <- igraph::graph_from_adjacency_matrix(adj_list[[j]])
+      g <- igraph::graph_from_adjacency_matrix(adj_with_names(adj_list[[j]], tmp$ItemLabel))
       adj_list[[j]] <- fill_adj(g, tmp$ItemLabel)
     }
   }

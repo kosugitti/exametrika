@@ -15,7 +15,29 @@ fill_adj <- function(g, ItemLabel) {
   tmp_col_names <- colnames(tmp_adj)
   common_cols <- intersect(colnames(adj), tmp_col_names)
   adj[tmp_col_names, common_cols] <- tmp_adj[, common_cols, drop = FALSE]
-  adj <- adj[sort(rownames(adj)), sort(colnames(adj))]
+  # Keep the item-label order: every consumer indexes tmp$U by position, so an
+  # alphabetical reordering here (as before 2.2.0) attached each column of the
+  # graph to a different item whenever the labels were not already sorted.
+  return(adj)
+}
+
+#' Give a bare adjacency matrix the item labels it is going to be matched on
+#'
+#' `fill_adj()` matches vertices by name. A matrix without dimnames would
+#' therefore lose every edge; a matrix of the right size is taken to be in
+#' label order, anything else is an error.
+#' @noRd
+adj_with_names <- function(adj, labels) {
+  adj <- as.matrix(adj)
+  if (is.null(rownames(adj)) || is.null(colnames(adj))) {
+    if (NROW(adj) != length(labels) || NCOL(adj) != length(labels)) {
+      stop(
+        "The adjacency matrix has no dimnames and its size (", NROW(adj), "x",
+        NCOL(adj), ") does not match the number of items (", length(labels), ")."
+      )
+    }
+    dimnames(adj) <- list(labels, labels)
+  }
   return(adj)
 }
 
@@ -111,7 +133,8 @@ BNM_bench_stats <- function(U, Z) {
 #' @return BIC value (identical to `BNM(...)$TestFitIndices$BIC`)
 #' @noRd
 BNM_fit_BIC <- function(tmp, adj, bench, beta1 = 1, beta2 = 1) {
-  adj <- adj[sort(rownames(adj)), sort(colnames(adj))]
+  # positions must follow tmp$U, i.e. the item-label order (2.2.0)
+  adj <- adj[tmp$ItemLabel, tmp$ItemLabel]
   testlength <- ncol(adj)
   nobs <- NROW(tmp$U)
 
@@ -249,7 +272,7 @@ BNM <- function(U, na = NULL, Z = NULL, w = NULL,
     }
   }
   if (!is.null(adj_matrix)) {
-    g <- igraph::graph_from_adjacency_matrix(adj_matrix)
+    g <- igraph::graph_from_adjacency_matrix(adj_with_names(adj_matrix, tmp$ItemLabel))
   }
   if (!is.null(adj_file)) {
     DAG <- read.csv(adj_file, header = TRUE)

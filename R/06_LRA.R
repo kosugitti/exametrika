@@ -35,6 +35,19 @@
 #'       examinees belonging to each rank, along with their estimated ranks and odds ratios.}
 #'  \item{ItemFitIndices}{Fit indices for each item. See also \code{\link{ItemFit}}.}
 #'  \item{TestFitIndices}{Overall fit indices for the test. See also \code{\link{TestFit}}.}
+#'  \item{elbo}{Evidence lower bound of the observed-data log-likelihood under the
+#'    posterior memberships the EM produced. Exact (equal to the observed-data
+#'    log-likelihood) for a one-mode model; a lower bound for biclustering, where
+#'    the respondent and item posteriors are taken independent. Since 2.2.0.}
+#'  \item{log_lik_marginal}{Observed-data log-likelihood of the respondent-side
+#'    mixture with the items fixed at their MAP field assignment. Equal to
+#'    \code{elbo} for a one-mode model.}
+#'  \item{entropy}{Posterior entropy of the memberships (named: \code{class},
+#'    and \code{field} for biclustering). \code{elbo} minus this is the expected
+#'    complete-data log-likelihood.}
+#'  \item{ICL}{Integrated completed likelihood criterion (Biernacki, Celeux and
+#'    Govaert, 2000) in its BIC-type approximation, on the same scale as AIC and
+#'    BIC (-2 log scale, smaller is better).}
 #' }
 #'
 #' Each subclass returns additional specific elements, detailed in their respective documentation.
@@ -191,7 +204,7 @@ LRA.binary <- function(U,
     fit <- emclus(tmp$U, tmp$Z,
       ncls = ncls,
       Fil = Filter, beta1, beta2, maxiter = maxiter, mic = mic,
-      conf = conf
+      verbose = verbose, conf = conf
     )
   }
 
@@ -241,6 +254,12 @@ LRA.binary <- function(U,
     nparam <- ncls
   }
   FitIndices <- ItemFit(tmp$U, tmp$Z, ell_A, nparam)
+  # Observed-data log-likelihood, posterior entropy and ICL (see
+  # R/00_VariationalFit.R). nparam is per item (scalar or vector); ICL needs
+  # the total.
+  L_vb <- tmp$U %*% t(log(fit$classRefMat + const)) +
+    (tmp$Z * (1 - tmp$U)) %*% t(log(1 - fit$classRefMat + const))
+  vb <- vb_fit_single(L_vb, fit$postDist, sum(rep(nparam, length.out = testlength)))
 
   ret <- structure(list(
     method = method,
@@ -259,7 +278,11 @@ LRA.binary <- function(U,
     IRPIndex = IRPIndex,
     ItemFitIndices = FitIndices$item,
     TestFitIndices = FitIndices$test,
-    log_lik = FitIndices$test$model_log_like
+    log_lik = FitIndices$test$model_log_like,
+    elbo = vb$elbo,
+    log_lik_marginal = vb$log_lik_marginal,
+    entropy = vb$entropy,
+    ICL = vb$ICL
   ), class = c("exametrika", "LRA"))
   ret <- label_result(ret, id = tmp$ID, item = tmp$ItemLabel, class_prefix = "Rank")
   return(ret)

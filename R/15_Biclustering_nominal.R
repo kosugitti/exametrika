@@ -146,11 +146,12 @@ Biclustering.nominal <- function(U,
       FLG <- FALSE
       break
     }
-    if (emt == maxemt) {
+    if (emt >= maxemt) {
       message("\nReached the maximum number of iterations (", maxemt, ").")
       message("Warning: Algorithm may not have converged. Interpret results with caution.")
       converge <- FALSE
       FLG <- FALSE
+      break
     }
 
     emt <- emt + 1
@@ -190,21 +191,30 @@ Biclustering.nominal <- function(U,
     # Apply Dirichlet prior (alpha parameter).
     # rowSums(Ufcq, dims=2) sums over the 3rd dim (categories), replacing
     # apply(Ufcq, c(1,2), sum) at C-level instead of per-cell apply.
-    BCRM <- (Ufcq + alpha - 1) / array(rowSums(Ufcq, dims = 2) + maxQ * alpha - maxQ, dim = dim(BCRM))
+    # Clamp the MAP numerator (negative for alpha < 1) and renormalise, as the
+    # ordinal M-step does; otherwise the ELBO turns NaN and the EM stops early.
+    numer <- pmax(Ufcq + alpha - 1, 1e-10)
+    BCRM <- numer / array(rowSums(numer, dims = 2), dim = dim(BCRM))
 
-    test_log_lik <- 0
-    for (q in 1:maxQ) {
-      pred_prob <- t(fldmemb %*% BCRM[, , q] %*% t(clsmemb))
-      observed_mask <- (tmp$Z * Uq[, , q]) == 1
-      test_log_lik <- test_log_lik + sum(log(pmax(pred_prob[observed_mask], const)))
-    }
+    # Monitor the evidence lower bound at the current (clsmemb, fldmemb, BCRM),
+    # plus the Dirichlet log-prior the M-step maximised (zero when alpha = 1).
+    # Each E-step and the M-step is an exact coordinate ascent on this quantity,
+    # so it cannot decrease on a healthy iteration. The posterior-weighted
+    # per-cell predictive used before 2.2.0 had no such guarantee and, being a
+    # classification-type quantity, inflated with the number of blocks.
+    # See R/00_VariationalFit.R.
+    logP <- log(BCRM + const)
+    test_log_lik <- sum(Ufcq * logP) +
+      membership_entropy(clsmemb) + membership_entropy(fldmemb) -
+      nobs * log(ncls) - nitems * log(nfld) +
+      (alpha - 1) * sum(logP)
 
     if (verbose) {
       message(
         sprintf(
           "\n%-80s",
           paste0(
-            "iter ", emt, " log_lik ", format(test_log_lik, digits = 6)
+            "iter ", emt, " elbo ", format(test_log_lik, digits = 6)
           )
         ),
         appendLF = FALSE
@@ -233,19 +243,18 @@ Biclustering.nominal <- function(U,
 
 
   # model fit -------------------------------------------------------
-  testell <- 0
-  for (q in 1:maxQ) {
-    pred_prob <- t(fldmemb %*% BCRM[, , q] %*% t(clsmemb))
-    observed_mask <- (tmp$Z * Uq[, , q]) == 1
-    testell <- testell + sum(log(pmax(pred_prob[observed_mask], const)))
-  }
+  # The reported log-likelihood is the evidence lower bound (see the EM loop
+  # and R/00_VariationalFit.R); the same helper also returns the
+  # respondent-side marginal, the posterior entropies and ICL.
   nparam <- ncls * nfld * (maxQ - 1)
-
-  # Null model.
   # Zrep * Uq = Z * Uq[,,q] elementwise; compute via column-major recycling
   # (Uq * as.vector(Z)) which avoids the replicate() allocation.
-  # colSums(X, dims=1) sums over the 1st dim, replacing apply(X, c(2,3), sum).
   ZU <- Uq * as.vector(tmp$Z)
+  vb <- vb_fit_block(ZU, clsmemb, fldmemb, log(BCRM + const), nparam)
+  testell <- vb$elbo
+
+  # Null model.
+  # colSums(X, dims=1) sums over the 1st dim, replacing apply(X, c(2,3), sum).
   ZU_col_sums <- colSums(ZU, dims = 1)
   NullFRQ <- ZU_col_sums / colSums(tmp$Z)
   ell_N <- sum(ZU_col_sums * log(NullFRQ + const))
@@ -280,6 +289,8 @@ Biclustering.nominal <- function(U,
   )
 
   msg <- "Class"
+  # Field x class/rank x category, named as the rated fits name theirs
+  dimnames(BCRM) <- list(paste0("Field", 1:nfld), paste0(msg, 1:ncls), paste0("Cat", 1:maxQ))
   ret <- structure(list(
     Q = tmp$Q,
     Z = tmp$Z,
@@ -302,7 +313,11 @@ Biclustering.nominal <- function(U,
     ClassEstimated = cls,
     Students = StudentRank,
     TestFitIndices = FitIndices,
-    log_lik = testell # New naming convention
+    log_lik = testell, # the evidence lower bound; identical to elbo
+    elbo = vb$elbo,
+    log_lik_marginal = vb$log_lik_marginal,
+    entropy = vb$entropy,
+    ICL = vb$ICL
   ), class = c("exametrika", "nominalBiclustering"))
 
   ret <- label_result(ret, id = tmp$ID, item = tmp$ItemLabel, class_prefix = msg)

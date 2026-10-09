@@ -210,6 +210,11 @@ NumericVector score_function_analytical_grm(NumericVector target, IntegerMatrix 
   // Calculate posterior probability p(x|z)
   NumericMatrix p_xz(nobs, nq);
   for (int i = 0; i < nobs; i++) {
+    // Only the ratio p_xz / p_x is used below, so a per-respondent shift of the
+    // log-likelihood cancels; subtracting the maximum keeps exp() from
+    // underflowing to 0 on long tests.
+    std::vector<double> ll_q(nq);
+    double ll_max = R_NegInf;
     for (int q = 0; q < nq; q++) {
       double log_lik_q = 0.0;
       for (int j = 0; j < nitems; j++) {
@@ -218,7 +223,11 @@ NumericVector score_function_analytical_grm(NumericVector target, IntegerMatrix 
           log_lik_q += log(cat_pr_list[j](resp - 1, q)); // 1-based to 0-based
         }
       }
-      p_xz(i, q) = exp(log_lik_q);
+      ll_q[q] = log_lik_q;
+      if (log_lik_q > ll_max) ll_max = log_lik_q;
+    }
+    for (int q = 0; q < nq; q++) {
+      p_xz(i, q) = exp(ll_q[q] - ll_max);
     }
   }
 

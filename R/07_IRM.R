@@ -120,6 +120,8 @@ Biclustering_IRM.default <- function(U, na = NULL, Z = NULL, w = NULL, ...) {
 #'  \item{LFD}{Latent Field Distribution. see also [plot.exametrika]}
 #'  \item{RMD}{Rank Membership Distribution.}
 #'  \item{TestFitIndices}{Overall fit index for the test.See also [TestFit]}
+#'  \item{elbo, log_lik_marginal, entropy, ICL}{Variational fit quantities on the
+#'    final assignment, as for \code{\link{Biclustering}}. Since 2.2.0.}
 #' }
 #' @examples
 #' \donttest{
@@ -491,6 +493,7 @@ Biclustering_IRM.binary <- function(U, na = NULL, Z = NULL, w = NULL,
   full_position <- which(rowSums(tmp$Z * tmp$U, na.rm = T) == testlength)
   delt <- 0
   delrep <- ncls
+  EMt <- 0 # stays 0 when no class falls below minSize (2.2.0)
 
   DelRepFLG <- TRUE
   while (DelRepFLG) {
@@ -520,6 +523,10 @@ Biclustering_IRM.binary <- function(U, na = NULL, Z = NULL, w = NULL,
       break
     }
 
+    if (ncls <= 1) {
+      warning("Every class is smaller than minSize (", minSize, ") and only one class is left; returning the current solution.")
+      break
+    }
     ncls <- ncls - 1
     delc <- minclass[2]
     Pcf <- Pcf[-delc, ]
@@ -607,6 +614,10 @@ Biclustering_IRM.binary <- function(U, na = NULL, Z = NULL, w = NULL,
 
   llm <- sum(Ccf * log(Pcf + const) + Fcf * log(1 - Pcf + const))
   FitIndices <- TestFit(tmp$U, tmp$Z, llm, ncls * nfld)
+  # Variational quantities on the final (hard) assignment; see
+  # R/00_VariationalFit.R. Pcf is classes x fields, the helper wants
+  # fields x classes.
+  vb <- vb_fit_block_binary(tmp$U, tmp$Z, cls01, fld01, t(Pcf), ncls * nfld, const)
 
   # Sort ------------------------------------------------------------
   ret <- Pcf_sort(Pcf, cls01, fld01, ncls, nfld)
@@ -646,9 +657,13 @@ Biclustering_IRM.binary <- function(U, na = NULL, Z = NULL, w = NULL,
     ClassEstimated = cls,
     TestFitIndices = FitIndices,
     log_lik = llm,
+    elbo = vb$elbo,
+    log_lik_marginal = vb$log_lik_marginal,
+    entropy = vb$entropy,
+    ICL = vb$ICL,
     # Deprecated fields (for backward compatibility)
     EM_Cycle = EMt
   ), class = c("exametrika", "IRM"))
-  ret <- label_result(ret, id = tmp$ID, item = tmp$ItemLabel, class_prefix = "Class")
+  ret <- label_result(ret, id = tmp$ID, item = tmp$ItemLabel, class_prefix = "Rank")
   return(ret)
 }

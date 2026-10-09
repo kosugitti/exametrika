@@ -20,7 +20,20 @@
 #'  \item{ClassEstimated}{Estimated class assignment for each student.}
 #'  \item{Students}{Rank Membership Profile matrix with estimated class.}
 #'  \item{TestFitIndices}{Overall fit index for the test.}
-#'  \item{log_lik}{Log-likelihood of the model.}
+#'  \item{log_lik}{Evidence lower bound of the model (equal to \code{elbo}).}
+#'  \item{elbo}{Evidence lower bound of the observed-data log-likelihood under the
+#'    posterior memberships the EM produced. Exact (equal to the observed-data
+#'    log-likelihood) for a one-mode model; a lower bound for biclustering, where
+#'    the respondent and item posteriors are taken independent. Since 2.2.0.}
+#'  \item{log_lik_marginal}{Observed-data log-likelihood of the respondent-side
+#'    mixture with the items fixed at their MAP field assignment. Equal to
+#'    \code{elbo} for a one-mode model.}
+#'  \item{entropy}{Posterior entropy of the memberships (named: \code{class},
+#'    and \code{field} for biclustering). \code{elbo} minus this is the expected
+#'    complete-data log-likelihood.}
+#'  \item{ICL}{Integrated completed likelihood criterion (Biernacki, Celeux and
+#'    Govaert, 2000) in its BIC-type approximation, on the same scale as AIC and
+#'    BIC (-2 log scale, smaller is better).}
 #' }
 #' @examples
 #' \donttest{
@@ -76,7 +89,9 @@ Biclustering_IRM.nominal <- function(U,
   ncls <- length(unique_vec)
   cls01 <- matrix(0, ncol = ncls, nrow = nobs)
   for (i in 1:nobs) {
-    cls01[i, mode_cat[i]] <- 1
+    # position among the distinct modal categories, not the raw code (which
+    # need not be 1..k; 2.2.0)
+    cls01[i, match(mode_cat[i], unique_vec)] <- 1
   }
   colnames(cls01) <- paste("Rank", 1:ncls)
   rownames(cls01) <- tmp$ID
@@ -132,6 +147,10 @@ Biclustering_IRM.nominal <- function(U,
       break
     }
 
+    if (ncls <= 1) {
+      warning("Every class is smaller than minSize (", minSize, ") and only one class is left; returning the current solution.")
+      break
+    }
     ncls <- ncls - 1
     del_class <- which.min(NcTable)
     BCRM <- BCRM[, -del_class, , drop = FALSE]
@@ -225,13 +244,11 @@ Biclustering_IRM.nominal <- function(U,
   colnames(StudentRank) <- c(paste("Membership", 1:ncls), "Estimate")
 
   # Model fit ---------------------------------------------------------------
-  testell <- 0
-  for (q in 1:maxQ) {
-    pred_prob <- t(fldmemb %*% BCRM[, , q] %*% t(clsmemb))
-    observed_mask <- (tmp$Z * Uq[, , q]) == 1
-    testell <- testell + sum(log(pmax(pred_prob[observed_mask], const)))
-  }
+  # Evidence lower bound at the final memberships, as in Biclustering.nominal();
+  # see R/00_VariationalFit.R.
   nparam <- ncls * nfld * (maxQ - 1)
+  vb <- vb_fit_block(Uq * as.vector(tmp$Z), clsmemb, fldmemb, log(BCRM + const), nparam)
+  testell <- vb$elbo
 
   # Null model
   Zrep <- replicate(maxQ, tmp$Z)
@@ -269,6 +286,8 @@ Biclustering_IRM.nominal <- function(U,
 
   # Return ------------------------------------------------------------------
   msg <- "Class"
+  # Field x class/rank x category, named as the rated fits name theirs
+  dimnames(BCRM) <- list(paste0("Field", 1:nfld), paste0(msg, 1:ncls), paste0("Cat", 1:maxQ))
   ret <- structure(list(
     Q = tmp$Q,
     Z = tmp$Z,
@@ -290,7 +309,11 @@ Biclustering_IRM.nominal <- function(U,
     ClassEstimated = cls,
     Students = StudentRank,
     TestFitIndices = FitIndices,
-    log_lik = testell
+    log_lik = testell, # the evidence lower bound; identical to elbo
+    elbo = vb$elbo,
+    log_lik_marginal = vb$log_lik_marginal,
+    entropy = vb$entropy,
+    ICL = vb$ICL
   ), class = c("exametrika", "nominalBiclustering"))
 
   ret <- label_result(ret, id = tmp$ID, item = tmp$ItemLabel, class_prefix = msg)

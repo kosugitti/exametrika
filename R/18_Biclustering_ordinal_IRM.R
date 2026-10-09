@@ -32,7 +32,20 @@
 #'  \item{ClassEstimated}{Estimated class assignment for each student.}
 #'  \item{Students}{Rank Membership Profile matrix with estimated class.}
 #'  \item{TestFitIndices}{Overall fit index for the test.}
-#'  \item{log_lik}{Log-likelihood of the model.}
+#'  \item{log_lik}{Evidence lower bound of the model (equal to \code{elbo}).}
+#'  \item{elbo}{Evidence lower bound of the observed-data log-likelihood under the
+#'    posterior memberships the EM produced. Exact (equal to the observed-data
+#'    log-likelihood) for a one-mode model; a lower bound for biclustering, where
+#'    the respondent and item posteriors are taken independent. Since 2.2.0.}
+#'  \item{log_lik_marginal}{Observed-data log-likelihood of the respondent-side
+#'    mixture with the items fixed at their MAP field assignment. Equal to
+#'    \code{elbo} for a one-mode model.}
+#'  \item{entropy}{Posterior entropy of the memberships (named: \code{class},
+#'    and \code{field} for biclustering). \code{elbo} minus this is the expected
+#'    complete-data log-likelihood.}
+#'  \item{ICL}{Integrated completed likelihood criterion (Biernacki, Celeux and
+#'    Govaert, 2000) in its BIC-type approximation, on the same scale as AIC and
+#'    BIC (-2 log scale, smaller is better).}
 #'  \item{SOACflg}{Logical; TRUE if Strongly Ordinal Alignment Condition is satisfied.}
 #'  \item{WOACflg}{Logical; TRUE if Weakly Ordinal Alignment Condition is satisfied.}
 #' }
@@ -180,7 +193,10 @@ Biclustering_IRM.ordinal <- function(U,
           overall_order[i] <- total_expected
         }
         overall_order <- order(overall_order)
-        BBRM <- BBRM[, overall_order, ]
+        # relabel the memberships with the profiles, or the BIC below compares
+        # old labels against reordered profiles (2.2.0)
+        BBRM <- BBRM[, overall_order, , drop = FALSE]
+        cls01 <- cls01[, overall_order, drop = FALSE]
       }
       for (q in 1:maxQ) {
         BCRM[, , q] <- BBRM[, , q] - BBRM[, , q + 1]
@@ -209,7 +225,9 @@ Biclustering_IRM.ordinal <- function(U,
     Nc <- colSums(cls01)
     NcTable <- matrix(Nc)
     minclass <- NcTable[order(NcTable[, 1]), ]
-    if (minclass[1] < minSize) {
+    if (minclass[1] < minSize && ncls <= 1) {
+      warning("Every class is smaller than minSize (", minSize, ") and only one class is left; returning the current solution.")
+    } else if (minclass[1] < minSize) {
       AdjustFLG <- TRUE
       if (verbose) {
         message(
@@ -293,7 +311,8 @@ Biclustering_IRM.ordinal <- function(U,
 
   for (i in 1:ncls) {
     for (j in 1:nfld) {
-      BFRP2[j, i] <- mean(tmp$Z[cls == i, fld == j] * tmp$Q[cls == i, fld == j])
+      zz <- tmp$Z[cls == i, fld == j]
+      BFRP2[j, i] <- if (sum(zz) > 0) sum(zz * tmp$Q[cls == i, fld == j]) / sum(zz) else NA_real_
     }
   }
 
@@ -329,13 +348,14 @@ Biclustering_IRM.ordinal <- function(U,
   }
 
   # Model fit ---------------------------------------------------------------
-  testell <- 0
-  for (q in 1:maxQ) {
-    pred_prob <- t(fldmemb %*% BCRM[, , q] %*% t(clsmemb))
-    observed_mask <- (tmp$Z * Uq[, , q]) == 1
-    testell <- testell + sum(log(pmax(pred_prob[observed_mask], const)))
-  }
+  # Evidence lower bound at the final memberships, as in Biclustering.ordinal();
+  # see R/00_VariationalFit.R.
   nparam <- ncls * nfld * (maxQ - 1)
+  vb <- vb_fit_block(
+    Uq * as.vector(tmp$Z), clsmemb, fldmemb,
+    log(pmax(BCRM, 0) + const), nparam
+  )
+  testell <- vb$elbo
 
   # Full model
   ptn <- apply(tmp$Q, 1, function(x) paste(x, collapse = ""))
@@ -386,6 +406,8 @@ Biclustering_IRM.ordinal <- function(U,
 
   # Return ------------------------------------------------------------------
   msg <- "Rank"
+  # Field x class/rank x category, named as the rated fits name theirs
+  dimnames(BCRM) <- list(paste0("Field", 1:nfld), paste0(msg, 1:ncls), paste0("Cat", 1:maxQ))
   ret <- structure(list(
     Q = tmp$Q,
     Z = tmp$Z,
@@ -411,7 +433,11 @@ Biclustering_IRM.ordinal <- function(U,
     Students = StudentRank,
     BFRP = list(Weighted = BFRP1, Observed = BFRP2),
     TestFitIndices = FitIndices,
-    log_lik = testell,
+    log_lik = testell, # the evidence lower bound; identical to elbo
+    elbo = vb$elbo,
+    log_lik_marginal = vb$log_lik_marginal,
+    entropy = vb$entropy,
+    ICL = vb$ICL,
     SOACflg = SOACflg,
     WOACflg = WOACflg
   ), class = c("exametrika", "ordinalBiclustering"))

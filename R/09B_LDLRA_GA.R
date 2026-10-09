@@ -117,6 +117,8 @@ LDLRA_PBIL <- function(U, na = NULL, Z = NULL, w = NULL,
   } else if (method == "R" | method == "Rank") {
     if (verbose) message("local dependence latent Rank model is chosen.")
     model <- 2
+  } else {
+    stop("The method must be selected as either Class (\"C\") or Rank (\"R\").")
   }
 
   # estimate type
@@ -124,14 +126,9 @@ LDLRA_PBIL <- function(U, na = NULL, Z = NULL, w = NULL,
     stop("Check the estimate type. It should be set between 1 to 4.")
   }
 
-  RsI <- round(population * Rs)
-  # Elitism check
-  if (RsI < 0) {
-    RsI <- 0
-  } else if (RsI > population * Rs * 0.5) {
-    RsI <- round(population * Rs * 0.5)
-    warning("Too many survivers. Limit to ", RsI)
-  }
+  # Number of survivors. The old cap at population * Rs * 0.5 (a copy of the
+  # elitism check) was always hit, halved Rs and warned on every call.
+  RsI <- max(1L, min(round(population * Rs), population))
 
   # Elitism check
   if (elitism < 0) {
@@ -194,7 +191,9 @@ LDLRA_PBIL <- function(U, na = NULL, Z = NULL, w = NULL,
       }
       adj_t[i, j, ] <- maxParents_penalty(vec, testlength, maxParents)
       adj[upper.tri(adj)] <- adj_t[i, j, ]
-      adj_list[[j]] <- adj
+      # LD_param_est() reads the matrix by position (item-label order); the
+      # dimnames here are in CRR order, so reorder by name first (2.2.0)
+      adj_list[[j]] <- adj[tmp$ItemLabel, tmp$ItemLabel]
     }
     # fitness
     ret.LDparam <- LD_param_est(tmp, adj_list, ret.emclus$classRefMat, ncls, smoothpost, beta1, beta2,
@@ -222,7 +221,7 @@ LDLRA_PBIL <- function(U, na = NULL, Z = NULL, w = NULL,
           }
           adj_t[i, j, ] <- maxParents_penalty(vec, testlength, maxParents)
           adj[upper.tri(adj)] <- adj_t[i, j, ]
-          adj_list[[j]] <- adj
+          adj_list[[j]] <- adj[tmp$ItemLabel, tmp$ItemLabel]
         }
         # fitness
         ret.LDparam <- LD_param_est(tmp, adj_list, ret.emclus$classRefMat, ncls, smoothpost, beta1, beta2,
@@ -248,6 +247,7 @@ LDLRA_PBIL <- function(U, na = NULL, Z = NULL, w = NULL,
 
     sort_list <- order(fitness)
     adj_t <- adj_t[sort_list, , ]
+    fitness <- fitness[sort_list] # keep the elites' stored fitness with them
 
     ## update Gene
     ar <- round(colMeans(adj_t[1:RsI, , ]))
@@ -258,7 +258,7 @@ LDLRA_PBIL <- function(U, na = NULL, Z = NULL, w = NULL,
     gene <- (1 - Bm) * gene + Bm * (gene + u) / 2
 
     # Termination check
-    if (generation > maxGeneration) {
+    if (generation >= maxGeneration) {
       if (verbose) message("The maximum generation has been reached")
       GA_FLG <- FALSE
     }
@@ -304,9 +304,9 @@ LDLRA_PBIL <- function(U, na = NULL, Z = NULL, w = NULL,
     g.df <- data.frame()
     for (i in 1:ncls) {
       g <- igraph::graph_from_adjacency_matrix(adj_list[[i]])
-      tmp <- igraph::as_data_frame(g)
-      tmp$Rank <- i
-      g.df <- rbind(g.df, tmp)
+      edge_df <- igraph::as_data_frame(g)
+      edge_df$Rank <- i
+      g.df <- rbind(g.df, edge_df)
     }
     write.table(g.df,
       sep = ",",
@@ -318,6 +318,9 @@ LDLRA_PBIL <- function(U, na = NULL, Z = NULL, w = NULL,
   }
 
 
-  ret <- LDLRA(tmp, ncls = ncls, adj_list = adj_list)
+  ret <- LDLRA(tmp,
+    ncls = ncls, method = method, adj_list = adj_list,
+    beta1 = beta1, beta2 = beta2
+  )
   return(ret)
 }

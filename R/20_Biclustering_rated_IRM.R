@@ -29,7 +29,20 @@
 #'  \item{TestFitIndices}{Overall fit index for the test (binary layer, default).}
 #'  \item{TestFitIndices_nominal}{Fit indices for the nominal layer (AIC/BIC/CAIC only).}
 #'  \item{log_lik}{Log-likelihood of the binary layer model.}
-#'  \item{log_lik_nominal}{Log-likelihood of the nominal layer model.}
+#'  \item{log_lik_nominal}{Evidence lower bound of the nominal layer model.}
+#'  \item{elbo_nominal}{Evidence lower bound of the observed-data log-likelihood under the
+#'    posterior memberships the EM produced. Exact (equal to the observed-data
+#'    log-likelihood) for a one-mode model; a lower bound for biclustering, where
+#'    the respondent and item posteriors are taken independent. Since 2.2.0. Computed on the nominal layer.}
+#'  \item{log_lik_marginal_nominal}{Observed-data log-likelihood of the respondent-side
+#'    mixture with the items fixed at their MAP field assignment. Equal to
+#'    \code{elbo} for a one-mode model.}
+#'  \item{entropy_nominal}{Posterior entropy of the memberships (named: \code{class},
+#'    and \code{field} for biclustering). \code{elbo} minus this is the expected
+#'    complete-data log-likelihood.}
+#'  \item{ICL_nominal}{Integrated completed likelihood criterion (Biernacki, Celeux and
+#'    Govaert, 2000) in its BIC-type approximation, on the same scale as AIC and
+#'    BIC (-2 log scale, smaller is better).}
 #'  \item{SOACflg}{Logical; TRUE if Strongly Ordinal Alignment Condition is satisfied.}
 #'  \item{WOACflg}{Logical; TRUE if Weakly Ordinal Alignment Condition is satisfied.}
 #' }
@@ -75,7 +88,8 @@ Biclustering_IRM.rated <- function(U,
 
   # --- Step 3: Sort classes by correct response rate (Ranklustering) ---
   clsmemb <- ret_nom$ClassMembership
-  ord <- order(colSums(t(tmp$U) %*% clsmemb) / colSums(clsmemb))
+  # correct-response rate per class over observed cells (not per respondent)
+  ord <- order(colSums(t(tmp$U * tmp$Z) %*% clsmemb) / colSums(t(tmp$Z) %*% clsmemb))
   clsmemb <- clsmemb[, ord]
   BCRM <- BCRM[, ord, ]
   cls <- apply(clsmemb, 1, which.max)
@@ -228,6 +242,10 @@ Biclustering_IRM.rated <- function(U,
     TestFitIndices_nominal = FitIndices_nominal,
     log_lik = test_log_lik_binary,
     log_lik_nominal = ret_nom$log_lik,
+    elbo_nominal = ret_nom$elbo,
+    log_lik_marginal_nominal = ret_nom$log_lik_marginal,
+    entropy_nominal = ret_nom$entropy,
+    ICL_nominal = ret_nom$ICL,
     SOACflg = SOACflg,
     WOACflg = WOACflg
   ), class = c("exametrika", "ratedBiclustering"))

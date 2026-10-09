@@ -167,62 +167,72 @@ export(stanine)
 export(tetrachoric)
 export(xi_stable)
 importFrom(Rcpp,evalCpp)
-importFrom(grDevices,dev.off)
-importFrom(grDevices,gray)
-importFrom(grDevices,hcl.colors)
-importFrom(grDevices,jpeg)
-importFrom(grDevices,pdf)
-importFrom(grDevices,png)
-importFrom(grDevices,rainbow)
-importFrom(graphics,abline)
-importFrom(graphics,axis)
-importFrom(graphics,barplot)
-importFrom(graphics,curve)
-importFrom(graphics,grconvertX)
-importFrom(graphics,grconvertY)
-importFrom(graphics,image)
-importFrom(graphics,layout)
-importFrom(graphics,legend)
-importFrom(graphics,lines)
-importFrom(graphics,mtext)
-importFrom(graphics,par)
-importFrom(graphics,plot.new)
-importFrom(graphics,rasterImage)
-importFrom(graphics,rect)
-importFrom(graphics,text)
-importFrom(graphics,title)
-importFrom(igraph,E)
-importFrom(igraph,V)
-importFrom(igraph,as_adjacency_matrix)
-importFrom(igraph,as_data_frame)
-importFrom(igraph,graph_from_adjacency_matrix)
-importFrom(igraph,graph_from_data_frame)
-importFrom(igraph,layout_on_grid)
-importFrom(igraph,layout_with_fr)
-importFrom(igraph,plot.igraph)
+importFrom(grDevices,
+  dev.off,
+  gray,
+  hcl.colors,
+  jpeg,
+  pdf,
+  png,
+  rainbow
+)
+importFrom(graphics,
+  abline,
+  axis,
+  barplot,
+  curve,
+  grconvertX,
+  grconvertY,
+  image,
+  layout,
+  legend,
+  lines,
+  mtext,
+  par,
+  plot.new,
+  rasterImage,
+  rect,
+  text,
+  title
+)
+importFrom(igraph,
+  E,
+  V,
+  as_adjacency_matrix,
+  as_data_frame,
+  graph_from_adjacency_matrix,
+  graph_from_data_frame,
+  layout_on_grid,
+  layout_with_fr,
+  plot.igraph
+)
 importFrom(mvtnorm,pmvnorm)
-importFrom(stats,cor)
-importFrom(stats,cov)
-importFrom(stats,density)
-importFrom(stats,dnorm)
-importFrom(stats,ecdf)
-importFrom(stats,median)
-importFrom(stats,na.omit)
-importFrom(stats,optim)
-importFrom(stats,optimize)
-importFrom(stats,pchisq)
-importFrom(stats,pnorm)
-importFrom(stats,qnorm)
-importFrom(stats,quantile)
-importFrom(stats,rbinom)
-importFrom(stats,rmultinom)
-importFrom(stats,rnorm)
-importFrom(stats,runif)
-importFrom(stats,sd)
-importFrom(stats,var)
-importFrom(utils,combn)
-importFrom(utils,head)
-importFrom(utils,read.csv)
-importFrom(utils,tail)
-importFrom(utils,write.table)
+importFrom(stats,
+  cor,
+  cov,
+  density,
+  dnorm,
+  ecdf,
+  median,
+  na.omit,
+  optim,
+  optimize,
+  pchisq,
+  pnorm,
+  qnorm,
+  quantile,
+  rbinom,
+  rmultinom,
+  rnorm,
+  runif,
+  sd,
+  var
+)
+importFrom(utils,
+  combn,
+  head,
+  read.csv,
+  tail,
+  write.table
+)
 useDynLib(exametrika, .registration=TRUE)

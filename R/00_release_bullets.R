@@ -9,6 +9,6 @@
 release_bullets <- function() {
   return(c(
     "Run `source(\"tools/spell_check.R\")`, register new legitimate terms in `inst/WORDLIST`, fix any real typos",
-    "Build the release tarball from `git archive` only (`tools/build_pkg.R` part B), never from the working tree"
+    "Run `tools/build_pkg.R`: it refuses to build unless `git status --porcelain` is empty, so commit first and never build from a dirty tree"
   ))
 }

@@ -23,7 +23,7 @@ print_biclustering_case <- function(x, digits) {
   y <- rbind(x$TRP, x$LRD, x$CMD)
   rownames(y) <- c(
     "Test Reference Profile",
-    paste("Latent", x$msg, "Ditribution"),
+    paste("Latent", x$msg, "Distribution"),
     paste(x$msg, "Membership Distribution")
   )
   colnames(y) <- paste(x$msg, 1:x$n_class)
@@ -49,6 +49,7 @@ print_biclustering_case <- function(x, digits) {
   y <- t(as.data.frame(y))
   colnames(y) <- "value"
   print(round(y, digits))
+  print_variational_block(x, digits)
   if (x$SOACflg) {
     cat("Strongly Ordinal Alignment Condition is Satisfied.\n")
   }
@@ -87,7 +88,7 @@ print_rated_biclustering_case <- function(x, digits) {
   y <- rbind(x$TRP, x$LRD, x$CMD)
   rownames(y) <- c(
     "Test Reference Profile",
-    paste("Latent", x$msg, "Ditribution"),
+    paste("Latent", x$msg, "Distribution"),
     paste(x$msg, "Membership Distribution")
   )
   colnames(y) <- paste(x$msg, 1:x$n_class)
@@ -115,6 +116,7 @@ print_rated_biclustering_case <- function(x, digits) {
   y <- t(as.data.frame(y))
   colnames(y) <- "value"
   print(round(y, digits))
+  print_variational_block(x, digits)
 
   # Layer 2: Nominal fit indices (AIC/BIC/CAIC/LogLik only)
   cat("\nModel Fit Indices (Nominal)\n")
@@ -127,6 +129,7 @@ print_rated_biclustering_case <- function(x, digits) {
   ))
   rownames(y) <- c("model_log_like", "AIC", "CAIC", "BIC")
   print(round(y, digits))
+  print_variational_block(x, digits, suffix = "_nominal")
 
   if (x$SOACflg) {
     cat("Strongly Ordinal Alignment Condition is Satisfied.\n")
@@ -150,7 +153,7 @@ print_nominal_biclustering_case <- function(x, digits, fit_indices = "both") {
 
   y <- rbind(x$LRD, x$CMD)
   rownames(y) <- c(
-    paste("Latent", x$msg, "Ditribution"),
+    paste("Latent", x$msg, "Distribution"),
     paste(x$msg, "Membership Distribution")
   )
   colnames(y) <- paste(x$msg, 1:x$n_class)
@@ -171,6 +174,7 @@ print_nominal_biclustering_case <- function(x, digits, fit_indices = "both") {
   y <- t(as.data.frame(y))
   colnames(y) <- "value"
   print(round(y, digits))
+  print_variational_block(x, digits)
   if (!is.null(x$TestFitIndicesM2) && fit_indices %in% c("both", "margin")) {
     print_margin_block(x$TestFitIndicesM2, digits)
   }
@@ -195,7 +199,7 @@ print_ordinal_biclustering_case <- function(x, digits, fit_indices = "both") {
   y <- rbind(x$TRP, x$LRD, x$CMD)
   rownames(y) <- c(
     "Test Reference Profile",
-    paste("Latent", x$msg, "Ditribution"),
+    paste("Latent", x$msg, "Distribution"),
     paste(x$msg, "Membership Distribution")
   )
   colnames(y) <- paste(x$msg, 1:x$n_class)
@@ -231,6 +235,7 @@ print_ordinal_biclustering_case <- function(x, digits, fit_indices = "both") {
   y <- t(as.data.frame(y))
   colnames(y) <- "value"
   print(round(y, digits))
+  print_variational_block(x, digits)
   if (x$WOACflg) {
     cat("Weakly Ordinal Alignment Condition is Satisfied.\n")
   }
@@ -248,7 +253,7 @@ print_irm_case <- function(x, digits) {
   y <- rbind(x$TRP, x$LCD)
   rownames(y) <- c(
     "Test Reference Profile",
-    "Latent class Ditribution"
+    "Latent class Distribution"
   )
   colnames(y) <- paste("class", 1:x$n_class)
   print(round(y, digits))
@@ -267,4 +272,5 @@ print_irm_case <- function(x, digits) {
   y <- t(as.data.frame(y))
   colnames(y) <- "value"
   print(round(y, digits))
+  print_variational_block(x, digits)
 }

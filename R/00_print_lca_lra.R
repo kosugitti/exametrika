@@ -13,7 +13,7 @@ print_rated_lca_case <- function(x, digits, fit_indices = "both") {
   y <- rbind(x$TRP, x$LCD, x$CMD)
   rownames(y) <- c(
     "Test Reference Profile",
-    "Latent Class Ditribution",
+    "Latent Class Distribution",
     "Class Membership Distribution"
   )
   colnames(y) <- paste("Class", 1:x$n_class)
@@ -26,19 +26,27 @@ print_rated_lca_case <- function(x, digits, fit_indices = "both") {
   y <- t(as.data.frame(y))
   colnames(y) <- "value"
   print(round(y, digits))
+  print_variational_block(x, digits)
   if (fit_indices %in% c("both", "pattern")) {
     cat("\nNominal layer (all categories), response-pattern based\n")
     y <- unclass(x$TestFitIndicesNominal)
     y <- t(as.data.frame(y))
     colnames(y) <- "value"
     print(round(y, digits))
+    print_variational_block(x, digits, suffix = "_nominal")
   }
   if (fit_indices %in% c("both", "margin") && !is.null(x$TestFitIndicesM2)) {
     cat("\nNominal layer (all categories), margin based (M2)\n")
-    y <- unclass(x$TestFitIndicesM2)
-    y <- t(as.data.frame(y))
+    # caveat is a character field; it must leave before round()
+    m2 <- unclass(x$TestFitIndicesM2)
+    caveat <- m2$caveat
+    m2$caveat <- NULL
+    y <- t(as.data.frame(m2))
     colnames(y) <- "value"
     print(round(y, digits))
+    if (!is.null(caveat) && !is.na(caveat)) {
+      cat("  ", caveat, "\n", sep = "")
+    }
   }
 }
 
@@ -50,7 +58,7 @@ print_nominal_lca_case <- function(x, digits, fit_indices = "both") {
   cat("\nTest Profile\n")
   y <- rbind(x$LCD, x$CMD)
   rownames(y) <- c(
-    "Latent Class Ditribution",
+    "Latent Class Distribution",
     "Class Membership Distribution"
   )
   colnames(y) <- paste("Class", 1:x$n_class)
@@ -99,6 +107,7 @@ print_fit_two_worlds <- function(x, digits, fit_indices = c("both", "pattern", "
     y <- t(as.data.frame(y))
     colnames(y) <- "value"
     print(round(y, digits))
+    print_variational_block(x, digits)
   }
 
   if (fit_indices %in% c("both", "margin")) {
@@ -120,7 +129,7 @@ print_lca_case <- function(x, digits) {
   y <- rbind(x$TRP, x$LCD, x$CMD)
   rownames(y) <- c(
     "Test Reference Profile",
-    "Latent Class Ditribution",
+    "Latent Class Distribution",
     "Class Membership Distribution"
   )
   colnames(y) <- paste("Class", 1:x$n_class)
@@ -136,6 +145,7 @@ print_lca_case <- function(x, digits) {
   y <- t(as.data.frame(y))
   colnames(y) <- "value"
   print(round(y, digits))
+  print_variational_block(x, digits)
 }
 
 #' @title Print helper: LRA
@@ -153,7 +163,7 @@ print_lra_case <- function(x, digits) {
   y <- rbind(x$TRP, x$LRD, x$RMD)
   rownames(y) <- c(
     "Test Reference Profile",
-    "Latent Rank Ditribution",
+    "Latent Rank Distribution",
     "Rank Membership Distribution"
   )
   colnames(y) <- paste("Rank", 1:x$n_rank)
@@ -169,6 +179,7 @@ print_lra_case <- function(x, digits) {
   y <- t(as.data.frame(y))
   colnames(y) <- "value"
   print(round(y, digits))
+  print_variational_block(x, digits)
 }
 
 #' @title Print helper: LRAordinal
@@ -185,7 +196,7 @@ print_lra_ordinal_case <- function(x, digits, fit_indices = "both") {
   y <- rbind(x$TRP, x$LRD, x$RMD)
   rownames(y) <- c(
     "Test Reference Profile",
-    "Latent Rank Ditribution",
+    "Latent Rank Distribution",
     "Rank Membership Distribution"
   )
   colnames(y) <- paste("Rank", 1:x$n_rank)
@@ -201,6 +212,7 @@ print_lra_ordinal_case <- function(x, digits, fit_indices = "both") {
   y <- t(as.data.frame(y))
   colnames(y) <- "value"
   print(round(y, digits))
+  print_variational_block(x, digits)
   if (!is.null(x$TestFitIndicesM2) && fit_indices %in% c("both", "margin")) {
     print_margin_block(x$TestFitIndicesM2, digits)
   }
@@ -222,7 +234,7 @@ print_lra_rated_case <- function(x, digits) {
   y <- rbind(x$TRP, x$LRD, x$RMD)
   rownames(y) <- c(
     "Test Reference Profile",
-    "Latent Rank Ditribution",
+    "Latent Rank Distribution",
     "Rank Membership Distribution"
   )
   colnames(y) <- paste("Rank", 1:x$n_rank)
@@ -238,4 +250,5 @@ print_lra_rated_case <- function(x, digits) {
   y <- t(as.data.frame(y))
   colnames(y) <- "value"
   print(round(y, digits))
+  print_variational_block(x, digits)
 }

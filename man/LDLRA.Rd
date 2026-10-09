@@ -67,7 +67,7 @@ item x rank x pattern.}
 \item{TestFitIndices}{Overall fit index for the test.See also \link{TestFit}}
 \item{Estimation_table}{Estimated parameters tables.}
 \item{CCRR_table}{Correct Response Rate tables}
-\item{Studens}{Student information. It includes estimated class
+\item{Students}{Student information. It includes estimated class
 membership, probability of class membership, RUO, and RDO.}
 }
 }

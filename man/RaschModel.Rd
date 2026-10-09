@@ -7,7 +7,7 @@
 RaschModel(b, theta)
 }
 \arguments{
-\item{b}{slope parameter}
+\item{b}{location (difficulty) parameter}
 
 \item{theta}{ability parameter}
 }

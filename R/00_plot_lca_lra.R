@@ -7,7 +7,10 @@ plot_common_profiles <- function(x, type, value, plotItemID, plotStudentID, test
   if (type == "IRP") {
     # Item Reference Profile ----------------------------------------
     msg <- x$msg
-    params <- x$IRP[plotItemID, ]
+    # drop = FALSE: a single item must stay a one-row matrix
+    params <- x$IRP[plotItemID, , drop = FALSE]
+    titles <- rownames(params)
+    if (is.null(titles)) titles <- paste("Item", plotItemID)
     if (is.null(x$n_class)) {
       steps <- x$n_rank
     } else {
@@ -24,7 +27,7 @@ plot_common_profiles <- function(x, type, value, plotItemID, plotStudentID, test
           xlab = paste("Latent", msg),
           ylim = c(0, 1),
           xaxt = "n",
-          main = paste("Item", i)
+          main = titles[i]
         ),
         dots
       )

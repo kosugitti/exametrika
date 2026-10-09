@@ -99,7 +99,7 @@ print_ii_analysis_case <- function(x, digits) {
 print_ii_analysis_ordinal_case <- function(x, digits) {
   cat("Joint Sample Size\n")
   print(x$JSS, digits = digits)
-  cat("\nJoint Selection Rateio\n")
+  cat("\nJoint Selection Ratio\n")
   print(x$JSR, digits = digits)
   cat("\nConditional Selection Ratio\n")
   print(x$CSR, digits = digits)
@@ -112,7 +112,7 @@ print_ii_analysis_ordinal_case <- function(x, digits) {
 #' @title Print helper: CTT
 #' @noRd
 print_ctt_case <- function(x, digits) {
-  cat("Realiability\n")
+  cat("Reliability\n")
   print(x$Reliability, digits = digits)
   cat("\nReliability Excluding Item\n")
   print(x$ReliabilityExcludingItem, digits = digits)

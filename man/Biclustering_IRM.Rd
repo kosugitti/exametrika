@@ -158,6 +158,8 @@ as well as the rank-up odds and rank-down odds.}
 \item{LFD}{Latent Field Distribution. see also \link{plot.exametrika}}
 \item{RMD}{Rank Membership Distribution.}
 \item{TestFitIndices}{Overall fit index for the test.See also \link{TestFit}}
+\item{elbo, log_lik_marginal, entropy, ICL}{Variational fit quantities on the
+final assignment, as for \code{\link{Biclustering}}. Since 2.2.0.}
 }
 
 For nominal data, the returned list includes:
@@ -178,7 +180,20 @@ For nominal data, the returned list includes:
 \item{ClassEstimated}{Estimated class assignment for each student.}
 \item{Students}{Rank Membership Profile matrix with estimated class.}
 \item{TestFitIndices}{Overall fit index for the test.}
-\item{log_lik}{Log-likelihood of the model.}
+\item{log_lik}{Evidence lower bound of the model (equal to \code{elbo}).}
+\item{elbo}{Evidence lower bound of the observed-data log-likelihood under the
+posterior memberships the EM produced. Exact (equal to the observed-data
+log-likelihood) for a one-mode model; a lower bound for biclustering, where
+the respondent and item posteriors are taken independent. Since 2.2.0.}
+\item{log_lik_marginal}{Observed-data log-likelihood of the respondent-side
+mixture with the items fixed at their MAP field assignment. Equal to
+\code{elbo} for a one-mode model.}
+\item{entropy}{Posterior entropy of the memberships (named: \code{class},
+and \code{field} for biclustering). \code{elbo} minus this is the expected
+complete-data log-likelihood.}
+\item{ICL}{Integrated completed likelihood criterion (Biernacki, Celeux and
+Govaert, 2000) in its BIC-type approximation, on the same scale as AIC and
+BIC (-2 log scale, smaller is better).}
 }
 
 For ordinal data, the returned list includes:
@@ -204,7 +219,20 @@ Weighted and Observed components.}
 \item{ClassEstimated}{Estimated class assignment for each student.}
 \item{Students}{Rank Membership Profile matrix with estimated class.}
 \item{TestFitIndices}{Overall fit index for the test.}
-\item{log_lik}{Log-likelihood of the model.}
+\item{log_lik}{Evidence lower bound of the model (equal to \code{elbo}).}
+\item{elbo}{Evidence lower bound of the observed-data log-likelihood under the
+posterior memberships the EM produced. Exact (equal to the observed-data
+log-likelihood) for a one-mode model; a lower bound for biclustering, where
+the respondent and item posteriors are taken independent. Since 2.2.0.}
+\item{log_lik_marginal}{Observed-data log-likelihood of the respondent-side
+mixture with the items fixed at their MAP field assignment. Equal to
+\code{elbo} for a one-mode model.}
+\item{entropy}{Posterior entropy of the memberships (named: \code{class},
+and \code{field} for biclustering). \code{elbo} minus this is the expected
+complete-data log-likelihood.}
+\item{ICL}{Integrated completed likelihood criterion (Biernacki, Celeux and
+Govaert, 2000) in its BIC-type approximation, on the same scale as AIC and
+BIC (-2 log scale, smaller is better).}
 \item{SOACflg}{Logical; TRUE if Strongly Ordinal Alignment Condition is satisfied.}
 \item{WOACflg}{Logical; TRUE if Weakly Ordinal Alignment Condition is satisfied.}
 }
@@ -236,7 +264,20 @@ the slope parameters A and Alpha, and the monotonicity indices C and Gamma.}
 \item{TestFitIndices}{Overall fit index for the test (binary layer, default).}
 \item{TestFitIndices_nominal}{Fit indices for the nominal layer (AIC/BIC/CAIC only).}
 \item{log_lik}{Log-likelihood of the binary layer model.}
-\item{log_lik_nominal}{Log-likelihood of the nominal layer model.}
+\item{log_lik_nominal}{Evidence lower bound of the nominal layer model.}
+\item{elbo_nominal}{Evidence lower bound of the observed-data log-likelihood under the
+posterior memberships the EM produced. Exact (equal to the observed-data
+log-likelihood) for a one-mode model; a lower bound for biclustering, where
+the respondent and item posteriors are taken independent. Since 2.2.0. Computed on the nominal layer.}
+\item{log_lik_marginal_nominal}{Observed-data log-likelihood of the respondent-side
+mixture with the items fixed at their MAP field assignment. Equal to
+\code{elbo} for a one-mode model.}
+\item{entropy_nominal}{Posterior entropy of the memberships (named: \code{class},
+and \code{field} for biclustering). \code{elbo} minus this is the expected
+complete-data log-likelihood.}
+\item{ICL_nominal}{Integrated completed likelihood criterion (Biernacki, Celeux and
+Govaert, 2000) in its BIC-type approximation, on the same scale as AIC and
+BIC (-2 log scale, smaller is better).}
 \item{SOACflg}{Logical; TRUE if Strongly Ordinal Alignment Condition is satisfied.}
 \item{WOACflg}{Logical; TRUE if Weakly Ordinal Alignment Condition is satisfied.}
 }

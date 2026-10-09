@@ -32,7 +32,7 @@ LRA(U, ...)
   nrank = 2,
   method = "isotonic",
   mic = FALSE,
-  maxiter = 100,
+  maxiter = 1000,
   trapezoidal = 0,
   alpha = 1,
   eps = 1e-04,
@@ -44,7 +44,7 @@ LRA(U, ...)
   U,
   nrank = 2,
   mic = FALSE,
-  maxiter = 100,
+  maxiter = 1000,
   trapezoidal = 0,
   eps = 1e-04,
   minFreqRatio = 0,
@@ -131,6 +131,19 @@ to completion, so this is TRUE unless BIC.check early stopping failed to trigger
 examinees belonging to each rank, along with their estimated ranks and odds ratios.}
 \item{ItemFitIndices}{Fit indices for each item. See also \code{\link{ItemFit}}.}
 \item{TestFitIndices}{Overall fit indices for the test. See also \code{\link{TestFit}}.}
+\item{elbo}{Evidence lower bound of the observed-data log-likelihood under the
+posterior memberships the EM produced. Exact (equal to the observed-data
+log-likelihood) for a one-mode model; a lower bound for biclustering, where
+the respondent and item posteriors are taken independent. Since 2.2.0.}
+\item{log_lik_marginal}{Observed-data log-likelihood of the respondent-side
+mixture with the items fixed at their MAP field assignment. Equal to
+\code{elbo} for a one-mode model.}
+\item{entropy}{Posterior entropy of the memberships (named: \code{class},
+and \code{field} for biclustering). \code{elbo} minus this is the expected
+complete-data log-likelihood.}
+\item{ICL}{Integrated completed likelihood criterion (Biernacki, Celeux and
+Govaert, 2000) in its BIC-type approximation, on the same scale as AIC and
+BIC (-2 log scale, smaller is better).}
 }
 
 Each subclass returns additional specific elements, detailed in their respective documentation.
@@ -158,6 +171,21 @@ test length, central tendency, variability, distribution characteristics, and re
 \item{RankQuantile}{Cross-tabulation of rank frequencies and quantile groups.}
 \item{MembQuantile}{Cross-tabulation of rank membership probabilities and quantile groups.}
 \item{CatQuant}{Response patterns across item categories and quantile groups.}
+\item{log_lik}{Expected log-posterior at the final EM cycle, the quantity the
+EM monitors; the observed-data log-likelihood is \code{elbo}.}
+\item{elbo}{Evidence lower bound of the observed-data log-likelihood under the
+posterior memberships the EM produced. Exact (equal to the observed-data
+log-likelihood) for a one-mode model; a lower bound for biclustering, where
+the respondent and item posteriors are taken independent. Since 2.2.0.}
+\item{log_lik_marginal}{Observed-data log-likelihood of the respondent-side
+mixture with the items fixed at their MAP field assignment. Equal to
+\code{elbo} for a one-mode model.}
+\item{entropy}{Posterior entropy of the memberships (named: \code{class},
+and \code{field} for biclustering). \code{elbo} minus this is the expected
+complete-data log-likelihood.}
+\item{ICL}{Integrated completed likelihood criterion (Biernacki, Celeux and
+Govaert, 2000) in its BIC-type approximation, on the same scale as AIC and
+BIC (-2 log scale, smaller is better).}
 }
 
 For rated data (\code{LRA.rated}), the returned list additionally includes:
@@ -176,6 +204,21 @@ test length, central tendency, variability, distribution characteristics, and re
 \item{MembQuantile}{Cross-tabulation of rank membership probabilities and quantile groups.}
 \item{ItemQuantileRef}{Reference values for each item across quantile groups.}
 \item{CatQuant}{Response patterns across item categories and quantile groups.}
+\item{log_lik}{Expected log-posterior at the final EM cycle, the quantity the
+EM monitors; the observed-data log-likelihood is \code{elbo}.}
+\item{elbo}{Evidence lower bound of the observed-data log-likelihood under the
+posterior memberships the EM produced. Exact (equal to the observed-data
+log-likelihood) for a one-mode model; a lower bound for biclustering, where
+the respondent and item posteriors are taken independent. Since 2.2.0.}
+\item{log_lik_marginal}{Observed-data log-likelihood of the respondent-side
+mixture with the items fixed at their MAP field assignment. Equal to
+\code{elbo} for a one-mode model.}
+\item{entropy}{Posterior entropy of the memberships (named: \code{class},
+and \code{field} for biclustering). \code{elbo} minus this is the expected
+complete-data log-likelihood.}
+\item{ICL}{Integrated completed likelihood criterion (Biernacki, Celeux and
+Govaert, 2000) in its BIC-type approximation, on the same scale as AIC and
+BIC (-2 log scale, smaller is better).}
 }
 }
 \description{

@@ -103,6 +103,19 @@ represents a latent class. Values indicate the probability of a correct response
 for members of that class.}
 \item{ItemFitIndices}{Fit indices for each item. See also \code{\link{ItemFit}}.}
 \item{TestFitIndices}{Overall fit indices for the test. See also \code{\link{TestFit}}.}
+\item{elbo}{Evidence lower bound of the observed-data log-likelihood under the
+posterior memberships the EM produced. Exact (equal to the observed-data
+log-likelihood) for a one-mode model; a lower bound for biclustering, where
+the respondent and item posteriors are taken independent. Since 2.2.0.}
+\item{log_lik_marginal}{Observed-data log-likelihood of the respondent-side
+mixture with the items fixed at their MAP field assignment. Equal to
+\code{elbo} for a one-mode model.}
+\item{entropy}{Posterior entropy of the memberships (named: \code{class},
+and \code{field} for biclustering). \code{elbo} minus this is the expected
+complete-data log-likelihood.}
+\item{ICL}{Integrated completed likelihood criterion (Biernacki, Celeux and
+Govaert, 2000) in its BIC-type approximation, on the same scale as AIC and
+BIC (-2 log scale, smaller is better).}
 }
 }
 \description{

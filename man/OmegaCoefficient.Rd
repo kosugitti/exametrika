@@ -26,7 +26,7 @@ three components:
 }
 }
 \description{
-This function computes Tau-Congeneric Measurement, also known as McDonald's tau coefficient, for a given data set.
+This function computes the omega coefficient of the tau-congeneric measurement model (McDonald, 1999) for a given data set.
 }
 \references{
 McDonald, R. P. (1999). Test theory: A unified treatment. Erlbaum.

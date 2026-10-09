@@ -31,7 +31,10 @@ print_bnm_case <- function(x, digits) {
 
   cat("\nConditional Correct Response Rate\n")
   for (j in 1:NROW(x$CCRR_table)) {
-    if (is.nan(x$CCRR_table[j, 5])) {
+    v <- x$CCRR_table[j, 5]
+    # BNM() writes the literal "NaN(0/0)" for unobserved parent patterns, which
+    # turns the column into character; is.nan() on a string is always FALSE.
+    if (identical(v, "NaN(0/0)") || is.nan(suppressWarnings(as.numeric(v)))) {
       x$CCRR_table[j, 5] <- "NaN(0/0)"
     } else {
       x$CCRR_table[j, 5] <- sprintf(
@@ -73,7 +76,7 @@ print_ldlra_case <- function(x, digits) {
 
   cat("\nParameter Learning\n")
   y <- x$Estimation_table
-  numeric_cols <- which(sapply(y[, 3:NCOL(y)], is.numeric))
+  numeric_cols <- which(sapply(y[, 3:NCOL(y), drop = FALSE], is.numeric))
   for (j in numeric_cols) {
     y[, j + 2] <- ifelse(is.na(y[, j + 2]), "",
       sprintf(paste0("%.", digits, "f"), y[, j + 2])
@@ -105,7 +108,7 @@ print_ldlra_case <- function(x, digits) {
   y <- rbind(x$TRP, x$LRD, x$RMD)
   rownames(y) <- c(
     "Test Reference Profile",
-    paste("Latent", msg, "Ditribution"),
+    paste("Latent", msg, "Distribution"),
     paste(msg, "Membership Distribution")
   )
   colnames(y) <- paste(msg, 1:x$n_class)
@@ -157,8 +160,8 @@ print_ldb_case <- function(x, digits) {
   y <- rbind(x$TRP, x$LRD, x$RMD)
   rownames(y) <- c(
     "Test Reference Profile",
-    "Latent Rank Ditribution",
-    "Rank Membership Dsitribution"
+    "Latent Rank Distribution",
+    "Rank Membership Distribution"
   )
   colnames(y) <- paste("Rank", 1:x$n_rank)
   print(round(y, digits))
@@ -215,8 +218,8 @@ print_binet_case <- function(x, digits) {
   y <- rbind(x$TRP, x$LCD, x$CMD)
   rownames(y) <- c(
     "Test Reference Profile",
-    "Latent Class Ditribution",
-    "Class Membership Dsitribution"
+    "Latent Class Distribution",
+    "Class Membership Distribution"
   )
   colnames(y) <- paste("Class", 1:x$n_class)
   print(round(y, digits))
@@ -225,6 +228,6 @@ print_binet_case <- function(x, digits) {
   y1 <- unclass(x$MG_FitIndices)
   y2 <- unclass(x$SM_FitIndices)
   y <- t(as.data.frame(rbind(y1, y2)))
-  colnames(y) <- c("Multigroup Model", "Saturated Moodel")
+  colnames(y) <- c("Multigroup Model", "Saturated Model")
   print(y)
 }

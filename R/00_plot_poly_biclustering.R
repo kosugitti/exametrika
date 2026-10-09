@@ -66,6 +66,12 @@ plot_poly_fcrp <- function(x, style, nc, nr, dots = list()) {
   msg <- x$msg
   cols <- get_cb_palette(maxQ)
 
+  # nc = 1 stacks every field in one column and runs out of device height
+  # from about seven fields (IRM decides nfld from the data). Honour nr, and
+  # otherwise fall back to a near-square layout.
+  if (nc <= 1 && nfld > 3) {
+    nc <- if (nr > 1) ceiling(nfld / nr) else ceiling(sqrt(nfld))
+  }
   setup_legend_layout(nfld, nc)
 
   for (f in 1:nfld) {
@@ -138,6 +144,12 @@ plot_poly_fcbr <- function(x, nc, nr, dots = list()) {
   n_boundaries <- maxQ - 1
   cols <- get_cb_palette(n_boundaries)
 
+  # nc = 1 stacks every field in one column and runs out of device height
+  # from about seven fields (IRM decides nfld from the data). Honour nr, and
+  # otherwise fall back to a near-square layout.
+  if (nc <= 1 && nfld > 3) {
+    nc <- if (nr > 1) ceiling(nfld / nr) else ceiling(sqrt(nfld))
+  }
   setup_legend_layout(nfld, nc)
 
   for (f in 1:nfld) {

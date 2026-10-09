@@ -1,3 +1,201 @@
+# exametrika 2.2.0 (development)
+
+## Model comparison: evidence lower bound, marginal likelihood, entropy, ICL
+
+Every latent class, latent rank and biclustering fit now carries four
+additional quantities for model comparison (`elbo`, `log_lik_marginal`,
+`entropy`, `ICL`; rated models report the nominal layer with the suffix
+`_nominal`). Their definitions are documented in the return value of each
+function and in `R/00_VariationalFit.R`:
+
+- `elbo` is the evidence lower bound of the observed-data log-likelihood under
+  the posterior memberships the EM produced. For a one-mode model (LCA, LRA) the
+  posterior is exact and this is the observed-data log-likelihood itself; for
+  biclustering the respondent and item posteriors are taken independent and the
+  value is a lower bound.
+- `log_lik_marginal` is the observed-data log-likelihood of the respondent-side
+  mixture with the items fixed at their MAP field assignment.
+- `entropy` is the posterior entropy of the memberships. `elbo` minus the
+  entropy is the expected complete-data log-likelihood.
+- `ICL` is the integrated completed likelihood criterion (Biernacki, Celeux and
+  Govaert, 2000) in the BIC-type approximation used for the latent block model
+  by Keribin, Brault, Celeux and Govaert (2015), on the same scale as AIC and
+  BIC here (smaller is better).
+
+## Breaking change: nominal and ordinal biclustering report the ELBO
+
+**The `log_lik` of `Biclustering()` and `Biclustering_IRM()` on nominal and
+ordinal data, and the AIC, BIC and CAIC built on it, change.** Up to 2.1.0 these
+reported `sum_sj log sum_fc m_jf m_sc pi_fcq`: the probability of each observed
+cell under a mixture of the block probabilities weighted by that respondent's
+and that item's posterior memberships. That is the likelihood of a
+mixed-membership model with the memberships plugged in as free parameters, not
+of the mixture model being fitted, and it is not the quantity the EM ascends.
+Because the plugged-in memberships are never counted in the penalty, BIC on
+this quantity favours more blocks the larger the sample, which is what a
+simulation study of the grid search showed (over-selection of the number of
+classes rising with the number of respondents). The reported value is now the
+evidence lower bound, which the EM also monitors for convergence. The binary
+implementation keeps the expected log-likelihood of the reference
+implementation (Shojima, 2022) as its `log_lik`; the new fields are added
+alongside it there, so its fit indices are unchanged.
+
+Consequences for ordinal and nominal data:
+
+- `log_lik`, `TestFitIndices$model_log_like`, `AIC`, `CAIC`, `BIC` and the
+  chi-square based indices of `Biclustering()` and `Biclustering_IRM()` take
+  different values.
+- The EM stops at a slightly different point (the bound is monitored at a
+  relative tolerance of 1e-8), so memberships and profiles can move in the last
+  digits.
+- The `verbose` trace prints `elbo` instead of `log_lik`.
+
+## Missing data: one convention, and the places that broke it
+
+`dataFormat()` now stores a missing cell as **0 in `U`** (binary and rated
+data) and keeps the indicator in `Z`; `Q` (polytomous data) still carries -1.
+Until 2.1.0 `U` held -1 for a missing cell, and every routine that summed `U`
+without masking it by `Z` counted each missing cell as *minus one correct
+response*. The audit before this release found that in the binary LCA and LRA
+cores (`emclus()`, `emclus_isotonic()`, `somclus()`, `item_log_lik()`), in
+`BNM()`, `LDLRA()`, `LDB()` and `BINET()`, and in the quantile reference of
+rated `LRA()`. With the new convention those sums are right by construction.
+Independently of the sentinel, the following counted a missing cell as an
+*incorrect* response or divided by the wrong count and are corrected:
+
+- `ItemFit()`, `TestFit()` and `TestFitSaturated()` weighted the null model by
+  the number of respondents instead of the number of responses, and the
+  benchmark model took "group size minus correct" as the incorrect count. With
+  missing data the chi-squares came out too large (or negative for IRT); every
+  model's NFI...RMSEA and chi-square based AIC/BIC on such data change.
+- `LRA(method = "SOM")` did not receive `Z` at all; its C++ epoch now skips
+  missing cells in both the winner search and the update.
+- `LDB()` counted the field size, not the number of observed items per field.
+- `StudentAnalysis()` reported the number of items, not of responses, as NR.
+- `Biclustering()` on rated data ordered the ranks by correct responses per
+  respondent rather than per observed response, which inverted the order when
+  missing cells were unevenly spread across classes.
+- The "Observed" block of `BFRP` in ordinal biclustering and IRM averaged over
+  all cells, counting a missing cell as category 0.
+- `M2()` divided the observed margins by the full sample size; with missing
+  data every margin of an item was deflated by its response rate and M2 was
+  systematically inflated (20% MCAR from a true model gave p = 0 every time).
+  Margins now use available cases, and `caveat` says so when data are missing.
+- `LRA()` on rated data with `minFreqRatio > 0` put missing cells into the
+  collapsed category.
+
+## Estimation bugs found in the pre-release audit
+
+- **Ordinal `LRA(method = "GTM")` flipped the direction of the ranks on almost
+  every cycle**: the orientation test compared two boundary rows instead of
+  the first and last rank columns, so whether the result came out ascending or
+  descending depended on the number of EM cycles (the convergence tolerance).
+  The isotonic default was unaffected.
+- **`BNM()`, `BNM_GA()`, `BNM_PBIL()`, `LDLRA()` and `LDLRA_PBIL()` fitted a
+  different graph than the one given whenever the item labels were not in
+  alphabetical order**: the adjacency matrix was reordered alphabetically
+  while the data were read by position. With labels such as `Item1 ...
+  Item15` or `Q1 ... Q12` the parents of an item were attached to another
+  item. The matrix now stays in item-label order. `LDLRA_PBIL()` in addition
+  evaluated its candidates by position but returned them by name, so the
+  fitted DAG was not the one the search had scored; both now use the same
+  interpretation. It also ignored `method`, `beta1` and `beta2` for the final
+  fit and failed when `filename` was given.
+- `LCA()` on rated data looked up the keyed category by its raw code; with
+  0-based or gappy codes `IRP`, `TRP` and the binary-layer fit indices came
+  from another category.
+- `ItemStatistics()` on ordinal data with 0-based or gappy codes (such as the
+  bundled `J15S3810`) returned wrong thresholds, entropies and item-total
+  correlations because `tabulate()` skips code 0.
+- `ItemStatistics()` and `InterItemAnalysis()` stopped on rated data
+  (`J35S5000`).
+- `GridSearch(fun = "LRA")` passed `ncls` where `LRA()` expects `nrank`, so
+  every cell was fitted with two ranks and "2" was always optimal. The grid
+  can now also be searched on `ICL`, `elbo` and `log_lik_marginal`.
+- `M2()` on an ordinal `LRA()` fit compared the observed categories by raw
+  code against profiles in remapped order, giving wrong values for 0-based
+  codes.
+- `MutualInformation()` returned NaN for an empty cell (0 log 0).
+- Nominal `LCA()`, `Biclustering()` and the EM of `Biclustering_IRM()` with
+  `alpha < 1` produced negative probabilities; the MAP numerator is now
+  clamped and renormalised as in the ordinal M-step.
+- Nominal `LCA()`, ordinal and rated `LRA()`, and all `Biclustering()` EMs ran
+  `maxiter + 1` cycles and reported that count.
+- Ordinal and rated `LRA()` stopped when a score quantile group had a single
+  respondent, or when every item had two categories (a dimension was dropped
+  by indexing). Rated `LRA()`'s default `maxiter` is now 1000, as elsewhere.
+- `GRM()` built its item fit from the EAP-plugged likelihood, which is not
+  nested in the benchmark and gave negative chi-squares even without missing
+  data; it now uses the expected log-likelihood under the posterior, as
+  `IRT()` does. It also warns when the optimiser did not converge, and its
+  C++ score function no longer underflows on long tests.
+- `OmegaCoefficient()` started from random loadings: with three items it
+  stopped nine times out of ten with an empty error message, and otherwise
+  returned a different value on every call. It starts from the first
+  principal component and warns instead of stopping.
+- `IRT()` validates `model` (2, 3 or 4) instead of failing obscurely, and
+  stops rather than silently reusing the previous item's parameters when the
+  optimiser fails for an item.
+- `Biclustering()` on rated data failed with `conf` or `conf_class` because it
+  ignored the class and field counts the nominal fit had derived from them.
+- Binary `Biclustering_IRM()` failed when no class fell below `minSize`
+  (`EMt` undefined), nominal `Biclustering_IRM()` failed when the modal
+  categories were not exactly 1..k, and all three IRMs failed obscurely when
+  every class was below `minSize` (they now stop at one class with a warning).
+- `mic = TRUE` in ordinal biclustering reordered the reference profiles
+  without the memberships, so a class column no longer described the same
+  respondents; both are permuted together (and nothing is reordered under
+  `conf_class`). In ordinal IRM the same fix stops the EM from terminating on
+  the reordering cycle.
+- `LDLRA()` with `beta1 = beta2 = 1` stopped whenever some parent pattern was
+  unobserved; such cells are now excluded. An adjacency matrix without
+  dimnames is accepted (taken in item-label order) instead of silently losing
+  every edge. `BNM_PBIL()` and `LDLRA_PBIL()` no longer halve the number of
+  survivors with a warning on every call, run exactly `maxGeneration`
+  generations, and `LDLRA_PBIL()` keeps the stored fitness of its elites
+  aligned after sorting. `LDLRA_PBIL()` rejects an unknown `method`.
+- `dataFormat()`: a numeric ID column that is unique in every row is taken as
+  an ID; character response columns (a missing-value symbol in a CSV column)
+  are converted to numeric; `na` may be a vector; `Z` may be a data frame;
+  factor columns keep only their observed levels, their labels stay in item
+  order when mixed with numeric columns, and the labels of an excluded item
+  are dropped with it. `longdataFormat()` returns one label vector per item,
+  so `LCA()` runs on its output.
+
+## Bug Fixes
+
+- `print()` of a rated `LCA()` result that had been through `add_M2()` stopped
+  with "non-numeric argument to mathematical function": the M2 block carries a
+  character `caveat` field that was rounded along with the numbers.
+- `plot(type = "IRP", items = <one item>)` stopped with "argument is of length
+  zero" for LCA, LRA and LDLRA, because a single row of the profile matrix
+  dropped to a vector. With several items the panel titles counted 1, 2, ...
+  instead of naming the items plotted; they now show the item labels.
+- `print()` of a `BNM()` fit with an unobserved parent pattern turned the
+  "NaN(0/0)" marker into `NA` with a coercion warning.
+- `plot(type = "FCRP")` and `plot(type = "FCBR")` failed with "figure margins
+  too large" at the default `nc = 1` once a fit had more than a handful of
+  fields, which an IRM fit decides from the data. The columns now default to a
+  near-square layout when `nc` is left at 1 and more than three fields are
+  drawn; `nr` is honoured when given.
+- `plot(items = 0)` is now rejected outside IRT and GRM, where 0 selects the
+  test-level curve; elsewhere it indexed past the first item.
+- Binary `Biclustering_IRM()` now carries `elbo`, `log_lik_marginal`, `entropy`
+  and `ICL` like the other biclustering fits (its assignments are hard, so the
+  entropy is zero).
+- Spelling in printed headings ("Ditribution", "Realiability", "Saturated
+  Moodel", "Rateio").
+
+## Other
+
+- `print()` of these fits shows a "Variational Fit" block.
+- `LRA()` on ordinal and rated data now returns `log_lik` at the top level, and
+  evaluates it (and `TestFitIndices$model_log_like`) at the returned estimates.
+  It used to be the value computed inside the last EM cycle *before* that
+  cycle's M-step, i.e. one iterate behind the profiles the object carries; the
+  two now describe the same state. The difference is of the order of the
+  convergence tolerance (about 2 log-likelihood units on `J15S3810`).
+
 # exametrika 2.1.0
 
 A minor release. The estimates returned by `LRA(method = "SOM")` change, so the
@@ -6,9 +204,6 @@ against the Mathematica routine it was ported from
 (`Module_LRA.wl`): the port had grown a `seed` argument and a convergence
 report that the original never had, and had moved the monotonicity sort to the
 end of each epoch.
-
-Released on GitHub first; the CRAN submission follows once the one-month cadence
-since 2.0.0 (accepted 2026-08-20) has passed.
 
 ## Bug Fixes
 

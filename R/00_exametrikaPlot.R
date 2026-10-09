@@ -213,6 +213,9 @@ plot.exametrika <- function(x,
     if (!is.numeric(items) || length(items) > testlength || any(items < 0 | items > testlength)) {
       stop("'items' must be a numeric vector of length at most ", testlength, " and contain numbers between 0 and ", testlength)
     }
+    if (any(items == 0) && !value %in% c("IRT", "GRM")) {
+      stop("'items = 0' (the test-level curve) is defined only for IRT and GRM")
+    }
     items
   } else {
     1:testlength

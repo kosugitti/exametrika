@@ -83,8 +83,6 @@ classes of Class c. A more comprehensible arrangement of \code{params.}}
 \item{LFD}{Latent Field Distribution. see also \link{plot.exametrika}}
 \item{CMD}{Class Membership Distribution.}
 \item{FRP}{Marginal bicluster reference matrix.}
-\item{FRPIndex}{Index of FFP includes the item location parameters B and Beta,
-the slope parameters A and Alpha, and the monotonicity indices C and Gamma.}
 \item{TRP}{Test Reference Profile}
 \item{LDPSR}{A rearranged set of parameters for output. It includes
 the field the items contained within that field, and the conditional

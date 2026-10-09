@@ -22,3 +22,4 @@
 ^\.claude$
 ^Rplots\.pdf$
 (^|/)Rplots\.pdf$
+^tests/testthat/_problems$

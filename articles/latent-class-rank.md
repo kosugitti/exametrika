@@ -40,7 +40,7 @@ LCA(J15S500, ncls = 5)
 #> Test Profile
 #>                               Class 1 Class 2 Class 3 Class 4 Class 5
 #> Test Reference Profile          6.155   9.034  10.321  11.034  12.405
-#> Latent Class Ditribution      119.000  90.000 112.000  86.000  93.000
+#> Latent Class Distribution     119.000  90.000 112.000  86.000  93.000
 #> Class Membership Distribution 112.597  99.086  98.336  93.200  96.780
 #> 
 #> Item Fit Indices
@@ -113,6 +113,13 @@ LCA(J15S500, ncls = 5)
 #> AIC              -86.203
 #> CAIC            -790.175
 #> BIC             -655.175
+#> 
+#> Variational Fit
+#>                      value
+#> ELBO             -4118.164
+#> log_lik_marginal -4118.164
+#> entropy_class      338.458
+#> ICL               9064.738
 ```
 
 The Class Membership Matrix indicates which latent class each examinee
@@ -221,7 +228,7 @@ LRA(J15S500, nrank = 6)
 #> Test Profile
 #>                              Rank 1 Rank 2 Rank 3  Rank 4 Rank 5 Rank 6
 #> Test Reference Profile        5.824  7.613  9.973  10.259 11.219 12.727
-#> Latent Rank Ditribution      75.000 82.000 71.000 107.000 74.000 91.000
+#> Latent Rank Distribution     75.000 82.000 71.000 107.000 74.000 91.000
 #> Rank Membership Distribution 77.702 79.964 86.849  87.007 87.796 80.682
 #> 
 #> Item Fit Indices
@@ -294,6 +301,13 @@ LRA(J15S500, nrank = 6)
 #> AIC               21.918
 #> CAIC            -817.634
 #> BIC             -656.634
+#> 
+#> Variational Fit
+#>                      value
+#> ELBO             -4131.841
+#> log_lik_marginal -4131.841
+#> entropy_class      496.003
+#> ICL               9146.482
 ```
 
 Rank membership probabilities and rank-up/rank-down odds are calculated:

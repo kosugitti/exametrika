@@ -226,7 +226,7 @@ print(result_lca)
 #> Test Profile
 #>                               Class 1 Class 2 Class 3
 #> Test Reference Profile          6.737  10.329  11.833
-#> Latent Class Ditribution      157.000 171.000 172.000
+#> Latent Class Distribution     157.000 171.000 172.000
 #> Class Membership Distribution 162.321 171.048 166.631
 #> 
 #> Item Fit Indices
@@ -299,5 +299,12 @@ print(result_lca)
 #> AIC              230.824
 #> CAIC            -629.587
 #> BIC             -464.587
+#> 
+#> Variational Fit
+#>                      value
+#> ELBO             -4144.421
+#> log_lik_marginal -4144.421
+#> entropy_class      245.302
+#> ICL               8844.634
 # }
 ```

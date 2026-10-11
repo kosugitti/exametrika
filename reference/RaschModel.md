@@ -14,7 +14,7 @@ RaschModel(b, theta)
 
 - b:
 
-  slope parameter
+  location (difficulty) parameter
 
 - theta:
 

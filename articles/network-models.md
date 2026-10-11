@@ -35,9 +35,9 @@ DAG <- matrix(
 # Graph object
 g <- igraph::graph_from_data_frame(DAG)
 g
-#> IGRAPH 21e990d DN-- 5 5 -- 
+#> IGRAPH 2bb72c9 DN-- 5 5 -- 
 #> + attr: name (v/c)
-#> + edges from 21e990d (vertex names):
+#> + edges from 2bb72c9 (vertex names):
 #> [1] Item01->Item02 Item02->Item03 Item02->Item04 Item03->Item05 Item04->Item05
 
 # Adjacency matrix
@@ -89,7 +89,7 @@ result.BNM
     #> 6      Item04            1         Item02          0           0.167
     #> 7      Item04            1         Item02          1           0.500
     #> 8      Item05            2 Item03, Item04         00           0.000
-    #> 9      Item05            2 Item03, Item04         01              NA
+    #> 9      Item05            2 Item03, Item04         01        NaN(0/0)
     #> 10     Item05            2 Item03, Item04         10           0.333
     #> 11     Item05            2 Item03, Item04         11           0.667
     #> 

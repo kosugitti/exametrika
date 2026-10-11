@@ -153,7 +153,7 @@ fit
 #> 
 #> Test Profile
 #>                               Class 1 Class 2 Class 3
-#> Latent Class Ditribution      233.000 245.000 122.000
+#> Latent Class Distribution     233.000 245.000 122.000
 #> Class Membership Distribution 231.324 244.059 124.617
 #> 
 #> Model Fit Indices
@@ -179,20 +179,28 @@ fit
 #> CAIC            31778.56
 #> BIC             31598.56
 #> 
+#> Variational Fit
+#>                      value
+#> ELBO             -15223.56
+#> log_lik_marginal -15223.56
+#> entropy_class        41.31
+#> ICL               31597.65
+#> 
 #> Margin based (M2)
 #>             value
-#> M2       3510.944
+#> M2       3582.212
 #> df       1591.000
 #> p           0.000
-#> M2_null  9282.443
+#> M2_null  9469.241
 #> df_null  1710.000
 #> n_margin 1770.000
 #> NFI         0.622
 #> RFI         0.593
-#> IFI         0.750
-#> TLI         0.727
-#> CFI         0.746
-#> RMSEA       0.045
+#> IFI         0.747
+#> TLI         0.724
+#> CFI         0.743
+#> RMSEA       0.046
+#>   0.5% of the cells are missing: the margins use available cases and M2 is approximate.
 print(fit, fit_indices = "margin")
 #> 
 #> Item Category Reference Profile
@@ -280,7 +288,7 @@ print(fit, fit_indices = "margin")
 #> 
 #> Test Profile
 #>                               Class 1 Class 2 Class 3
-#> Latent Class Ditribution      233.000 245.000 122.000
+#> Latent Class Distribution     233.000 245.000 122.000
 #> Class Membership Distribution 231.324 244.059 124.617
 #> 
 #> Model Fit Indices
@@ -289,17 +297,18 @@ print(fit, fit_indices = "margin")
 #> 
 #> Margin based (M2)
 #>             value
-#> M2       3510.944
+#> M2       3582.212
 #> df       1591.000
 #> p           0.000
-#> M2_null  9282.443
+#> M2_null  9469.241
 #> df_null  1710.000
 #> n_margin 1770.000
 #> NFI         0.622
 #> RFI         0.593
-#> IFI         0.750
-#> TLI         0.727
-#> CFI         0.746
-#> RMSEA       0.045
+#> IFI         0.747
+#> TLI         0.724
+#> CFI         0.743
+#> RMSEA       0.046
+#>   0.5% of the cells are missing: the margins use available cases and M2 is approximate.
 # }
 ```

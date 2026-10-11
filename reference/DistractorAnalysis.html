@@ -17,7 +17,7 @@ Biclustering / Biclustering_IRM (rated data)."><meta property="og:image" content
 
     <a class="navbar-brand me-2" href="../index.html">exametrika</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -604,9 +604,6 @@ Cramer's V as an effect size measure.</p>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Biclustering.rated example</span></span></span>
 <span class="r-in"><span><span class="va">result_bic</span> <span class="op">&lt;-</span> <span class="fu"><a href="Biclustering.html">Biclustering</a></span><span class="op">(</span><span class="va">J21S300</span>, ncls <span class="op">=</span> <span class="fl">5</span>, nfld <span class="op">=</span> <span class="fl">3</span>, method <span class="op">=</span> <span class="st">"R"</span><span class="op">)</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Reached the maximum number of iterations (100).</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Warning: Algorithm may not have converged. Interpret results with caution.</span>
 <span class="r-in"><span><span class="va">da_bic</span> <span class="op">&lt;-</span> <span class="fu">DistractorAnalysis</span><span class="op">(</span><span class="va">result_bic</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">da_bic</span>, items <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">7</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Distractor Analysis</span>
@@ -621,79 +618,79 @@ Cramer's V as an effect size measure.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Cramer's V</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         Rank1  Rank2  Rank3  Rank4  Rank5</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Item01 0.2316 0.2401 0.2151 0.6824 0.5129</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Item02 0.2199 0.3004 0.0599 0.5089 0.6470</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Item03 0.2075 0.1273 0.2403 0.6255 0.4946</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Item04 0.2222 0.1164 0.1775 0.4938 0.6437</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Item05 0.2706 0.2437 0.1293 0.4055 0.5550</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Item06 0.2010 0.1663 0.1325 0.5752 0.6824</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Item07 0.1665 0.2149 0.2151 0.5697 0.7015</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Item01 0.2241 0.2446 0.2168 0.6824 0.5129</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Item02 0.2285 0.3271 0.0699 0.5089 0.6470</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Item03 0.2103 0.1480 0.2371 0.6255 0.4946</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Item04 0.2091 0.1256 0.1715 0.4938 0.6437</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Item05 0.2583 0.2569 0.1249 0.4055 0.5550</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Item06 0.2030 0.2109 0.1366 0.5752 0.6824</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Item07 0.1724 0.2488 0.2060 0.5697 0.7015</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> P-values</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>           Rank1    Rank2   Rank3     Rank4     Rank5</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Item01 0.009647 0.023230 0.04786 7.219e-14 4.115e-12</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Item02 0.016210 0.001912 0.89320 8.502e-08 3.304e-19</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Item03 0.027130 0.444900 0.01964 1.122e-11 2.854e-11</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Item04 0.014620 0.524800 0.14560 2.346e-07 5.160e-19</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Item05 0.001375 0.020340 0.41380 4.673e-05 3.696e-14</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Item06 0.035020 0.206700 0.39160 6.724e-10 2.313e-21</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Item07 0.116500 0.054600 0.04786 1.029e-09 1.421e-22</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Item01 0.011730 0.027280 0.03980 7.219e-14 4.115e-12</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Item02 0.009577 0.000951 0.83400 8.502e-08 3.304e-19</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Item03 0.021440 0.340300 0.01900 1.122e-11 2.854e-11</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Item04 0.022540 0.491400 0.15750 2.346e-07 5.160e-19</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Item05 0.002176 0.017750 0.42970 4.673e-05 3.696e-14</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Item06 0.028930 0.078420 0.34690 6.724e-10 2.313e-21</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Item07 0.089390 0.023650 0.05734 1.029e-09 1.421e-22</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Category Proportions by Rank </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   Item01 (CA = Cat1)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         Cat1   Cat2   Cat3   Cat4</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Rank1 0.0986 0.2535 0.3803 0.2676</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Rank2 0.4182 0.2545 0.1636 0.1636</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Rank3 0.3860 0.1404 0.1930 0.2807</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Rank1 0.1096 0.2466 0.3836 0.2603</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Rank2 0.4118 0.2745 0.1373 0.1765</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Rank3 0.3898 0.1356 0.2034 0.2712</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Rank4 0.7609 0.0652 0.1087 0.0652</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Rank5 0.6338 0.1408 0.1268 0.0986</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   Item02 (CA = Cat1)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         Cat1   Cat2   Cat3   Cat4</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Rank1 0.1127 0.2113 0.3521 0.3239</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Rank2 0.4727 0.2000 0.1818 0.1455</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Rank3 0.2456 0.2632 0.2807 0.2105</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Rank1 0.1096 0.2055 0.3562 0.3288</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Rank2 0.4902 0.2157 0.1569 0.1373</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Rank3 0.2542 0.2542 0.2881 0.2034</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Rank4 0.6304 0.1522 0.1087 0.1087</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Rank5 0.7324 0.0423 0.0986 0.1268</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   Item03 (CA = Cat1)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         Cat1   Cat2   Cat3   Cat4</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Rank1 0.0986 0.3239 0.3099 0.2676</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Rank2 0.3273 0.2727 0.1818 0.2182</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Rank3 0.3158 0.1579 0.1404 0.3860</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Rank1 0.0959 0.3288 0.3014 0.2740</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Rank2 0.3529 0.2549 0.1961 0.1961</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Rank3 0.3051 0.1695 0.1356 0.3898</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Rank4 0.7174 0.1304 0.0870 0.0652</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Rank5 0.6197 0.1408 0.0986 0.1408</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   Item04 (CA = Cat1)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         Cat1   Cat2   Cat3   Cat4</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Rank1 0.0845 0.3239 0.2958 0.2958</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Rank2 0.2727 0.2909 0.1636 0.2727</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Rank3 0.2281 0.1404 0.3509 0.2807</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Rank1 0.0959 0.3288 0.2877 0.2877</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Rank2 0.2745 0.2745 0.1569 0.2941</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Rank3 0.2203 0.1525 0.3559 0.2712</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Rank4 0.6087 0.2174 0.0870 0.0870</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Rank5 0.7324 0.0986 0.0704 0.0986</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   Item05 (CA = Cat1)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         Cat1   Cat2   Cat3   Cat4</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Rank1 0.0563 0.2676 0.3099 0.3662</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Rank2 0.4182 0.2182 0.2364 0.1273</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Rank3 0.2456 0.3333 0.1754 0.2456</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Rank1 0.0685 0.2603 0.3014 0.3699</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Rank2 0.4118 0.2353 0.2549 0.0980</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Rank3 0.2542 0.3220 0.1695 0.2542</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Rank4 0.5435 0.0870 0.2174 0.1522</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Rank5 0.6620 0.1690 0.0845 0.0845</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   Item06 (CA = Cat1)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         Cat1   Cat2   Cat3   Cat4</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Rank1 0.1127 0.3380 0.3099 0.2394</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Rank2 0.3455 0.2727 0.1455 0.2364</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Rank3 0.1754 0.2281 0.2632 0.3333</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Rank1 0.1096 0.3425 0.3014 0.2466</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Rank2 0.3725 0.2745 0.1176 0.2353</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Rank3 0.1695 0.2203 0.2881 0.3220</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Rank4 0.6739 0.1087 0.1739 0.0435</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Rank5 0.7606 0.0563 0.1127 0.0704</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   Item07 (CA = Cat1)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         Cat1   Cat2   Cat3   Cat4</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Rank1 0.1268 0.2817 0.2817 0.3099</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Rank2 0.3636 0.2909 0.1091 0.2364</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Rank3 0.1754 0.3509 0.3333 0.1404</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Rank1 0.1233 0.2877 0.2740 0.3151</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Rank2 0.3922 0.2941 0.0980 0.2157</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Rank3 0.1695 0.3390 0.3390 0.1525</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Rank4 0.6739 0.1087 0.0652 0.1522</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Rank5 0.7746 0.0563 0.1127 0.0563</span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">da_bic</span>, items <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">6</span>, nc <span class="op">=</span> <span class="fl">3</span>, nr <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span></span>

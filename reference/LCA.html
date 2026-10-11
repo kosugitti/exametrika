@@ -11,7 +11,7 @@ and estimates both the class characteristics and individual membership probabili
 
     <a class="navbar-brand me-2" href="../index.html">exametrika</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -197,6 +197,27 @@ for members of that class.</p></dd>
 
 <dt>TestFitIndices</dt>
 <dd><p>Overall fit indices for the test. See also <code><a href="TestFit.html">TestFit</a></code>.</p></dd>
+
+<dt>elbo</dt>
+<dd><p>Evidence lower bound of the observed-data log-likelihood under the
+posterior memberships the EM produced. Exact (equal to the observed-data
+log-likelihood) for a one-mode model; a lower bound for biclustering, where
+the respondent and item posteriors are taken independent. Since 2.2.0.</p></dd>
+
+<dt>log_lik_marginal</dt>
+<dd><p>Observed-data log-likelihood of the respondent-side
+mixture with the items fixed at their MAP field assignment. Equal to
+<code>elbo</code> for a one-mode model.</p></dd>
+
+<dt>entropy</dt>
+<dd><p>Posterior entropy of the memberships (named: <code>class</code>,
+and <code>field</code> for biclustering). <code>elbo</code> minus this is the expected
+complete-data log-likelihood.</p></dd>
+
+<dt>ICL</dt>
+<dd><p>Integrated completed likelihood criterion (Biernacki, Celeux and
+Govaert, 2000) in its BIC-type approximation, on the same scale as AIC and
+BIC (-2 log scale, smaller is better).</p></dd>
 
 
 </dl></div>

@@ -176,12 +176,6 @@ BINET(
 
   Marginal bicluster reference matrix.
 
-- FRPIndex:
-
-  Index of FFP includes the item location parameters B and Beta, the
-  slope parameters A and Alpha, and the monotonicity indices C and
-  Gamma.
-
 - TRP:
 
   Test Reference Profile
@@ -558,35 +552,35 @@ print(result.BINET)
 #> Field12   0.000   0.223       1
 #>                               Class 1 Class 2 Class 3 Class 4 Class 5 Class 6
 #> Test Reference Profile          0.000   3.883   6.009  12.968   8.805  11.479
-#> Latent Class Ditribution        2.000  96.000  71.000  36.000  60.000  48.000
-#> Class Membership Dsitribution   1.986  82.318  86.009  37.289  61.103  44.277
+#> Latent Class Distribution       2.000  96.000  71.000  36.000  60.000  48.000
+#> Class Membership Distribution   1.986  82.318  86.009  37.289  61.103  44.277
 #>                               Class 7 Class 8 Class 9 Class 10 Class 11
 #> Test Reference Profile         14.301  17.457  19.527   23.527   20.386
-#> Latent Class Ditribution       44.000  28.000  35.000   18.000   36.000
-#> Class Membership Dsitribution  44.056  28.710  34.422   19.801   34.927
+#> Latent Class Distribution      44.000  28.000  35.000   18.000   36.000
+#> Class Membership Distribution  44.056  28.710  34.422   19.801   34.927
 #>                               Class 12 Class 13
 #> Test Reference Profile          27.185       35
-#> Latent Class Ditribution        26.000       15
-#> Class Membership Dsitribution   25.103       15
+#> Latent Class Distribution       26.000       15
+#> Class Membership Distribution   25.103       15
 #> 
 #> Model Fit Indices
-#>                Multigroup Model Saturated Moodel
-#> model_log_like -5782.556        -5782.556       
-#> bench_log_like -5891.314        0               
-#> null_log_like  -9862.114        -9862.114       
-#> model_Chi_sq   -217.517         11565.11        
-#> null_Chi_sq    7941.601         19724.23        
-#> model_df       1005             16895           
-#> null_df        1155             17045           
-#> NFI            1                0.4136596       
-#> RFI            1                0.4084539       
-#> IFI            1                1               
-#> TLI            1                1               
-#> CFI            1                1               
-#> RMSEA          0                0               
-#> AIC            -2227.517        -22224.89       
-#> CAIC           -7497.905        -110825.1       
-#> BIC            -6492.905        -93930.09       
+#>                Multigroup Model Saturated Model
+#> model_log_like -5782.556        -5782.556      
+#> bench_log_like -5891.314        0              
+#> null_log_like  -9862.114        -9862.114      
+#> model_Chi_sq   -217.517         11565.11       
+#> null_Chi_sq    7941.601         19724.23       
+#> model_df       1005             16895          
+#> null_df        1155             17045          
+#> NFI            1                0.4136596      
+#> RFI            1                0.4084539      
+#> IFI            1                1              
+#> TLI            1                1              
+#> CFI            1                1              
+#> RMSEA          0                0              
+#> AIC            -2227.517        -22224.89      
+#> CAIC           -7497.905        -110825.1      
+#> BIC            -6492.905        -93930.09      
 
 # Visualize different aspects of the model
 plot(result.BINET, type = "Array") # Show bicluster structure

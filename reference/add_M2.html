@@ -19,7 +19,7 @@ the square of the item count (see M2)."><meta property="og:image" content="https
 
     <a class="navbar-brand me-2" href="../index.html">exametrika</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -199,7 +199,7 @@ returning. See <code><a href="M2.html">M2</a></code>.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Test Profile</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                               Class 1 Class 2 Class 3</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Latent Class Ditribution      233.000 245.000 122.000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Latent Class Distribution     233.000 245.000 122.000</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Class Membership Distribution 231.324 244.059 124.617</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Model Fit Indices</span>
@@ -225,20 +225,28 @@ returning. See <code><a href="M2.html">M2</a></code>.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span> CAIC            31778.56</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> BIC             31598.56</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Variational Fit</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                      value</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ELBO             -15223.56</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> log_lik_marginal -15223.56</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> entropy_class        41.31</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ICL               31597.65</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Margin based (M2)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>             value</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> M2       3510.944</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> M2       3582.212</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> df       1591.000</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> p           0.000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> M2_null  9282.443</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> M2_null  9469.241</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> df_null  1710.000</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> n_margin 1770.000</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NFI         0.622</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> RFI         0.593</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> IFI         0.750</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> TLI         0.727</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> CFI         0.746</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> RMSEA       0.045</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> IFI         0.747</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> TLI         0.724</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> CFI         0.743</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> RMSEA       0.046</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   0.5% of the cells are missing: the margins use available cases and M2 is approximate.</span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">fit</span>, fit_indices <span class="op">=</span> <span class="st">"margin"</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Item Category Reference Profile</span>
@@ -326,7 +334,7 @@ returning. See <code><a href="M2.html">M2</a></code>.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Test Profile</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                               Class 1 Class 2 Class 3</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Latent Class Ditribution      233.000 245.000 122.000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Latent Class Distribution     233.000 245.000 122.000</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Class Membership Distribution 231.324 244.059 124.617</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Model Fit Indices</span>
@@ -335,18 +343,19 @@ returning. See <code><a href="M2.html">M2</a></code>.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Margin based (M2)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>             value</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> M2       3510.944</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> M2       3582.212</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> df       1591.000</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> p           0.000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> M2_null  9282.443</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> M2_null  9469.241</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> df_null  1710.000</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> n_margin 1770.000</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NFI         0.622</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> RFI         0.593</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> IFI         0.750</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> TLI         0.727</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> CFI         0.746</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> RMSEA       0.045</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> IFI         0.747</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> TLI         0.724</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> CFI         0.743</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> RMSEA       0.046</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   0.5% of the cells are missing: the margins use available cases and M2 is approximate.</span>
 <span class="r-in"><span><span class="co"># }</span></span></span>
 <span class="r-in"><span></span></span>
 </code></pre></div>

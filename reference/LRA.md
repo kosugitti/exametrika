@@ -46,7 +46,7 @@ LRA(
   nrank = 2,
   method = "isotonic",
   mic = FALSE,
-  maxiter = 100,
+  maxiter = 1000,
   trapezoidal = 0,
   alpha = 1,
   eps = 1e-04,
@@ -59,7 +59,7 @@ LRA(
   U,
   nrank = 2,
   mic = FALSE,
-  maxiter = 100,
+  maxiter = 1000,
   trapezoidal = 0,
   eps = 1e-04,
   minFreqRatio = 0,
@@ -239,6 +239,32 @@ A list of class "exametrika" and the specific subclass (e.g., "LRA",
   Overall fit indices for the test. See also
   [`TestFit`](https://kosugitti.github.io/exametrika/reference/TestFit.md).
 
+- elbo:
+
+  Evidence lower bound of the observed-data log-likelihood under the
+  posterior memberships the EM produced. Exact (equal to the
+  observed-data log-likelihood) for a one-mode model; a lower bound for
+  biclustering, where the respondent and item posteriors are taken
+  independent. Since 2.2.0.
+
+- log_lik_marginal:
+
+  Observed-data log-likelihood of the respondent-side mixture with the
+  items fixed at their MAP field assignment. Equal to `elbo` for a
+  one-mode model.
+
+- entropy:
+
+  Posterior entropy of the memberships (named: `class`, and `field` for
+  biclustering). `elbo` minus this is the expected complete-data
+  log-likelihood.
+
+- ICL:
+
+  Integrated completed likelihood criterion (Biernacki, Celeux and
+  Govaert, 2000) in its BIC-type approximation, on the same scale as AIC
+  and BIC (-2 log scale, smaller is better).
+
 Each subclass returns additional specific elements, detailed in their
 respective documentation.
 
@@ -316,6 +342,37 @@ includes:
 
   Response patterns across item categories and quantile groups.
 
+- log_lik:
+
+  Expected log-posterior at the final EM cycle, the quantity the EM
+  monitors; the observed-data log-likelihood is `elbo`.
+
+- elbo:
+
+  Evidence lower bound of the observed-data log-likelihood under the
+  posterior memberships the EM produced. Exact (equal to the
+  observed-data log-likelihood) for a one-mode model; a lower bound for
+  biclustering, where the respondent and item posteriors are taken
+  independent. Since 2.2.0.
+
+- log_lik_marginal:
+
+  Observed-data log-likelihood of the respondent-side mixture with the
+  items fixed at their MAP field assignment. Equal to `elbo` for a
+  one-mode model.
+
+- entropy:
+
+  Posterior entropy of the memberships (named: `class`, and `field` for
+  biclustering). `elbo` minus this is the expected complete-data
+  log-likelihood.
+
+- ICL:
+
+  Integrated completed likelihood criterion (Biernacki, Celeux and
+  Govaert, 2000) in its BIC-type approximation, on the same scale as AIC
+  and BIC (-2 log scale, smaller is better).
+
 For rated data (`LRA.rated`), the returned list additionally includes:
 
 - msg:
@@ -374,6 +431,37 @@ For rated data (`LRA.rated`), the returned list additionally includes:
 - CatQuant:
 
   Response patterns across item categories and quantile groups.
+
+- log_lik:
+
+  Expected log-posterior at the final EM cycle, the quantity the EM
+  monitors; the observed-data log-likelihood is `elbo`.
+
+- elbo:
+
+  Evidence lower bound of the observed-data log-likelihood under the
+  posterior memberships the EM produced. Exact (equal to the
+  observed-data log-likelihood) for a one-mode model; a lower bound for
+  biclustering, where the respondent and item posteriors are taken
+  independent. Since 2.2.0.
+
+- log_lik_marginal:
+
+  Observed-data log-likelihood of the respondent-side mixture with the
+  items fixed at their MAP field assignment. Equal to `elbo` for a
+  one-mode model.
+
+- entropy:
+
+  Posterior entropy of the memberships (named: `class`, and `field` for
+  biclustering). `elbo` minus this is the expected complete-data
+  log-likelihood.
+
+- ICL:
+
+  Integrated completed likelihood criterion (Biernacki, Celeux and
+  Govaert, 2000) in its BIC-type approximation, on the same scale as AIC
+  and BIC (-2 log scale, smaller is better).
 
 ## Binary Data Method
 

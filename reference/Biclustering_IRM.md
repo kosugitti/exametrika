@@ -265,6 +265,12 @@ An object of class "exametrika" containing the IRM results. See
   Overall fit index for the test.See also
   [TestFit](https://kosugitti.github.io/exametrika/reference/TestFit.md)
 
+- elbo, log_lik_marginal, entropy, ICL:
+
+  Variational fit quantities on the final assignment, as for
+  [`Biclustering`](https://kosugitti.github.io/exametrika/reference/Biclustering.md).
+  Since 2.2.0.
+
 For nominal data, the returned list includes:
 
 - Q:
@@ -333,7 +339,33 @@ For nominal data, the returned list includes:
 
 - log_lik:
 
-  Log-likelihood of the model.
+  Evidence lower bound of the model (equal to `elbo`).
+
+- elbo:
+
+  Evidence lower bound of the observed-data log-likelihood under the
+  posterior memberships the EM produced. Exact (equal to the
+  observed-data log-likelihood) for a one-mode model; a lower bound for
+  biclustering, where the respondent and item posteriors are taken
+  independent. Since 2.2.0.
+
+- log_lik_marginal:
+
+  Observed-data log-likelihood of the respondent-side mixture with the
+  items fixed at their MAP field assignment. Equal to `elbo` for a
+  one-mode model.
+
+- entropy:
+
+  Posterior entropy of the memberships (named: `class`, and `field` for
+  biclustering). `elbo` minus this is the expected complete-data
+  log-likelihood.
+
+- ICL:
+
+  Integrated completed likelihood criterion (Biernacki, Celeux and
+  Govaert, 2000) in its BIC-type approximation, on the same scale as AIC
+  and BIC (-2 log scale, smaller is better).
 
 For ordinal data, the returned list includes:
 
@@ -418,7 +450,33 @@ For ordinal data, the returned list includes:
 
 - log_lik:
 
-  Log-likelihood of the model.
+  Evidence lower bound of the model (equal to `elbo`).
+
+- elbo:
+
+  Evidence lower bound of the observed-data log-likelihood under the
+  posterior memberships the EM produced. Exact (equal to the
+  observed-data log-likelihood) for a one-mode model; a lower bound for
+  biclustering, where the respondent and item posteriors are taken
+  independent. Since 2.2.0.
+
+- log_lik_marginal:
+
+  Observed-data log-likelihood of the respondent-side mixture with the
+  items fixed at their MAP field assignment. Equal to `elbo` for a
+  one-mode model.
+
+- entropy:
+
+  Posterior entropy of the memberships (named: `class`, and `field` for
+  biclustering). `elbo` minus this is the expected complete-data
+  log-likelihood.
+
+- ICL:
+
+  Integrated completed likelihood criterion (Biernacki, Celeux and
+  Govaert, 2000) in its BIC-type approximation, on the same scale as AIC
+  and BIC (-2 log scale, smaller is better).
 
 - SOACflg:
 
@@ -530,7 +588,33 @@ For rated data, the returned list includes:
 
 - log_lik_nominal:
 
-  Log-likelihood of the nominal layer model.
+  Evidence lower bound of the nominal layer model.
+
+- elbo_nominal:
+
+  Evidence lower bound of the observed-data log-likelihood under the
+  posterior memberships the EM produced. Exact (equal to the
+  observed-data log-likelihood) for a one-mode model; a lower bound for
+  biclustering, where the respondent and item posteriors are taken
+  independent. Since 2.2.0. Computed on the nominal layer.
+
+- log_lik_marginal_nominal:
+
+  Observed-data log-likelihood of the respondent-side mixture with the
+  items fixed at their MAP field assignment. Equal to `elbo` for a
+  one-mode model.
+
+- entropy_nominal:
+
+  Posterior entropy of the memberships (named: `class`, and `field` for
+  biclustering). `elbo` minus this is the expected complete-data
+  log-likelihood.
+
+- ICL_nominal:
+
+  Integrated completed likelihood criterion (Biernacki, Celeux and
+  Govaert, 2000) in its BIC-type approximation, on the same scale as AIC
+  and BIC (-2 log scale, smaller is better).
 
 - SOACflg:
 
@@ -565,14 +649,14 @@ plot(result, type = "Array")
 # \donttest{
 # Fit a nominal Biclustering IRM model
 result <- Biclustering_IRM(J20S600, gamma_c = 1, gamma_f = 1, verbose = TRUE)
-#> iter 1: match=0 nfld=6 ncls=6
-#> iter 2: match=0 nfld=4 ncls=6
+#> iter 1: match=0 nfld=7 ncls=5
+#> iter 2: match=0 nfld=4 ncls=9
 #> iter 3: match=1 nfld=4 ncls=7
 #> iter 4: match=2 nfld=4 ncls=7
-#> iter 5: match=3 nfld=4 ncls=5
-#> iter 6: match=4 nfld=4 ncls=6
+#> iter 5: match=3 nfld=4 ncls=7
+#> iter 6: match=4 nfld=4 ncls=7
 #> iter 7: match=5 nfld=4 ncls=6
-#> Adjusting classes: BIC=28686.8 ncls=6 (min size < 20)
+#> Adjusting classes: BIC=28653.8 ncls=6 (min size < 20)
 plot(result, type = "Array")
 
 # }
@@ -593,14 +677,15 @@ plot(result, type = "Array")
 # \donttest{
 # Fit a rated Biclustering IRM model
 result <- Biclustering_IRM(J21S300, gamma_c = 1, gamma_f = 1, verbose = TRUE)
-#> iter 1: match=0 nfld=5 ncls=4
-#> iter 2: match=0 nfld=3 ncls=6
-#> iter 3: match=1 nfld=3 ncls=7
-#> iter 4: match=2 nfld=3 ncls=6
-#> iter 5: match=3 nfld=3 ncls=7
-#> iter 6: match=4 nfld=3 ncls=5
-#> iter 7: match=5 nfld=3 ncls=6
-#> Adjusting classes: BIC=14584.5 ncls=6 (min size < 20)
+#> iter 1: match=0 nfld=11 ncls=7
+#> iter 2: match=0 nfld=6 ncls=9
+#> iter 3: match=0 nfld=5 ncls=7
+#> iter 4: match=0 nfld=3 ncls=6
+#> iter 5: match=1 nfld=3 ncls=5
+#> iter 6: match=2 nfld=3 ncls=6
+#> iter 7: match=3 nfld=3 ncls=5
+#> iter 8: match=4 nfld=3 ncls=4
+#> iter 9: match=5 nfld=3 ncls=4
 #> 
 #> Weakly ordinal alignment condition was satisfied.
 plot(result, type = "Array")

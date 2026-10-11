@@ -153,7 +153,7 @@ ItemStatistics(J15S500)
 ``` r
 
 CTT(J15S500)
-#> Realiability
+#> Reliability
 #>                 name value
 #> 1  Alpha(Covariance) 0.625
 #> 2         Alpha(Phi) 0.630

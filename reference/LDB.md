@@ -103,9 +103,9 @@ LDB(
 
   A character string indicating the model type.
 
-- n_class:
+- n_rank:
 
-  Optimal number of classes.
+  Number of latent ranks.
 
 - n_field:
 
@@ -515,8 +515,8 @@ print(result.LDB)
 #> Field10     4 0.291    5 0.377     0 0
 #>                               Rank 1  Rank 2  Rank 3 Rank 4 Rank 5
 #> Test Reference Profile         4.915   8.744  13.657 18.867 26.488
-#> Latent Rank Ditribution      163.000  91.000 102.000 91.000 68.000
-#> Rank Membership Dsitribution 148.275 103.002 105.606 86.100 72.017
+#> Latent Rank Distribution     163.000  91.000 102.000 91.000 68.000
+#> Rank Membership Distribution 148.275 103.002 105.606 86.100 72.017
 #> 
 #> Latent Field Distribution
 #>            Field 1 Field 2 Field 3 Field 4 Field 5 Field 6 Field 7 Field 8

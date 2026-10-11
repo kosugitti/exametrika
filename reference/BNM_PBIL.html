@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">exametrika</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -196,53 +196,50 @@ Intelligence and Interactive Multimedia, 3, 7–13. DOI: 10.9781/ijimai.2014.311
 <span class="r-in"><span>  alpha <span class="op">=</span> <span class="fl">0.05</span>, <span class="co"># Learning rate for probability update</span></span></span>
 <span class="r-in"><span>  estimate <span class="op">=</span> <span class="fl">4</span> <span class="co"># Use rounded generational gene method</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>Too many survivers. Limit to 5</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Adjacency Matrix</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>        Item01 Item02 Item03 Item04 Item05</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Item01      0      0      0      1      0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Item01      0      0      0      0      0</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Item02      0      0      0      0      0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Item03      1      0      0      0      0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Item03      0      0      0      0      0</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Item04      0      0      0      0      0</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Item05      0      0      0      0      0</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Your graph is an acyclic graph."</span>
 <span class="r-plt img"><img src="BNM_PBIL-1.png" alt="" width="700" height="433"></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Parameter Learning</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>        PIRP 1 PIRP 2</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Item01    0.0  0.667</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Item02    0.4       </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Item03    0.9       </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Item04    0.0  0.500</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Item05    0.4       </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        PIRP 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Item01    0.6</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Item02    0.4</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Item03    0.9</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Item04    0.3</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Item05    0.4</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Conditional Correct Response Rate</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   Child Item N of Parents Parent Items       PIRP Conditional CRR</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1     Item01            1       Item03          0           0.000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2     Item01            1       Item03          1           0.667</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3     Item02            0   No Parents No Pattern           0.400</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4     Item03            0   No Parents No Pattern           0.900</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5     Item04            1       Item01          0           0.000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6     Item04            1       Item01          1           0.500</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 7     Item05            0   No Parents No Pattern           0.400</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1     Item01            0   No Parents No Pattern           0.600</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2     Item02            0   No Parents No Pattern           0.400</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3     Item03            0   No Parents No Pattern           0.900</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4     Item04            0   No Parents No Pattern           0.300</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5     Item05            0   No Parents No Pattern           0.400</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Model Fit Indices</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                  value</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> model_log_like -26.599</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> model_log_like -29.550</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> bench_log_like  -8.935</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> null_log_like  -28.882</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> model_Chi_sq    35.327</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> model_Chi_sq    41.229</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> null_Chi_sq     39.894</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> model_df        23.000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> model_df        25.000</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> null_df         25.000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> NFI              0.114</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> RFI              0.037</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> IFI              0.270</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> TLI              0.100</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> CFI              0.172</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> RMSEA            0.244</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> AIC            -10.673</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> CAIC           -40.633</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> BIC            -17.633</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> NFI              0.000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> RFI              0.000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> IFI              0.000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> TLI              0.000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> CFI              0.000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> RMSEA            0.269</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> AIC             -8.771</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> CAIC           -41.335</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> BIC            -16.335</span>
 <span class="r-in"><span><span class="co"># }</span></span></span>
 </code></pre></div>
     </div>

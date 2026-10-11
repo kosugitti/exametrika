@@ -145,7 +145,7 @@ LDLRA(
 
   Correct Response Rate tables
 
-- Studens:
+- Students:
 
   Student information. It includes estimated class membership,
   probability of class membership, RUO, and RDO.

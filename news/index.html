@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">exametrika</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -34,9 +34,110 @@
     </div>
 
     <div class="section level2">
+<h2 class="pkg-version" data-toc-text="2.2.0" id="exametrika-220-development">exametrika 2.2.0 (development)<a class="anchor" aria-label="anchor" href="#exametrika-220-development"></a></h2>
+<div class="section level3">
+<h3 id="model-comparison-evidence-lower-bound-marginal-likelihood-entropy-icl-2-2-0">Model comparison: evidence lower bound, marginal likelihood, entropy, ICL<a class="anchor" aria-label="anchor" href="#model-comparison-evidence-lower-bound-marginal-likelihood-entropy-icl-2-2-0"></a></h3>
+<p>Every latent class, latent rank and biclustering fit now carries four additional quantities for model comparison (<code>elbo</code>, <code>log_lik_marginal</code>, <code>entropy</code>, <code>ICL</code>; rated models report the nominal layer with the suffix <code>_nominal</code>). Their definitions are documented in the return value of each function and in <code>R/00_VariationalFit.R</code>:</p>
+<ul><li>
+<code>elbo</code> is the evidence lower bound of the observed-data log-likelihood under the posterior memberships the EM produced. For a one-mode model (LCA, LRA) the posterior is exact and this is the observed-data log-likelihood itself; for biclustering the respondent and item posteriors are taken independent and the value is a lower bound.</li>
+<li>
+<code>log_lik_marginal</code> is the observed-data log-likelihood of the respondent-side mixture with the items fixed at their MAP field assignment.</li>
+<li>
+<code>entropy</code> is the posterior entropy of the memberships. <code>elbo</code> minus the entropy is the expected complete-data log-likelihood.</li>
+<li>
+<code>ICL</code> is the integrated completed likelihood criterion (Biernacki, Celeux and Govaert, 2000) in the BIC-type approximation used for the latent block model by Keribin, Brault, Celeux and Govaert (2015), on the same scale as AIC and BIC here (smaller is better).</li>
+</ul></div>
+<div class="section level3">
+<h3 id="breaking-change-nominal-and-ordinal-biclustering-report-the-elbo-2-2-0">Breaking change: nominal and ordinal biclustering report the ELBO<a class="anchor" aria-label="anchor" href="#breaking-change-nominal-and-ordinal-biclustering-report-the-elbo-2-2-0"></a></h3>
+<p><strong>The <code>log_lik</code> of <code><a href="../reference/Biclustering.html">Biclustering()</a></code> and <code><a href="../reference/Biclustering_IRM.html">Biclustering_IRM()</a></code> on nominal and ordinal data, and the AIC, BIC and CAIC built on it, change.</strong> Up to 2.1.0 these reported <code>sum_sj log sum_fc m_jf m_sc pi_fcq</code>: the probability of each observed cell under a mixture of the block probabilities weighted by that respondent’s and that item’s posterior memberships. That is the likelihood of a mixed-membership model with the memberships plugged in as free parameters, not of the mixture model being fitted, and it is not the quantity the EM ascends. Because the plugged-in memberships are never counted in the penalty, BIC on this quantity favours more blocks the larger the sample, which is what a simulation study of the grid search showed (over-selection of the number of classes rising with the number of respondents). The reported value is now the evidence lower bound, which the EM also monitors for convergence. The binary implementation keeps the expected log-likelihood of the reference implementation (Shojima, 2022) as its <code>log_lik</code>; the new fields are added alongside it there, so its fit indices are unchanged.</p>
+<p>Consequences for ordinal and nominal data:</p>
+<ul><li>
+<code>log_lik</code>, <code>TestFitIndices$model_log_like</code>, <code>AIC</code>, <code>CAIC</code>, <code>BIC</code> and the chi-square based indices of <code><a href="../reference/Biclustering.html">Biclustering()</a></code> and <code><a href="../reference/Biclustering_IRM.html">Biclustering_IRM()</a></code> take different values.</li>
+<li>The EM stops at a slightly different point (the bound is monitored at a relative tolerance of 1e-8), so memberships and profiles can move in the last digits.</li>
+<li>The <code>verbose</code> trace prints <code>elbo</code> instead of <code>log_lik</code>.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="missing-data-one-convention-and-the-places-that-broke-it-2-2-0">Missing data: one convention, and the places that broke it<a class="anchor" aria-label="anchor" href="#missing-data-one-convention-and-the-places-that-broke-it-2-2-0"></a></h3>
+<p><code><a href="../reference/dataFormat.html">dataFormat()</a></code> now stores a missing cell as <strong>0 in <code>U</code></strong> (binary and rated data) and keeps the indicator in <code>Z</code>; <code>Q</code> (polytomous data) still carries -1. Until 2.1.0 <code>U</code> held -1 for a missing cell, and every routine that summed <code>U</code> without masking it by <code>Z</code> counted each missing cell as <em>minus one correct response</em>. The audit before this release found that in the binary LCA and LRA cores (<code>emclus()</code>, <code>emclus_isotonic()</code>, <code>somclus()</code>, <code>item_log_lik()</code>), in <code><a href="../reference/BNM.html">BNM()</a></code>, <code><a href="../reference/LDLRA.html">LDLRA()</a></code>, <code><a href="../reference/LDB.html">LDB()</a></code> and <code><a href="../reference/BINET.html">BINET()</a></code>, and in the quantile reference of rated <code><a href="../reference/LRA.html">LRA()</a></code>. With the new convention those sums are right by construction. Independently of the sentinel, the following counted a missing cell as an <em>incorrect</em> response or divided by the wrong count and are corrected:</p>
+<ul><li>
+<code><a href="../reference/ItemFit.html">ItemFit()</a></code>, <code><a href="../reference/TestFit.html">TestFit()</a></code> and <code><a href="../reference/TestFitSaturated.html">TestFitSaturated()</a></code> weighted the null model by the number of respondents instead of the number of responses, and the benchmark model took “group size minus correct” as the incorrect count. With missing data the chi-squares came out too large (or negative for IRT); every model’s NFI…RMSEA and chi-square based AIC/BIC on such data change.</li>
+<li>
+<code>LRA(method = "SOM")</code> did not receive <code>Z</code> at all; its C++ epoch now skips missing cells in both the winner search and the update.</li>
+<li>
+<code><a href="../reference/LDB.html">LDB()</a></code> counted the field size, not the number of observed items per field.</li>
+<li>
+<code><a href="../reference/StudentAnalysis.html">StudentAnalysis()</a></code> reported the number of items, not of responses, as NR.</li>
+<li>
+<code><a href="../reference/Biclustering.html">Biclustering()</a></code> on rated data ordered the ranks by correct responses per respondent rather than per observed response, which inverted the order when missing cells were unevenly spread across classes.</li>
+<li>The “Observed” block of <code>BFRP</code> in ordinal biclustering and IRM averaged over all cells, counting a missing cell as category 0.</li>
+<li>
+<code><a href="../reference/M2.html">M2()</a></code> divided the observed margins by the full sample size; with missing data every margin of an item was deflated by its response rate and M2 was systematically inflated (20% MCAR from a true model gave p = 0 every time). Margins now use available cases, and <code>caveat</code> says so when data are missing.</li>
+<li>
+<code><a href="../reference/LRA.html">LRA()</a></code> on rated data with <code>minFreqRatio &gt; 0</code> put missing cells into the collapsed category.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="estimation-bugs-found-in-the-pre-release-audit-2-2-0">Estimation bugs found in the pre-release audit<a class="anchor" aria-label="anchor" href="#estimation-bugs-found-in-the-pre-release-audit-2-2-0"></a></h3>
+<ul><li>
+<strong>Ordinal <code>LRA(method = "GTM")</code> flipped the direction of the ranks on almost every cycle</strong>: the orientation test compared two boundary rows instead of the first and last rank columns, so whether the result came out ascending or descending depended on the number of EM cycles (the convergence tolerance). The isotonic default was unaffected.</li>
+<li>
+<strong><code><a href="../reference/BNM.html">BNM()</a></code>, <code><a href="../reference/BNM_GA.html">BNM_GA()</a></code>, <code><a href="../reference/BNM_PBIL.html">BNM_PBIL()</a></code>, <code><a href="../reference/LDLRA.html">LDLRA()</a></code> and <code><a href="../reference/LDLRA_PBIL.html">LDLRA_PBIL()</a></code> fitted a different graph than the one given whenever the item labels were not in alphabetical order</strong>: the adjacency matrix was reordered alphabetically while the data were read by position. With labels such as <code>Item1 ... Item15</code> or <code>Q1 ... Q12</code> the parents of an item were attached to another item. The matrix now stays in item-label order. <code><a href="../reference/LDLRA_PBIL.html">LDLRA_PBIL()</a></code> in addition evaluated its candidates by position but returned them by name, so the fitted DAG was not the one the search had scored; both now use the same interpretation. It also ignored <code>method</code>, <code>beta1</code> and <code>beta2</code> for the final fit and failed when <code>filename</code> was given.</li>
+<li>
+<code><a href="../reference/LCA.html">LCA()</a></code> on rated data looked up the keyed category by its raw code; with 0-based or gappy codes <code>IRP</code>, <code>TRP</code> and the binary-layer fit indices came from another category.</li>
+<li>
+<code><a href="../reference/ItemStatistics.html">ItemStatistics()</a></code> on ordinal data with 0-based or gappy codes (such as the bundled <code>J15S3810</code>) returned wrong thresholds, entropies and item-total correlations because <code><a href="https://rdrr.io/r/base/tabulate.html" class="external-link">tabulate()</a></code> skips code 0.</li>
+<li>
+<code><a href="../reference/ItemStatistics.html">ItemStatistics()</a></code> and <code><a href="../reference/InterItemAnalysis.html">InterItemAnalysis()</a></code> stopped on rated data (<code>J35S5000</code>).</li>
+<li>
+<code>GridSearch(fun = "LRA")</code> passed <code>ncls</code> where <code><a href="../reference/LRA.html">LRA()</a></code> expects <code>nrank</code>, so every cell was fitted with two ranks and “2” was always optimal. The grid can now also be searched on <code>ICL</code>, <code>elbo</code> and <code>log_lik_marginal</code>.</li>
+<li>
+<code><a href="../reference/M2.html">M2()</a></code> on an ordinal <code><a href="../reference/LRA.html">LRA()</a></code> fit compared the observed categories by raw code against profiles in remapped order, giving wrong values for 0-based codes.</li>
+<li>
+<code><a href="../reference/MutualInformation.html">MutualInformation()</a></code> returned NaN for an empty cell (0 log 0).</li>
+<li>Nominal <code><a href="../reference/LCA.html">LCA()</a></code>, <code><a href="../reference/Biclustering.html">Biclustering()</a></code> and the EM of <code><a href="../reference/Biclustering_IRM.html">Biclustering_IRM()</a></code> with <code>alpha &lt; 1</code> produced negative probabilities; the MAP numerator is now clamped and renormalised as in the ordinal M-step.</li>
+<li>Nominal <code><a href="../reference/LCA.html">LCA()</a></code>, ordinal and rated <code><a href="../reference/LRA.html">LRA()</a></code>, and all <code><a href="../reference/Biclustering.html">Biclustering()</a></code> EMs ran <code>maxiter + 1</code> cycles and reported that count.</li>
+<li>Ordinal and rated <code><a href="../reference/LRA.html">LRA()</a></code> stopped when a score quantile group had a single respondent, or when every item had two categories (a dimension was dropped by indexing). Rated <code><a href="../reference/LRA.html">LRA()</a></code>’s default <code>maxiter</code> is now 1000, as elsewhere.</li>
+<li>
+<code><a href="../reference/GRM.html">GRM()</a></code> built its item fit from the EAP-plugged likelihood, which is not nested in the benchmark and gave negative chi-squares even without missing data; it now uses the expected log-likelihood under the posterior, as <code><a href="../reference/IRT.html">IRT()</a></code> does. It also warns when the optimiser did not converge, and its C++ score function no longer underflows on long tests.</li>
+<li>
+<code><a href="../reference/OmegaCoefficient.html">OmegaCoefficient()</a></code> started from random loadings: with three items it stopped nine times out of ten with an empty error message, and otherwise returned a different value on every call. It starts from the first principal component and warns instead of stopping.</li>
+<li>
+<code><a href="../reference/IRT.html">IRT()</a></code> validates <code>model</code> (2, 3 or 4) instead of failing obscurely, and stops rather than silently reusing the previous item’s parameters when the optimiser fails for an item.</li>
+<li>
+<code><a href="../reference/Biclustering.html">Biclustering()</a></code> on rated data failed with <code>conf</code> or <code>conf_class</code> because it ignored the class and field counts the nominal fit had derived from them.</li>
+<li>Binary <code><a href="../reference/Biclustering_IRM.html">Biclustering_IRM()</a></code> failed when no class fell below <code>minSize</code> (<code>EMt</code> undefined), nominal <code><a href="../reference/Biclustering_IRM.html">Biclustering_IRM()</a></code> failed when the modal categories were not exactly 1..k, and all three IRMs failed obscurely when every class was below <code>minSize</code> (they now stop at one class with a warning).</li>
+<li>
+<code>mic = TRUE</code> in ordinal biclustering reordered the reference profiles without the memberships, so a class column no longer described the same respondents; both are permuted together (and nothing is reordered under <code>conf_class</code>). In ordinal IRM the same fix stops the EM from terminating on the reordering cycle.</li>
+<li>
+<code><a href="../reference/LDLRA.html">LDLRA()</a></code> with <code>beta1 = beta2 = 1</code> stopped whenever some parent pattern was unobserved; such cells are now excluded. An adjacency matrix without dimnames is accepted (taken in item-label order) instead of silently losing every edge. <code><a href="../reference/BNM_PBIL.html">BNM_PBIL()</a></code> and <code><a href="../reference/LDLRA_PBIL.html">LDLRA_PBIL()</a></code> no longer halve the number of survivors with a warning on every call, run exactly <code>maxGeneration</code> generations, and <code><a href="../reference/LDLRA_PBIL.html">LDLRA_PBIL()</a></code> keeps the stored fitness of its elites aligned after sorting. <code><a href="../reference/LDLRA_PBIL.html">LDLRA_PBIL()</a></code> rejects an unknown <code>method</code>.</li>
+<li>
+<code><a href="../reference/dataFormat.html">dataFormat()</a></code>: a numeric ID column that is unique in every row is taken as an ID; character response columns (a missing-value symbol in a CSV column) are converted to numeric; <code>na</code> may be a vector; <code>Z</code> may be a data frame; factor columns keep only their observed levels, their labels stay in item order when mixed with numeric columns, and the labels of an excluded item are dropped with it. <code><a href="../reference/longdataFormat.html">longdataFormat()</a></code> returns one label vector per item, so <code><a href="../reference/LCA.html">LCA()</a></code> runs on its output.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="bug-fixes-2-2-0">Bug Fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-2-2-0"></a></h3>
+<ul><li>
+<code><a href="https://rdrr.io/r/base/print.html" class="external-link">print()</a></code> of a rated <code><a href="../reference/LCA.html">LCA()</a></code> result that had been through <code><a href="../reference/add_M2.html">add_M2()</a></code> stopped with “non-numeric argument to mathematical function”: the M2 block carries a character <code>caveat</code> field that was rounded along with the numbers.</li>
+<li>
+<code>plot(type = "IRP", items = &lt;one item&gt;)</code> stopped with “argument is of length zero” for LCA, LRA and LDLRA, because a single row of the profile matrix dropped to a vector. With several items the panel titles counted 1, 2, … instead of naming the items plotted; they now show the item labels.</li>
+<li>
+<code><a href="https://rdrr.io/r/base/print.html" class="external-link">print()</a></code> of a <code><a href="../reference/BNM.html">BNM()</a></code> fit with an unobserved parent pattern turned the “NaN(0/0)” marker into <code>NA</code> with a coercion warning.</li>
+<li>
+<code>plot(type = "FCRP")</code> and <code>plot(type = "FCBR")</code> failed with “figure margins too large” at the default <code>nc = 1</code> once a fit had more than a handful of fields, which an IRM fit decides from the data. The columns now default to a near-square layout when <code>nc</code> is left at 1 and more than three fields are drawn; <code>nr</code> is honoured when given.</li>
+<li>
+<code>plot(items = 0)</code> is now rejected outside IRT and GRM, where 0 selects the test-level curve; elsewhere it indexed past the first item.</li>
+<li>Binary <code><a href="../reference/Biclustering_IRM.html">Biclustering_IRM()</a></code> now carries <code>elbo</code>, <code>log_lik_marginal</code>, <code>entropy</code> and <code>ICL</code> like the other biclustering fits (its assignments are hard, so the entropy is zero).</li>
+<li>Spelling in printed headings (“Ditribution”, “Realiability”, “Saturated Moodel”, “Rateio”).</li>
+</ul></div>
+<div class="section level3">
+<h3 id="other-2-2-0">Other<a class="anchor" aria-label="anchor" href="#other-2-2-0"></a></h3>
+<ul><li>
+<code><a href="https://rdrr.io/r/base/print.html" class="external-link">print()</a></code> of these fits shows a “Variational Fit” block.</li>
+<li>
+<code><a href="../reference/LRA.html">LRA()</a></code> on ordinal and rated data now returns <code>log_lik</code> at the top level, and evaluates it (and <code>TestFitIndices$model_log_like</code>) at the returned estimates. It used to be the value computed inside the last EM cycle <em>before</em> that cycle’s M-step, i.e. one iterate behind the profiles the object carries; the two now describe the same state. The difference is of the order of the convergence tolerance (about 2 log-likelihood units on <code>J15S3810</code>).</li>
+</ul></div>
+</div>
+    <div class="section level2">
 <h2 class="pkg-version" data-toc-text="2.1.0" id="exametrika-210">exametrika 2.1.0<a class="anchor" aria-label="anchor" href="#exametrika-210"></a></h2><p class="text-muted">CRAN release: 2026-09-24</p>
 <p>A minor release. The estimates returned by <code>LRA(method = "SOM")</code> change, so the fixes below could not ship as a patch. They came out of reading the R code against the Mathematica routine it was ported from (<code>Module_LRA.wl</code>): the port had grown a <code>seed</code> argument and a convergence report that the original never had, and had moved the monotonicity sort to the end of each epoch.</p>
-<p>Released on GitHub first; the CRAN submission follows once the one-month cadence since 2.0.0 (accepted 2026-08-20) has passed.</p>
 <div class="section level3">
 <h3 id="bug-fixes-2-1-0">Bug Fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-2-1-0"></a></h3>
 <ul><li><p><strong>Ordinal biclustering rolled back only half of its state.</strong> When an EM sweep failed to improve the likelihood, <code><a href="../reference/Biclustering.html">Biclustering()</a></code> on ordinal data restored the category reference array <code>BCRM</code> but left the boundary array <code>BBRM</code> at the rejected values. The two are then one iteration apart, and since <code>test_log_lik</code> is computed from <code>BCRM</code> while the shape-restricted parameter count is read off <code>BBRM</code>, the reported <code>nparam</code>, <code>df</code>, <code>AIC</code>, <code>BIC</code> and <code>CAIC</code> could describe a different iterate than the likelihood does. It affects <code>method = "R"</code> with <code>estimation = "isotonic"</code> only; the other branches derive the count from the filter matrix or the rank and field counts instead, and the binary implementation rolls back the array it later reads. Both arrays are now saved and restored together. In practice the rejected sweep differs from the accepted one by around 1e-10 by the time the branch is reached, so the counted number of distinct boundary levels – and hence every figure above – came out unchanged in the cases tested; the fix removes the inconsistency rather than a visible error.</p></li>

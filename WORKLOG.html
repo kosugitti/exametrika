@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="index.html">exametrika</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -2581,6 +2581,107 @@ rhub / win-devel               本日の版で流し直し中</code></pre>
 <ul><li>NEWS の 2.1.0 節の記述を直す(次の版で)</li>
 <li>2.2.0 = SOAC/WOAC 判定を model_esp 側へ＋<code>TRP_empirical</code> 併記＋<code><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict()</a></code>
 </li>
+</ul></div>
+</div>
+<div class="section level2">
+<h2 id="id_2026-09-29-r-journal論文の追試の報告degenfellner氏">2026-09-29 R Journal論文の追試の報告(Degenfellner氏)<a class="anchor" aria-label="anchor" href="#id_2026-09-29-r-journal%E8%AB%96%E6%96%87%E3%81%AE%E8%BF%BD%E8%A9%A6%E3%81%AE%E5%A0%B1%E5%91%8Adegenfellner%E6%B0%8F"></a></h2>
+<ul><li>Jürgen Degenfellner(ZHAW)から，R Journal論文(RJ-2026-023・18/2)の<code>appendix.Rmd</code>をR 4.6.1で再実行した報告。<strong>1.6.1なら付録の小数4桁以上の数値614個とLRAの例(Item01ランク1=0.5850570・logLik=-3857.982)が全部一致</strong>，<strong>2.1.0では68個しか一致しない</strong>。論文に版の明記が無いとの指摘も。メール後半はJournal of Reproducible Statistics(FAIR Press Journals GmbH・スイスの営利会社・APC CHF 1,000)への投稿勧誘</li>
+<li>原因は2つで入った時期が違う:
+<ul><li>
+<strong>小さなデータで止まる</strong>=<code>R/01_dataFormat.R</code> 75行の<code>stop("Data must have at least 10 rows ...")</code>。コミット<code>90ab45d2</code>(2025-09-29)で入り，<strong>CRAN版では1.6.5から</strong>
+</li>
+<li>
+<strong>LRAの数値が変わる</strong>=<code>LRA.binary</code>の既定<code>method</code>が<strong>2.0.0で”GTM”→“isotonic”</strong>
+</li>
+</ul></li>
+<li>手元で確認: <strong>2.1.0で<code>method = "GTM"</code>を指定しても論文値に完全には戻らない</strong>(Item01=0.5884193・logLik=-3855.181)。2.x系の反復上限・収束判定の修正の影響とみられる。<strong>論文の数値を正確に再現できるのは1.6.1だけ</strong>
+</li>
+<li>返信をGmailに下書き保存(お礼・原因の説明・<code>remotes::install_version("exametrika", "1.6.1")</code>・GTMは今も選べる・10行チェックは1.6.5から・ドキュメントに再現手順を足す予定・10行チェックの警告化を検討)。勧誘には触れない。<strong>送信は本人</strong>(荘島先生への連絡の要否も本人判断)</li>
+</ul><div class="section level3">
+<h3 id="次220に追加">次(2.2.0に追加)<a class="anchor" aria-label="anchor" href="#%E6%AC%A1220%E3%81%AB%E8%BF%BD%E5%8A%A0"></a></h3>
+<ul><li>
+<strong>10行未満の<code><a href="https://rdrr.io/r/base/stop.html" class="external-link">stop()</a></code>を<code><a href="https://rdrr.io/r/base/warning.html" class="external-link">warning()</a></code>に緩めるか検討</strong>(小さな例が止まるのは後方互換を壊している)</li>
+<li><strong>READMEかvignetteに「R Journal論文を再現するには1.6.1を使う」旨を追記</strong></li>
+<li><strong>(追記) 返信は9/29夜に本人が送信済み</strong></li>
+</ul></div>
+</div>
+<div class="section level2">
+<h2 id="id_2026-10-09-220-elbo行側周辺尤度エントロピーicl-の実装a3-の点検から派生">2026-10-09 2.2.0: ELBO・行側周辺尤度・エントロピー・ICL の実装(A3 の点検から派生)<a class="anchor" aria-label="anchor" href="#id_2026-10-09-220-elbo%E8%A1%8C%E5%81%B4%E5%91%A8%E8%BE%BA%E5%B0%A4%E5%BA%A6%E3%82%A8%E3%83%B3%E3%83%88%E3%83%AD%E3%83%94%E3%83%BCicl-%E3%81%AE%E5%AE%9F%E8%A3%85a3-%E3%81%AE%E7%82%B9%E6%A4%9C%E3%81%8B%E3%82%89%E6%B4%BE%E7%94%9F"></a></h2>
+<p>A3 のシミュレーション点検で，多値バイクラの <code>log_lik</code> が <code>Σ_sj log Σ_fc m_jf m_sc π_fcq</code>(log の中でメンバーシップを混ぜる＝混合メンバーシップ型の 尤度に S(C−1)+J(F−1) 個の付随パラメタを罰則なしで入れた量)であり，これに BIC を当てると クラスを割る利得が S に比例して過大選択が標本とともに悪化することが分かった(A3 WORKLOG 同日)。 荘島流(二値)は Q 関数(log の外で混ぜる)で，多値版の式は 1.6.5(a5e0e91, 2025-11-06)で入った逸脱。 先生の決定＝「収束監視と <code>log_lik</code> を ELBO に替える(多値のみ)。全モデルに <code>elbo</code>・ <code>log_lik_marginal</code>・<code>entropy</code>・<code>ICL</code> を追加。二値の <code>log_lik</code>/<code>TestFitIndices</code>/収束判定は 荘島先生と相談のうえ次版以降」。</p>
+<div class="section level3">
+<h3 id="実装-1">実装<a class="anchor" aria-label="anchor" href="#%E5%AE%9F%E8%A3%85-1"></a></h3>
+<ul><li>
+<code>R/00_VariationalFit.R</code> 新設: <code>membership_entropy</code> / <code>sum_row_logsumexp</code> / <code>hard_membership</code> / <code>completed_mixing_term</code> / <code>vb_fit_block</code>(多値二モード) / <code>vb_fit_block_binary</code> / <code>vb_fit_single</code>(1モード) / <code>print_variational_block</code>。定義はファイル冒頭のコメントに集約
+<ul><li>ELBO = Σ m_sc m_jf log π + H(class) + H(field) − S log C − J log F</li>
+<li>
+<code>log_lik_marginal</code> = Σ_s log Σ_c (1/C) Π_j π_{f̂_j c q_sj}(項目は MAP 割当に固定。1モードでは elbo と同値)</li>
+<li>ICL = −2[ℓ_C(ĉ,f̂) + Σ n_c log(n_c/n) + Σ m_f log(m_f/J)] + (C−1)log n + (F−1)log J + nparam·log(nJ) (Keribin et al. 2015 の形。AIC/BIC と同じ「小さいほど良い」尺度。1モードは nparam·log n)</li>
+<li>混合比は E-step どおり 1/C・1/F 固定(ICL だけ硬い割当の経験比率)</li>
+</ul></li>
+<li>
+<code>15</code>/<code>16</code>: ループ内の監視量を ELBO＋ディリクレ対数事前 <code>(alpha−1)Σlog π</code> に変更。 GTM 枝では M-step が平滑化メンバーシップを使うので，監視用の重みつき度数は事後で計算し直す (<code>use_smoothing</code>)。事後の適合度ブロックは <code>vb_fit_block</code> に置換し <code>log_lik</code>=ELBO。 16 は従来 <code>FitIndices</code> にループ内変数 <code>test_log_lik</code>(巻き戻し前の値になりうる)を使っていたのを 事後の <code>testell</code> に統一</li>
+<li>
+<code>17</code>/<code>18</code>(IRM 多値): 最終の適合度を <code>vb_fit_block</code> へ。EM 精緻化内の <code>irm_bic_calc</code>(硬い割当の BIC・クラス削除の判定用)は据え置き</li>
+<li>
+<code>19</code>/<code>20</code>(択一式)と <code>LCA.rated</code>: 名義層の値を <code>*_nominal</code> で持つ</li>
+<li>
+<code>07</code>(二値バイクラ)・<code>05</code>・<code>06</code>・<code>12</code>・<code>13</code>: 既存の <code>log_lik</code>/適合度/収束は不変で4項目を追加。 <code>12</code>/<code>13</code> は <code>log_lik</code>(Q関数) を top level に追加</li>
+<li>print: 各 Model Fit Indices の直後に “Variational Fit” ブロック(ratedは名義層にも)</li>
+<li>NEWS 2.2.0 節(破壊的変更として記載)・DESCRIPTION 2.2.0・roxygen 再生成(roxygen2 8.1.0 で NAMESPACE の importFrom が複数行形式に変わる＝意味は同じ)</li>
+<li>テスト: <code>test-variational-fit.R</code> 新設(恒等式 elbo = Q − S log C + H，LCA.nominal の elbo == log_lik，二値バイクラの恒等式，多値バイクラの ELBO 単調性(verbose の軌跡)， 行側周辺尤度の手計算一致，rated の名義層，print)。<code>test-polytomous-biclustering.R</code> の 期待値を新値へ(RMSEA 0.0545661・AIC 8460.093・BIC −64943.395 / 名義 AIC 29933.173・BIC 30196.989)</li>
+</ul></div>
+<div class="section level3">
+<h3 id="検証-1">検証<a class="anchor" aria-label="anchor" href="#%E6%A4%9C%E8%A8%BC-1"></a></h3>
+<ul><li>NOT_CRAN=true で全テスト 45 ファイル 3,569 件 pass(失敗0・エラー0)。並列(callr)は この環境で起動に失敗するので <code>TESTTHAT_PARALLEL=false</code>
+</li>
+<li>恒等式: LCA/LRA 二値で |差|&lt;2e-5，二値バイクラで 1e-11。順序 LRA は −1.78 のずれ＝既存コードが <code>log_lik</code> をループ最終反復の手前の状態で記録しているため(今回の変更とは無関係・要検討)</li>
+<li>J15S3810(順序・C4F3): 新版は反復 78/32/95(iso/GTM/B)で収束(旧 189/43/261)。 ELBO と行側周辺尤度の差はちょうど J log F(項目側の混合比定数)</li>
+<li>多値バイクラの <code>log_lik</code> の値は旧版から大きく動く(J15S3810 で −38013 → −41531)。 差 = Jensen の隙間(約 −1,135)＋エントロピー(+2,915)− S log C(−5,281)− J log F(−16.5)</li>
+</ul></div>
+<div class="section level3">
+<h3 id="未了次">未了・次<a class="anchor" aria-label="anchor" href="#%E6%9C%AA%E4%BA%86%E6%AC%A1"></a></h3>
+<ul><li>順序 LRA の <code>log_lik</code> の記録位置(ループ最終反復の手前)を揃えるか検討</li>
+<li>二値の <code>log_lik</code> を ELBO に統一するか・二値バイクラの収束監視を ELBO にするかは荘島先生と相談</li>
+<li>2.2.0 の残り: SOAC/WOAC 判定を model_esp 側へ・<code>TRP_empirical</code>・<code><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict()</a></code>・NEWS 2.1.0 節の訂正・ 10行未満 stop() の warning 化の検討</li>
+<li>A3: 格子探索の回し直し(推定は不変・選択の列だけ変わる)の設計</li>
+</ul></div>
+</div>
+<div class="section level2">
+<h2 id="id_2026-10-09-続き-リリース前の総点検-6領域をエージェント6名で監査し確認済みバグ約50件を修正">2026-10-09 (続き) リリース前の総点検: 6領域をエージェント6名で監査し，確認済みバグ約50件を修正<a class="anchor" aria-label="anchor" href="#id_2026-10-09-%E7%B6%9A%E3%81%8D-%E3%83%AA%E3%83%AA%E3%83%BC%E3%82%B9%E5%89%8D%E3%81%AE%E7%B7%8F%E7%82%B9%E6%A4%9C-6%E9%A0%98%E5%9F%9F%E3%82%92%E3%82%A8%E3%83%BC%E3%82%B8%E3%82%A7%E3%83%B3%E3%83%886%E5%90%8D%E3%81%A7%E7%9B%A3%E6%9F%BB%E3%81%97%E7%A2%BA%E8%AA%8D%E6%B8%88%E3%81%BF%E3%83%90%E3%82%B0%E7%B4%8450%E4%BB%B6%E3%82%92%E4%BF%AE%E6%AD%A3"></a></h2>
+<p>先生の指示「次のバージョンアップのときに『これもやっておけばよかった』とならないよう全体をオーバーホール」。 領域別の監査(EM/LCA/LRA・バイクラ族・入力整形と適合度・IRT/GRM/CTT・ネットワーク系・print/plot/文書)を 読み取り専用で走らせ，報告を私(team-lead)が再現スクリプトで検証しながら修正した。再現スクリプトは scratchpad の <code>audit_*/</code>(セッション限り)。詳細は NEWS 2.2.0 の3節(Missing data / Estimation bugs / Bug Fixes)。</p>
+<div class="section level3">
+<h3 id="最重要-欠測の約束を一本化">最重要: 欠測の約束を一本化<a class="anchor" aria-label="anchor" href="#%E6%9C%80%E9%87%8D%E8%A6%81-%E6%AC%A0%E6%B8%AC%E3%81%AE%E7%B4%84%E6%9D%9F%E3%82%92%E4%B8%80%E6%9C%AC%E5%8C%96"></a></h3>
+<ul><li>
+<code><a href="reference/dataFormat.html">dataFormat()</a></code> の <code>U</code> は欠測セルに <strong>0</strong>(欠測の印は <code>Z</code> だけ)。<code>Q</code> は従来どおり −1。 旧来は <code>U</code> に −1 が入り，<code>Z</code> でマスクしない全箇所(emclus/emclus_isotonic/somclus/item_log_lik・ BNM/LDLRA/LDB/BINET・LRA.rated の分位参照)が欠測1件を「正答 −1」と数えていた</li>
+<li>欠測を<strong>誤答</strong>に数えていた箇所は別に直した: ItemFit/TestFit/TestFitSaturated(null を nobs で重みづけ・ bench の誤答数を群人数−正答数で出していた)，SOM(C++ に Z を渡す)，LDB の nsf，StudentAnalysis の NR， rated のランク並べ替えキー，BFRP$Observed，M2 の観測周辺(全 N で割っていた→利用可能ケース)， LRA.rated の CatX</li>
+<li>
+<strong>Mathematica 参照との食い違いが1件生じた</strong>: <code>tests/testthat/test-tiny-lca.R</code> の欠測ありの null/bench は 参照キー(−2048.7/−1902.0)が旧式(欠測を誤答扱い)。テストは観測セルのみの手計算に置き換え， 参照との差を注記した。<strong>荘島先生に 7/26 と同じ要領で相談が要る</strong>
+</li>
+</ul></div>
+<div class="section level3">
+<h3 id="推定に効くバグ抜粋">推定に効くバグ(抜粋)<a class="anchor" aria-label="anchor" href="#%E6%8E%A8%E5%AE%9A%E3%81%AB%E5%8A%B9%E3%81%8F%E3%83%90%E3%82%B0%E6%8A%9C%E7%B2%8B"></a></h3>
+<ul><li>順序 LRA の GTM 枝: ランクの向きの判定が行(境界)同士の比較になっており，eps 次第で昇順と降順が反転</li>
+<li>BNM/LDLRA 系: <code>fill_adj</code> がアルファベット順に並べ替える一方で消費側は位置参照＝ラベルが辞書順でないと 別のグラフを当てはめていた。<code>BNM_fit_BIC</code> も同様。LDLRA_PBIL は探索(位置)と返り値(名前)が別物だった</li>
+<li>LCA.rated の正答行(CA の生コードを添字扱い)，ItemStatistics の <code><a href="https://rdrr.io/r/base/tabulate.html" class="external-link">tabulate()</a></code>(コード0が落ちる)， GridSearch(fun=“LRA”) が <code>ncls</code> を渡して全セル nrank=2，M2.LRAordinal の Q 未リマップ，MI の 0 log 0</li>
+<li>GRM の ell_A が EAP 代入尤度(ベンチに入れ子でなく負のχ²)→ 事後で重みづけた期待対数尤度へ</li>
+<li>OmegaCoefficient の乱数初期値(3項目で9割落ちる・値が毎回違う)→ 第1主成分から出発</li>
+<li>バイクラ族: rated の conf/conf_class，二値 IRM の <code>EMt</code> 未定義，名義 IRM の初期クラス添字， 全クラス&lt; minSize の防御，<code>mic</code> がメンバーシップを並べ替えない(conf_class で逆順)，名義 alpha&lt;1， maxiter+1 回反復(名義 LCA・順序/択一 LRA・全バイクラ)</li>
+<li>GA/PBIL: 生存数が常に半減＋警告，maxGeneration+1 世代，LDLRA_PBIL の method/beta 未伝達・filename で落ちる・ エリート適応度の並べ替え漏れ，LDLRA beta=1 で停止，dimnames の無い行列で辺が全部消える</li>
+<li>入力整形: 全行一意の数値 ID，文字列列(数値化 or factor 扱い)，<code>na</code> ベクトル，<code>Z</code> data.frame， factor の未観測水準，混在時のラベル順，除外項目のラベル，longdataFormat の項目別ラベル</li>
+<li>print/plot: rated LCA+add_M2 の print，IRP 1項目，BNM の NaN(0/0)，FCRP/FCBR の nc，items=0， 二値 IRM の変分4項目，綴り19箇所，NEWS 2.1.0 の誤文，<code>_problems/</code> の削除</li>
+</ul></div>
+<div class="section level3">
+<h3 id="据え置き設計判断荘島先生と相談">据え置き(設計判断・荘島先生と相談)<a class="anchor" aria-label="anchor" href="#%E6%8D%AE%E3%81%88%E7%BD%AE%E3%81%8D%E8%A8%AD%E8%A8%88%E5%88%A4%E6%96%AD%E8%8D%98%E5%B3%B6%E5%85%88%E7%94%9F%E3%81%A8%E7%9B%B8%E8%AB%87"></a></h3>
+<ul><li>IRT の <code>slopeprior</code> が全項目の最大傾きで評価されている(参照値と一致＝原典どおり)</li>
+<li>E-step の定数 <code>exp(-testlength)</code> が短いテスト(J≤5)で推定値を動かす</li>
+<li>BNM で親が欠測の学生は「親=0」パタンに数えられる</li>
+<li>二値 <code>log_lik</code>/適合度の ELBO 化と二値バイクラの収束監視(前節の方針どおり次版以降)</li>
+<li>順序 LRA の <code>maxiter</code> 既定を 100→1000 に変更した(未収束率が下がる)。順序の TRP 定義(フィールド項目数の重み)は未変更</li>
+</ul></div>
+<div class="section level3">
+<h3 id="検証-2">検証<a class="anchor" aria-label="anchor" href="#%E6%A4%9C%E8%A8%BC-2"></a></h3>
+<ul><li>NOT_CRAN=true 全テスト 3,565 件 pass。R CMD check(テスト・vignette 抜き)OK</li>
+<li>2.2.0 開発版 tarball を Al-khwa・Taniyama・Shimura・Seki・Newton に配布(Packaged 時刻は RERUN_PLAN 参照)</li>
 </ul></div>
 </div>
 </div>

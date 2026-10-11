@@ -70,7 +70,7 @@ Biclustering(
   method = "R",
   conf = NULL,
   conf_class = NULL,
-  maxiter = 100,
+  maxiter = 1000,
   verbose = FALSE,
   alpha = 1,
   ...
@@ -172,7 +172,7 @@ Biclustering(
 
 - maxiter:
 
-  Maximum number of EM algorithm iterations. Default is 100.
+  Maximum number of EM algorithm iterations. Default is 1000.
 
 - verbose:
 
@@ -332,6 +332,40 @@ An object of class "exametrika" and "Biclustering" containing:
   Model fit indices for evaluating the quality of the clustering
   solution
 
+- log_lik:
+
+  Log-likelihood the fit indices are built on. For binary data this is
+  the expected log-likelihood of the reference implementation; for
+  nominal and ordinal data it is the evidence lower bound (`elbo`) since
+  2.2.0. Rated data report the binary layer here and the nominal layer
+  with the suffix `_nominal`.
+
+- elbo:
+
+  Evidence lower bound of the observed-data log-likelihood under the
+  posterior memberships the EM produced. Exact (equal to the
+  observed-data log-likelihood) for a one-mode model; a lower bound for
+  biclustering, where the respondent and item posteriors are taken
+  independent. Since 2.2.0.
+
+- log_lik_marginal:
+
+  Observed-data log-likelihood of the respondent-side mixture with the
+  items fixed at their MAP field assignment. Equal to `elbo` for a
+  one-mode model.
+
+- entropy:
+
+  Posterior entropy of the memberships (named: `class`, and `field` for
+  biclustering). `elbo` minus this is the expected complete-data
+  log-likelihood.
+
+- ICL:
+
+  Integrated completed likelihood criterion (Biernacki, Celeux and
+  Govaert, 2000) in its BIC-type approximation, on the same scale as AIC
+  and BIC (-2 log scale, smaller is better).
+
 - SOACflg:
 
   Logical flag indicating whether Strongly Ordinal Alignment Condition
@@ -410,8 +444,5 @@ result.Bi <- Biclustering(J35S515, nfld = 5, ncls = 6, method = "B")
 # Perform Biclustering for rated sample data
 # Analyze data with 5 fields and 6 classes
 result.Bi <- Biclustering(J35S5000, nfld = 5, ncls = 6, method = "R")
-#> 
-#> Reached the maximum number of iterations (100).
-#> Warning: Algorithm may not have converged. Interpret results with caution.
 # }
 ```

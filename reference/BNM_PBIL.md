@@ -173,52 +173,49 @@ BNM_PBIL(J5S10,
   alpha = 0.05, # Learning rate for probability update
   estimate = 4 # Use rounded generational gene method
 )
-#> Warning: Too many survivers. Limit to 5
 #> Adjacency Matrix
 #>        Item01 Item02 Item03 Item04 Item05
-#> Item01      0      0      0      1      0
+#> Item01      0      0      0      0      0
 #> Item02      0      0      0      0      0
-#> Item03      1      0      0      0      0
+#> Item03      0      0      0      0      0
 #> Item04      0      0      0      0      0
 #> Item05      0      0      0      0      0
 #> [1] "Your graph is an acyclic graph."
 
 #> 
 #> Parameter Learning
-#>        PIRP 1 PIRP 2
-#> Item01    0.0  0.667
-#> Item02    0.4       
-#> Item03    0.9       
-#> Item04    0.0  0.500
-#> Item05    0.4       
+#>        PIRP 1
+#> Item01    0.6
+#> Item02    0.4
+#> Item03    0.9
+#> Item04    0.3
+#> Item05    0.4
 #> 
 #> Conditional Correct Response Rate
 #>   Child Item N of Parents Parent Items       PIRP Conditional CRR
-#> 1     Item01            1       Item03          0           0.000
-#> 2     Item01            1       Item03          1           0.667
-#> 3     Item02            0   No Parents No Pattern           0.400
-#> 4     Item03            0   No Parents No Pattern           0.900
-#> 5     Item04            1       Item01          0           0.000
-#> 6     Item04            1       Item01          1           0.500
-#> 7     Item05            0   No Parents No Pattern           0.400
+#> 1     Item01            0   No Parents No Pattern           0.600
+#> 2     Item02            0   No Parents No Pattern           0.400
+#> 3     Item03            0   No Parents No Pattern           0.900
+#> 4     Item04            0   No Parents No Pattern           0.300
+#> 5     Item05            0   No Parents No Pattern           0.400
 #> 
 #> Model Fit Indices
 #>                  value
-#> model_log_like -26.599
+#> model_log_like -29.550
 #> bench_log_like  -8.935
 #> null_log_like  -28.882
-#> model_Chi_sq    35.327
+#> model_Chi_sq    41.229
 #> null_Chi_sq     39.894
-#> model_df        23.000
+#> model_df        25.000
 #> null_df         25.000
-#> NFI              0.114
-#> RFI              0.037
-#> IFI              0.270
-#> TLI              0.100
-#> CFI              0.172
-#> RMSEA            0.244
-#> AIC            -10.673
-#> CAIC           -40.633
-#> BIC            -17.633
+#> NFI              0.000
+#> RFI              0.000
+#> IFI              0.000
+#> TLI              0.000
+#> CFI              0.000
+#> RMSEA            0.269
+#> AIC             -8.771
+#> CAIC           -41.335
+#> BIC            -16.335
 # }
 ```

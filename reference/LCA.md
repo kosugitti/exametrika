@@ -186,6 +186,32 @@ An object of class "exametrika" and "LCA" containing:
   Overall fit indices for the test. See also
   [`TestFit`](https://kosugitti.github.io/exametrika/reference/TestFit.md).
 
+- elbo:
+
+  Evidence lower bound of the observed-data log-likelihood under the
+  posterior memberships the EM produced. Exact (equal to the
+  observed-data log-likelihood) for a one-mode model; a lower bound for
+  biclustering, where the respondent and item posteriors are taken
+  independent. Since 2.2.0.
+
+- log_lik_marginal:
+
+  Observed-data log-likelihood of the respondent-side mixture with the
+  items fixed at their MAP field assignment. Equal to `elbo` for a
+  one-mode model.
+
+- entropy:
+
+  Posterior entropy of the memberships (named: `class`, and `field` for
+  biclustering). `elbo` minus this is the expected complete-data
+  log-likelihood.
+
+- ICL:
+
+  Integrated completed likelihood criterion (Biernacki, Celeux and
+  Govaert, 2000) in its BIC-type approximation, on the same scale as AIC
+  and BIC (-2 log scale, smaller is better).
+
 ## Details
 
 Latent Class Analysis is a statistical method for identifying unobserved

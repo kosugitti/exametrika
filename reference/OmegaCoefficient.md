@@ -1,7 +1,7 @@
 # Omega Coefficient
 
-This function computes Tau-Congeneric Measurement, also known as
-McDonald's tau coefficient, for a given data set.
+This function computes the omega coefficient of the tau-congeneric
+measurement model (McDonald, 1999) for a given data set.
 
 ## Usage
 

@@ -87,8 +87,10 @@ dataFormat(
 
   Missing indicator matrix. \\z\_{ij}=1\\ indicates that item j is
   presented to Student i, while \\z\_{ij}=0\\ indicates item j is NOT
-  presented to Student i. If the data contains NA values, -1 is
-  assigned.
+  presented to Student i. `Z` is the only place where missingness is
+  recorded: in `U` (binary and rated data) a missing cell holds 0, so
+  that `U` alone counts correct responses and `Z * (1 - U)` counts
+  incorrect ones; in `Q` (polytomous data) a missing cell holds -1.
 
 - w:
 

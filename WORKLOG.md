@@ -4624,3 +4624,183 @@ Mathematica 由来の参照フィクスチャとの突合が要る。
 - NEWS の 2.1.0 節の記述を直す(次の版で)
 - 2.2.0 = SOAC/WOAC 判定を model_esp 側へ＋`TRP_empirical`
   併記＋[`predict()`](https://rdrr.io/r/stats/predict.html)
+
+## 2026-09-29 R Journal論文の追試の報告(Degenfellner氏)
+
+- Jürgen Degenfellner(ZHAW)から，R
+  Journal論文(RJ-2026-023・18/2)の`appendix.Rmd`をR
+  4.6.1で再実行した報告。**1.6.1なら付録の小数4桁以上の数値614個とLRAの例(Item01ランク1=0.5850570・logLik=-3857.982)が全部一致**，**2.1.0では68個しか一致しない**。論文に版の明記が無いとの指摘も。メール後半はJournal
+  of Reproducible Statistics(FAIR Press Journals
+  GmbH・スイスの営利会社・APC CHF 1,000)への投稿勧誘
+- 原因は2つで入った時期が違う:
+  - **小さなデータで止まる**=`R/01_dataFormat.R`
+    75行の`stop("Data must have at least 10 rows ...")`。コミット`90ab45d2`(2025-09-29)で入り，**CRAN版では1.6.5から**
+  - **LRAの数値が変わる**=`LRA.binary`の既定`method`が**2.0.0で”GTM”→“isotonic”**
+- 手元で確認:
+  **2.1.0で`method = "GTM"`を指定しても論文値に完全には戻らない**(Item01=0.5884193・logLik=-3855.181)。2.x系の反復上限・収束判定の修正の影響とみられる。**論文の数値を正確に再現できるのは1.6.1だけ**
+- 返信をGmailに下書き保存(お礼・原因の説明・`remotes::install_version("exametrika", "1.6.1")`・GTMは今も選べる・10行チェックは1.6.5から・ドキュメントに再現手順を足す予定・10行チェックの警告化を検討)。勧誘には触れない。**送信は本人**(荘島先生への連絡の要否も本人判断)
+
+### 次(2.2.0に追加)
+
+- **10行未満の[`stop()`](https://rdrr.io/r/base/stop.html)を[`warning()`](https://rdrr.io/r/base/warning.html)に緩めるか検討**(小さな例が止まるのは後方互換を壊している)
+- **READMEかvignetteに「R
+  Journal論文を再現するには1.6.1を使う」旨を追記**
+- **(追記) 返信は9/29夜に本人が送信済み**
+
+## 2026-10-09 2.2.0: ELBO・行側周辺尤度・エントロピー・ICL の実装(A3 の点検から派生)
+
+A3 のシミュレーション点検で，多値バイクラの `log_lik` が
+`Σ_sj log Σ_fc m_jf m_sc π_fcq`(log
+の中でメンバーシップを混ぜる＝混合メンバーシップ型の 尤度に
+S(C−1)+J(F−1) 個の付随パラメタを罰則なしで入れた量)であり，これに BIC
+を当てると クラスを割る利得が S
+に比例して過大選択が標本とともに悪化することが分かった(A3 WORKLOG
+同日)。 荘島流(二値)は Q 関数(log の外で混ぜる)で，多値版の式は
+1.6.5(a5e0e91, 2025-11-06)で入った逸脱。 先生の決定＝「収束監視と
+`log_lik` を ELBO に替える(多値のみ)。全モデルに `elbo`・
+`log_lik_marginal`・`entropy`・`ICL` を追加。二値の
+`log_lik`/`TestFitIndices`/収束判定は 荘島先生と相談のうえ次版以降」。
+
+### 実装
+
+- `R/00_VariationalFit.R` 新設: `membership_entropy` /
+  `sum_row_logsumexp` / `hard_membership` / `completed_mixing_term` /
+  `vb_fit_block`(多値二モード) / `vb_fit_block_binary` /
+  `vb_fit_single`(1モード) /
+  `print_variational_block`。定義はファイル冒頭のコメントに集約
+  - ELBO = Σ m_sc m_jf log π + H(class) + H(field) − S log C − J log F
+  - `log_lik_marginal` = Σ_s log Σ_c (1/C) Π_j π\_{f̂\_j c q_sj}(項目は
+    MAP 割当に固定。1モードでは elbo と同値)
+  - ICL = −2\[ℓ_C(ĉ,f̂) + Σ n_c log(n_c/n) + Σ m_f log(m_f/J)\] +
+    (C−1)log n + (F−1)log J + nparam·log(nJ) (Keribin et al. 2015
+    の形。AIC/BIC と同じ「小さいほど良い」尺度。1モードは nparam·log n)
+  - 混合比は E-step どおり 1/C・1/F 固定(ICL だけ硬い割当の経験比率)
+- `15`/`16`: ループ内の監視量を ELBO＋ディリクレ対数事前
+  `(alpha−1)Σlog π` に変更。 GTM 枝では M-step
+  が平滑化メンバーシップを使うので，監視用の重みつき度数は事後で計算し直す
+  (`use_smoothing`)。事後の適合度ブロックは `vb_fit_block` に置換し
+  `log_lik`=ELBO。 16 は従来 `FitIndices` にループ内変数
+  `test_log_lik`(巻き戻し前の値になりうる)を使っていたのを 事後の
+  `testell` に統一
+- `17`/`18`(IRM 多値): 最終の適合度を `vb_fit_block` へ。EM 精緻化内の
+  `irm_bic_calc`(硬い割当の BIC・クラス削除の判定用)は据え置き
+- `19`/`20`(択一式)と `LCA.rated`: 名義層の値を `*_nominal` で持つ
+- `07`(二値バイクラ)・`05`・`06`・`12`・`13`: 既存の
+  `log_lik`/適合度/収束は不変で4項目を追加。 `12`/`13` は
+  `log_lik`(Q関数) を top level に追加
+- print: 各 Model Fit Indices の直後に “Variational Fit”
+  ブロック(ratedは名義層にも)
+- NEWS 2.2.0 節(破壊的変更として記載)・DESCRIPTION 2.2.0・roxygen
+  再生成(roxygen2 8.1.0 で NAMESPACE の importFrom
+  が複数行形式に変わる＝意味は同じ)
+- テスト: `test-variational-fit.R` 新設(恒等式 elbo = Q − S log C +
+  H，LCA.nominal の elbo ==
+  log_lik，二値バイクラの恒等式，多値バイクラの ELBO 単調性(verbose
+  の軌跡)， 行側周辺尤度の手計算一致，rated
+  の名義層，print)。`test-polytomous-biclustering.R` の
+  期待値を新値へ(RMSEA 0.0545661・AIC 8460.093・BIC −64943.395 / 名義
+  AIC 29933.173・BIC 30196.989)
+
+### 検証
+
+- NOT_CRAN=true で全テスト 45 ファイル 3,569 件
+  pass(失敗0・エラー0)。並列(callr)は この環境で起動に失敗するので
+  `TESTTHAT_PARALLEL=false`
+- 恒等式: LCA/LRA 二値で \|差\|\<2e-5，二値バイクラで 1e-11。順序 LRA は
+  −1.78 のずれ＝既存コードが `log_lik`
+  をループ最終反復の手前の状態で記録しているため(今回の変更とは無関係・要検討)
+- J15S3810(順序・C4F3): 新版は反復 78/32/95(iso/GTM/B)で収束(旧
+  189/43/261)。 ELBO と行側周辺尤度の差はちょうど J log
+  F(項目側の混合比定数)
+- 多値バイクラの `log_lik` の値は旧版から大きく動く(J15S3810 で −38013 →
+  −41531)。 差 = Jensen の隙間(約 −1,135)＋エントロピー(+2,915)− S log
+  C(−5,281)− J log F(−16.5)
+
+### 未了・次
+
+- 順序 LRA の `log_lik` の記録位置(ループ最終反復の手前)を揃えるか検討
+- 二値の `log_lik` を ELBO に統一するか・二値バイクラの収束監視を ELBO
+  にするかは荘島先生と相談
+- 2.2.0 の残り: SOAC/WOAC 判定を model_esp
+  側へ・`TRP_empirical`・[`predict()`](https://rdrr.io/r/stats/predict.html)・NEWS
+  2.1.0 節の訂正・ 10行未満 stop() の warning 化の検討
+- A3: 格子探索の回し直し(推定は不変・選択の列だけ変わる)の設計
+
+## 2026-10-09 (続き) リリース前の総点検: 6領域をエージェント6名で監査し，確認済みバグ約50件を修正
+
+先生の指示「次のバージョンアップのときに『これもやっておけばよかった』とならないよう全体をオーバーホール」。
+領域別の監査(EM/LCA/LRA・バイクラ族・入力整形と適合度・IRT/GRM/CTT・ネットワーク系・print/plot/文書)を
+読み取り専用で走らせ，報告を私(team-lead)が再現スクリプトで検証しながら修正した。再現スクリプトは
+scratchpad の `audit_*/`(セッション限り)。詳細は NEWS 2.2.0
+の3節(Missing data / Estimation bugs / Bug Fixes)。
+
+### 最重要: 欠測の約束を一本化
+
+- [`dataFormat()`](https://kosugitti.github.io/exametrika/reference/dataFormat.md)
+  の `U` は欠測セルに **0**(欠測の印は `Z` だけ)。`Q` は従来どおり −1。
+  旧来は `U` に −1 が入り，`Z`
+  でマスクしない全箇所(emclus/emclus_isotonic/somclus/item_log_lik・
+  BNM/LDLRA/LDB/BINET・LRA.rated の分位参照)が欠測1件を「正答
+  −1」と数えていた
+- 欠測を**誤答**に数えていた箇所は別に直した:
+  ItemFit/TestFit/TestFitSaturated(null を nobs で重みづけ・ bench
+  の誤答数を群人数−正答数で出していた)，SOM(C++ に Z を渡す)，LDB の
+  nsf，StudentAnalysis の NR， rated
+  のランク並べ替えキー，BFRP\$Observed，M2 の観測周辺(全 N
+  で割っていた→利用可能ケース)， LRA.rated の CatX
+- **Mathematica 参照との食い違いが1件生じた**:
+  `tests/testthat/test-tiny-lca.R` の欠測ありの null/bench は
+  参照キー(−2048.7/−1902.0)が旧式(欠測を誤答扱い)。テストは観測セルのみの手計算に置き換え，
+  参照との差を注記した。**荘島先生に 7/26 と同じ要領で相談が要る**
+
+### 推定に効くバグ(抜粋)
+
+- 順序 LRA の GTM 枝:
+  ランクの向きの判定が行(境界)同士の比較になっており，eps
+  次第で昇順と降順が反転
+- BNM/LDLRA 系: `fill_adj`
+  がアルファベット順に並べ替える一方で消費側は位置参照＝ラベルが辞書順でないと
+  別のグラフを当てはめていた。`BNM_fit_BIC` も同様。LDLRA_PBIL
+  は探索(位置)と返り値(名前)が別物だった
+- LCA.rated の正答行(CA の生コードを添字扱い)，ItemStatistics の
+  [`tabulate()`](https://rdrr.io/r/base/tabulate.html)(コード0が落ちる)，
+  GridSearch(fun=“LRA”) が `ncls` を渡して全セル nrank=2，M2.LRAordinal
+  の Q 未リマップ，MI の 0 log 0
+- GRM の ell_A が EAP 代入尤度(ベンチに入れ子でなく負のχ²)→
+  事後で重みづけた期待対数尤度へ
+- OmegaCoefficient の乱数初期値(3項目で9割落ちる・値が毎回違う)→
+  第1主成分から出発
+- バイクラ族: rated の conf/conf_class，二値 IRM の `EMt` 未定義，名義
+  IRM の初期クラス添字， 全クラス\< minSize の防御，`mic`
+  がメンバーシップを並べ替えない(conf_class で逆順)，名義 alpha\<1，
+  maxiter+1 回反復(名義 LCA・順序/択一 LRA・全バイクラ)
+- GA/PBIL: 生存数が常に半減＋警告，maxGeneration+1 世代，LDLRA_PBIL の
+  method/beta 未伝達・filename で落ちる・
+  エリート適応度の並べ替え漏れ，LDLRA beta=1 で停止，dimnames
+  の無い行列で辺が全部消える
+- 入力整形: 全行一意の数値 ID，文字列列(数値化 or factor 扱い)，`na`
+  ベクトル，`Z` data.frame， factor
+  の未観測水準，混在時のラベル順，除外項目のラベル，longdataFormat
+  の項目別ラベル
+- print/plot: rated LCA+add_M2 の print，IRP 1項目，BNM の
+  NaN(0/0)，FCRP/FCBR の nc，items=0， 二値 IRM
+  の変分4項目，綴り19箇所，NEWS 2.1.0 の誤文，`_problems/` の削除
+
+### 据え置き(設計判断・荘島先生と相談)
+
+- IRT の `slopeprior`
+  が全項目の最大傾きで評価されている(参照値と一致＝原典どおり)
+- E-step の定数 `exp(-testlength)` が短いテスト(J≤5)で推定値を動かす
+- BNM で親が欠測の学生は「親=0」パタンに数えられる
+- 二値 `log_lik`/適合度の ELBO
+  化と二値バイクラの収束監視(前節の方針どおり次版以降)
+- 順序 LRA の `maxiter` 既定を 100→1000
+  に変更した(未収束率が下がる)。順序の TRP
+  定義(フィールド項目数の重み)は未変更
+
+### 検証
+
+- NOT_CRAN=true 全テスト 3,565 件 pass。R CMD check(テスト・vignette
+  抜き)OK
+- 2.2.0 開発版 tarball を Al-khwa・Taniyama・Shimura・Seki・Newton
+  に配布(Packaged 時刻は RERUN_PLAN 参照)

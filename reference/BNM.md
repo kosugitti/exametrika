@@ -120,9 +120,9 @@ DAG <-
 # Convert the DAG matrix to an igraph object for network analysis
 g <- igraph::graph_from_data_frame(DAG)
 g
-#> IGRAPH d890395 DN-- 5 5 -- 
+#> IGRAPH b2c49b0 DN-- 5 5 -- 
 #> + attr: name (v/c)
-#> + edges from d890395 (vertex names):
+#> + edges from b2c49b0 (vertex names):
 #> [1] Item01->Item02 Item02->Item03 Item02->Item04 Item03->Item05 Item04->Item05
 
 # Create adjacency matrix from the graph
@@ -160,7 +160,6 @@ result.BNM
 #> Item05  0.000    NaN  0.333  0.667
 #> 
 #> Conditional Correct Response Rate
-#> Warning: NAs introduced by coercion
 #>    Child Item N of Parents   Parent Items       PIRP Conditional CRR
 #> 1      Item01            0     No Parents No Pattern           0.600
 #> 2      Item02            1         Item01          0           0.250
@@ -170,7 +169,7 @@ result.BNM
 #> 6      Item04            1         Item02          0           0.167
 #> 7      Item04            1         Item02          1           0.500
 #> 8      Item05            2 Item03, Item04         00           0.000
-#> 9      Item05            2 Item03, Item04         01              NA
+#> 9      Item05            2 Item03, Item04         01        NaN(0/0)
 #> 10     Item05            2 Item03, Item04         10           0.333
 #> 11     Item05            2 Item03, Item04         11           0.667
 #> 

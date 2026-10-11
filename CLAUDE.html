@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="index.html">exametrika</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -39,7 +39,7 @@
 <h2 id="package-overview">Package Overview<a class="anchor" aria-label="anchor" href="#package-overview"></a></h2>
 <p><code>exametrika</code> is an R package for Test Data Engineering based on Shojima (2022, <a href="ISBN:978-9811699856" class="uri">ISBN:978-9811699856</a>). It provides psychometric analysis tools: CTT, IRT, GRM, LCA, LRA, Biclustering, BNM, LDLRA, LDB, BINET.</p>
 <ul><li>
-<strong>Current version</strong>: <strong>2.1.0 (CRAN 受理 2026-09-25)</strong>。DESCRIPTION は 2.1.0 のまま。次は 2.2.0 (SOAC/WOAC 判定を model_esp 側へ＋<code>TRP_empirical</code> 併記＋<code><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict()</a></code>)。<strong>NEWS の 2.1.0 節に 「GitHub で先に出して CRAN は後から」という文が残っているが実際は最初から CRAN。次の版で直す</strong>。</li>
+<strong>Current version</strong>: <strong>2.2.0 (開発中)</strong>。CRAN は 2.1.0 (受理 2026-09-25)。<strong>2.2.0 で多値バイクラの <code>log_lik</code> を ELBO へ変更し，全モデルに <code>elbo</code>/<code>log_lik_marginal</code>/<code>entropy</code>/<code>ICL</code> を追加済み</strong> (<code>R/00_VariationalFit.R</code>・WORKLOG 2026-10-09)。<strong>同日に6領域の総点検で約50件のバグを修正</strong>(欠測の約束を 「U は欠測セル 0・Z が印」に一本化。順序 LRA の GTM の向き反転・BNM 系のラベル順・GridSearch の LRA など。 NEWS 2.2.0 参照)。<strong>荘島先生への相談事項</strong>: tinyMissing の null/bench が参照値と食い違う(参照は欠測を誤答扱い)。 残り＝SOAC/WOAC 判定を model_esp 側へ＋<code>TRP_empirical</code> 併記＋<code><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict()</a></code>。<strong>NEWS の 2.1.0 節に 「GitHub で先に出して CRAN は後から」という文が残っているが実際は最初から CRAN。次の版で直す</strong>。</li>
 <li>
 <strong>CRAN version</strong>: 2.1.0 (Webフォーム提出 → 2026-09-25 自動チェックのみで受理)。<code>CRAN-SUBMISSION</code> は 2.1.0 に更新済み。</li>
 <li>

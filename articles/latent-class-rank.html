@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">exametrika</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -97,7 +97,7 @@ dataset and the number of classes.</p>
 <span><span class="co">#&gt; Test Profile</span></span>
 <span><span class="co">#&gt;                               Class 1 Class 2 Class 3 Class 4 Class 5</span></span>
 <span><span class="co">#&gt; Test Reference Profile          6.155   9.034  10.321  11.034  12.405</span></span>
-<span><span class="co">#&gt; Latent Class Ditribution      119.000  90.000 112.000  86.000  93.000</span></span>
+<span><span class="co">#&gt; Latent Class Distribution     119.000  90.000 112.000  86.000  93.000</span></span>
 <span><span class="co">#&gt; Class Membership Distribution 112.597  99.086  98.336  93.200  96.780</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Item Fit Indices</span></span>
@@ -169,7 +169,14 @@ dataset and the number of classes.</p>
 <span><span class="co">#&gt; RMSEA              0.027</span></span>
 <span><span class="co">#&gt; AIC              -86.203</span></span>
 <span><span class="co">#&gt; CAIC            -790.175</span></span>
-<span><span class="co">#&gt; BIC             -655.175</span></span></code></pre></div>
+<span><span class="co">#&gt; BIC             -655.175</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Variational Fit</span></span>
+<span><span class="co">#&gt;                      value</span></span>
+<span><span class="co">#&gt; ELBO             -4118.164</span></span>
+<span><span class="co">#&gt; log_lik_marginal -4118.164</span></span>
+<span><span class="co">#&gt; entropy_class      338.458</span></span>
+<span><span class="co">#&gt; ICL               9064.738</span></span></code></pre></div>
 <p>The Class Membership Matrix indicates which latent class each
 examinee belongs to:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
@@ -263,7 +270,7 @@ classes (ranks). Specify the dataset and the number of ranks.</p>
 <span><span class="co">#&gt; Test Profile</span></span>
 <span><span class="co">#&gt;                              Rank 1 Rank 2 Rank 3  Rank 4 Rank 5 Rank 6</span></span>
 <span><span class="co">#&gt; Test Reference Profile        5.824  7.613  9.973  10.259 11.219 12.727</span></span>
-<span><span class="co">#&gt; Latent Rank Ditribution      75.000 82.000 71.000 107.000 74.000 91.000</span></span>
+<span><span class="co">#&gt; Latent Rank Distribution     75.000 82.000 71.000 107.000 74.000 91.000</span></span>
 <span><span class="co">#&gt; Rank Membership Distribution 77.702 79.964 86.849  87.007 87.796 80.682</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Item Fit Indices</span></span>
@@ -335,7 +342,14 @@ classes (ranks). Specify the dataset and the number of ranks.</p>
 <span><span class="co">#&gt; RMSEA              0.048</span></span>
 <span><span class="co">#&gt; AIC               21.918</span></span>
 <span><span class="co">#&gt; CAIC            -817.634</span></span>
-<span><span class="co">#&gt; BIC             -656.634</span></span></code></pre></div>
+<span><span class="co">#&gt; BIC             -656.634</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Variational Fit</span></span>
+<span><span class="co">#&gt;                      value</span></span>
+<span><span class="co">#&gt; ELBO             -4131.841</span></span>
+<span><span class="co">#&gt; log_lik_marginal -4131.841</span></span>
+<span><span class="co">#&gt; entropy_class      496.003</span></span>
+<span><span class="co">#&gt; ICL               9146.482</span></span></code></pre></div>
 <p>Rank membership probabilities and rank-up/rank-down odds are
 calculated:</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">

@@ -45,7 +45,7 @@ Biclustering(J35S515, nfld = 5, ncls = 6, method = "B")
 #> 
 #>                               Class 1 Class 2 Class 3 Class 4 Class 5 Class 6
 #> Test Reference Profile          4.420  11.958   8.458  15.936  23.296  34.713
-#> Latent Class Ditribution      154.000  62.000  86.000 106.000  90.000  17.000
+#> Latent Class Distribution     154.000  62.000  86.000 106.000  90.000  17.000
 #> Class Membership Distribution 142.719  72.744  87.731 106.916  87.920  16.971
 #> 
 #> Field Membership Profile
@@ -110,6 +110,14 @@ Biclustering(J35S515, nfld = 5, ncls = 6, method = "B")
 #> AIC             -332.707
 #> CAIC           -6415.940
 #> BIC            -5255.940
+#> 
+#> Variational Fit
+#>                      value
+#> ELBO             -7703.364
+#> log_lik_marginal -7647.034
+#> entropy_class      160.682
+#> entropy_field        0.001
+#> ICL              15759.940
 ```
 
 ### Ranklustering
@@ -263,42 +271,42 @@ result.B.rated
 #> 
 #> Ranklustering Reference Matrix Profile (Nominal)
 #> For category 1 
-#>         Rank 1 Rank 2 Rank 3 Rank 4 Rank 5
-#> Field 1  0.106  0.350 0.2827 0.6621 0.7081
-#> Field 2  0.257  0.242 0.1836 0.0714 0.0754
-#> Field 3  0.267  0.221 0.0967 0.1615 0.0041
+#>         Rank 1 Rank 2 Rank 3 Rank 4  Rank 5
+#> Field 1  0.106  0.348 0.2844 0.6616 0.70854
+#> Field 2  0.257  0.243 0.1832 0.0718 0.07513
+#> Field 3  0.267  0.221 0.0966 0.1617 0.00454
 #> For category 2 
 #>         Rank 1 Rank 2 Rank 3 Rank 4 Rank 5
-#> Field 1  0.283  0.257  0.228 0.1220 0.0974
-#> Field 2  0.118  0.291  0.415 0.7994 0.7760
-#> Field 3  0.308  0.216  0.129 0.0691 0.0602
+#> Field 1  0.283  0.257  0.228 0.1223 0.0973
+#> Field 2  0.118  0.290  0.416 0.7988 0.7767
+#> Field 3  0.308  0.216  0.129 0.0695 0.0600
 #> For category 3 
 #>         Rank 1 Rank 2 Rank 3 Rank 4 Rank 5
-#> Field 1  0.314  0.182  0.237 0.1165 0.1030
-#> Field 2  0.300  0.257  0.191 0.0665 0.0777
-#> Field 3  0.121  0.411  0.555 0.7038 0.8299
+#> Field 1  0.315  0.183  0.236 0.1163 0.1030
+#> Field 2  0.300  0.258  0.190 0.0666 0.0775
+#> Field 3  0.121  0.409  0.557 0.7034 0.8295
 #> For category 4 
 #>         Rank 1 Rank 2 Rank 3 Rank 4 Rank 5
-#> Field 1  0.297  0.211  0.252 0.0994 0.0915
-#> Field 2  0.325  0.210  0.211 0.0627 0.0709
-#> Field 3  0.304  0.153  0.219 0.0657 0.1059
+#> Field 1  0.297  0.212  0.252 0.0998 0.0911
+#> Field 2  0.325  0.210  0.211 0.0628 0.0707
+#> Field 3  0.304  0.154  0.218 0.0654 0.1060
 #> 
 #> Field Reference Profile (Binary)
 #>         Rank 1 Rank 2 Rank 3 Rank 4 Rank 5
-#> Field 1  0.102  0.390  0.252  0.660  0.702
-#> Field 2  0.115  0.280  0.424  0.803  0.775
-#> Field 3  0.121  0.393  0.574  0.657  0.835
+#> Field 1  0.102  0.387  0.252  0.658  0.702
+#> Field 2  0.115  0.275  0.424  0.798  0.775
+#> Field 3  0.121  0.389  0.574  0.655  0.835
 #> 
 #> Field Reference Profile Indices
 #>        Alpha     A Beta     B Gamma       C
-#> Field1     3 0.409    2 0.390  0.25 -0.1383
-#> Field2     3 0.379    3 0.424  0.25 -0.0285
-#> Field3     1 0.272    3 0.574  0.00  0.0000
+#> Field1     3 0.407    2 0.387  0.25 -0.1347
+#> Field2     3 0.374    3 0.424  0.25 -0.0235
+#> Field3     1 0.268    3 0.574  0.00  0.0000
 #> 
 #>                              Rank 1 Rank 2 Rank 3 Rank 4 Rank 5
-#> Test Reference Profile        2.370  7.442  8.746 14.844 16.183
-#> Latent Rank Ditribution      73.000 52.000 59.000 45.000 71.000
-#> Rank Membership Distribution 69.457 57.704 59.047 57.877 55.914
+#> Test Reference Profile        2.370  7.353  8.746 14.783 16.183
+#> Latent Rank Distribution     73.000 51.000 59.000 46.000 71.000
+#> Rank Membership Distribution 69.308 57.810 59.079 57.795 56.007
 #> 
 #> Field Membership Profile
 #>          CRR LFE Field1 Field2 Field3
@@ -330,31 +338,39 @@ result.B.rated
 #> Model Fit Indices (Binary)
 #> Number of Latent Rank : 5
 #> Number of Latent Field: 3
-#> Number of EM cycle: 296 
+#> Number of EM cycle: 142 
 #>                    value
-#> model_log_like -3293.331
+#> model_log_like -3294.190
 #> bench_log_like -3079.142
 #> null_log_like  -4318.046
-#> model_Chi_sq     428.376
+#> model_Chi_sq     430.095
 #> null_Chi_sq     2477.806
 #> model_df         336.000
 #> null_df          420.000
-#> NFI                0.827
-#> RFI                0.784
-#> IFI                0.957
-#> TLI                0.944
-#> CFI                0.955
-#> RMSEA              0.030
-#> AIC             -243.624
-#> CAIC           -1824.094
-#> BIC            -1488.094
+#> NFI                0.826
+#> RFI                0.783
+#> IFI                0.956
+#> TLI                0.943
+#> CFI                0.954
+#> RMSEA              0.031
+#> AIC             -241.905
+#> CAIC           -1822.376
+#> BIC            -1486.376
 #> 
 #> Model Fit Indices (Nominal)
 #>                    value
-#> model_log_like -7013.548
-#> AIC            14117.095
-#> CAIC           14328.766
-#> BIC            14283.766
+#> model_log_like -7478.122
+#> AIC            15046.245
+#> CAIC           15257.915
+#> BIC            15212.915
+#> 
+#> Variational Fit (Nominal layer)
+#>                      value
+#> ELBO             -7478.122
+#> log_lik_marginal -7455.051
+#> entropy_class      154.863
+#> entropy_field        0.000
+#> ICL              15525.792
 #> Weakly Ordinal Alignment Condition is Satisfied.
 plot(result.B.rated, type = "Array")
 ```

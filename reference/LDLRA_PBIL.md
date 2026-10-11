@@ -224,7 +224,6 @@ result.LDLRA.PBIL <- LDLRA_PBIL(J15S500,
   elitism = 1, # Keep best solution in each generation
   successiveLimit = 5 # Convergence criterion
 )
-#> Warning: Too many survivers. Limit to 2
 
 # Examine the learned network structure
 # Plot Item Response Profiles showing item patterns across ranks

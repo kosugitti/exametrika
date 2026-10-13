@@ -94,7 +94,8 @@ LRA.rated <- function(U,
 
 
   # Prepare ---------------------------------------------------------
-
+  # Each item's observed codes are renumbered 1..k below; report what that drops.
+  warn_dropped_categories(U$Q, U$ItemLabel, "LRA")
 
   # Calc Frequency
   # NOTE: Use lapply(seq_len, ...) instead of lapply(apply(..., 2, unique), ...)

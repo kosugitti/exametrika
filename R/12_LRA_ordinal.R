@@ -100,6 +100,8 @@ LRA.ordinal <- function(U,
   const <- 1e-6
 
   # Prepare ---------------------------------------------------------
+  # Each item's observed codes are renumbered 1..k below; report what that drops.
+  warn_dropped_categories(U$Q, U$ItemLabel, "LRA")
   score <- rowSums(U$Z * U$Q)
   zzzTotal <- apply(U$Z, 2, sum)
 

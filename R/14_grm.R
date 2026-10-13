@@ -206,6 +206,7 @@ GRM <- function(U, na = NULL, Z = NULL, w = NULL, verbose = FALSE) {
     response_type_error(tmp$response.type, "GRM")
   }
 
+  warn_dropped_categories(tmp$Q, tmp$ItemLabel, "GRM")
   tmp$Q[tmp$Z == 0] <- NA
   dat <- tmp$Q
   nitems <- NCOL(tmp$Z)

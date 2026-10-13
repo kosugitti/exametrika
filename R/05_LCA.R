@@ -276,6 +276,9 @@ LCA.nominal <- function(U, ncls = 2, na = NULL, Z = NULL, w = NULL, maxiter = 10
     stop("Please set the number of classes to a number between 2 and less than 20.")
   }
 
+  if (tmp$response.type == "ordinal") {
+    warn_dropped_categories(tmp$Q, tmp$ItemLabel, "LCA")
+  }
   tmp$Q <- remap_category_codes(tmp$Q)
   nobs <- NROW(tmp$Q)
   nitems <- NCOL(tmp$Q)

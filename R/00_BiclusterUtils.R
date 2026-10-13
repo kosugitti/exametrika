@@ -61,8 +61,80 @@ create_filter_matrix <- function(ncls) {
   return(Fil)
 }
 
+#' @title Shift polytomous category codes to start at 1
+#' @description
+#' Models whose blocks share category probabilities across items (the
+#' biclustering family) need code q to mean the same category on every item,
+#' so the codes are only shifted, never renumbered per item: if the smallest
+#' observed code is below 1 (0-based coding), every code is moved up by the
+#' same amount. A category nobody chose keeps its slot with a zero count.
+#' Missing cells (-1) are left untouched.
+#' @param Q Response matrix (nobs x nitems) with -1 marking missing cells
+#' @return Q with codes starting at 1
+#' @noRd
+shift_category_codes <- function(Q) {
+  valid <- Q != -1
+  if (any(valid)) {
+    lo <- min(Q[valid])
+    if (lo < 1) {
+      Q[valid] <- Q[valid] + (1 - lo)
+    }
+  }
+  return(Q)
+}
+
+#' @title Warn about categories dropped by a per-item renumbering
+#' @description
+#' Item-level models (LCA, LRA, GRM) renumber each item's observed codes to
+#' 1..k, because a category with no responses leaves its threshold or
+#' probability unidentified. That is harmless for the item itself, but the
+#' user should know which categories were removed and that the codes above
+#' them moved down. A category counts as dropped when it lies between the
+#' smallest code in the data and the item's own largest code; an item that
+#' simply has fewer categories than another is not reported.
+#' @param Q raw response matrix (-1 = missing)
+#' @param item_labels item labels for the message
+#' @param model name used in the message
+#' @noRd
+warn_dropped_categories <- function(Q, item_labels = NULL, model = "") {
+  valid <- Q != -1 & !is.na(Q)
+  if (!any(valid)) {
+    return(invisible(NULL))
+  }
+  if (is.null(item_labels)) {
+    item_labels <- paste0("Item", seq_len(NCOL(Q)))
+  }
+  lo <- min(Q[valid])
+  msgs <- character(0)
+  for (j in seq_len(NCOL(Q))) {
+    u <- sort(unique(Q[valid[, j], j]))
+    if (length(u) == 0) {
+      next
+    }
+    gap <- setdiff(seq(lo, max(u)), u)
+    if (length(gap) > 0) {
+      msgs <- c(msgs, sprintf(
+        "%s: category %s", item_labels[j], paste(gap, collapse = ", ")
+      ))
+    }
+  }
+  if (length(msgs) > 0) {
+    warning(
+      model, ": the following categories had no responses and were dropped; ",
+      "the categories above them were renumbered for that item.\n  ",
+      paste(msgs, collapse = "\n  "),
+      call. = FALSE
+    )
+  }
+  return(invisible(NULL))
+}
+
 #' @title Remap polytomous category codes to contiguous 1-based indices
 #' @description
+#' Per-item renumbering for the item-level models (LCA, M2 on LCA/LRA). The
+#' biclustering family uses shift_category_codes() instead. Call
+#' warn_dropped_categories() on the raw codes to report what this drops.
+#'
 #' Response matrices produced by dataFormat() preserve the caller's raw
 #' category codes (e.g. 0-indexed 0..3, or codes with gaps), with missing
 #' cells marked as -1. Biclustering/Biclustering_IRM's one-hot encoding

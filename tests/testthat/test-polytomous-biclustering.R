@@ -619,11 +619,28 @@ test_that("conf and conf_class can be combined (ordinal)", {
 # ---- Starting values (init) ---------------------------------------------
 
 test_that("init = 'auto' runs both data-based starts and keeps the larger ELBO", {
-  fit <- Biclustering(J35S500, ncls = 5, nfld = 5, method = "B", init = "auto")
+  fit <- Biclustering(J35S500, ncls = 5, nfld = 5, method = "B", init = "auto", nstart = 0)
   expect_equal(fit$init, "auto")
   expect_setequal(names(fit$init_elbo), c("quantile", "ward"))
   expect_equal(fit$init_selected, names(which.max(fit$init_elbo)))
   expect_equal(fit$elbo, max(fit$init_elbo))
+})
+
+test_that("random starts are screened, never lower the ELBO, and leave the RNG alone", {
+  a <- Biclustering(J35S500, ncls = 6, nfld = 5, method = "B", nstart = 0)
+  set.seed(42)
+  r0 <- stats::runif(1)
+  set.seed(42)
+  b <- Biclustering(J35S500, ncls = 6, nfld = 5, method = "B", nstart = 10)
+  expect_identical(stats::runif(1), r0)
+  expect_length(b$init_elbo, 12)
+  # the two data-based starts and the best 3 random starts run to convergence
+  expect_equal(sum(!is.na(b$init_elbo)), 5)
+  expect_true(all(is.finite(b$init_elbo[c("quantile", "ward")])))
+  expect_gte(b$elbo, a$elbo - 1e-8)
+  expect_equal(b$elbo, max(b$init_elbo, na.rm = TRUE))
+  c2 <- Biclustering(J35S500, ncls = 6, nfld = 5, method = "B", nstart = 10)
+  expect_equal(b$elbo, c2$elbo)
 })
 
 test_that("each init option runs a single start", {
@@ -692,5 +709,50 @@ test_that("the data-based starts handle missing responses", {
   d$Z[miss] <- 0
   fit <- Biclustering(d, ncls = 5, nfld = 5, method = "R")
   expect_true(is.finite(fit$elbo))
-  expect_true(all(is.finite(fit$init_elbo)))
+  expect_true(all(is.finite(fit$init_elbo[c("quantile", "ward")])))
+})
+
+# ---- Category codes: shifted, never renumbered per item ------------------
+
+test_that("biclustering keeps a category nobody chose in its slot", {
+  d <- J35S500
+  # item 1 loses its lowest category: recode its 1s as 2s
+  q1 <- d$Q[, 1]
+  q1[q1 == 1] <- 2
+  d$Q[, 1] <- q1
+  fit <- suppressWarnings(Biclustering(d, ncls = 4, nfld = 3, method = "B", nstart = 0))
+  expect_equal(dim(fit$FRP)[3], max(J35S500$Q[J35S500$Z == 1]))
+  # the stored codes of item 1 are not renumbered
+  expect_equal(sort(unique(fit$Q[fit$Z[, 1] == 1, 1])), sort(unique(q1[d$Z[, 1] == 1])))
+})
+
+test_that("0-based codes are shifted by one for biclustering", {
+  fit <- Biclustering(J15S3810, ncls = 3, nfld = 3, method = "B", nstart = 0)
+  expect_equal(min(fit$Q[fit$Z == 1]), 1)
+  expect_equal(dim(fit$FRP)[3], max(J15S3810$Q[J15S3810$Z == 1]) + 1)
+})
+
+test_that("item-level models warn about the categories they drop", {
+  raw <- J35S500$Q
+  raw[J35S500$Z == 0] <- NA
+  raw[, 1][raw[, 1] %in% 2] <- 3
+  d <- dataFormat(cbind(ID = J35S500$ID, as.data.frame(raw)), response.type = "ordinal")
+  expect_warning(LRA(d, nrank = 3), "category 2")
+  expect_warning(GRM(d), "category 2")
+  expect_warning(LCA(d, ncls = 3), "category 2")
+  # an item that merely has fewer categories is not reported
+  expect_silent(warn_dropped_categories(matrix(c(1, 2, 3, 1, 2, 2), ncol = 2), c("a", "b"), "LRA"))
+})
+
+test_that("dataFormat codes factors by their declared levels", {
+  lv <- c("lo", "mid", "hi")
+  df <- data.frame(
+    ID = 1:12,
+    a = factor(rep(c("lo", "hi"), 6), levels = lv),
+    b = factor(rep(c("lo", "mid", "hi"), 4), levels = lv)
+  )
+  d <- dataFormat(df, response.type = "ordinal")
+  expect_equal(sort(unique(d$Q[, "a"])), c(1, 3))
+  expect_equal(d$CategoryLabel[["a"]], c("lo", "hi"))
+  expect_equal(d$CategoryLabel[["b"]], c("lo", "mid", "hi"))
 })

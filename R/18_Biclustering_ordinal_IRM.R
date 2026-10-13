@@ -64,12 +64,14 @@ Biclustering_IRM.ordinal <- function(U,
                                      seed = 123, verbose = FALSE, ...) {
   maxiter <- resolve_deprecated_max_iter(maxiter, list(...))
   tmp <- U
-  tmp$Q <- remap_category_codes(tmp$Q)
+  # Codes are shifted, not renumbered per item: a field's items share the
+  # block probabilities, so category q must mean the same on every item.
+  tmp$Q <- shift_category_codes(tmp$Q)
 
   nitems <- NCOL(tmp$Q)
   nobs <- NROW(tmp$Q)
   const <- exp(-nitems)
-  maxQ <- max(tmp$categories)
+  maxQ <- max(tmp$Q[tmp$Z == 1])
   alpha_vec <- rep(alpha, maxQ)
 
   if (alpha <= 0) {

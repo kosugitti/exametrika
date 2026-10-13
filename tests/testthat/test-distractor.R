@@ -237,3 +237,14 @@ test_that("DistractorAnalysis adapts to nrank=4 LRA results", {
     expect_equal(dim(da4$freq_table[[j]]), c(4, 4))
   }
 })
+
+test_that("DistractorAnalysis.ratedBiclustering recovers a key coded 0", {
+  d <- J21S300
+  # shift every code down by one so that some keys become 0
+  d$Q[d$Z == 1] <- d$Q[d$Z == 1] - 1
+  d$CA <- d$CA - 1
+  d$U <- (d$Q == matrix(d$CA, nrow(d$Q), ncol(d$Q), byrow = TRUE)) * d$Z
+  fit <- Biclustering(d, ncls = 3, nfld = 3)
+  da <- DistractorAnalysis(fit)
+  expect_false(anyNA(da$CA))
+})

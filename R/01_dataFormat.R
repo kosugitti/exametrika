@@ -216,10 +216,16 @@ dataFormat <- function(data, na = NULL, id = NULL, Z = NULL, w = NULL,
         }
       }
       if (is.factor(response.matrix[[col]])) {
-        # drop unused levels so that the labels line up with the observed codes
-        f <- droplevels(response.matrix[[col]])
-        CategoryLabel[[col]] <- levels(f)
-        response.matrix[[col]] <- as.numeric(f)
+        # Codes follow the declared levels, so an unused level keeps its slot
+        # and a level means the same code on every item that declares it (the
+        # biclustering family shares category slots across a field's items).
+        # The labels list only the observed levels, in code order, because the
+        # item-level models renumber each item's observed codes to 1..k and
+        # pair the labels with them by position.
+        f <- response.matrix[[col]]
+        codes <- as.numeric(f)
+        CategoryLabel[[col]] <- levels(f)[sort(unique(codes[!is.na(codes)]))]
+        response.matrix[[col]] <- codes
       }
     }
   }

@@ -37,6 +37,14 @@ argument `init` chooses the start:
   not assume equal class sizes.
 - `"legacy"`: the earlier start; reproduces earlier results.
 
+`"auto"` also adds `nstart` random starts (default 10; `seed` sets them, and
+the session's random number stream is left untouched). The two data-based
+starts always run to convergence, so the random starts can only raise the
+ELBO; the random starts are run for 20 EM cycles and only the best 3 continue.
+On real data with fixed fields (`conf`) the likelihood surface had many more
+local optima than in simulations, and the data-based starts alone were often
+beaten by random ones.
+
 In `"quantile"` and `"ward"` the fields start from a Ward clustering of the
 items' class-mean profiles (centred per item), and the block probabilities from
 the category frequencies of each block. Both starts are invariant to the order
@@ -45,6 +53,34 @@ partition: `"quantile"` under equal class sizes, `"ward"` under unequal ones,
 and `"auto"` under both, at about the cost of one legacy fit. With `conf` the
 given fields are kept, and with `conf_class` the given classes are the single
 start. The fit records `init`, `init_selected` and `init_elbo`.
+
+## Breaking change: category codes are no longer renumbered per item
+
+**Up to now the polytomous biclustering models renumbered each item's
+observed categories to 1..k**, so on an item where nobody chose a category the
+codes above it moved down. Since 1.15.0, `Biclustering()` and
+`Biclustering_IRM()` on nominal, ordinal and rated data did this through
+`remap_category_codes()`, which was meant only to make 0-based codes usable.
+In these models the items of a field share the block's category
+probabilities, so code q must mean the same category on every item; on an item
+whose lowest category was empty the renumbering misaligned every response of
+that item with the rest of its field. This is common in practice: in
+simulated data most data sets had an item whose bottom category was empty.
+
+- The biclustering family now only shifts the codes (0-based data move up by
+  one); a category with no responses keeps its slot with a zero count, and the
+  number of categories is the largest code after the shift.
+- The item-level models (`LCA()`, `LRA()` on ordinal and rated data, `GRM()`)
+  keep renumbering each item, because a category with no responses leaves its
+  threshold or probability unidentified, but now warn which categories of which
+  items were dropped.
+- `dataFormat()` codes a factor by its declared levels: an unused level keeps
+  its code, instead of being dropped and closing the gap. The category labels
+  still list the observed levels only.
+- `M2()` and `add_M2()` on a rated `LCA()` fit compared the raw codes against
+  the renumbered profile; they now use the renumbered codes.
+- `DistractorAnalysis()` on a rated biclustering fit lost a correct answer
+  coded 0.
 
 ## Breaking change: nominal and ordinal biclustering report the ELBO
 

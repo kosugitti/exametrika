@@ -470,7 +470,9 @@ m2_from_lca <- function(x, verbose = TRUE, gc = TRUE) {
     ))
   }
 
-  out <- m2_core(profile, ncat, nobs = x$nobs, Q = x$Q, Z = x$Z)
+  # ICRP is in per-item renumbered order; the rated fit stores the raw codes,
+  # so renumber here (idempotent for the nominal fit, which stores them so).
+  out <- m2_core(profile, ncat, nobs = x$nobs, Q = remap_category_codes(x$Q), Z = x$Z)
   out$n_class <- ncls
   out$caveat <- m2_missing_note(NA_character_, x$Z)
   m2_release(gc)
@@ -653,8 +655,9 @@ add_m2_to_lca <- function(x, verbose = TRUE, gc = TRUE) {
   fitted <- m2_from_lca(x, verbose = verbose, gc = FALSE)
 
   if (talk) message("M2: computing the statistic for the independence baseline ...")
-  null_profile <- m2_null_profile(x$Q, x$Z, ncat)
-  null_fit <- m2_core(null_profile, ncat, nobs = x$nobs, Q = x$Q, Z = x$Z)
+  Qm <- remap_category_codes(x$Q)
+  null_profile <- m2_null_profile(Qm, x$Z, ncat)
+  null_fit <- m2_core(null_profile, ncat, nobs = x$nobs, Q = Qm, Z = x$Z)
   if (talk) message("M2: done.")
   x$TestFitIndicesM2 <- m2_fit_indices(fitted, null_fit, x$nobs)
   m2_release(gc)

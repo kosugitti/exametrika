@@ -32,7 +32,9 @@ Biclustering.nominal <- function(U,
                                  verbose = FALSE,
                                  alpha = 1, ...) {
   tmp <- U
-  tmp$Q <- remap_category_codes(tmp$Q)
+  # Codes are shifted, not renumbered per item: a field's items share the
+  # block probabilities, so category q must mean the same on every item.
+  tmp$Q <- shift_category_codes(tmp$Q)
   nobs <- NROW(tmp$Q)
   nitems <- NCOL(tmp$Q)
   const <- exp(-nitems)
@@ -46,7 +48,7 @@ Biclustering.nominal <- function(U,
   maxemt <- maxiter
 
   ncat <- as.vector(tmp$categories)
-  maxQ <- max(ncat)
+  maxQ <- max(tmp$Q[tmp$Z == 1])
 
   ## confirmatory
   # set conf_mat for confirmatory clustering

@@ -17,7 +17,7 @@
 # everywhere (quantile under equal class sizes, ward under unequal ones), so
 # init = "auto" runs both and keeps the larger ELBO.
 #
-# All functions take Q after remap_category_codes() (codes 1..maxQ, missing
+# All functions take Q after shift_category_codes() (codes 1..maxQ, missing
 # -1) and the missing indicator Z (1 = observed), and are invariant to the
 # order of the rows.
 
@@ -149,5 +149,47 @@ bicl_init_starts <- function(Q, Z, ncls, nfld, maxQ, init, conf_mat, conf_class_
     }
     return(bicl_init_from_partition(Q, Z, cls, fld, ncls, nfld, maxQ))
   })
+  return(starts)
+}
+
+#' Random starts
+#'
+#' Classes are a balanced random partition (numbered by mean score) and fields
+#' a balanced random partition of the items (or the given `conf`). The labels
+#' are dealt in a canonical order of the rows (by score and response pattern),
+#' so the starts do not depend on the order of the rows. The session's random
+#' number stream is saved and restored.
+#' @return named list of starts (random01, ...), each list(fldmemb, BCRM, BBRM)
+#' @noRd
+bicl_init_random_starts <- function(Q, Z, ncls, nfld, maxQ, nstart, seed, conf_mat) {
+  genv <- globalenv()
+  had_seed <- exists(".Random.seed", envir = genv, inherits = FALSE)
+  if (had_seed) {
+    old_seed <- get(".Random.seed", envir = genv, inherits = FALSE)
+  }
+  on.exit({
+    if (had_seed) {
+      assign(".Random.seed", old_seed, envir = genv)
+    } else if (exists(".Random.seed", envir = genv, inherits = FALSE)) {
+      rm(".Random.seed", envir = genv)
+    }
+  })
+  set.seed(seed)
+  s <- bicl_init_score(Q, Z)
+  ord <- do.call(order, c(list(s), unname(as.list(as.data.frame(Q * Z)))))
+  nobs <- NROW(Q)
+  nitems <- NCOL(Q)
+  starts <- lapply(seq_len(nstart), function(r) {
+    cls <- integer(nobs)
+    cls[ord] <- sample(rep_len(seq_len(ncls), nobs))
+    cls <- bicl_init_relabel(cls, s)
+    fld <- if (!is.null(conf_mat)) {
+      max.col(conf_mat, ties.method = "first")
+    } else {
+      sample(rep_len(seq_len(nfld), nitems))
+    }
+    return(bicl_init_from_partition(Q, Z, cls, fld, ncls, nfld, maxQ))
+  })
+  names(starts) <- sprintf("random%02d", seq_len(nstart))
   return(starts)
 }

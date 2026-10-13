@@ -76,11 +76,13 @@ DistractorAnalysis.ratedBiclustering <- function(x, ...) {
     Q = x$Q, Z = x$Z,
     rank_est = x$ClassEstimated,
     CA = if (!is.null(x$U)) {
-      # Recover CA from U and Q: CA[j] = category q where U[s,j]==1 for any observed s
-      apply(x$Q * x$U * x$Z, 2, function(col) {
-        vals <- col[col > 0]
-        if (length(vals) > 0) vals[1] else NA
-      })
+      # Recover CA from U and Q: CA[j] = the code of any observed response
+      # scored correct. Taken by position, not from Q * U, so that a key coded
+      # 0 is not lost (it was before 2.2.0).
+      vapply(seq_len(NCOL(x$Q)), function(j) {
+        q <- x$Q[x$U[, j] == 1 & x$Z[, j] == 1, j]
+        if (length(q) > 0) q[1] else NA_real_
+      }, numeric(1))
     } else {
       stop("Cannot determine correct answers from result object")
     },

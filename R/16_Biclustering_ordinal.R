@@ -30,6 +30,13 @@
 #'   In "quantile" and "ward" the fields start from a Ward clustering of the
 #'   items' class-mean profiles; with `conf` the fields are the given ones, and
 #'   with `conf_class` the classes are the given ones (a single start).
+#' @param nstart Number of random starts added to `init = "auto"` (ignored for
+#'   the other `init` values and with `conf_class`). Every start is first run
+#'   for a few EM cycles and only the best few by ELBO are run to convergence,
+#'   so the cost grows slowly with `nstart`. Set 0 for the two data-based
+#'   starts only.
+#' @param seed Seed of the random starts. The random number stream of the
+#'   session is left untouched, so the fit is reproducible.
 #' @param ... Additional arguments passed to specific methods.
 #' @export
 Biclustering.ordinal <- function(U,
@@ -43,15 +50,19 @@ Biclustering.ordinal <- function(U,
                                  verbose = FALSE,
                                  alpha = 1,
                                  init = c("auto", "quantile", "ward", "legacy"),
+                                 nstart = 10,
+                                 seed = 1,
                                  ...) {
   tmp <- U
-  tmp$Q <- remap_category_codes(tmp$Q)
+  # Codes are shifted, not renumbered per item: a field's items share the
+  # block probabilities, so category q must mean the same on every item.
+  tmp$Q <- shift_category_codes(tmp$Q)
   nobs <- NROW(tmp$Q)
   nitems <- NCOL(tmp$Q)
   const <- exp(-nitems)
   maxemt <- maxiter
   ncat <- as.vector(tmp$categories)
-  maxQ <- max(ncat)
+  maxQ <- max(tmp$Q[tmp$Z == 1])
   # if (length(unique(ncat)) > 1) {
   #   stop("Error: Variables have different numbers of categories. Nominal data processing requires the same number of categories for all variables.")
   # }
@@ -192,7 +203,7 @@ Biclustering.ordinal <- function(U,
 
   # The EM from one set of starting values (field membership and block
   # probabilities); run once per start requested by `init`.
-  run_em <- function(fldmemb, BCRM, BBRM) {
+  run_em <- function(fldmemb, BCRM, BBRM, maxit = maxemt, quiet = FALSE) {
     # -Inf, not -1/const = -exp(J): the old sentinel sits above the real
     # log-likelihood on short tests with many respondents, which ended the
     # loop after one cycle while reporting convergence. The first pass skips
@@ -213,11 +224,13 @@ Biclustering.ordinal <- function(U,
         FLG <- FALSE
         break
       }
-      if (emt >= maxemt) {
+      if (emt >= maxit) {
         converge <- FALSE
         FLG <- FALSE
-        message("\nReached the maximum number of iterations.")
-        message("Warning: Algorithm may not have converged. Interpret results with caution.")
+        if (!quiet) {
+          message("\nReached the maximum number of iterations.")
+          message("Warning: Algorithm may not have converged. Interpret results with caution.")
+        }
         break
       }
 
@@ -417,12 +430,43 @@ Biclustering.ordinal <- function(U,
       tmp$Q, tmp$Z, ncls, nfld, maxQ, init, conf_mat, conf_class_mat
     )
   }
-  fits <- lapply(starts, function(s) run_em(s$fldmemb, s$BCRM, s$BBRM))
-  # Keep the start with the largest ELBO (ties to the first, "quantile")
-  init_elbo <- vapply(fits, function(f) {
+  if (init == "auto" && nstart > 0 && is.null(conf_class_mat)) {
+    starts <- c(starts, bicl_init_random_starts(
+      tmp$Q, tmp$Z, ncls, nfld, maxQ, nstart, seed, conf_mat
+    ))
+  }
+  fit_elbo <- function(f) {
     e <- vb_fit_block(ZU, f$clsmemb, f$fldmemb, log(pmax(f$BCRM, 0) + const), 0)$elbo
     return(if (is.finite(e)) e else -Inf)
-  }, numeric(1))
+  }
+  # The data-based starts always run to convergence, so adding random starts
+  # can only raise the ELBO. The random starts are screened: each runs for a
+  # few cycles and only the best few continue; the dropped ones report NA in
+  # init_elbo.
+  short_iter <- getOption("exametrika.bicl_short_iter", 20L)
+  nkeep <- getOption("exametrika.bicl_nkeep", 3L)
+  is_random <- startsWith(names(starts), "random")
+  init_elbo <- stats::setNames(rep(NA_real_, length(starts)), names(starts))
+  fits <- vector("list", length(starts))
+  for (i in which(!is_random)) {
+    fits[[i]] <- run_em(starts[[i]]$fldmemb, starts[[i]]$BCRM, starts[[i]]$BBRM)
+  }
+  if (any(is_random)) {
+    ri <- which(is_random)
+    short <- lapply(starts[ri], function(s) {
+      return(run_em(s$fldmemb, s$BCRM, s$BBRM, maxit = short_iter, quiet = TRUE))
+    })
+    top <- order(-vapply(short, fit_elbo, numeric(1)))[seq_len(min(nkeep, length(ri)))]
+    for (k in top) {
+      f <- short[[k]]
+      g <- run_em(f$fldmemb, f$BCRM, f$BBRM, maxit = max(maxemt - f$emt, 1))
+      g$emt <- g$emt + f$emt
+      fits[[ri[k]]] <- g
+    }
+  }
+  keep <- which(!vapply(fits, is.null, logical(1)))
+  init_elbo[keep] <- vapply(fits[keep], fit_elbo, numeric(1))
+  # Keep the start with the largest ELBO (ties to the first listed)
   best <- fits[[which.max(init_elbo)]]
   clsmemb <- best$clsmemb
   fldmemb <- best$fldmemb

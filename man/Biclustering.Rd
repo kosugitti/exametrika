@@ -57,6 +57,8 @@ Biclustering(U, ...)
   verbose = FALSE,
   alpha = 1,
   init = c("auto", "quantile", "ward", "legacy"),
+  nstart = 10,
+  seed = 1,
   ...
 )
 
@@ -158,6 +160,15 @@ class ladder); reproduces earlier results
 In "quantile" and "ward" the fields start from a Ward clustering of the
 items' class-mean profiles; with \code{conf} the fields are the given ones, and
 with \code{conf_class} the classes are the given ones (a single start).}
+
+\item{nstart}{Number of random starts added to \code{init = "auto"} (ignored for
+the other \code{init} values and with \code{conf_class}). Every start is first run
+for a few EM cycles and only the best few by ELBO are run to convergence,
+so the cost grows slowly with \code{nstart}. Set 0 for the two data-based
+starts only.}
+
+\item{seed}{Seed of the random starts. The random number stream of the
+session is left untouched, so the fit is reproducible.}
 }
 \value{
 An object of class "exametrika" and "Biclustering" containing:

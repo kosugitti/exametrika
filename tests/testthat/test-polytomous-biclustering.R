@@ -5,9 +5,10 @@ library(exametrika)
 # 理論構造: 累積パターン, 5cls × 5fld × 5cat
 # ================================================================
 
-# Pinned to estimation = "GTM": these structural and fit-index snapshots track
-# the filter-based path. The new isotonic default is exercised separately below.
-result_ord <- Biclustering(J35S500, ncls = 5, nfld = 5, method = "R", estimation = "GTM", mic = TRUE, maxiter = 200)
+# Pinned to estimation = "GTM" and init = "legacy": these structural and
+# fit-index snapshots track the filter-based path from the start used up to
+# 2.2.0. The isotonic default and the new starts are exercised separately below.
+result_ord <- Biclustering(J35S500, ncls = 5, nfld = 5, method = "R", estimation = "GTM", mic = TRUE, maxiter = 200, init = "legacy")
 
 test_that("ordinal Biclustering converges", {
   expect_true(result_ord$converge)
@@ -612,4 +613,84 @@ test_that("conf and conf_class can be combined (ordinal)", {
   est <- apply(res$ClassMembership, 1, which.max)
   expect_equal(as.numeric(res$FieldEstimated), conf_field_ord)
   expect_equal(as.numeric(est), conf_class_ord)
+})
+
+
+# ---- Starting values (init) ---------------------------------------------
+
+test_that("init = 'auto' runs both data-based starts and keeps the larger ELBO", {
+  fit <- Biclustering(J35S500, ncls = 5, nfld = 5, method = "B", init = "auto")
+  expect_equal(fit$init, "auto")
+  expect_setequal(names(fit$init_elbo), c("quantile", "ward"))
+  expect_equal(fit$init_selected, names(which.max(fit$init_elbo)))
+  expect_equal(fit$elbo, max(fit$init_elbo))
+})
+
+test_that("each init option runs a single start", {
+  for (i in c("quantile", "ward", "legacy")) {
+    fit <- Biclustering(J35S500, ncls = 5, nfld = 5, method = "R", init = i)
+    expect_equal(names(fit$init_elbo), i)
+    expect_equal(fit$elbo, unname(fit$init_elbo))
+  }
+  expect_error(Biclustering(J35S500, ncls = 5, nfld = 5, init = "random"))
+})
+
+test_that("the data-based starts beat the legacy start on J35S500", {
+  # A regression check on this data set, not a general guarantee: the legacy
+  # start stops at a local optimum here.
+  for (arm in list(list(method = "B"), list(method = "R", estimation = "isotonic"))) {
+    a <- do.call(Biclustering, c(list(J35S500, ncls = 5, nfld = 5, init = "auto"), arm))
+    l <- do.call(Biclustering, c(list(J35S500, ncls = 5, nfld = 5, init = "legacy"), arm))
+    expect_gt(a$elbo, l$elbo)
+  }
+})
+
+test_that("the data-based starts do not depend on the order of the rows", {
+  Q <- remap_category_codes(J35S500$Q)
+  Z <- J35S500$Z
+  perm <- rev(seq_len(NROW(Q)))
+  for (g in list(bicl_init_class_quantile, bicl_init_class_ward)) {
+    expect_identical(g(Q, Z, 5)[perm], g(Q[perm, ], Z[perm, ], 5))
+  }
+  a <- Biclustering(J35S500, ncls = 5, nfld = 5, method = "B")
+  d <- J35S500
+  d$Q <- d$Q[perm, ]
+  d$Z <- d$Z[perm, ]
+  d$ID <- d$ID[perm]
+  b <- Biclustering(d, ncls = 5, nfld = 5, method = "B")
+  expect_equal(a$elbo, b$elbo, tolerance = 1e-8)
+  expect_equal(unname(a$ClassEstimated[perm]), unname(b$ClassEstimated))
+})
+
+test_that("the weighted Ward start matches respondent-level Ward on untied scores", {
+  set.seed(1)
+  v <- stats::rnorm(200)
+  h <- stats::hclust(stats::dist(v), method = "ward.D2")
+  for (k in c(3, 6)) {
+    expect_identical(
+      bicl_init_class_ward(matrix(v), matrix(1, 200, 1), k),
+      bicl_init_relabel(as.integer(stats::cutree(h, k)), v)
+    )
+  }
+})
+
+test_that("init keeps the given fields (conf) and classes (conf_class)", {
+  conf <- rep(1:5, each = 7)
+  fit <- Biclustering(J35S500, ncls = 5, conf = conf, method = "B", init = "auto")
+  expect_equal(unname(fit$FieldEstimated), conf)
+  cc <- rep(1:5, length.out = NROW(J35S500$Q))
+  fit <- Biclustering(J35S500, nfld = 5, conf_class = cc, method = "B", init = "auto")
+  expect_equal(names(fit$init_elbo), "conf_class")
+  expect_equal(unname(fit$ClassEstimated), cc)
+})
+
+test_that("the data-based starts handle missing responses", {
+  d <- J35S500
+  set.seed(2)
+  miss <- matrix(stats::runif(length(d$Q)) < 0.05, nrow = NROW(d$Q))
+  d$Q[miss] <- -1
+  d$Z[miss] <- 0
+  fit <- Biclustering(d, ncls = 5, nfld = 5, method = "R")
+  expect_true(is.finite(fit$elbo))
+  expect_true(all(is.finite(fit$init_elbo)))
 })

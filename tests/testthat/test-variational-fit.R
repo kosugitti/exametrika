@@ -60,7 +60,8 @@ test_that("polytomous biclustering: log_lik is the elbo and the EM ascends it", 
   dat <- J15S3810
   for (arm in list(list(method = "B"), list(method = "R", estimation = "isotonic"))) {
     out <- capture.output(
-      fit <- do.call(Biclustering, c(list(dat, ncls = 3, nfld = 3, verbose = TRUE), arm)),
+      # one start, so the printed trace is a single EM run
+      fit <- do.call(Biclustering, c(list(dat, ncls = 3, nfld = 3, verbose = TRUE, init = "quantile"), arm)),
       type = "message"
     )
     expect_equal(fit$log_lik, fit$elbo)

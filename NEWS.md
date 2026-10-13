@@ -22,6 +22,30 @@ function and in `R/00_VariationalFit.R`:
   by Keribin, Brault, Celeux and Govaert (2015), on the same scale as AIC and
   BIC here (smaller is better).
 
+## Breaking change: ordinal biclustering starts from the data (`init`)
+
+**The default fit of `Biclustering()` on ordinal data changes.** The EM is
+deterministic but converges to a local optimum, and the start used up to now
+(fields = items split by their median, block probabilities = a ladder common
+to every field) stopped at one in over 80% of simulated data sets. The new
+argument `init` chooses the start:
+
+- `"auto"` (default) runs from both `"quantile"` and `"ward"` and keeps the fit
+  with the larger ELBO.
+- `"quantile"`: classes from equal-count bins of the respondent score.
+- `"ward"`: classes from Ward clustering of the respondent score, which does
+  not assume equal class sizes.
+- `"legacy"`: the earlier start; reproduces earlier results.
+
+In `"quantile"` and `"ward"` the fields start from a Ward clustering of the
+items' class-mean profiles (centred per item), and the block probabilities from
+the category frequencies of each block. Both starts are invariant to the order
+of the rows. In simulations they reached the level of a start at the true
+partition: `"quantile"` under equal class sizes, `"ward"` under unequal ones,
+and `"auto"` under both, at about the cost of one legacy fit. With `conf` the
+given fields are kept, and with `conf_class` the given classes are the single
+start. The fit records `init`, `init_selected` and `init_elbo`.
+
 ## Breaking change: nominal and ordinal biclustering report the ELBO
 
 **The `log_lik` of `Biclustering()` and `Biclustering_IRM()` on nominal and

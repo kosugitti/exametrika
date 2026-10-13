@@ -56,6 +56,7 @@ Biclustering(U, ...)
   maxiter = 1000,
   verbose = FALSE,
   alpha = 1,
+  init = c("auto", "quantile", "ward", "legacy"),
   ...
 )
 
@@ -141,6 +142,22 @@ increasing. Default is FALSE.}
 \item{beta2}{Beta distribution parameter 2 for prior density of field reference matrix. Default is 1.}
 
 \item{alpha}{Dirichlet distribution concentration parameter for prior density of field reference probabilities. Default is 1.}
+
+\item{init}{Starting values of the EM (character string). The EM is
+deterministic but converges to a local optimum, so the start matters:
+\itemize{
+\item "auto" (default): run from both "quantile" and "ward" and keep the fit
+with the larger ELBO
+\item "quantile": classes from equal-count bins of the respondent score
+\item "ward": classes from Ward clustering of the respondent score (does not
+assume equal class sizes)
+\item "legacy": the start used up to 2.2.0 (fields by item median, a common
+class ladder); reproduces earlier results
+}
+
+In "quantile" and "ward" the fields start from a Ward clustering of the
+items' class-mean profiles; with \code{conf} the fields are the given ones, and
+with \code{conf_class} the classes are the given ones (a single start).}
 }
 \value{
 An object of class "exametrika" and "Biclustering" containing:
@@ -198,6 +215,9 @@ complete-data log-likelihood.}
 \item{ICL}{Integrated completed likelihood criterion (Biernacki, Celeux and
 Govaert, 2000) in its BIC-type approximation, on the same scale as AIC and
 BIC (-2 log scale, smaller is better).}
+\item{init, init_selected, init_elbo}{Ordinal data only. The \code{init}
+requested, the start whose fit is returned, and the ELBO reached from
+each start that was run. Since 2.2.0.}
 \item{SOACflg}{Logical flag indicating whether Strongly Ordinal Alignment Condition is satisfied}
 \item{WOACflg}{Logical flag indicating whether Weakly Ordinal Alignment Condition is satisfied}
 }

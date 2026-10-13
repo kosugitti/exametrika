@@ -144,6 +144,9 @@ build_conf_mat <- function(conf, nitems) {
 #'  \item{ICL}{Integrated completed likelihood criterion (Biernacki, Celeux and
 #'    Govaert, 2000) in its BIC-type approximation, on the same scale as AIC and
 #'    BIC (-2 log scale, smaller is better).}
+#'  \item{init, init_selected, init_elbo}{Ordinal data only. The \code{init}
+#'    requested, the start whose fit is returned, and the ELBO reached from
+#'    each start that was run. Since 2.2.0.}
 #'  \item{SOACflg}{Logical flag indicating whether Strongly Ordinal Alignment Condition is satisfied}
 #'  \item{WOACflg}{Logical flag indicating whether Weakly Ordinal Alignment Condition is satisfied}
 #' }

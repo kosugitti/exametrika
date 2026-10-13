@@ -32,7 +32,7 @@
 #'   with `conf_class` the classes are the given ones (a single start).
 #' @param nstart Number of random starts added to `init = "auto"` (ignored for
 #'   the other `init` values and with `conf_class`). Every start is first run
-#'   for a few EM cycles and only the best few by ELBO are run to convergence,
+#'   for 100 EM cycles and only the best 3 by ELBO are run to convergence,
 #'   so the cost grows slowly with `nstart`. Set 0 for the two data-based
 #'   starts only.
 #' @param seed Seed of the random starts. The random number stream of the
@@ -443,7 +443,7 @@ Biclustering.ordinal <- function(U,
   # can only raise the ELBO. The random starts are screened: each runs for a
   # few cycles and only the best few continue; the dropped ones report NA in
   # init_elbo.
-  short_iter <- getOption("exametrika.bicl_short_iter", 20L)
+  short_iter <- getOption("exametrika.bicl_short_iter", 100L)
   nkeep <- getOption("exametrika.bicl_nkeep", 3L)
   is_random <- startsWith(names(starts), "random")
   init_elbo <- stats::setNames(rep(NA_real_, length(starts)), names(starts))

@@ -163,7 +163,7 @@ with \code{conf_class} the classes are the given ones (a single start).}
 
 \item{nstart}{Number of random starts added to \code{init = "auto"} (ignored for
 the other \code{init} values and with \code{conf_class}). Every start is first run
-for a few EM cycles and only the best few by ELBO are run to convergence,
+for 100 EM cycles and only the best 3 by ELBO are run to convergence,
 so the cost grows slowly with \code{nstart}. Set 0 for the two data-based
 starts only.}
 

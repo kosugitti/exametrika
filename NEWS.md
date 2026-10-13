@@ -40,7 +40,7 @@ argument `init` chooses the start:
 `"auto"` also adds `nstart` random starts (default 10; `seed` sets them, and
 the session's random number stream is left untouched). The two data-based
 starts always run to convergence, so the random starts can only raise the
-ELBO; the random starts are run for 20 EM cycles and only the best 3 continue.
+ELBO; the random starts are run for 100 EM cycles and only the best 3 continue.
 On real data with fixed fields (`conf`) the likelihood surface had many more
 local optima than in simulations, and the data-based starts alone were often
 beaten by random ones.

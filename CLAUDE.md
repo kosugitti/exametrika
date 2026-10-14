@@ -470,8 +470,10 @@ ELBO 系の適合度・`init`/`nstart`・カテゴリ番号の詰め直し廃止
    返り値は閾値・係数・単体・対数尤度・回答者ごとの対数尤度・母数の数。多値 LDLRA・LDB・BINET の部品にもなる。
    設計の正本は下の Future Work の case C の節と A10(多値BNM応用論文)。
 2. **DAG 探索(山登り法)と同値類の道具を取り込む**: 秘書セッションの試作(2026-10-14，隣接行列で入出力，
-   計算は stats のみで igraph・bnlearn 不使用)。置き場所 `02_研究/お遍路さん/多値BNM論文/Niデータ検証/`，
-   経緯は同所の `結果メモ_20261014.md`。
+   計算は stats のみで igraph・bnlearn 不使用)。**置き場所は独立プロジェクト A11 の `Git/polytomous-bn/`**
+   (`02_研究/多値BN` からリンク，ローカル git のみ・GitHub リモートなし)。関数は `R/` 以下，Ni データの再分析と
+   経緯は `ni_reanalysis/`(`結果メモ_20261014.md`)。`fit_mo_cumprobit` は空のカテゴリでも閾値の初期値が有限に
+   なるよう修正済み(ブートストラップ対策，10/14)。
    - `mo_cumprobit.R`: `fit_mo_cumprobit(y, X, alpha, prior_sd_b, K, D)` と補助
    - `hc_mo.R`: `make_scorer()`(ノードと親の組ごとの BIC を使い回す)，`hill_climb()`(辺の追加・削除・反転の
      最良改善，親の数の上限つき)，`hc_restarts()`(無作為な初期 DAG から多重スタート)

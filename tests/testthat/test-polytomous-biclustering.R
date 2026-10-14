@@ -1,5 +1,11 @@
 library(exametrika)
 
+# Tier 2 (see CLAUDE.md, two-tier test policy): this file fits full-size data at
+# file scope and takes about five minutes, so it is skipped on CRAN as a whole.
+# A top-level skip stops the file before any of the fits below run. The CRAN
+# smoke checks for the same models are in test-polytomous-biclustering-smoke.R.
+skip_on_cran()
+
 # ================================================================
 # J35S500: ordinal Biclustering (Ranklustering)
 # Planted structure: cumulative pattern, 5 classes x 5 fields x 5 categories

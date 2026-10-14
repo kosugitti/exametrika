@@ -397,8 +397,7 @@ end of each epoch.
 # exametrika 2.0.1
 
 A patch release: two bug fixes, no new features and no change to any estimate.
-Released on GitHub first; the CRAN submission follows once the one-month cadence
-since 2.0.0 (accepted 2026-08-20) has passed.
+Released on GitHub only (2026-08-25); these fixes reached CRAN with 2.1.0.
 
 ## Bug Fixes
 

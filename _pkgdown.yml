@@ -161,10 +161,11 @@ reference:
     - add_M2
 
   - title: S3 Methods
-    desc: Plot and print methods for exametrika objects
+    desc: Plot, print and predict methods for exametrika objects
     contents:
     - plot.exametrika
     - print.exametrika
+    - predict.exametrika
 
   - title: Internal
     desc: Internal helper functions (not intended for direct use)

@@ -74,6 +74,51 @@ plot(result.LRA, type = "TRP")
 plot(result.LRA, type = "LRD")
 ```
 
+## Classifying New Respondents with `predict()`
+
+Once a model is fitted, `predict()` assigns new respondents to its classes or
+ranks. The estimated parameters are held fixed and one E-step is run on the
+new responses, so the new respondents do not change the model. This is useful
+when the model is built on one group and applied to another, for example a
+later cohort that took the same test.
+
+Here the model is fitted to the first 400 examinees and then used to classify
+the remaining 100.
+
+```{r predict-split, message=FALSE, warning=FALSE}
+X <- J15S500$U
+X[J15S500$Z == 0] <- NA
+fit <- LRA(dataFormat(X[1:400, ]), nrank = 6)
+pred <- predict(fit, X[401:500, ])
+pred
+head(round(pred$Membership, 3))
+head(pred$Estimate)
+```
+
+`newdata` can be a matrix or data frame with the items in columns, or an object
+made by `dataFormat()`. Items are matched by name, so the columns may come in
+any order and extra columns are ignored; a missing item is an error. Missing
+responses (`NA`, or the codes given in `na`) are simply left out of the
+likelihood, so a respondent who answered only some items still gets a
+membership. Polytomous responses must use the coding of the fitted data; a
+category that the fitted data never used for an item cannot be scored and is
+treated as missing, with a warning.
+
+`pred$log_lik` holds each respondent's log-likelihood under the model. Summed
+over held-out respondents, it gives a predictive criterion for comparing models
+fitted to the same training data:
+
+```{r predict-compare, message=FALSE, warning=FALSE}
+fit4 <- LRA(dataFormat(X[1:400, ]), nrank = 4)
+c(nrank4 = sum(predict(fit4, X[401:500, ])$log_lik),
+  nrank6 = sum(pred$log_lik))
+```
+
+On the data a model was fitted to, `predict()` reproduces the memberships stored
+in the fit. It works the same way for `LCA()` and for `Biclustering()` /
+Ranklustering, with binary, nominal, ordinal and rated data; for biclustering
+the field memberships of the items are held fixed as well.
+
 ## LRA for Ordinal Data
 
 LRA can also handle ordinal scale data. The `mic` option enforces monotonic increasing constraints.

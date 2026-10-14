@@ -2,27 +2,43 @@
 
 * local macOS (aarch64-apple-darwin25.0.0), R 4.6.1: 0 errors, 0 warnings,
   1 NOTE (HTML manual validation, an artifact of the local HTML Tidy version)
-* win-builder R-devel (2026-09-21 r90579 ucrt): OK, check time 322 s
-* R-hub v2 (R-devel): linux and windows OK. The macos-arm64 job failed while
-  building the dependency mvtnorm from source (symbol not found:
-  '__FortranAModReal8'), before exametrika itself was built; this appears to
-  be a toolchain issue on the runner.
+* win-builder R-devel: (pending)
+* GitHub Actions (commit 79f33d9): macOS, Windows and Ubuntu on R release,
+  Ubuntu on R-devel and R oldrel-1: Status OK (0 errors, 0 warnings, 0 notes)
 
 ## R CMD check results
 
-0 errors | 0 warnings | 0 notes
+(to be filled in from win-builder before submission)
 
-## This is a minor release (2.1.0)
+Locally: 0 errors | 0 warnings | 1 note. The note is "Skipping checking HTML
+validation: 'tidy' doesn't look like recent enough HTML Tidy", an artifact of
+the local HTML Tidy version.
 
-* Fixes to LRA(method = "SOM"), which had drifted from the reference
-  implementation: the presentation order was frozen across epochs when `seed`
-  was given, and the monotonicity sort under `mic = TRUE` was applied per epoch
-  instead of per respondent. Estimates from method = "SOM" change accordingly,
-  hence the minor version bump. The SOM inner loop now runs in C++.
-* Ordinal Biclustering now rolls back both parameter arrays together when an
-  EM sweep is rejected.
-* graphics functions used by the raster Array plot are now imported in
-  NAMESPACE.
+## This is a minor release (2.2.0)
 
-It has been more than one month since the previous release (2.0.0, accepted
-2026-08-20).
+* New `predict()` method: classifies new respondents with a fitted latent
+  class, latent rank or biclustering model, holding the estimated parameters
+  fixed.
+* All latent class, latent rank and biclustering fits now report the evidence
+  lower bound, the respondent-side marginal log-likelihood, the posterior
+  entropy and ICL. For nominal and ordinal biclustering `log_lik` is now the
+  evidence lower bound.
+* Ordinal biclustering gains data-based starting values and a few screened
+  random starts (`init`, `nstart`, `seed`); the session's random number stream
+  is left untouched.
+* Fixes that change estimates, hence the minor version bump and not a patch:
+  category codes are no longer renumbered per item in the biclustering family;
+  memberships are now the posterior under the returned parameters; the
+  biclustering EM rolls back field memberships together with the reference
+  profiles; SOAC/WOAC for ordinal biclustering are judged on the model; and
+  about fifty further estimation fixes from a pre-release audit (see NEWS.md).
+  The reference values used in the tests were regenerated from the corrected
+  reference implementation.
+
+## Reverse dependencies
+
+ggExametrika (the only reverse dependency on CRAN) passes its tests against
+this version.
+
+It has been more than one month since the previous release (2.1.0, accepted
+2026-09-25).

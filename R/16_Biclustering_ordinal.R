@@ -585,9 +585,6 @@ Biclustering.ordinal <- function(U,
     }
   }
 
-  TRP <- colSums(BFRP1)
-  TRPlag <- TRP[2:ncls]
-  TRPmic <- sum(TRPlag[1:(ncls - 1)] - TRP[1:(ncls - 1)] < 0, na.rm = TRUE)
 
   model_esp <- matrix(0, nrow = nfld, ncol = ncls)
   for (f in 1:nfld) {
@@ -597,7 +594,19 @@ Biclustering.ordinal <- function(U,
   }
   norm_frp <- (model_esp - 1) / (maxQ - 1)
   FRPIndex <- IRPindex(norm_frp)
-  FRPmic <- sum(abs(FRPIndex$C))
+  # The isotonic step stops at a feasibility tolerance of 1e-6 on the
+  # cumulative probabilities, so allow that much in the alignment checks
+  FRPmic <- sum(FRPIndex$C < -1e-6)
+  # TRP from the model, as in the binary and rated fits: the expected test
+  # score of each class/rank, sum over fields of (field size x field expected
+  # score). Monotone FRPs give a monotone TRP, so SOAC and WOAC judge the
+  # estimates and not the sampling noise in the data.
+  TRP <- colSums(model_esp * flddist)
+  # The same profile from the data: mean observed score of the class members on
+  # each field, summed over fields (NA where a class has no member)
+  TRP_empirical <- colSums(BFRP2 * flddist)
+  TRPlag <- TRP[2:ncls]
+  TRPmic <- sum(TRPlag[1:(ncls - 1)] - TRP[1:(ncls - 1)] < -1e-6 * nitems * (maxQ - 1), na.rm = TRUE)
 
   SOACflg <- WOACflg <- FALSE
   if (TRPmic == 0) {
@@ -638,6 +647,7 @@ Biclustering.ordinal <- function(U,
     FRP = BCRM,
     FRPIndex = FRPIndex,
     TRP = TRP,
+    TRP_empirical = TRP_empirical,
     CMD = colSums(clsmemb),
     RMD = colSums(clsmemb),
     FieldMembership = fldmemb,

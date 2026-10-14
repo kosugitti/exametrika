@@ -56,6 +56,21 @@ and `"auto"` under both, at about the cost of one legacy fit. With `conf` the
 given fields are kept, and with `conf_class` the given classes are the single
 start. The fit records `init`, `init_selected` and `init_elbo`.
 
+## Breaking change: ordinal biclustering judges SOAC/WOAC on the model
+
+The isotonic fit of ordinal Ranklustering constrains the field reference
+profiles, but `SOACflg` and `WOACflg` were judged on a test reference profile
+built from data-weighted counts, which the constraint does not reach. A single
+dip from sampling noise turned SOAC off even when every FRP was monotone, and
+more often with more ranks. `TRP` of `Biclustering()` (ordinal) and
+`Biclustering_IRM()` (ordinal) is now computed from the model, as for binary
+and rated data: the sum over fields of field size times the field expected
+score. A monotone FRP thus gives a monotone TRP, and the isotonic fit always
+satisfies SOAC. The checks allow the feasibility tolerance of the isotonic step
+(1e-6). The profile from the data is returned as `TRP_empirical` (mean observed
+score of the class members, summed over fields); its departure from `TRP`
+shows how far the model is from the data. `TRP` values change.
+
 ## Breaking change: category codes are no longer renumbered per item
 
 **Up to now the polytomous biclustering models renumbered each item's

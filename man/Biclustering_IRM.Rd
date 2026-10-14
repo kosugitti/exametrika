@@ -208,7 +208,9 @@ For ordinal data, the returned list includes:
 \item{FRP}{Field Reference Profile (BCRM), a 3D array (nfld x ncls x maxQ).}
 \item{FRPIndex}{Index of FRP includes the item location parameters B and Beta,
 the slope parameters A and Alpha, and the monotonicity indices C and Gamma.}
-\item{TRP}{Test Reference Profile.}
+\item{TRP}{Test Reference Profile, computed from the model (since 2.2.0).}
+\item{TRP_empirical}{The same profile from the data (mean observed scores
+of the class members). Since 2.2.0.}
 \item{BFRP}{Bicluster Field Reference Profile (expected scores), a list with
 Weighted and Observed components.}
 \item{LFD}{Latent Field Distribution.}

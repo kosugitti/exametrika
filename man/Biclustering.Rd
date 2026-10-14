@@ -201,7 +201,14 @@ For binary data, computed directly from the FRP matrix (correct response rates).
 For ordinal data, computed from normalized expected scores: (E[score]-1)/(maxQ-1),
 which maps expected scores from [1, maxQ] to [0, 1] for comparability with the binary case.
 Not computed for nominal data (no natural category ordering).}
-\item{TRP}{Test Reference Profile - expected score for examinees in each class/rank}
+\item{TRP}{Test Reference Profile - expected score for examinees in each class/rank.
+For ordinal data it is computed from the model since 2.2.0 (the sum over
+fields of field size times the field expected score), as for binary data,
+so SOAC and WOAC judge the estimates.}
+\item{TRP_empirical}{Ordinal data only. The same profile from the data: the
+mean observed score of the members of each class/rank, summed over fields.
+Its departure from \code{TRP} shows how far the model is from the data.
+Since 2.2.0.}
 \item{CMD/RMD}{Class/Rank Membership Distribution - sum of membership probabilities across examinees}
 \item{FieldMembership}{Matrix showing the probabilities of each item belonging to each field}
 \item{ClassMembership}{Matrix showing the probabilities of each examinee belonging to each class/rank}

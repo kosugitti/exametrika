@@ -756,3 +756,13 @@ test_that("dataFormat codes factors by their declared levels", {
   expect_equal(d$CategoryLabel[["a"]], c("lo", "hi"))
   expect_equal(d$CategoryLabel[["b"]], c("lo", "mid", "hi"))
 })
+
+test_that("isotonic Ranklustering satisfies SOAC, judged on the model TRP", {
+  # The empirical profile dips between ranks 1 and 2 here; the model TRP does not
+  fit <- Biclustering(J35S500, ncls = 8, nfld = 5, method = "R", nstart = 0, verbose = FALSE)
+  expect_true(fit$SOACflg)
+  expect_true(fit$WOACflg)
+  expect_equal(unname(fit$TRP), unname(colSums(apply(fit$FRP, c(1, 2), function(p) sum(seq_along(p) * p)) * fit$LFD)))
+  expect_length(fit$TRP_empirical, 8)
+  expect_true(all(diff(fit$TRP) >= -1e-6 * 35 * 4))
+})

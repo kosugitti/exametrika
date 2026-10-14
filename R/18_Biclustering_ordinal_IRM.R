@@ -21,7 +21,9 @@
 #'  \item{FRP}{Field Reference Profile (BCRM), a 3D array (nfld x ncls x maxQ).}
 #'  \item{FRPIndex}{Index of FRP includes the item location parameters B and Beta,
 #'  the slope parameters A and Alpha, and the monotonicity indices C and Gamma.}
-#'  \item{TRP}{Test Reference Profile.}
+#'  \item{TRP}{Test Reference Profile, computed from the model (since 2.2.0).}
+#'  \item{TRP_empirical}{The same profile from the data (mean observed scores
+#'    of the class members). Since 2.2.0.}
 #'  \item{BFRP}{Bicluster Field Reference Profile (expected scores), a list with
 #'  Weighted and Observed components.}
 #'  \item{LFD}{Latent Field Distribution.}
@@ -318,9 +320,6 @@ Biclustering_IRM.ordinal <- function(U,
     }
   }
 
-  TRP <- colSums(BFRP1)
-  TRPlag <- TRP[2:ncls]
-  TRPmic <- sum(TRPlag[1:(ncls - 1)] - TRP[1:(ncls - 1)] < 0, na.rm = TRUE)
 
   ## FRPIndex: normalized expected score -> IRPindex
   model_esp <- matrix(0, nrow = nfld, ncol = ncls)
@@ -331,7 +330,19 @@ Biclustering_IRM.ordinal <- function(U,
   }
   norm_frp <- (model_esp - 1) / (maxQ - 1)
   FRPIndex <- IRPindex(norm_frp)
-  FRPmic <- sum(abs(FRPIndex$C))
+  # The isotonic step stops at a feasibility tolerance of 1e-6 on the
+  # cumulative probabilities, so allow that much in the alignment checks
+  FRPmic <- sum(FRPIndex$C < -1e-6)
+  # TRP from the model, as in the binary and rated fits: the expected test
+  # score of each class/rank, sum over fields of (field size x field expected
+  # score). Monotone FRPs give a monotone TRP, so SOAC and WOAC judge the
+  # estimates and not the sampling noise in the data.
+  TRP <- colSums(model_esp * flddist)
+  # The same profile from the data: mean observed score of the class members on
+  # each field, summed over fields (NA where a class has no member)
+  TRP_empirical <- colSums(BFRP2 * flddist)
+  TRPlag <- TRP[2:ncls]
+  TRPmic <- sum(TRPlag[1:(ncls - 1)] - TRP[1:(ncls - 1)] < -1e-6 * nitems * (maxQ - 1), na.rm = TRUE)
 
   SOACflg <- WOACflg <- FALSE
   if (TRPmic == 0) {
@@ -426,6 +437,7 @@ Biclustering_IRM.ordinal <- function(U,
     FRP = BCRM,
     FRPIndex = FRPIndex,
     TRP = TRP,
+    TRP_empirical = TRP_empirical,
     CMD = colSums(clsmemb),
     RMD = colSums(clsmemb),
     FieldMembership = fldmemb,

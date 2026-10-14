@@ -154,11 +154,15 @@ bicl_init_starts <- function(Q, Z, ncls, nfld, maxQ, init, conf_mat, conf_class_
 
 #' Random starts
 #'
-#' Classes are a balanced random partition (numbered by mean score) and fields
-#' a balanced random partition of the items (or the given `conf`). The labels
-#' are dealt in a canonical order of the rows (by score and response pattern),
-#' so the starts do not depend on the order of the rows. The session's random
-#' number stream is saved and restored.
+#' Classes are a balanced random partition (numbered by mean score). With
+#' `conf` the fields are the given ones. Otherwise the odd-numbered starts take
+#' the fields of the "quantile" start (built from the data) and the
+#' even-numbered starts a balanced random partition of the items: random fields
+#' alone rarely reach a good optimum, while the data-based fields alone cannot
+#' leave a poor partition of the items. The labels are dealt in a canonical
+#' order of the rows (by score and response pattern), so the starts do not
+#' depend on the order of the rows. The session's random number stream is
+#' saved and restored.
 #' @return named list of starts (random01, ...), each list(fldmemb, BCRM, BBRM)
 #' @noRd
 bicl_init_random_starts <- function(Q, Z, ncls, nfld, maxQ, nstart, seed, conf_mat) {
@@ -179,14 +183,19 @@ bicl_init_random_starts <- function(Q, Z, ncls, nfld, maxQ, nstart, seed, conf_m
   ord <- do.call(order, c(list(s), unname(as.list(as.data.frame(Q * Z)))))
   nobs <- NROW(Q)
   nitems <- NCOL(Q)
+  if (!is.null(conf_mat)) {
+    fld_data <- max.col(conf_mat, ties.method = "first")
+  } else {
+    fld_data <- bicl_init_field_profile(Q, Z, bicl_init_class_quantile(Q, Z, ncls), nfld)
+  }
   starts <- lapply(seq_len(nstart), function(r) {
     cls <- integer(nobs)
     cls[ord] <- sample(rep_len(seq_len(ncls), nobs))
     cls <- bicl_init_relabel(cls, s)
-    fld <- if (!is.null(conf_mat)) {
-      max.col(conf_mat, ties.method = "first")
-    } else {
+    fld <- if (is.null(conf_mat) && r %% 2 == 0) {
       sample(rep_len(seq_len(nfld), nitems))
+    } else {
+      fld_data
     }
     return(bicl_init_from_partition(Q, Z, cls, fld, ncls, nfld, maxQ))
   })

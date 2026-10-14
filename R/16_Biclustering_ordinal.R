@@ -31,10 +31,13 @@
 #'   items' class-mean profiles; with `conf` the fields are the given ones, and
 #'   with `conf_class` the classes are the given ones (a single start).
 #' @param nstart Number of random starts added to `init = "auto"` (ignored for
-#'   the other `init` values and with `conf_class`). Every start is first run
-#'   for 100 EM cycles and only the best 3 by ELBO are run to convergence,
-#'   so the cost grows slowly with `nstart`. Set 0 for the two data-based
-#'   starts only.
+#'   the other `init` values and with `conf_class`). The classes of a random
+#'   start are random; its fields are `conf` if given, and otherwise those of
+#'   the "quantile" start for half of the starts and random for the other
+#'   half. Every random start is first run for 100 EM cycles and only the best
+#'   3 by ELBO are run to convergence. Set 0 for the two data-based starts
+#'   only; raise it (e.g. 50 or 100) for data with many local optima, which
+#'   costs time roughly in proportion.
 #' @param seed Seed of the random starts. The random number stream of the
 #'   session is left untouched, so the fit is reproducible.
 #' @param ... Additional arguments passed to specific methods.

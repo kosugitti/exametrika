@@ -41,9 +41,11 @@ argument `init` chooses the start:
 the session's random number stream is left untouched). The two data-based
 starts always run to convergence, so the random starts can only raise the
 ELBO; the random starts are run for 100 EM cycles and only the best 3 continue.
-On real data with fixed fields (`conf`) the likelihood surface had many more
-local optima than in simulations, and the data-based starts alone were often
-beaten by random ones.
+A random start has random classes; its fields are `conf` if given, and
+otherwise those of the `"quantile"` start for half of the starts and random for
+the other half. On real data the likelihood surface often had many more local
+optima than in simulations, and the data-based starts alone were often beaten
+by random ones; raise `nstart` for such data.
 
 In `"quantile"` and `"ward"` the fields start from a Ward clustering of the
 items' class-mean profiles (centred per item), and the block probabilities from

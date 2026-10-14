@@ -162,10 +162,13 @@ items' class-mean profiles; with \code{conf} the fields are the given ones, and
 with \code{conf_class} the classes are the given ones (a single start).}
 
 \item{nstart}{Number of random starts added to \code{init = "auto"} (ignored for
-the other \code{init} values and with \code{conf_class}). Every start is first run
-for 100 EM cycles and only the best 3 by ELBO are run to convergence,
-so the cost grows slowly with \code{nstart}. Set 0 for the two data-based
-starts only.}
+the other \code{init} values and with \code{conf_class}). The classes of a random
+start are random; its fields are \code{conf} if given, and otherwise those of
+the "quantile" start for half of the starts and random for the other
+half. Every random start is first run for 100 EM cycles and only the best
+3 by ELBO are run to convergence. Set 0 for the two data-based starts
+only; raise it (e.g. 50 or 100) for data with many local optima, which
+costs time roughly in proportion.}
 
 \item{seed}{Seed of the random starts. The random number stream of the
 session is left untouched, so the fit is reproducible.}

@@ -2,7 +2,7 @@ library(exametrika)
 
 # ================================================================
 # J35S500: ordinal Biclustering (Ranklustering)
-# 理論構造: 累積パターン, 5cls × 5fld × 5cat
+# Planted structure: cumulative pattern, 5 classes x 5 fields x 5 categories
 # ================================================================
 
 # Pinned to estimation = "GTM" and init = "legacy": these structural and
@@ -42,7 +42,7 @@ test_that("ordinal Biclustering expected scores in valid range", {
 })
 
 test_that("ordinal Biclustering shows score differentiation per field", {
-  # 各フィールドにおいて、クラス間で期待得点に差がある（max - min > 0.5）
+  # In every field the expected score differs across classes (max - min > 0.5)
   nfld <- dim(result_ord$FRP)[1]
   ncls <- dim(result_ord$FRP)[2]
   maxQ <- dim(result_ord$FRP)[3]
@@ -138,7 +138,7 @@ test_that("isotonic ordinal estimation rejects unknown values", {
 
 # ================================================================
 # J20S600: nominal Biclustering
-# 理論構造: 循環パターン, 5cls × 4fld × 4cat
+# Planted structure: cyclic pattern, 5 classes x 4 fields x 4 categories
 # ================================================================
 
 result_nom <- Biclustering(J20S600, ncls = 5, nfld = 4, maxiter = 200)
@@ -162,7 +162,7 @@ test_that("nominal Biclustering FRP probabilities sum to 1", {
 })
 
 test_that("nominal Biclustering field distribution is uniform", {
-  # 理論値: 各フィールドに5項目ずつ
+  # Planted: five items per field
   expect_equal(result_nom$LFD, rep(5, 4))
 })
 
@@ -172,7 +172,7 @@ test_that("nominal Biclustering class count sums to nobs", {
 })
 
 test_that("nominal Biclustering shows cyclic mode pattern", {
-  # 各フィールドで、クラス間の最頻カテゴリが多様（少なくとも3種類以上）
+  # In every field the modal category varies across classes (at least three kinds)
   nfld <- dim(result_nom$FRP)[1]
   ncls <- dim(result_nom$FRP)[2]
   for (f in 1:nfld) {
@@ -199,7 +199,7 @@ test_that("nominal Biclustering fit indices", {
 
 
 # ================================================================
-# ordinal Biclustering: FRPIndex テスト
+# ordinal Biclustering: FRPIndex tests
 # ================================================================
 
 test_that("ordinal Biclustering FRPIndex exists and has correct dimensions", {
@@ -230,7 +230,7 @@ test_that("ordinal Biclustering SOACflg exists", {
 
 
 # ================================================================
-# ordinal Biclustering: プロットタイプテスト
+# ordinal Biclustering: plot type tests
 # ================================================================
 
 test_that("ordinal Biclustering FRP plot works", {
@@ -279,7 +279,7 @@ test_that("ordinal Biclustering RMP plot works", {
 
 
 # ================================================================
-# nominal Biclustering: プロットタイプテスト
+# nominal Biclustering: plot type tests
 # ================================================================
 
 test_that("nominal Biclustering FRP plot works", {
@@ -313,7 +313,7 @@ test_that("nominal Biclustering FCBR is not allowed", {
 
 # ================================================================
 # J35S5000: rated Biclustering (Ranklustering)
-# rated = nominal推定 + 正答率によるクラスソート + 二値/名義二層適合度
+# rated = nominal estimation + classes sorted by correct rate + two-layer (binary/nominal) fit
 # ================================================================
 
 # Rows are subset to keep the CRAN Windows check inside its time budget: 1.13.0
@@ -434,16 +434,16 @@ test_that("rated Biclustering log_lik fields exist", {
 })
 
 test_that("rated Biclustering backward compatibility fields", {
-  # 2.0.0 で削除: $Nclass はもう無く，$n_class だけが残る
+  # Removed in 2.0.0: $Nclass is gone, only $n_class remains
   expect_null(result_rated$Nclass)
   expect_false(is.null(result_rated$n_class))
-  # 2.0.0 で削除: $Nfield はもう無く，$n_field だけが残る
+  # Removed in 2.0.0: $Nfield is gone, only $n_field remains
   expect_null(result_rated$Nfield)
   expect_false(is.null(result_rated$n_field))
-  # 2.0.0 で削除: $N_Cycle はもう無く，$n_cycle だけが残る
+  # Removed in 2.0.0: $N_Cycle is gone, only $n_cycle remains
   expect_null(result_rated$N_Cycle)
   expect_false(is.null(result_rated$n_cycle))
-  # 2.0.0 で削除: $LogLik はもう無く，$log_lik だけが残る
+  # Removed in 2.0.0: $LogLik is gone, only $log_lik remains
   expect_null(result_rated$LogLik)
   expect_false(is.null(result_rated$log_lik))
 })
@@ -457,7 +457,7 @@ test_that("rated Biclustering print works", {
 # Confirmatory Biclustering (nominal / ordinal)
 # ================================================================
 
-# nominal: J20S600 = 20項目 → 4フィールド × 5項目
+# nominal: J20S600 = 20 items -> 4 fields x 5 items
 conf_nom <- rep(1:4, each = 5)
 result_nom_conf <- Biclustering(J20S600,
   ncls = 5, nfld = 4,
@@ -500,7 +500,7 @@ test_that("nominal confirmatory rejects wrong-row matrix", {
   )
 })
 
-# ordinal: J35S500 = 35項目 → 5フィールド × 7項目
+# ordinal: J35S500 = 35 items -> 5 fields x 7 items
 conf_ord <- c(rep(1, 7), rep(2, 7), rep(3, 7), rep(4, 7), rep(5, 7))
 result_ord_conf <- Biclustering(J35S500,
   ncls = 5, nfld = 5, method = "R",

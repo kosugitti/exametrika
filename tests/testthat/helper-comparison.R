@@ -55,11 +55,11 @@ expect_numeric_equal <- function(actual, expected, tolerance = 1e-4) {
   expect_equal(actual, expected, tolerance = tolerance)
 }
 
-#' 整形済みデータの先頭 n 行を取る
+#' Take the first n rows of formatted data
 #'
-#' 構造的な主張(クラス・次元・和が1・再現性)は行数に依存しないので，
-#' CRAN で走るブロックはこれで小さくする。メタデータ(response.type,
-#' categories, CA)は保たれる。
+#' Structural claims (class, dimensions, sums to one, reproducibility) do not
+#' depend on the number of rows, so the blocks that run on CRAN use this to
+#' stay small. The metadata (response.type, categories, CA) is kept.
 head_rows_dat <- function(x, n) {
   x$ID <- x$ID[seq_len(n)]
   for (f in c("Q", "U", "Z")) {

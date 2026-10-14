@@ -200,16 +200,16 @@ test_that("Rated IRM SOAC/WOAC Flags Are Logical", {
 })
 
 test_that("Rated IRM Backward Compatibility", {
-  # 2.0.0 で削除: $Nclass はもう無く，$n_class だけが残る
+  # Removed in 2.0.0: $Nclass is gone, only $n_class remains
   expect_null(result_rirm$Nclass)
   expect_false(is.null(result_rirm$n_class))
-  # 2.0.0 で削除: $Nfield はもう無く，$n_field だけが残る
+  # Removed in 2.0.0: $Nfield is gone, only $n_field remains
   expect_null(result_rirm$Nfield)
   expect_false(is.null(result_rirm$n_field))
-  # 2.0.0 で削除: $N_Cycle はもう無く，$n_cycle だけが残る
+  # Removed in 2.0.0: $N_Cycle is gone, only $n_cycle remains
   expect_null(result_rirm$N_Cycle)
   expect_false(is.null(result_rirm$n_cycle))
-  # 2.0.0 で削除: $LogLik はもう無く，$log_lik だけが残る
+  # Removed in 2.0.0: $LogLik is gone, only $log_lik remains
   expect_null(result_rirm$LogLik)
   expect_false(is.null(result_rirm$log_lik))
 

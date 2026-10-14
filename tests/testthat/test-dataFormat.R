@@ -489,26 +489,26 @@ test_that("rated dataFormat warns (not errors) when CA category is unobserved", 
   # 30 obs × 5 items × ncat=5
   set.seed(42)
   Q <- matrix(sample(1:5, 30 * 5, replace = TRUE), nrow = 30, ncol = 5)
-  # item 3 を 1〜4 に制限し、CA[3]=5 を未観測にする
+  # Limit item 3 to 1-4 so that CA[3] = 5 is never observed
   Q[, 3] <- sample(1:4, 30, replace = TRUE)
-  CA <- c(1, 2, 5, 3, 4) # CA[3]=5 だが Q[,3] には 5 が無い
+  CA <- c(1, 2, 5, 3, 4) # CA[3] = 5, but Q[, 3] has no 5
   colnames(Q) <- paste0("Q", 1:5)
 
-  # warning が出るが処理は続行
+  # A warning is raised but processing continues
   expect_warning(
     res <- dataFormat(Q, response.type = "rated", CA = CA),
     "item.*3.*not observed"
   )
   expect_s3_class(res, "exametrika")
   expect_equal(res$response.type, "rated")
-  # item 3 列は全 0（誰も正解していない）
+  # Item 3 is all 0 (nobody answered it correctly)
   expect_equal(sum(res$U[, 3]), 0)
-  # 他の item は通常通り
+  # The other items are as usual
   expect_true(any(res$U[, 1] == 1))
 
-  # 複数 item で未観測の場合、まとめて warning
+  # Several unobserved items are reported in one warning
   Q2 <- Q
-  Q2[, 1] <- sample(1:4, 30, replace = TRUE) # item 1 も
+  Q2[, 1] <- sample(1:4, 30, replace = TRUE) # item 1 as well
   CA2 <- c(5, 2, 5, 3, 4)
   expect_warning(
     dataFormat(Q2, response.type = "rated", CA = CA2),
@@ -516,5 +516,5 @@ test_that("rated dataFormat warns (not errors) when CA category is unobserved", 
   )
 })
 
-# Note: longdataFormat 経路も同じ修正 (line 555 周辺) を適用済み。
-# 機構は matrix 経路と同一なので上記テストでカバー。
+# Note: the longdataFormat path has the same fix (around line 555). The
+# mechanism is the same as the matrix path, so the tests above cover it.

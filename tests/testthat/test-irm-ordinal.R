@@ -240,16 +240,16 @@ test_that("Ordinal IRM Test Fit Indices", {
 
 test_that("Ordinal IRM Backward Compatibility", {
   # Deprecated field names should still work
-  # 2.0.0 で削除: $Nclass はもう無く，$n_class だけが残る
+  # Removed in 2.0.0: $Nclass is gone, only $n_class remains
   expect_null(result_oirm$Nclass)
   expect_false(is.null(result_oirm$n_class))
-  # 2.0.0 で削除: $Nfield はもう無く，$n_field だけが残る
+  # Removed in 2.0.0: $Nfield is gone, only $n_field remains
   expect_null(result_oirm$Nfield)
   expect_false(is.null(result_oirm$n_field))
-  # 2.0.0 で削除: $N_Cycle はもう無く，$n_cycle だけが残る
+  # Removed in 2.0.0: $N_Cycle is gone, only $n_cycle remains
   expect_null(result_oirm$N_Cycle)
   expect_false(is.null(result_oirm$n_cycle))
-  # 2.0.0 で削除: $LogLik はもう無く，$log_lik だけが残る
+  # Removed in 2.0.0: $LogLik is gone, only $log_lik remains
   expect_null(result_oirm$LogLik)
   expect_false(is.null(result_oirm$log_lik))
 

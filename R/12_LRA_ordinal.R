@@ -284,9 +284,10 @@ LRA.ordinal <- function(U,
     refMat000_satu[design0, ] <- 0
     catRefMat_satu <- refMat111_satu - refMat000_satu
     ### Log Lik for Saturation Model
-    # ここは往復のまま残す。const を外すと値が大きく動き(exp(ll) < const の
-    # 場面では log(const) に張り付いていた)、Mathematica 参照値と食い違う。
-    # 荘島実装の挙動そのものなので、直すなら別件として承認を取る。
+    # Keep the round trip here. Dropping const moves the values a lot (where
+    # exp(ll) < const they were pinned at log(const)) and departs from the
+    # Mathematica reference. It is how Shojima's implementation behaves; change
+    # it only as a separate, approved item.
     nume_satu <- exp(ll_satu)
     log_lik_satu <- sum(rankProf_satu * log(nume_satu + const))
     ij_log_lik_satu <- log_lik_satu / nitems / nobs
@@ -399,12 +400,13 @@ LRA.ordinal <- function(U,
       catRefMat <- refMat111 - refMat000
     }
 
-    # 期待対数事後は対数のまま足す。exp() してから log() で戻す往復は代数的に
-    # 恒等だが、その途中でアンダーフローする: 2000人 x 60項目 x 5カテゴリの
-    # 規模だと ll の要素が -700 を下回り、exp() が 0 に落ちて log(0) = -Inf、
-    # 0 * -Inf = NaN となって収束判定の if が NA で落ちる。const を足した版は
-    # 落ちない代わりに log(const) という無関係な定数に化けるので、黙って
-    # 間違った値で回り続ける。
+    # Add the expected log-posterior on the log scale. The round trip through
+    # exp() and back through log() is an identity algebraically but underflows
+    # on the way: at 2000 respondents x 60 items x 5 categories elements of ll
+    # fall below -700, exp() gives 0, log(0) = -Inf, 0 * -Inf = NaN, and the
+    # convergence test fails on NA. Adding const avoids the failure but turns
+    # the value into the unrelated constant log(const), so the loop runs on
+    # silently with a wrong value.
     log_lik <- sum(rankProf * llmat)
     ij_log_lik <- log_lik / nitems / nobs
 

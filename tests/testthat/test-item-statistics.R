@@ -1,7 +1,7 @@
 ### Read Output of Mathematica
 library(exametrika)
 
-# Mathematica 参照データをシートごとに読み込み
+# Read the Mathematica reference data sheet by sheet
 sheets <- c(
   "Item", "JSS", "JCRR",
   "CCRR", "Item_Lift", "Mutual_Information",

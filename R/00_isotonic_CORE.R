@@ -344,7 +344,7 @@ iso_dual_map_ref <- function(Mcount, maxiter = 1000, tol = 1e-7,
   nrank <- nrow(Mcount)
   nc <- ncol(Mcount)
   theta <- matrix(0, nc - 1, nrank - 1)
-  theta_prev <- matrix(0, nc - 1, nrank - 1) # 直前のスイープで求めた値
+  theta_prev <- matrix(0, nc - 1, nrank - 1) # values from the previous sweep
   emt <- 0
   old_loglik <- -Inf
   FLG <- TRUE
@@ -355,8 +355,9 @@ iso_dual_map_ref <- function(Mcount, maxiter = 1000, tol = 1e-7,
         theta[b, r] <- 0
         S <- iso_upper_cum(iso_build_pi(Mcount, theta))
         if (S[r, b] - S[r + 1, b] > 1e-12) {
-          # 前回のスイープの値から区間を張る(C++ 側の注記参照)。theta = 0 で
-          # 制約が満たされているかの判定は上に残す。相補性条件そのものなので。
+          # Bracket from the previous sweep's value (see the note on the C++ side).
+          # The check that theta = 0 already satisfies the constraint stays above:
+          # it is the complementary slackness condition itself.
           lo <- 0
           hi <- 1
           warm <- theta_prev[b, r]
@@ -377,12 +378,12 @@ iso_dual_map_ref <- function(Mcount, maxiter = 1000, tol = 1e-7,
             theta[b, r] <- hi
             S <- iso_upper_cum(iso_build_pi(Mcount, theta))
           }
-          # Illinois 法(挟み撃ちの改良)。g(theta) = S[r,b] - S[r+1,b] は
-          # theta について単調減少で、上の倍々探索で符号の異なる2点が既に
-          # 手に入っている。区間を保持したまま線形補間で詰めるので二分より
-          # 速く、しかも区間外へ出ない。同じ端が2回続けて残ったらその側の
-          # 関数値を半分にする —— これが素の挟み撃ちの「片側だけ動いて
-          # 収束が遅くなる」欠点を消す。
+          # Illinois method (an improved regula falsi). g(theta) = S[r,b] - S[r+1,b]
+          # decreases in theta, and the doubling search above already gave two
+          # points of opposite sign. Linear interpolation inside a kept bracket is
+          # faster than bisection and never leaves the bracket. When the same end
+          # survives twice in a row its function value is halved -- this removes
+          # plain regula falsi's flaw of moving one side only and converging slowly.
           g_at <- function(x) {
             theta[b, r] <<- x
             S <- iso_upper_cum(iso_build_pi(Mcount, theta))
@@ -390,23 +391,23 @@ iso_dual_map_ref <- function(Mcount, maxiter = 1000, tol = 1e-7,
           }
           g_lo <- g_at(lo)
           g_hi <- g_at(hi)
-          # 残差が最小だった点を覚えておき，最後にそれを採る。区間の中点を
-          # 返してはいけない: 残差で打ち切ったとき根は片端にあり，中点はそこ
-          # から離れている。二値のとき重み付き PAVA と一致するという理論値
-          # 検査がこれを拾った。
+          # Remember the point with the smallest residual and take it at the end.
+          # Do not return the midpoint of the bracket: when the loop stops on the
+          # residual the root sits at one end and the midpoint is away from it. The
+          # check against weighted PAVA in the binary case caught this.
           root <- if (abs(g_lo) <= abs(g_hi)) lo else hi
           best <- min(abs(g_lo), abs(g_hi))
           side <- 0L
-          # 区間幅の停止条件は相対で取り、中点が端に丸められたら打ち切る。
-          # 空ランクでは端が 1e8 に達し、その近傍の double の刻み幅(約3e-8)は
-          # 絶対条件より粗いので、絶対条件のままだと無限ループになる
-          # (C++ 側の注記参照)。
+          # The bracket-width stop is relative, and the loop ends once the midpoint
+          # rounds to an end. For an empty rank the end reaches 1e8, where the
+          # spacing of doubles (about 3e-8) is coarser than an absolute tolerance,
+          # which would loop forever (see the note on the C++ side).
           while (hi - lo > 1e-12 * max(1, abs(hi)) && best > 1e-14) {
             mid <- (lo * g_hi - hi * g_lo) / (g_hi - g_lo)
             if (!is.finite(mid) || mid <= lo || mid >= hi) {
               mid <- (lo + hi) / 2
             }
-            if (mid <= lo || mid >= hi) break # 表現できる中点がもう無い
+            if (mid <= lo || mid >= hi) break # no representable midpoint left
             g_mid <- g_at(mid)
             if (abs(g_mid) < best) {
               best <- abs(g_mid)

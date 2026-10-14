@@ -37,13 +37,13 @@ test_that("IRM Basic Execution", {
 test_that("IRM Backward Compatibility", {
   skip_on_cran()
   # Deprecated field names should still work
-  # 2.0.0 で削除: $Nclass はもう無く，$n_class だけが残る
+  # Removed in 2.0.0: $Nclass is gone, only $n_class remains
   expect_null(result_irm$Nclass)
   expect_false(is.null(result_irm$n_class))
-  # 2.0.0 で削除: $Nfield はもう無く，$n_field だけが残る
+  # Removed in 2.0.0: $Nfield is gone, only $n_field remains
   expect_null(result_irm$Nfield)
   expect_false(is.null(result_irm$n_field))
-  # 2.0.0 で削除: $N_Cycle はもう無く，$n_cycle だけが残る
+  # Removed in 2.0.0: $N_Cycle is gone, only $n_cycle remains
   expect_null(result_irm$N_Cycle)
   expect_false(is.null(result_irm$n_cycle))
   expect_equal(result_irm$EM_Cycle, result_irm$em_cycle)
@@ -117,7 +117,7 @@ test_that("IRM Default seed is 123", {
 
 test_that("Bug #2 regression: Biclustering_IRM.binary handles missing data", {
   # Real-data missingness (HCI, SAT12) used to crash with
-  # "確率ベクトル中にNAがあります" because tmp$U retained the -1
+  # "NA in probability vector" (Japanese locale message) because tmp$U retained the -1
   # missingness marker that propagated through tmp$U %*% fld01.
   # Fixed in v1.14.0 by tmp$U <- tmp$U * tmp$Z masking at line 120.
   skip_on_cran()

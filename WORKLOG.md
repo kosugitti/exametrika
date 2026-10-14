@@ -4001,3 +4001,23 @@ scratchpad の `audit_*/`(セッション限り)。詳細は NEWS 2.2.0 の3節(
   (多値バイクラのテストは既定10でも約5分＝CRAN 前に nstart を小さく指定するか skip_on_cran が要る)。
   先生は10程度を推しており，複数の実データで1本あたりの到達率を測ってから決める(A3 の WORKLOG 2026-10-13)
 - 開発版は Al-khwa の `~/Rlib_dev` に入れて A3 の実験を回している(既定のライブラリの 2.2.0 は触らない)。push・CRAN は先生の承認後
+
+## 2026-10-14 nstart・揺らしの確定，SOAC 判定，predict()，所属確率の修正，CRAN 準備，次の版の計画
+
+- **`6da9788`** nstart の既定 10(先生判断。9種の実データで到達率を測った結果，100本は時間8〜10倍で救えないデータも残る)。
+  無作為な開始点はフィールドを推定するとき半分を分位の開始点のフィールドから(混合案。到達率 0.60→0.63)
+- **`d669e8c`** 順序バイクラ(と順序 IRM)の TRP をモデルから作り SOAC/WOAC を判定(isotonic なら常に真)。許容誤差 1e-6。
+  データ側は `TRP_empirical`(クラス成員の観測得点の平均)。旧 TRP(BFRP1 の和)は実際の平均から系統的にずれていた
+- **`3217a92`** `predict()`(R/25_predict.R)。LCA・LRA・Biclustering の二値/名義/順序/評定。元のデータで推定時の所属確率を
+  機械精度で再現。fit に CategoryMap(LCA・LRA)・CategoryShift(バイクラ)・LogPrior(順序・評定 LRA)を保存。
+  あわせて **所属確率を収束後に最終母数で E ステップし直す**(LCA・二値 LRA・全バイクラ)と **バイクラの巻き戻しを
+  そろえる**(FRP だけ戻してフィールドを戻していなかった)。荘島 Mathematica 参照実装(develop/mtmk15forVer13/mod，git 管理外)も
+  同じく直し，参照値30ファイルを作り直した(J35S515 Ranklustering の対数尤度 -7273.904 で R と一致。記録は mod/README.md)
+- **`5264ad8`** コードとテストの日本語コメントを英語に(test-dataFormat.R の日本語の因子水準はテストデータなので残す)
+- **`79f33d9`** 多値バイクラのテストを CRAN 向けに分割(ファイル冒頭の skip_on_cran ＋ スモーク 0.4秒)。CRAN 構成のテスト
+  312秒→21秒。R CMD check --as-cran は 0/0/1(手元の HTML Tidy)。NEWS の誤文は 2.0.1 節にあった(2.1.0 節ではない)
+- **GitHub に push 済み(79f33d9)**。ggExametrika・shinyExametrika は 2.2.0 で全テスト通過
+- **次の版の計画を CLAUDE.md の Roadmap 冒頭に書いた**(`1cbc2d2`・`8f8ade4`): 2.2.0 は打ち止め・今月末 CRAN。
+  2.3.0 = 多値 BNM の推定関数(秘書セッションの fit_mo_cumprobit)・DAG 探索と CPDAG(A11 `Git/polytomous-bn/`)・
+  igraph を計算から外す段階1(g_list は残して隣接行列を併記・警告)・等価 form A。3.0.0 = g_list と igraph 依存の削除・conf 改名
+- 残り(2.2.0 提出まで): win-builder，A3 の回し直しの結果確認(既定が妥当か)，Release と告知の文案(冒頭で「多値バイクラの結果が変わる」)

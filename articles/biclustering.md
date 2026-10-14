@@ -97,7 +97,7 @@ Biclustering(J35S515, nfld = 5, ncls = 6, method = "B")
 #> model_log_like -6884.961
 #> bench_log_like -5891.314
 #> null_log_like  -9862.114
-#> model_Chi_sq    1987.293
+#> model_Chi_sq    1987.294
 #> null_Chi_sq     7941.601
 #> model_df        1160.000
 #> null_df         1155.000
@@ -107,7 +107,7 @@ Biclustering(J35S515, nfld = 5, ncls = 6, method = "B")
 #> TLI                0.879
 #> CFI                0.878
 #> RMSEA              0.037
-#> AIC             -332.707
+#> AIC             -332.706
 #> CAIC           -6415.940
 #> BIC            -5255.940
 #> 
@@ -306,7 +306,7 @@ result.B.rated
 #>                              Rank 1 Rank 2 Rank 3 Rank 4 Rank 5
 #> Test Reference Profile        2.370  7.353  8.746 14.783 16.183
 #> Latent Rank Distribution     73.000 51.000 59.000 46.000 71.000
-#> Rank Membership Distribution 69.308 57.810 59.079 57.795 56.007
+#> Rank Membership Distribution 69.314 57.806 59.078 57.798 56.005
 #> 
 #> Field Membership Profile
 #>          CRR LFE Field1 Field2 Field3
@@ -340,10 +340,10 @@ result.B.rated
 #> Number of Latent Field: 3
 #> Number of EM cycle: 142 
 #>                    value
-#> model_log_like -3294.190
+#> model_log_like -3294.183
 #> bench_log_like -3079.142
 #> null_log_like  -4318.046
-#> model_Chi_sq     430.095
+#> model_Chi_sq     430.082
 #> null_Chi_sq     2477.806
 #> model_df         336.000
 #> null_df          420.000
@@ -353,9 +353,9 @@ result.B.rated
 #> TLI                0.943
 #> CFI                0.954
 #> RMSEA              0.031
-#> AIC             -241.905
-#> CAIC           -1822.376
-#> BIC            -1486.376
+#> AIC             -241.918
+#> CAIC           -1822.389
+#> BIC            -1486.389
 #> 
 #> Model Fit Indices (Nominal)
 #>                    value
@@ -368,7 +368,7 @@ result.B.rated
 #>                      value
 #> ELBO             -7478.122
 #> log_lik_marginal -7455.051
-#> entropy_class      154.863
+#> entropy_class      154.843
 #> entropy_field        0.000
 #> ICL              15525.792
 #> Weakly Ordinal Alignment Condition is Satisfied.

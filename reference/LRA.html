@@ -306,6 +306,10 @@ test length, central tendency, variability, distribution characteristics, and re
 <dt>ICRP</dt>
 <dd><p>Item Category Reference Profile matrix showing probability of response in each category by rank.</p></dd>
 
+<dt>CategoryMap, LogPrior</dt>
+<dd><p>The raw codes behind the rows of <code>ICRP</code>
+for each item, and the log prior over ranks; used by <code><a href="predict.exametrika.html">predict.exametrika()</a></code>.</p></dd>
+
 <dt>ScoreRankCorr</dt>
 <dd><p>Spearman's correlation between test scores and estimated ranks.</p></dd>
 
@@ -368,6 +372,11 @@ test length, central tendency, variability, distribution characteristics, and re
 
 <dt>ICRP</dt>
 <dd><p>Item Category Reference Profile matrix showing probability of response in each category by rank.</p></dd>
+
+<dt>CategoryMap, CollapseCode, LogPrior</dt>
+<dd><p>The raw codes behind the rows of
+<code>ICRP</code> for each item (<code>CollapseCode</code> marks the pooled rare
+distractors), and the log prior over ranks; used by <code><a href="predict.exametrika.html">predict.exametrika()</a></code>.</p></dd>
 
 <dt>ScoreRankCorr</dt>
 <dd><p>Spearman's correlation between test scores and estimated ranks.</p></dd>
@@ -456,19 +465,19 @@ partially-credited items or preference scales where response categories have dif
 <span class="r-in"><span><span class="co"># Display the first few rows of student rank membership profiles</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">result.LRA</span><span class="op">$</span><span class="va">Students</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>            Membership 1 Membership 2 Membership 3 Membership 4 Membership 5</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Student001 0.3732015798  0.428451221   0.11219848  0.030244910  0.055903805</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Student002 0.0200254309  0.080848295   0.57928413  0.282874219  0.036967734</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Student003 0.0062126694  0.213151690   0.54304200  0.146385733  0.076483260</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Student004 0.0010041013  0.009115691   0.19880904  0.293017561  0.133718573</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Student005 0.2529143262  0.727293364   0.01394516  0.003759143  0.001964068</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Student006 0.0001300928  0.002053329   0.04593162  0.067696979  0.766760085</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Student001  0.373362828  0.428218832   0.11222243   0.03023517  0.055960736</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Student002  0.020038540  0.080823095   0.57927688   0.28286515  0.036996142</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Student003  0.006211982  0.213060043   0.54320920   0.14635238  0.076437420</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Student004  0.001004123  0.009115719   0.19879539   0.29307173  0.133726701</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Student005  0.252721804  0.727486696   0.01394724   0.00375769  0.001962579</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Student006  0.000130071  0.002051624   0.04590205   0.06767055  0.766752034</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>            Membership 6 Estimate Rank-Up Odds Rank-Down Odds</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Student001 6.653884e-09        2   0.26186990     0.87104800</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Student002 1.950328e-07        3   0.48831688     0.13956587</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Student003 1.472465e-02        3   0.26956613     0.39251419</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Student004 3.643350e-01        6           NA     0.36702090</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Student005 1.239411e-04        2   0.01917405     0.34774733</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Student006 1.174279e-01        5   0.15314816     0.08828965</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Student001 6.586004e-09        2   0.26206795     0.87189726</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Student002 1.929370e-07        3   0.48830733     0.13952412</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Student003 1.472897e-02        3   0.26942176     0.39222466</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Student004 3.642863e-01        6           NA     0.36709228</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Student005 1.239901e-04        2   0.01917182     0.34739028</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Student006 1.174937e-01        5   0.15323555     0.08825611</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Plot Item Reference Profiles (IRP) for the first 6 items</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">result.LRA</span>, type <span class="op">=</span> <span class="st">"IRP"</span>, items <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">6</span>, nc <span class="op">=</span> <span class="fl">2</span>, nr <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span></span>
@@ -501,6 +510,8 @@ partially-credited items or preference scales where response categories have dif
 <span class="r-in"><span><span class="co"># Rated data example</span></span></span>
 <span class="r-in"><span><span class="co"># Fit a Latent Rank Analysis model with 10 ranks to rated data</span></span></span>
 <span class="r-in"><span><span class="va">result.LRArated</span> <span class="op">&lt;-</span> <span class="fu">LRA</span><span class="op">(</span><span class="va">J35S5000</span>, nrank <span class="op">=</span> <span class="fl">10</span>, mic <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>LRA: the following categories had no responses and were dropped; the categories above them were renumbered for that item.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>   V30: category 5</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Plot score distributions</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">result.LRArated</span>, type <span class="op">=</span> <span class="st">"ScoreFreq"</span><span class="op">)</span></span></span>

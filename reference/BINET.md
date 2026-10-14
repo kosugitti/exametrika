@@ -396,7 +396,7 @@ print(result.BINET)
 #> Field 8 
 #>            PSRP 1 PSRP 2 PSRP 3 PSRP 4
 #> Class 1  0.00e+00                     
-#> Class 2  7.29e-12                     
+#> Class 2  5.59e-12                     
 #> Class 3  3.67e-02                     
 #> Class 4  3.95e-02                     
 #> Class 5  4.29e-02                     
@@ -568,11 +568,11 @@ print(result.BINET)
 #> model_log_like -5782.556        -5782.556      
 #> bench_log_like -5891.314        0              
 #> null_log_like  -9862.114        -9862.114      
-#> model_Chi_sq   -217.517         11565.11       
+#> model_Chi_sq   -217.5171        11565.11       
 #> null_Chi_sq    7941.601         19724.23       
 #> model_df       1005             16895          
 #> null_df        1155             17045          
-#> NFI            1                0.4136596      
+#> NFI            1                0.4136597      
 #> RFI            1                0.4084539      
 #> IFI            1                1              
 #> TLI            1                1              

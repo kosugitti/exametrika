@@ -181,6 +181,12 @@ An object of class "exametrika" and "LCA" containing:
   Fit indices for each item. See also
   [`ItemFit`](https://kosugitti.github.io/exametrika/reference/ItemFit.md).
 
+- CategoryMap:
+
+  Nominal, ordinal and rated data only. The raw codes behind each item's
+  renumbered categories (the rows of `ICRP`); used by
+  [`predict.exametrika()`](https://kosugitti.github.io/exametrika/reference/predict.exametrika.md).
+
 - TestFitIndices:
 
   Overall fit indices for the test. See also
@@ -289,12 +295,12 @@ result.LCA <- LCA(J15S500, ncls = 5)
 # Display the first few rows of student class membership probabilities
 head(result.LCA$Students)
 #>            Membership 1 Membership 2 Membership 3 Membership 4 Membership 5
-#> Student001 0.7285244374  0.012211535  0.226232540 3.303149e-02 3.055593e-12
-#> Student002 0.0220645036  0.086986302  0.830839343 6.010974e-02 1.074954e-07
-#> Student003 0.0170578933  0.054109896  0.879752304 2.100872e-02 2.807118e-02
-#> Student004 0.0010508039  0.223175413  0.203820488 3.286491e-01 2.433042e-01
-#> Student005 0.9407961670  0.053321705  0.004873703 1.808344e-08 1.008407e-03
-#> Student006 0.0002372397  0.002528968  0.029747250 8.551046e-01 1.123819e-01
+#> Student001 0.7281646596  0.012201215  0.226647654 3.298647e-02 3.051500e-12
+#> Student002 0.0220667934  0.087019999  0.830774343 6.013876e-02 1.075088e-07
+#> Student003 0.0170563995  0.054112134  0.879768216 2.099456e-02 2.806869e-02
+#> Student004 0.0010508169  0.223167062  0.203772041 3.286839e-01 2.433262e-01
+#> Student005 0.9407941768  0.053323634  0.004873676 1.806795e-08 1.008496e-03
+#> Student006 0.0002372348  0.002526937  0.029811035 8.550547e-01 1.123701e-01
 #>            Estimate
 #> Student001        1
 #> Student002        3
@@ -340,9 +346,9 @@ data.frame(
   )
 )
 #>   Classes       BIC
-#> 1       2 -346.3585
-#> 2       3 -464.5868
-#> 3       4 -609.6852
-#> 4       5 -655.1747
+#> 1       2 -346.3529
+#> 2       3 -464.5899
+#> 3       4 -609.7143
+#> 4       5 -655.1398
 # }
 ```

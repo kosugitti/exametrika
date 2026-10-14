@@ -59,6 +59,9 @@ Biclustering(
   maxiter = 1000,
   verbose = FALSE,
   alpha = 1,
+  init = c("auto", "quantile", "ward", "legacy"),
+  nstart = 10,
+  seed = 1,
   ...
 )
 
@@ -194,6 +197,43 @@ Biclustering(
   Dirichlet distribution concentration parameter for prior density of
   field reference probabilities. Default is 1.
 
+- init:
+
+  Starting values of the EM (character string). The EM is deterministic
+  but converges to a local optimum, so the start matters:
+
+  - "auto" (default): run from both "quantile" and "ward" and keep the
+    fit with the larger ELBO
+
+  - "quantile": classes from equal-count bins of the respondent score
+
+  - "ward": classes from Ward clustering of the respondent score (does
+    not assume equal class sizes)
+
+  - "legacy": the start used up to 2.2.0 (fields by item median, a
+    common class ladder); reproduces earlier results
+
+  In "quantile" and "ward" the fields start from a Ward clustering of
+  the items' class-mean profiles; with `conf` the fields are the given
+  ones, and with `conf_class` the classes are the given ones (a single
+  start).
+
+- nstart:
+
+  Number of random starts added to `init = "auto"` (ignored for the
+  other `init` values and with `conf_class`). The classes of a random
+  start are random; its fields are `conf` if given, and otherwise those
+  of the "quantile" start for half of the starts and random for the
+  other half. Every random start is first run for 100 EM cycles and only
+  the best 3 by ELBO are run to convergence. Set 0 for the two
+  data-based starts only; raise it (e.g. 50 or 100) for data with many
+  local optima, which costs time roughly in proportion.
+
+- seed:
+
+  Seed of the random starts. The random number stream of the session is
+  left untouched, so the fit is reproducible.
+
 ## Value
 
 An object of class "exametrika" and "Biclustering" containing:
@@ -249,6 +289,12 @@ An object of class "exametrika" and "Biclustering" containing:
   Field Reference Profile matrix - probability of correct response for
   each field-class combination
 
+- CategoryShift:
+
+  Nominal and ordinal data only. The amount added to every category code
+  to make the codes start at 1; used by
+  [`predict.exametrika()`](https://kosugitti.github.io/exametrika/reference/predict.exametrika.md).
+
 - FRPIndex:
 
   Field Reference Profile indices (Kumagai, 2007) — data.frame with 6
@@ -290,7 +336,16 @@ An object of class "exametrika" and "Biclustering" containing:
 - TRP:
 
   Test Reference Profile - expected score for examinees in each
-  class/rank
+  class/rank. For ordinal data it is computed from the model since 2.2.0
+  (the sum over fields of field size times the field expected score), as
+  for binary data, so SOAC and WOAC judge the estimates.
+
+- TRP_empirical:
+
+  Ordinal data only. The same profile from the data: the mean observed
+  score of the members of each class/rank, summed over fields. Its
+  departure from `TRP` shows how far the model is from the data. Since
+  2.2.0.
 
 - CMD/RMD:
 
@@ -365,6 +420,12 @@ An object of class "exametrika" and "Biclustering" containing:
   Integrated completed likelihood criterion (Biernacki, Celeux and
   Govaert, 2000) in its BIC-type approximation, on the same scale as AIC
   and BIC (-2 log scale, smaller is better).
+
+- init, init_selected, init_elbo:
+
+  Ordinal data only. The `init` requested, the start whose fit is
+  returned, and the ELBO reached from each start that was run. Since
+  2.2.0.
 
 - SOACflg:
 

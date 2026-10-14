@@ -1282,12 +1282,14 @@ Model fit index computation
 
 ## S3 Methods
 
-Plot and print methods for exametrika objects
+Plot, print and predict methods for exametrika objects
 
 - [`plot(`*`<exametrika>`*`)`](https://kosugitti.github.io/exametrika/reference/plot.exametrika.md)
   : Plot Method for Objects of Class "exametrika"
 - [`print(`*`<exametrika>`*`)`](https://kosugitti.github.io/exametrika/reference/print.exametrika.md)
   : Print Method for Exametrika Objects
+- [`predict(`*`<exametrika>`*`)`](https://kosugitti.github.io/exametrika/reference/predict.exametrika.md)
+  : Classify new respondents with a fitted model
 
 ## Internal
 

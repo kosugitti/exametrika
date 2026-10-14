@@ -98,6 +98,9 @@ in the data by creating a matrix with rows and columns arranged to highlight blo
 <span>  maxiter <span class="op">=</span> <span class="fl">1000</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  alpha <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>  init <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"auto"</span>, <span class="st">"quantile"</span>, <span class="st">"ward"</span>, <span class="st">"legacy"</span><span class="op">)</span>,</span>
+<span>  nstart <span class="op">=</span> <span class="fl">10</span>,</span>
+<span>  seed <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span>
 <span></span>
@@ -214,6 +217,36 @@ increasing. Default is FALSE.</p></dd>
 <dt id="arg-alpha">alpha<a class="anchor" aria-label="anchor" href="#arg-alpha"></a></dt>
 <dd><p>Dirichlet distribution concentration parameter for prior density of field reference probabilities. Default is 1.</p></dd>
 
+
+<dt id="arg-init">init<a class="anchor" aria-label="anchor" href="#arg-init"></a></dt>
+<dd><p>Starting values of the EM (character string). The EM is
+deterministic but converges to a local optimum, so the start matters:</p><ul><li><p>"auto" (default): run from both "quantile" and "ward" and keep the fit
+with the larger ELBO</p></li>
+<li><p>"quantile": classes from equal-count bins of the respondent score</p></li>
+<li><p>"ward": classes from Ward clustering of the respondent score (does not
+assume equal class sizes)</p></li>
+<li><p>"legacy": the start used up to 2.2.0 (fields by item median, a common
+class ladder); reproduces earlier results</p></li>
+</ul><p>In "quantile" and "ward" the fields start from a Ward clustering of the
+items' class-mean profiles; with <code>conf</code> the fields are the given ones, and
+with <code>conf_class</code> the classes are the given ones (a single start).</p></dd>
+
+
+<dt id="arg-nstart">nstart<a class="anchor" aria-label="anchor" href="#arg-nstart"></a></dt>
+<dd><p>Number of random starts added to <code>init = "auto"</code> (ignored for
+the other <code>init</code> values and with <code>conf_class</code>). The classes of a random
+start are random; its fields are <code>conf</code> if given, and otherwise those of
+the "quantile" start for half of the starts and random for the other
+half. Every random start is first run for 100 EM cycles and only the best
+3 by ELBO are run to convergence. Set 0 for the two data-based starts
+only; raise it (e.g. 50 or 100) for data with many local optima, which
+costs time roughly in proportion.</p></dd>
+
+
+<dt id="arg-seed">seed<a class="anchor" aria-label="anchor" href="#arg-seed"></a></dt>
+<dd><p>Seed of the random starts. The random number stream of the
+session is left untouched, so the fit is reproducible.</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
@@ -253,6 +286,11 @@ increasing. Default is FALSE.</p></dd>
 <dt>FRP</dt>
 <dd><p>Field Reference Profile matrix - probability of correct response for each field-class combination</p></dd>
 
+<dt>CategoryShift</dt>
+<dd><p>Nominal and ordinal data only. The amount added to
+every category code to make the codes start at 1; used by
+<code><a href="predict.exametrika.html">predict.exametrika()</a></code>.</p></dd>
+
 <dt>FRPIndex</dt>
 <dd><p>Field Reference Profile indices (Kumagai, 2007) — data.frame with 6 columns:</p><dl><dt>Alpha</dt>
 <dd><p>Maximum-slope location: class transition where the largest increase occurs</p></dd>
@@ -279,7 +317,16 @@ which maps expected scores from [1, maxQ] to [0, 1] for comparability with the b
 Not computed for nominal data (no natural category ordering).</p></dd>
 
 <dt>TRP</dt>
-<dd><p>Test Reference Profile - expected score for examinees in each class/rank</p></dd>
+<dd><p>Test Reference Profile - expected score for examinees in each class/rank.
+For ordinal data it is computed from the model since 2.2.0 (the sum over
+fields of field size times the field expected score), as for binary data,
+so SOAC and WOAC judge the estimates.</p></dd>
+
+<dt>TRP_empirical</dt>
+<dd><p>Ordinal data only. The same profile from the data: the
+mean observed score of the members of each class/rank, summed over fields.
+Its departure from <code>TRP</code> shows how far the model is from the data.
+Since 2.2.0.</p></dd>
 
 <dt>CMD/RMD</dt>
 <dd><p>Class/Rank Membership Distribution - sum of membership probabilities across examinees</p></dd>
@@ -335,6 +382,11 @@ complete-data log-likelihood.</p></dd>
 <dd><p>Integrated completed likelihood criterion (Biernacki, Celeux and
 Govaert, 2000) in its BIC-type approximation, on the same scale as AIC and
 BIC (-2 log scale, smaller is better).</p></dd>
+
+<dt>init, init_selected, init_elbo</dt>
+<dd><p>Ordinal data only. The <code>init</code>
+requested, the start whose fit is returned, and the ELBO reached from
+each start that was run. Since 2.2.0.</p></dd>
 
 <dt>SOACflg</dt>
 <dd><p>Logical flag indicating whether Strongly Ordinal Alignment Condition is satisfied</p></dd>

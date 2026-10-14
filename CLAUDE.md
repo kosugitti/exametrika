@@ -14,11 +14,13 @@ CTT, IRT, GRM, LCA, LRA, Biclustering, BNM, LDLRA, LDB, BINET.
   「U は欠測セル 0・Z が印」に一本化。順序 LRA の GTM の向き反転・BNM
   系のラベル順・GridSearch の LRA など。 NEWS 2.2.0
   参照)。**荘島先生への相談事項**: tinyMissing の null/bench
-  が参照値と食い違う(参照は欠測を誤答扱い)。 残り＝SOAC/WOAC 判定を
-  model_esp 側へ＋`TRP_empirical`
-  併記＋[`predict()`](https://rdrr.io/r/stats/predict.html)。**NEWS の
-  2.1.0 節に 「GitHub で先に出して CRAN
-  は後から」という文が残っているが実際は最初から CRAN。次の版で直す**。
+  が参照値と食い違う(参照は欠測を誤答扱い)。 **10/13〜14 に
+  init/nstart・カテゴリ番号の詰め直し廃止・SOAC/WOAC をモデルの TRP
+  で判定(`TRP_empirical` 併記)・
+  [`predict()`](https://rdrr.io/r/stats/predict.html)・所属確率を最終母数の事後確率に，を入れ
+  GitHub に push 済み(79f33d9)**。2.2.0 の機能追加は打ち止め，
+  **今月末に CRAN**。NEWS 2.0.1 節の誤文は直した(2.1.0 節ではなく 2.0.1
+  節にあった)。次の版の計画は Roadmap 冒頭。
 - **CRAN version**: 2.1.0 (Webフォーム提出 → 2026-09-25
   自動チェックのみで受理)。`CRAN-SUBMISSION` は 2.1.0 に更新済み。
 - **GitHub Release**: v2.1.0 (2026-09-25, latest)。Announcements:
@@ -489,14 +491,15 @@ does — LCA classes are unordered, and sorting would imply otherwise.
     the indicator must be `(U == 1) %*% w`. A plain `U %*% w` subtracts
     the weight for every missing parent response and corrupts the index
     silently.
-- **Drop the igraph dependency (v2.0.0)** — surveyed 2026-07-21. Only
-  four calls are real graph algorithms (`is_dag` x2, `is_connected` x2,
-  in `08A_BNM.R:170-171` and `11_BINET.R:282-283`); on the item counts
-  these models use, a Kahn-style cycle check and a union-find/BFS
-  weak-connectivity check on the adjacency matrix are cheaper than
-  constructing the igraph object at all — and that construction is ~93%
-  of `BNM_GA`/`BNM_PBIL` self time because it is redone per candidate.
-  The remaining 23 calls are format round-trips
+- **Drop the igraph dependency** — **方針は 2026-10-14 に決定(Roadmap
+  冒頭: 2.3.0 で計算から外し，3.0.0 で依存を外す)**。 以下は 2026-07-21
+  の調査。Only four calls are real graph algorithms (`is_dag` x2,
+  `is_connected` x2, in `08A_BNM.R:170-171` and `11_BINET.R:282-283`);
+  on the item counts these models use, a Kahn-style cycle check and a
+  union-find/BFS weak-connectivity check on the adjacency matrix are
+  cheaper than constructing the igraph object at all — and that
+  construction is ~93% of `BNM_GA`/`BNM_PBIL` self time because it is
+  redone per candidate. The remaining 23 calls are format round-trips
   (`graph_from_adjacency_matrix` x10, `graph_from_data_frame` x7,
   `as_adjacency_matrix` x3, `as_data_frame` x3) that plain
   matrix/data.frame code replaces. Two things make this v2.0.0 rather
@@ -590,8 +593,85 @@ does — LCA classes are unordered, and sorting would imply otherwise.
 
 ## Roadmap
 
+### 次の版の計画 (2026-10-14 決定。正本はここ)
+
+**2.2.0 — 今月末(2026-10)に CRAN。機能追加は打ち止め。** ELBO
+系の適合度・`init`/`nstart`・カテゴリ番号の詰め直し廃止・SOAC/WOAC
+の判定修正(`TRP_empirical`)・
+[`predict()`](https://rdrr.io/r/stats/predict.html)・所属確率を最終母数の事後確率に・バイクラの巻き戻し・総点検の約50件。推定値の変わる修正が多いので，
+**Release と Discussions
+の告知では冒頭で「多値バイクラの結果が変わる」と明記する**。ggExametrika・shinyExametrika
+は 2.2.0 で全テスト通過を確認済み(2026-10-14)。
+
+**2.3.0 — ネットワーク系の版(年内〜年明け)** 1. **多値 BNM(StepReg /
+case C)の推定関数**: DAG を所与とした順序 BN(子は累積プロビット，親は
+brms の `mo()` と 同じ単調効果 b \* D_k \*
+単体の累積)。**秘書セッションの `fit_mo_cumprobit()`(stats::optim の
+BFGS による 事後最頻値。単体に Dirichlet(alpha)，alpha = 1 で最尤)を
+2.3.0 に入れる(2026-10-14 先生指示)**。 brms の Stan
+モデルの最適化と一致を確認済み(alpha = 2 で母数の最大差 0.0014)，1ノード
+0.03〜0.4 秒。
+返り値は閾値・係数・単体・対数尤度・回答者ごとの対数尤度・母数の数。多値
+LDLRA・LDB・BINET の部品にもなる。 設計の正本は下の Future Work の case
+C の節と A10(多値BNM応用論文)。 2. **DAG
+探索(山登り法)と同値類の道具を取り込む**:
+秘書セッションの試作(2026-10-14，隣接行列で入出力， 計算は stats のみで
+igraph・bnlearn 不使用)。**置き場所は独立プロジェクト A11 の
+`Git/polytomous-bn/`** (`02_研究/多値BN` からリンク，ローカル git
+のみ・GitHub リモートなし)。関数は `R/` 以下，Ni データの再分析と 経緯は
+`ni_reanalysis/`(`結果メモ_20261014.md`)。`fit_mo_cumprobit`
+は空のカテゴリでも閾値の初期値が有限に
+なるよう修正済み(ブートストラップ対策，10/14)。 - `mo_cumprobit.R`:
+`fit_mo_cumprobit(y, X, alpha, prior_sd_b, K, D)` と補助 - `hc_mo.R`:
+`make_scorer()`(ノードと親の組ごとの BIC
+を使い回す)，`hill_climb()`(辺の追加・削除・反転の
+最良改善，親の数の上限つき)，`hc_restarts()`(無作為な初期 DAG
+から多重スタート) - `cpdag_base.R`:
+`is_dag_base()`(Kahn)，`skeleton()`，`v_structures()`，`markov_equivalent()`(Verma
+& Pearl)， `dag_to_cpdag()`(Meek の規則 R1〜R3。bnlearn と無作為な DAG
+300 個で全一致) - 検証: Ni, Chen & Wang (2025)
+のデータ(MPsychoR::Rogers，n = 408，24
+変数)で表2の27辺を全部再現(ほか10辺)， 全体 5.6
+分。お遍路さんのデータには未適用。残りはブートストラップによる辺の出現割合，親が多いときの
+速度(勾配の解析式)，名義の条件付き分布のスコアとの比較 - **方針**:
+向きの情報は単調の条件付き分布ではごく弱いので，結果は同値類(CPDAG)で返し，「つながり」
+「v
+構造などで強制された向き」「当てはまりで選ばれた向き」を分けて報告する。質問紙の多値
+BN には自然な順序が
+ないので，BNM_GA(正答率の順で向きを固定して上三角を探す)ではなく山登り法を使う(先生と秘書セッションで合意)。
+**ランクラスタリングを使う多値 BINET
+ではランクの順序から向きの前提が得られるので，荘島の GA
+の発想が使える** - `is_dag_base()` は下の 3
+の閉路判定と共通にする(重複させない)。API 名は未定 3. **igraph
+を計算から外す(段階1)**: 閉路の判定(Kahn
+法)と連結の判定(幅優先探索)を隣接行列で自前に，
+形式の往復(約23か所)を行列・データフレームの操作に置き換える。BNM
+の構造探索は igraph オブジェクトの
+生成が時間の約93%なので速くなる。**`g_list`(igraph)は残し，隣接行列の要素(名前は
+`adj_list` などで検討)を 並べて返す。`g_list` を使うと「3.0.0
+で行列に変わる」と警告**。igraph は描画と `g_list` のためだけに残す。 4.
+**等価(form A)**: 推定済み項目のフィールドと FRP
+を固定し，新しい項目がどのフィールドに入るかだけを推定する。
+[`predict()`](https://rdrr.io/r/stats/predict.html)
+の部品(推定結果から母数・項目・カテゴリ対応表を取り出す内部関数)を共有する。FRP
+と項目の
+フィールド割り当てから最小限のオブジェクトを組み立てる関数もここで入れる。
+5. ggExametrika・shinyExametrika を同時に出す(`adj_list` 対応)。
+
+**3.0.0 — 使い方の破壊的変更をまとめる版** - `g_list` と igraph
+への依存を外す(igraph は Suggests に下げ，`as_igraph()`
+のような変換関数を用意)。 ネットワーク図は基本の
+R(格子配置＋矢印)で描き直すか ggExametrika に任せる。 - `conf` →
+`conf_field`
+の改名など，先送りしている改名を同じ版に載せる(「壊すなら一度に」)。 -
+版の付け方の約束:
+**推定値が変わる修正はマイナー，使い方が壊れる変更はメジャー**(2.1.0・2.2.0
+と 2.0.0 の前例)。
+
 ### 検討中（2026-09-06・日心のポスターで受けた要望）
 
+- **[`predict()`](https://rdrr.io/r/stats/predict.html) は 2.2.0
+  で実装済み(2026-10-14，`R/25_predict.R`)**。以下は当時の設計メモ。
 - **[`predict()`](https://rdrr.io/r/stats/predict.html)
   メソッド＝母数を固定して新しい回答者をランク分けする**。実体は**1回のEステップ**で，返り値の
   `FRP`(=BCRM) と `FieldMembership` があれば作れる。API案は
@@ -1029,10 +1109,8 @@ only; fit indices `M_0`/`M_t`/`M_s` with AIC/BIC/CAIC/NFI/CFI/RMSEA -
 Validated on お遍路さん (2026-05-09): DAG full reversal dAIC = +17
 (clearer than J15S3810 dAIC = ±5) - Structure learning (Glasso skeleton
 -\> xi direction -\> case C fit) -\> v2.2+ - **Drop the igraph
-dependency** -\> a later major. `LDLRA`/`LDB`/`BINET` return igraph
-objects in `g_list` and `R/00_print_network.R` draws with
-`plot.igraph()`, so it needs a replacement drawing path first (survey
-under Known Technical Debt). - Input data storage unification
+dependency** -\> 2.3.0 で計算から外し，3.0.0 で依存を外す(Roadmap
+冒頭の計画，2026-10-14 決定)。 - Input data storage unification
 
 ### Long-term
 

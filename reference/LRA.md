@@ -314,6 +314,12 @@ includes:
   Item Category Reference Profile matrix showing probability of response
   in each category by rank.
 
+- CategoryMap, LogPrior:
+
+  The raw codes behind the rows of `ICRP` for each item, and the log
+  prior over ranks; used by
+  [`predict.exametrika()`](https://kosugitti.github.io/exametrika/reference/predict.exametrika.md).
+
 - ScoreRankCorr:
 
   Spearman's correlation between test scores and estimated ranks.
@@ -399,6 +405,13 @@ For rated data (`LRA.rated`), the returned list additionally includes:
 
   Item Category Reference Profile matrix showing probability of response
   in each category by rank.
+
+- CategoryMap, CollapseCode, LogPrior:
+
+  The raw codes behind the rows of `ICRP` for each item (`CollapseCode`
+  marks the pooled rare distractors), and the log prior over ranks; used
+  by
+  [`predict.exametrika()`](https://kosugitti.github.io/exametrika/reference/predict.exametrika.md).
 
 - ScoreRankCorr:
 
@@ -495,19 +508,19 @@ result.LRA <- LRA(J15S500, nrank = 6)
 # Display the first few rows of student rank membership profiles
 head(result.LRA$Students)
 #>            Membership 1 Membership 2 Membership 3 Membership 4 Membership 5
-#> Student001 0.3732015798  0.428451221   0.11219848  0.030244910  0.055903805
-#> Student002 0.0200254309  0.080848295   0.57928413  0.282874219  0.036967734
-#> Student003 0.0062126694  0.213151690   0.54304200  0.146385733  0.076483260
-#> Student004 0.0010041013  0.009115691   0.19880904  0.293017561  0.133718573
-#> Student005 0.2529143262  0.727293364   0.01394516  0.003759143  0.001964068
-#> Student006 0.0001300928  0.002053329   0.04593162  0.067696979  0.766760085
+#> Student001  0.373362828  0.428218832   0.11222243   0.03023517  0.055960736
+#> Student002  0.020038540  0.080823095   0.57927688   0.28286515  0.036996142
+#> Student003  0.006211982  0.213060043   0.54320920   0.14635238  0.076437420
+#> Student004  0.001004123  0.009115719   0.19879539   0.29307173  0.133726701
+#> Student005  0.252721804  0.727486696   0.01394724   0.00375769  0.001962579
+#> Student006  0.000130071  0.002051624   0.04590205   0.06767055  0.766752034
 #>            Membership 6 Estimate Rank-Up Odds Rank-Down Odds
-#> Student001 6.653884e-09        2   0.26186990     0.87104800
-#> Student002 1.950328e-07        3   0.48831688     0.13956587
-#> Student003 1.472465e-02        3   0.26956613     0.39251419
-#> Student004 3.643350e-01        6           NA     0.36702090
-#> Student005 1.239411e-04        2   0.01917405     0.34774733
-#> Student006 1.174279e-01        5   0.15314816     0.08828965
+#> Student001 6.586004e-09        2   0.26206795     0.87189726
+#> Student002 1.929370e-07        3   0.48830733     0.13952412
+#> Student003 1.472897e-02        3   0.26942176     0.39222466
+#> Student004 3.642863e-01        6           NA     0.36709228
+#> Student005 1.239901e-04        2   0.01917182     0.34739028
+#> Student006 1.174937e-01        5   0.15323555     0.08825611
 
 # Plot Item Reference Profiles (IRP) for the first 6 items
 plot(result.LRA, type = "IRP", items = 1:6, nc = 2, nr = 3)
@@ -540,6 +553,8 @@ plot(result.LRAord, type = "ICRP", items = 1:6, nc = 3, nr = 2)
 # Rated data example
 # Fit a Latent Rank Analysis model with 10 ranks to rated data
 result.LRArated <- LRA(J35S5000, nrank = 10, mic = TRUE)
+#> Warning: LRA: the following categories had no responses and were dropped; the categories above them were renumbered for that item.
+#>   V30: category 5
 
 # Plot score distributions
 plot(result.LRArated, type = "ScoreFreq")

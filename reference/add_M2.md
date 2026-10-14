@@ -154,7 +154,7 @@ fit
 #> Test Profile
 #>                               Class 1 Class 2 Class 3
 #> Latent Class Distribution     233.000 245.000 122.000
-#> Class Membership Distribution 231.324 244.059 124.617
+#> Class Membership Distribution 231.339 244.054 124.608
 #> 
 #> Model Fit Indices
 #> Number of Latent class: 3
@@ -180,11 +180,11 @@ fit
 #> BIC             31598.56
 #> 
 #> Variational Fit
-#>                      value
-#> ELBO             -15223.56
-#> log_lik_marginal -15223.56
-#> entropy_class        41.31
-#> ICL               31597.65
+#>                       value
+#> ELBO             -15223.558
+#> log_lik_marginal -15223.558
+#> entropy_class        41.303
+#> ICL               31597.651
 #> 
 #> Margin based (M2)
 #>             value
@@ -289,7 +289,7 @@ print(fit, fit_indices = "margin")
 #> Test Profile
 #>                               Class 1 Class 2 Class 3
 #> Latent Class Distribution     233.000 245.000 122.000
-#> Class Membership Distribution 231.324 244.059 124.617
+#> Class Membership Distribution 231.339 244.054 124.608
 #> 
 #> Model Fit Indices
 #> Number of Latent class: 3

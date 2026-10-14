@@ -2,6 +2,63 @@
 
 ## exametrika 2.2.0 (development)
 
+### New: `predict()` classifies new respondents with a fitted model
+
+`predict(fit, newdata)` holds the estimated parameters (and, for
+biclustering, the field memberships of the items) fixed and runs one
+E-step on new responses, returning the membership probabilities, the
+estimated class or rank and each respondent’s log-likelihood. It covers
+[`LCA()`](https://kosugitti.github.io/exametrika/reference/LCA.md)
+(binary, nominal, ordinal, rated),
+[`LRA()`](https://kosugitti.github.io/exametrika/reference/LRA.md)
+(binary, ordinal, rated) and
+[`Biclustering()`](https://kosugitti.github.io/exametrika/reference/Biclustering.md)
+/ Ranklustering (binary, nominal, ordinal, rated). Items are matched by
+name, missing responses are left out of the likelihood, and a response
+in a category the fitted data never used for that item is treated as
+missing with a warning. On the data the model was fitted to it
+reproduces the stored membership.
+
+To make this possible the fits now record how they coded the categories:
+`CategoryMap` (the raw codes behind each item’s renumbered categories)
+in the nominal, ordinal and rated
+[`LCA()`](https://kosugitti.github.io/exametrika/reference/LCA.md) and
+[`LRA()`](https://kosugitti.github.io/exametrika/reference/LRA.md),
+`CategoryShift` in the nominal and ordinal
+[`Biclustering()`](https://kosugitti.github.io/exametrika/reference/Biclustering.md),
+and `LogPrior` (the rank prior set by `trapezoidal`) in the ordinal and
+rated
+[`LRA()`](https://kosugitti.github.io/exametrika/reference/LRA.md). Fits
+made with earlier versions lack these;
+[`predict()`](https://rdrr.io/r/stats/predict.html) asks for a refit
+where it cannot rebuild them.
+
+### Breaking change: memberships are the posterior under the returned parameters
+
+[`LCA()`](https://kosugitti.github.io/exametrika/reference/LCA.md), the
+binary
+[`LRA()`](https://kosugitti.github.io/exametrika/reference/LRA.md) (GTM
+and isotonic) and every
+[`Biclustering()`](https://kosugitti.github.io/exametrika/reference/Biclustering.md)
+returned the class posterior of the last E-step, which was computed from
+the parameters of the previous cycle; the parameters themselves then
+moved once more. The membership and the parameters returned did not
+belong together, and an E-step with the returned parameters on the same
+data did not reproduce the membership. Each now runs one more E-step
+after the loop with the final parameters (the ordinal and rated
+[`LRA()`](https://kosugitti.github.io/exametrika/reference/LRA.md) and
+the SOM already did). Memberships, class estimates and the fit
+quantities built on them move slightly.
+
+When the biclustering EM stops because its objective decreased, it
+restored the reference profiles of the previous cycle but kept the new
+field (and, for the nominal and ordinal data, class) memberships. All
+are now rolled back together. On `J35S515` (binary Ranklustering, GTM, 6
+x 5) the field memberships of a few items and the fit indices change
+(log-likelihood -7273.06 to -7273.90). Shojima’s Mathematica reference
+implementation had both defects; it was corrected in step and the
+reference fixtures regenerated.
+
 ### Model comparison: evidence lower bound, marginal likelihood, entropy, ICL
 
 Every latent class, latent rank and biclustering fit now carries four
@@ -24,6 +81,105 @@ each function and in `R/00_VariationalFit.R`:
   Celeux and Govaert, 2000) in the BIC-type approximation used for the
   latent block model by Keribin, Brault, Celeux and Govaert (2015), on
   the same scale as AIC and BIC here (smaller is better).
+
+### Breaking change: ordinal biclustering starts from the data (`init`)
+
+**The default fit of
+[`Biclustering()`](https://kosugitti.github.io/exametrika/reference/Biclustering.md)
+on ordinal data changes.** The EM is deterministic but converges to a
+local optimum, and the start used up to now (fields = items split by
+their median, block probabilities = a ladder common to every field)
+stopped at one in over 80% of simulated data sets. The new argument
+`init` chooses the start:
+
+- `"auto"` (default) runs from both `"quantile"` and `"ward"` and keeps
+  the fit with the larger ELBO.
+- `"quantile"`: classes from equal-count bins of the respondent score.
+- `"ward"`: classes from Ward clustering of the respondent score, which
+  does not assume equal class sizes.
+- `"legacy"`: the earlier start; reproduces earlier results.
+
+`"auto"` also adds `nstart` random starts (default 10; `seed` sets them,
+and the session’s random number stream is left untouched). The two
+data-based starts always run to convergence, so the random starts can
+only raise the ELBO; the random starts are run for 100 EM cycles and
+only the best 3 continue. A random start has random classes; its fields
+are `conf` if given, and otherwise those of the `"quantile"` start for
+half of the starts and random for the other half. On real data the
+likelihood surface often had many more local optima than in simulations,
+and the data-based starts alone were often beaten by random ones; raise
+`nstart` for such data.
+
+In `"quantile"` and `"ward"` the fields start from a Ward clustering of
+the items’ class-mean profiles (centred per item), and the block
+probabilities from the category frequencies of each block. Both starts
+are invariant to the order of the rows. In simulations they reached the
+level of a start at the true partition: `"quantile"` under equal class
+sizes, `"ward"` under unequal ones, and `"auto"` under both, at about
+the cost of one legacy fit. With `conf` the given fields are kept, and
+with `conf_class` the given classes are the single start. The fit
+records `init`, `init_selected` and `init_elbo`.
+
+### Breaking change: ordinal biclustering judges SOAC/WOAC on the model
+
+The isotonic fit of ordinal Ranklustering constrains the field reference
+profiles, but `SOACflg` and `WOACflg` were judged on a test reference
+profile built from data-weighted counts, which the constraint does not
+reach. A single dip from sampling noise turned SOAC off even when every
+FRP was monotone, and more often with more ranks. `TRP` of
+[`Biclustering()`](https://kosugitti.github.io/exametrika/reference/Biclustering.md)
+(ordinal) and
+[`Biclustering_IRM()`](https://kosugitti.github.io/exametrika/reference/Biclustering_IRM.md)
+(ordinal) is now computed from the model, as for binary and rated data:
+the sum over fields of field size times the field expected score. A
+monotone FRP thus gives a monotone TRP, and the isotonic fit always
+satisfies SOAC. The checks allow the feasibility tolerance of the
+isotonic step (1e-6). The profile from the data is returned as
+`TRP_empirical` (mean observed score of the class members, summed over
+fields); its departure from `TRP` shows how far the model is from the
+data. `TRP` values change.
+
+### Breaking change: category codes are no longer renumbered per item
+
+**Up to now the polytomous biclustering models renumbered each item’s
+observed categories to 1..k**, so on an item where nobody chose a
+category the codes above it moved down. Since 1.15.0,
+[`Biclustering()`](https://kosugitti.github.io/exametrika/reference/Biclustering.md)
+and
+[`Biclustering_IRM()`](https://kosugitti.github.io/exametrika/reference/Biclustering_IRM.md)
+on nominal, ordinal and rated data did this through
+`remap_category_codes()`, which was meant only to make 0-based codes
+usable. In these models the items of a field share the block’s category
+probabilities, so code q must mean the same category on every item; on
+an item whose lowest category was empty the renumbering misaligned every
+response of that item with the rest of its field. This is common in
+practice: in simulated data most data sets had an item whose bottom
+category was empty.
+
+- The biclustering family now only shifts the codes (0-based data move
+  up by one); a category with no responses keeps its slot with a zero
+  count, and the number of categories is the largest code after the
+  shift.
+- The item-level models
+  ([`LCA()`](https://kosugitti.github.io/exametrika/reference/LCA.md),
+  [`LRA()`](https://kosugitti.github.io/exametrika/reference/LRA.md) on
+  ordinal and rated data,
+  [`GRM()`](https://kosugitti.github.io/exametrika/reference/GRM.md))
+  keep renumbering each item, because a category with no responses
+  leaves its threshold or probability unidentified, but now warn which
+  categories of which items were dropped.
+- [`dataFormat()`](https://kosugitti.github.io/exametrika/reference/dataFormat.md)
+  codes a factor by its declared levels: an unused level keeps its code,
+  instead of being dropped and closing the gap. The category labels
+  still list the observed levels only.
+- [`M2()`](https://kosugitti.github.io/exametrika/reference/M2.md) and
+  [`add_M2()`](https://kosugitti.github.io/exametrika/reference/add_M2.md)
+  on a rated
+  [`LCA()`](https://kosugitti.github.io/exametrika/reference/LCA.md) fit
+  compared the raw codes against the renumbered profile; they now use
+  the renumbered codes.
+- [`DistractorAnalysis()`](https://kosugitti.github.io/exametrika/reference/DistractorAnalysis.md)
+  on a rated biclustering fit lost a correct answer coded 0.
 
 ### Breaking change: nominal and ordinal biclustering report the ELBO
 
@@ -384,8 +540,8 @@ monotonicity sort to the end of each epoch.
 ## exametrika 2.0.1
 
 A patch release: two bug fixes, no new features and no change to any
-estimate. Released on GitHub first; the CRAN submission follows once the
-one-month cadence since 2.0.0 (accepted 2026-08-20) has passed.
+estimate. Released on GitHub only (2026-08-25); these fixes reached CRAN
+with 2.1.0.
 
 ### Bug Fixes
 

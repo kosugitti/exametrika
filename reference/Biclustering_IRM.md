@@ -409,7 +409,12 @@ For ordinal data, the returned list includes:
 
 - TRP:
 
-  Test Reference Profile.
+  Test Reference Profile, computed from the model (since 2.2.0).
+
+- TRP_empirical:
+
+  The same profile from the data (mean observed scores of the class
+  members). Since 2.2.0.
 
 - BFRP:
 

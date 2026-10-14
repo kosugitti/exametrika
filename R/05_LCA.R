@@ -40,6 +40,9 @@
 #'    represents a latent class. Values indicate the probability of a correct response
 #'    for members of that class.}
 #'  \item{ItemFitIndices}{Fit indices for each item. See also \code{\link{ItemFit}}.}
+#'  \item{CategoryMap}{Nominal, ordinal and rated data only. The raw codes behind
+#'    each item's renumbered categories (the rows of \code{ICRP}); used by
+#'    [predict.exametrika()].}
 #'  \item{TestFitIndices}{Overall fit indices for the test. See also \code{\link{TestFit}}.}
 #'  \item{elbo}{Evidence lower bound of the observed-data log-likelihood under the
 #'    posterior memberships the EM produced. Exact (equal to the observed-data
@@ -279,6 +282,8 @@ LCA.nominal <- function(U, ncls = 2, na = NULL, Z = NULL, w = NULL, maxiter = 10
   if (tmp$response.type == "ordinal") {
     warn_dropped_categories(tmp$Q, tmp$ItemLabel, "LCA")
   }
+  # The raw codes behind the per-item renumbering, for predict()
+  category_codes <- category_map(tmp$Q)
   tmp$Q <- remap_category_codes(tmp$Q)
   nobs <- NROW(tmp$Q)
   nitems <- NCOL(tmp$Q)
@@ -386,6 +391,7 @@ LCA.nominal <- function(U, ncls = 2, na = NULL, Z = NULL, w = NULL, maxiter = 10
     # kept so that M2() can be computed after the fact, as Biclustering does
     Q = tmp$Q,
     Z = tmp$Z,
+    CategoryMap = category_codes,
     ICRP = ICRP,
     LCD = as.vector(LCD),
     CMD = as.vector(CMD),
@@ -490,6 +496,7 @@ LCA.rated <- function(U, ncls = 2, na = NULL, Z = NULL, w = NULL, maxiter = 1000
     IRP = IRP,
     TRP = TRP,
     ICRP = ret_nom$ICRP,
+    CategoryMap = ret_nom$CategoryMap,
     LCD = ret_nom$LCD,
     CMD = ret_nom$CMD,
     Students = ret_nom$Students,

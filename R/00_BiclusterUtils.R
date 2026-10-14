@@ -83,6 +83,30 @@ shift_category_codes <- function(Q) {
   return(Q)
 }
 
+#' @title Offset applied by shift_category_codes()
+#' @description Stored in the fit so that predict() can code new data the same way.
+#' @param Q Response matrix (nobs x nitems) with -1 marking missing cells
+#' @return the integer added to every valid code (0 when none)
+#' @noRd
+category_shift <- function(Q) {
+  valid <- Q != -1
+  if (!any(valid)) {
+    return(0)
+  }
+  lo <- min(Q[valid])
+  return(if (lo < 1) 1 - lo else 0)
+}
+
+#' @title Observed codes of each item, in the order of a per-item renumbering
+#' @description Element j holds the raw codes of item j that remap_category_codes()
+#' turns into 1..k. Stored in item-level fits for predict().
+#' @param Q Response matrix (nobs x nitems) with -1 marking missing cells
+#' @return list of sorted code vectors, one per item
+#' @noRd
+category_map <- function(Q) {
+  return(lapply(seq_len(NCOL(Q)), function(j) sort(unique(Q[Q[, j] != -1, j]))))
+}
+
 #' @title Warn about categories dropped by a per-item renumbering
 #' @description
 #' Item-level models (LCA, LRA, GRM) renumber each item's observed codes to

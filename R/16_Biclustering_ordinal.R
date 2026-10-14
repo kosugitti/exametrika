@@ -59,6 +59,7 @@ Biclustering.ordinal <- function(U,
   tmp <- U
   # Codes are shifted, not renumbered per item: a field's items share the
   # block probabilities, so category q must mean the same on every item.
+  cat_shift <- category_shift(tmp$Q)
   tmp$Q <- shift_category_codes(tmp$Q)
   nobs <- NROW(tmp$Q)
   nitems <- NCOL(tmp$Q)
@@ -217,6 +218,7 @@ Biclustering.ordinal <- function(U,
     # Initialize smoothed_memb so that it is defined even when the EM loop
     # exits before reaching the smoothing step (e.g. immediate convergence).
     smoothed_memb <- matrix(0, nrow = nobs, ncol = ncls)
+    clsmemb <- matrix(1 / ncls, nrow = nobs, ncol = ncls)
     # iteration start ---------------------------------------------------------
     converge <- TRUE
     FLG <- TRUE
@@ -239,6 +241,9 @@ Biclustering.ordinal <- function(U,
 
       emt <- emt + 1
       old_test_log_lik <- test_log_lik
+      old_clsmemb <- clsmemb
+      old_fldmemb <- fldmemb
+      old_smoothed <- smoothed_memb
 
       # Precompute log(BBRM[,,q] - BBRM[,,q+1] + const) once per EM iteration.
       # Both E-steps (class and field) use the same values across all q; the old
@@ -414,11 +419,30 @@ Biclustering.ordinal <- function(U,
       }
 
       if (!is.finite(test_log_lik) || test_log_lik - old_test_log_lik <= 0) {
+        # Roll back the memberships together with the profiles
         BCRM <- oldBCRM
         BBRM <- oldBBRM
+        clsmemb <- old_clsmemb
+        fldmemb <- old_fldmemb
+        smoothed_memb <- old_smoothed
         if (!is.finite(test_log_lik)) converge <- FALSE
         break
       }
+    }
+    # Return the class posterior under the final profiles and field
+    # memberships (the last E-step used the previous cycle's values)
+    if (is.null(conf_class_mat)) {
+      log_delta <- log(pmax(
+        BBRM[, , seq_len(maxQ), drop = FALSE] -
+          BBRM[, , seq_len(maxQ) + 1, drop = FALSE],
+        0
+      ) + const)
+      tmpL <- matrix(0, nrow = nobs, ncol = ncls)
+      for (q in 1:maxQ) {
+        tmpL <- tmpL + ZU[, , q] %*% fldmemb %*% matrix(log_delta[, , q], nrow = nfld, ncol = ncls)
+      }
+      clsmemb <- row_softmax(tmpL)
+      smoothed_memb <- if (use_isotonic) clsmemb else clsmemb %*% Fil
     }
     return(list(
       clsmemb = clsmemb, fldmemb = fldmemb, smoothed_memb = smoothed_memb,
@@ -645,6 +669,7 @@ Biclustering.ordinal <- function(U,
     LRD = clsdist,
     LCD = clsdist,
     FRP = BCRM,
+    CategoryShift = cat_shift,
     FRPIndex = FRPIndex,
     TRP = TRP,
     TRP_empirical = TRP_empirical,

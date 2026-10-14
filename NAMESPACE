@@ -87,8 +87,10 @@ S3method(percentile,binary)
 S3method(percentile,default)
 S3method(plot,DistractorAnalysis)
 S3method(plot,exametrika)
+S3method(predict,exametrika)
 S3method(print,DistractorAnalysis)
 S3method(print,exametrika)
+S3method(print,exametrikaPrediction)
 S3method(sscore,binary)
 S3method(sscore,default)
 S3method(stanine,binary)
@@ -219,6 +221,7 @@ importFrom(stats,
   optimize,
   pchisq,
   pnorm,
+  predict,
   qnorm,
   quantile,
   rbinom,

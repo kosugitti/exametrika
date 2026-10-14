@@ -102,6 +102,9 @@ belonging to each latent class. The last column ("Estimate") indicates the most 
 represents a latent class. Values indicate the probability of a correct response
 for members of that class.}
 \item{ItemFitIndices}{Fit indices for each item. See also \code{\link{ItemFit}}.}
+\item{CategoryMap}{Nominal, ordinal and rated data only. The raw codes behind
+each item's renumbered categories (the rows of \code{ICRP}); used by
+\code{\link[=predict.exametrika]{predict.exametrika()}}.}
 \item{TestFitIndices}{Overall fit indices for the test. See also \code{\link{TestFit}}.}
 \item{elbo}{Evidence lower bound of the observed-data log-likelihood under the
 posterior memberships the EM produced. Exact (equal to the observed-data

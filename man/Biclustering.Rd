@@ -188,6 +188,9 @@ An object of class "exametrika" and "Biclustering" containing:
 \item{LFD}{Latent Field Distribution - counts of items assigned to each field}
 \item{LRD/LCD}{Latent Rank/Class Distribution - counts of examinees assigned to each class/rank}
 \item{FRP}{Field Reference Profile matrix - probability of correct response for each field-class combination}
+\item{CategoryShift}{Nominal and ordinal data only. The amount added to
+every category code to make the codes start at 1; used by
+\code{\link[=predict.exametrika]{predict.exametrika()}}.}
 \item{FRPIndex}{Field Reference Profile indices (Kumagai, 2007) — data.frame with 6 columns:
 \describe{
 \item{Alpha}{Maximum-slope location: class transition where the largest increase occurs}

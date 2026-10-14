@@ -149,6 +149,12 @@ emclus_isotonic <- function(U, Z, ncls, beta1, beta2, maxiter = 100, mic = FALSE
     }
   }
 
+  # Return the posterior under the final parameters. The one from the last
+  # E-step above was computed from the previous cycle's parameters, so it did
+  # not match them (and predict() on the same data could not reproduce it).
+  llmat <- U %*% t(log(classRefMat + const)) + (Z * (1 - U)) %*% t(log(1 - classRefMat + const))
+  postDist <- row_softmax(llmat)
+
   # Shape-restricted df per item = number of PAVA blocks in the final matrix
   item_nparam <- apply(classRefMat, 2, function(col) length(unique(round(col, 10))))
 

@@ -26,6 +26,8 @@
 #' \item{ItemReport}{Basic statistics for each item including category proportions and item-total correlations.}
 #' \item{ICBR}{Item Category Boundary Reference matrix showing cumulative probabilities for rank-category combinations.}
 #' \item{ICRP}{Item Category Reference Profile matrix showing probability of response in each category by rank.}
+#' \item{CategoryMap, LogPrior}{The raw codes behind the rows of \code{ICRP}
+#'   for each item, and the log prior over ranks; used by [predict.exametrika()].}
 #' \item{ScoreRankCorr}{Spearman's correlation between test scores and estimated ranks.}
 #' \item{RankQuantCorr}{Spearman's correlation between estimated ranks and quantile groups.}
 #' \item{ScoreRank}{Contingency table of raw scores by estimated ranks.}
@@ -627,6 +629,9 @@ LRA.ordinal <- function(U,
     RMD = RMD,
     ICBR = ICBR,
     ICRP = ICRP,
+    # Raw codes behind the rows of ICRP and the log prior over ranks, for predict()
+    CategoryMap = category,
+    LogPrior = log(log_prior),
     ScoreRankCorr = rho1,
     RankQuantCorr = rho2,
     Students = StudentRank,

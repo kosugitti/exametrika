@@ -136,6 +136,14 @@ emclus_nominal <- function(Q, Z, ncls, ncat, alpha = 1, maxiter = 100,
     }
   }
 
+  # Return the posterior under the final profile (the last E-step used the
+  # previous cycle's profile)
+  tmpL <- matrix(0, nrow = nobs, ncol = ncls)
+  for (q in seq_len(maxQ)) {
+    tmpL <- tmpL + (Z * Uq[, , q]) %*% log(profile[, , q] + const)
+  }
+  clsmemb <- row_softmax(tmpL)
+
   ret <- list(
     profile = profile,
     clsmemb = clsmemb,

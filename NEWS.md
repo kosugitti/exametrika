@@ -1,5 +1,43 @@
 # exametrika 2.2.0 (development)
 
+## New: `predict()` classifies new respondents with a fitted model
+
+`predict(fit, newdata)` holds the estimated parameters (and, for biclustering,
+the field memberships of the items) fixed and runs one E-step on new responses,
+returning the membership probabilities, the estimated class or rank and each
+respondent's log-likelihood. It covers `LCA()` (binary, nominal, ordinal,
+rated), `LRA()` (binary, ordinal, rated) and `Biclustering()` / Ranklustering
+(binary, nominal, ordinal, rated). Items are matched by name, missing responses
+are left out of the likelihood, and a response in a category the fitted data
+never used for that item is treated as missing with a warning. On the data the
+model was fitted to it reproduces the stored membership.
+
+To make this possible the fits now record how they coded the categories:
+`CategoryMap` (the raw codes behind each item's renumbered categories) in the
+nominal, ordinal and rated `LCA()` and `LRA()`, `CategoryShift` in the nominal
+and ordinal `Biclustering()`, and `LogPrior` (the rank prior set by
+`trapezoidal`) in the ordinal and rated `LRA()`. Fits made with earlier versions
+lack these; `predict()` asks for a refit where it cannot rebuild them.
+
+## Breaking change: memberships are the posterior under the returned parameters
+
+`LCA()`, the binary `LRA()` (GTM and isotonic) and every `Biclustering()`
+returned the class posterior of the last E-step, which was computed from the
+parameters of the previous cycle; the parameters themselves then moved once
+more. The membership and the parameters returned did not belong together, and
+an E-step with the returned parameters on the same data did not reproduce the
+membership. Each now runs one more E-step after the loop with the final
+parameters (the ordinal and rated `LRA()` and the SOM already did). Memberships,
+class estimates and the fit quantities built on them move slightly.
+
+When the biclustering EM stops because its objective decreased, it restored the
+reference profiles of the previous cycle but kept the new field (and, for the
+nominal and ordinal data, class) memberships. All are now rolled back together.
+On `J35S515` (binary Ranklustering, GTM, 6 x 5) the field memberships of a few
+items and the fit indices change (log-likelihood -7273.06 to -7273.90). Shojima's
+Mathematica reference implementation had both defects; it was corrected in step
+and the reference fixtures regenerated.
+
 ## Model comparison: evidence lower bound, marginal likelihood, entropy, ICL
 
 Every latent class, latent rank and biclustering fit now carries four

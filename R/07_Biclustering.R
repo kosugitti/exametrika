@@ -103,6 +103,9 @@ build_conf_mat <- function(conf, nitems) {
 #'  \item{LFD}{Latent Field Distribution - counts of items assigned to each field}
 #'  \item{LRD/LCD}{Latent Rank/Class Distribution - counts of examinees assigned to each class/rank}
 #'  \item{FRP}{Field Reference Profile matrix - probability of correct response for each field-class combination}
+#'  \item{CategoryShift}{Nominal and ordinal data only. The amount added to
+#'    every category code to make the codes start at 1; used by
+#'    [predict.exametrika()].}
 #'  \item{FRPIndex}{Field Reference Profile indices (Kumagai, 2007) — data.frame with 6 columns:
 #'    \describe{
 #'      \item{Alpha}{Maximum-slope location: class transition where the largest increase occurs}
@@ -472,6 +475,7 @@ Biclustering.binary <- function(U,
     # max_log_lljf <- apply(lljf, 1, max)
     # log_lljf_adj <- lljf - max_log_lljf
     # log_fldmemb <- log_lljf_adj - log(rowSums(exp(log_lljf_adj)))
+    old_fldmemb_cycle <- fldmemb
     fldmemb <- t(apply(lljf, 1, softmax))
 
     if (!any(is.null(conf_mat))) {
@@ -488,6 +492,7 @@ Biclustering.binary <- function(U,
       ffr <- pmax(ffr, const)
     }
     oldPiFR <- PiFR
+    oldfldmemb <- old_fldmemb_cycle
     PiFR <- (cfr + beta1 - 1) / (cfr + ffr + beta1 + beta2 - 2)
     PiFR[is.nan(PiFR)] <- 1e-16
     PiFR[is.infinite(PiFR)] <- 1e-16
@@ -529,9 +534,28 @@ Biclustering.binary <- function(U,
       )
     }
     if (test_log_lik - old_test_log_lik <= 0) {
+      # Roll back the field memberships together with PiFR, so the pair that
+      # is returned belongs together
       PiFR <- oldPiFR
+      fldmemb <- oldfldmemb
       break
     }
+  }
+
+  # Return the class posterior under the final PiFR and field memberships
+  # (the last E-step used the previous cycle's values)
+  if (is.null(conf_class_mat)) {
+    csr <- (tmp$Z * tmp$U) %*% fldmemb
+    fsr <- (tmp$Z * (1 - tmp$U)) %*% fldmemb
+    if (any(is.nan(csr)) || any(is.infinite(csr)) || any(csr <= 0)) {
+      csr <- pmax(csr, const)
+    }
+    if (any(is.nan(fsr)) || any(is.infinite(fsr)) || any(fsr <= 0)) {
+      fsr <- pmax(fsr, const)
+    }
+    llsr <- csr %*% log(PiFR + const) + fsr %*% log(1 - PiFR + const)
+    clsmemb <- t(apply(llsr, 1, softmax))
+    smoothed_memb <- if (use_isotonic) clsmemb else clsmemb %*% Fil
   }
 
   # Ensure proper line termination after verbose output

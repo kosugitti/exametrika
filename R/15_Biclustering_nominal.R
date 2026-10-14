@@ -34,6 +34,7 @@ Biclustering.nominal <- function(U,
   tmp <- U
   # Codes are shifted, not renumbered per item: a field's items share the
   # block probabilities, so category q must mean the same on every item.
+  cat_shift <- category_shift(tmp$Q)
   tmp$Q <- shift_category_codes(tmp$Q)
   nobs <- NROW(tmp$Q)
   nitems <- NCOL(tmp$Q)
@@ -107,6 +108,7 @@ Biclustering.nominal <- function(U,
   med_order <- order(apply(tmp$Q, 2, median), decreasing = TRUE)
   fld <- fld0[match(1:nitems, med_order)]
   fldmemb <- matrix(0, nrow = nitems, ncol = nfld)
+  clsmemb <- matrix(1 / ncls, nrow = nobs, ncol = ncls)
   for (i in 1:nitems) {
     fldmemb[i, fld[i]] <- 1
   }
@@ -158,6 +160,8 @@ Biclustering.nominal <- function(U,
 
     emt <- emt + 1
     old_test_log_lik <- test_log_lik
+    old_clsmemb <- clsmemb
+    old_fldmemb <- fldmemb
 
     tmpL <- matrix(0, nrow = nobs, ncol = ncls)
     for (q in 1:maxQ) {
@@ -224,10 +228,24 @@ Biclustering.nominal <- function(U,
     }
 
     if (!is.finite(test_log_lik) || test_log_lik - old_test_log_lik <= 0) {
+      # Roll back the memberships together with BCRM
       BCRM <- oldBCRM
+      clsmemb <- old_clsmemb
+      fldmemb <- old_fldmemb
       if (!is.finite(test_log_lik)) converge <- FALSE
       break
     }
+  }
+
+  # Return the class posterior under the final BCRM and field memberships
+  # (one more exact E-step, so the ELBO cannot fall; predict() on the same
+  # data reproduces it)
+  if (is.null(conf_class_mat)) {
+    tmpL <- matrix(0, nrow = nobs, ncol = ncls)
+    for (q in 1:maxQ) {
+      tmpL <- tmpL + (tmp$Z * Uq[, , q]) %*% fldmemb %*% log(BCRM[, , q] + const)
+    }
+    clsmemb <- row_softmax(tmpL)
   }
 
 
@@ -307,6 +325,7 @@ Biclustering.nominal <- function(U,
     LRD = clsdist,
     LCD = clsdist,
     FRP = BCRM,
+    CategoryShift = cat_shift,
     CMD = colSums(clsmemb),
     RMD = colSums(clsmemb),
     FieldMembership = fldmemb,

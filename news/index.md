@@ -108,7 +108,12 @@ are `conf` if given, and otherwise those of the `"quantile"` start for
 half of the starts and random for the other half. On real data the
 likelihood surface often had many more local optima than in simulations,
 and the data-based starts alone were often beaten by random ones; raise
-`nstart` for such data.
+`nstart` for such data. In a simulation of 10,800 data sets,
+`nstart = 50` reached a larger ELBO than the default in 29% of the fits
+(57% of them with 7 or more classes) while the recovery of the true
+classes hardly changed (mean ARI within 0.005);
+[`?Biclustering`](https://kosugitti.github.io/exametrika/reference/Biclustering.md)
+now says to raise `nstart` for fits with many classes.
 
 In `"quantile"` and `"ward"` the fields start from a Ward clustering of
 the items’ class-mean profiles (centred per item), and the block

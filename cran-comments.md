@@ -1,7 +1,7 @@
 ## Test environments
 
 * local macOS (aarch64-apple-darwin25.0.0), R 4.6.1: 0 errors, 0 warnings,
-  1 NOTE (HTML manual validation, an artifact of the local HTML Tidy version)
+  0 notes
 * win-builder R-devel (2026-10-13 r90668 ucrt): Status OK (0 errors,
   0 warnings, 0 notes), check time 360 s
 * GitHub Actions (commit 79f33d9): macOS, Windows and Ubuntu on R release,
@@ -10,9 +10,6 @@
 ## R CMD check results
 
 0 errors | 0 warnings | 0 notes (win-builder R-devel, GitHub Actions)
-
-Locally the only note is "Skipping checking HTML validation: 'tidy' doesn't
-look like recent enough HTML Tidy", an artifact of the local HTML Tidy version.
 
 ## This is a minor release (2.2.0)
 

@@ -4030,3 +4030,4 @@ scratchpad の `audit_*/`(セッション限り)。詳細は NEWS 2.2.0 の3節(
 - **先生が RStudio のコンソールで `devtools::submit_cran()` を実行して提出**(18:09。確認リンクも踏んで cran-submissions 宛ての便が 18:10 に出た)。`CRAN-SUBMISSION` を 3991ed6 でコミット(提出の SHA は 793dd83)。**submit_cran() は先生が対話で流せば使える**(非対話で止まるのは Claude のシェルから流したときだけ)
 - 告知の下書き3本を `~/Dropbox/MobileTemp/exametrika_release/` に作成(`release_notes_v2.2.0.md`・`disc_ja_v2.2.0.md`・`disc_en_v2.2.0.md`)。公開日 `2026-MM-DD` は受理後に埋める。冒頭で「多値バイクラの結果が変わる」・`init = "legacy"` を案内
 - 次=CRAN の自動検査と受理の連絡を待つ→日付を埋め，先生に文面を見せてから GitHub Release と Discussions(Announcements)に日英2本
+- (追記 18:18)今日の win-builder の結果が提出の9分後に届いた: **Status OK**(R-devel 2026-10-24 r90762 ucrt・インストール61秒・check 412秒)。cran-comments の 10/13 の行は提出済みなのでそのまま。告知の「win-builder R-devel 0/0/0」はこれで裏づけられた

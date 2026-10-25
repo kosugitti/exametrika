@@ -416,8 +416,10 @@ comparing models fitted to the same training data:
 ``` r
 
 fit4 <- LRA(dataFormat(X[1:400, ]), nrank = 4)
-c(nrank4 = sum(predict(fit4, X[401:500, ])$log_lik),
-  nrank6 = sum(pred$log_lik))
+c(
+  nrank4 = sum(predict(fit4, X[401:500, ])$log_lik),
+  nrank6 = sum(pred$log_lik)
+)
 #>    nrank4    nrank6 
 #> -831.3531 -832.0329
 ```

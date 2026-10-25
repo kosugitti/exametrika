@@ -5,7 +5,7 @@
 `exametrika` is an R package for Test Data Engineering based on Shojima (2022, ISBN:978-9811699856).
 It provides psychometric analysis tools: CTT, IRT, GRM, LCA, LRA, Biclustering, BNM, LDLRA, LDB, BINET.
 
-- **Current version**: **2.2.0 (開発中)**。CRAN は 2.1.0 (受理 2026-09-25)。**2.2.0 で多値バイクラの
+- **Current version**: **2.2.0 (2026-10-25 に CRAN へ提出・受理待ち)**。CRAN は 2.1.0 (受理 2026-09-25)。受理されたら告知の下書き(`~/Dropbox/MobileTemp/exametrika_release/`)の日付を埋め，先生の確認後に Release と Discussions。**2.2.0 で多値バイクラの
   `log_lik` を ELBO へ変更し，全モデルに `elbo`/`log_lik_marginal`/`entropy`/`ICL` を追加済み**
   (`R/00_VariationalFit.R`・WORKLOG 2026-10-09)。**同日に6領域の総点検で約50件のバグを修正**(欠測の約束を
   「U は欠測セル 0・Z が印」に一本化。順序 LRA の GTM の向き反転・BNM 系のラベル順・GridSearch の LRA など。
@@ -13,7 +13,7 @@ It provides psychometric analysis tools: CTT, IRT, GRM, LCA, LRA, Biclustering, 
   **10/13〜14 に init/nstart・カテゴリ番号の詰め直し廃止・SOAC/WOAC をモデルの TRP で判定(`TRP_empirical` 併記)・
   `predict()`・所属確率を最終母数の事後確率に，を入れ GitHub に push 済み(79f33d9)**。2.2.0 の機能追加は打ち止め，
   **今月末に CRAN**。NEWS 2.0.1 節の誤文は直した(2.1.0 節ではなく 2.0.1 節にあった)。次の版の計画は Roadmap 冒頭。
-- **CRAN version**: 2.1.0 (Webフォーム提出 → 2026-09-25 自動チェックのみで受理)。`CRAN-SUBMISSION` は 2.1.0 に更新済み。
+- **CRAN version**: 2.1.0 (Webフォーム提出 → 2026-09-25 自動チェックのみで受理)。`CRAN-SUBMISSION` は 2.2.0(提出 SHA 793dd83)に更新済み。
 - **GitHub Release**: v2.1.0 (2026-09-25, latest)。Announcements: Discussions #40 (JA) / #41 (EN)
 - **Release script**: `tools/build_pkg.R` は最低限の10行。git archive 方式は撤去し，`git status --porcelain` が空でなければ止める1行で Dropbox の復活ファイルを防ぐ(本人の希望。冗長にしない)
 - **License**: MIT

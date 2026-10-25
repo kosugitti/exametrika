@@ -6,8 +6,10 @@
 (2022, <ISBN:978-9811699856>). It provides psychometric analysis tools:
 CTT, IRT, GRM, LCA, LRA, Biclustering, BNM, LDLRA, LDB, BINET.
 
-- **Current version**: **2.2.0 (開発中)**。CRAN は 2.1.0 (受理
-  2026-09-25)。**2.2.0 で多値バイクラの `log_lik` を ELBO
+- **Current version**: **2.2.0 (2026-10-25 に CRAN
+  へ提出・受理待ち)**。CRAN は 2.1.0 (受理
+  2026-09-25)。受理されたら告知の下書き(`~/Dropbox/MobileTemp/exametrika_release/`)の日付を埋め，先生の確認後に
+  Release と Discussions。**2.2.0 で多値バイクラの `log_lik` を ELBO
   へ変更し，全モデルに `elbo`/`log_lik_marginal`/`entropy`/`ICL`
   を追加済み** (`R/00_VariationalFit.R`・WORKLOG
   2026-10-09)。**同日に6領域の総点検で約50件のバグを修正**(欠測の約束を
@@ -22,7 +24,8 @@ CTT, IRT, GRM, LCA, LRA, Biclustering, BNM, LDLRA, LDB, BINET.
   **今月末に CRAN**。NEWS 2.0.1 節の誤文は直した(2.1.0 節ではなく 2.0.1
   節にあった)。次の版の計画は Roadmap 冒頭。
 - **CRAN version**: 2.1.0 (Webフォーム提出 → 2026-09-25
-  自動チェックのみで受理)。`CRAN-SUBMISSION` は 2.1.0 に更新済み。
+  自動チェックのみで受理)。`CRAN-SUBMISSION` は 2.2.0(提出 SHA
+  793dd83)に更新済み。
 - **GitHub Release**: v2.1.0 (2026-09-25, latest)。Announcements:
   Discussions \#40 (JA) / \#41 (EN)
 - **Release script**: `tools/build_pkg.R` は最低限の10行。git archive

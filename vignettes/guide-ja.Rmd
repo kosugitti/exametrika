@@ -253,10 +253,10 @@ plot(result.LRA, type = "LRD")
 ```{r predict-ja, eval=FALSE}
 X <- J15S500$U
 X[J15S500$Z == 0] <- NA
-fit <- LRA(dataFormat(X[1:400, ]), nrank = 6)  # 400人で推定
-pred <- predict(fit, X[401:500, ])               # 残りの100人を分類
-head(pred$Membership)  # 所属確率
-head(pred$Estimate)    # 推定されたランク
+fit <- LRA(dataFormat(X[1:400, ]), nrank = 6) # 400人で推定
+pred <- predict(fit, X[401:500, ]) # 残りの100人を分類
+head(pred$Membership) # 所属確率
+head(pred$Estimate) # 推定されたランク
 ```
 
 - `newdata` には，項目を列に並べた行列かデータフレーム，または `dataFormat()` の結果を渡します。

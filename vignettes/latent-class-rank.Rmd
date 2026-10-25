@@ -110,8 +110,10 @@ fitted to the same training data:
 
 ```{r predict-compare, message=FALSE, warning=FALSE}
 fit4 <- LRA(dataFormat(X[1:400, ]), nrank = 4)
-c(nrank4 = sum(predict(fit4, X[401:500, ])$log_lik),
-  nrank6 = sum(pred$log_lik))
+c(
+  nrank4 = sum(predict(fit4, X[401:500, ])$log_lik),
+  nrank6 = sum(pred$log_lik)
+)
 ```
 
 On the data a model was fitted to, `predict()` reproduces the memberships stored

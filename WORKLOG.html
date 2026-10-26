@@ -30,7 +30,7 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="logo.png" class="logo" alt=""><h1>exametrika Work Log</h1>
-      <small class="dont-index">Source: <a href="https://github.com/kosugitti/exametrika/blob/v2.2.0/WORKLOG.md" class="external-link"><code>WORKLOG.md</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/kosugitti/exametrika/blob/main/WORKLOG.md" class="external-link"><code>WORKLOG.md</code></a></small>
     </div>
 
 <div id="exametrika-work-log" class="section level1">
@@ -2713,6 +2713,25 @@ rhub / win-devel               本日の版で流し直し中</code></pre>
 <li>
 <strong>次の版の計画を CLAUDE.md の Roadmap 冒頭に書いた</strong>(<code>1cbc2d2</code>・<code>8f8ade4</code>): 2.2.0 は打ち止め・今月末 CRAN。 2.3.0 = 多値 BNM の推定関数(秘書セッションの fit_mo_cumprobit)・DAG 探索と CPDAG(A11 <code>Git/polytomous-bn/</code>)・ igraph を計算から外す段階1(g_list は残して隣接行列を併記・警告)・等価 form A。3.0.0 = g_list と igraph 依存の削除・conf 改名</li>
 <li>残り(2.2.0 提出まで): win-builder，A3 の回し直しの結果確認(既定が妥当か)，Release と告知の文案(冒頭で「多値バイクラの結果が変わる」)</li>
+</ul></div>
+<div class="section level2">
+<h2 id="id_2026-10-25-220-を-cran-へ提出">2026-10-25 2.2.0 を CRAN へ提出<a class="anchor" aria-label="anchor" href="#id_2026-10-25-220-%E3%82%92-cran-%E3%81%B8%E6%8F%90%E5%87%BA"></a></h2>
+<ul><li>
+<code>tools/build_pkg.R</code> の手順を通した: styler・document・綴り検査(指摘なし)・<code>devtools::check(cran = TRUE)</code> は手元で 0 errors / 0 warnings / 0 notes(3分40秒)</li>
+<li>styler が vignette 2本(<code>guide-ja.Rmd</code>・<code>latent-class-rank.Rmd</code>)を毎回整形し，build_pkg.R の「HEAD と一致しなければ止める」行で止まった→整形を取り込んでコミット(fbb848f)。整形は空白と <code><a href="https://rdrr.io/r/base/c.html" class="external-link">c()</a></code> の改行だけ</li>
+<li>cran-comments を先生が修正(ローカルも 0 notes・HTML Tidy の注記を削除)→ 793dd83</li>
+<li>今日の <code>check_win_devel</code> の結果メールは4時間たっても届かず(迷惑メールにもない)。10/13 の win-builder R-devel は Status OK で，その後の変更は説明書と vignette の書式だけなので待たずに提出</li>
+<li>
+<strong>先生が RStudio のコンソールで <code>devtools::submit_cran()</code> を実行して提出</strong>(18:09。確認リンクも踏んで cran-submissions 宛ての便が 18:10 に出た)。<code>CRAN-SUBMISSION</code> を 3991ed6 でコミット(提出の SHA は 793dd83)。<strong>submit_cran() は先生が対話で流せば使える</strong>(非対話で止まるのは Claude のシェルから流したときだけ)</li>
+<li>告知の下書き3本を <code>~/Dropbox/MobileTemp/exametrika_release/</code> に作成(<code>release_notes_v2.2.0.md</code>・<code>disc_ja_v2.2.0.md</code>・<code>disc_en_v2.2.0.md</code>)。公開日 <code>2026-MM-DD</code> は受理後に埋める。冒頭で「多値バイクラの結果が変わる」・<code>init = "legacy"</code> を案内</li>
+<li>次=CRAN の自動検査と受理の連絡を待つ→日付を埋め，先生に文面を見せてから GitHub Release と Discussions(Announcements)に日英2本</li>
+<li>(追記 18:18)今日の win-builder の結果が提出の9分後に届いた: <strong>Status OK</strong>(R-devel 2026-10-24 r90762 ucrt・インストール61秒・check 412秒)。cran-comments の 10/13 の行は提出済みなのでそのまま。告知の「win-builder R-devel 0/0/0」はこれで裏づけられた</li>
+</ul></div>
+<div class="section level2">
+<h2 id="id_2026-10-26-cran公開と告知">2026-10-26 CRAN公開と告知<a class="anchor" aria-label="anchor" href="#id_2026-10-26-cran%E5%85%AC%E9%96%8B%E3%81%A8%E5%91%8A%E7%9F%A5"></a></h2>
+<ul><li>exametrika 2.2.0 が CRAN に公開(Published: 2026-10-25)</li>
+<li>GitHub Release v2.2.0(target=793dd83・CRAN-SUBMISSION の SHA)と Discussions を投稿: #44(日本語) <a href="https://github.com/kosugitti/exametrika/discussions/44" class="external-link uri">https://github.com/kosugitti/exametrika/discussions/44</a> ／ #45(英語) <a href="https://github.com/kosugitti/exametrika/discussions/45" class="external-link uri">https://github.com/kosugitti/exametrika/discussions/45</a> 。本文は <code>MobileTemp/exametrika_release/</code> の3本(日付を 2026-10-25 に埋めたもの)</li>
+<li>次: 2.3.0(多値BNMの推定関数・DAG探索と CPDAG・igraph を計算から外す段階1)</li>
 </ul></div>
 </div>
 

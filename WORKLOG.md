@@ -4031,3 +4031,8 @@ scratchpad の `audit_*/`(セッション限り)。詳細は NEWS 2.2.0 の3節(
 - 告知の下書き3本を `~/Dropbox/MobileTemp/exametrika_release/` に作成(`release_notes_v2.2.0.md`・`disc_ja_v2.2.0.md`・`disc_en_v2.2.0.md`)。公開日 `2026-MM-DD` は受理後に埋める。冒頭で「多値バイクラの結果が変わる」・`init = "legacy"` を案内
 - 次=CRAN の自動検査と受理の連絡を待つ→日付を埋め，先生に文面を見せてから GitHub Release と Discussions(Announcements)に日英2本
 - (追記 18:18)今日の win-builder の結果が提出の9分後に届いた: **Status OK**(R-devel 2026-10-24 r90762 ucrt・インストール61秒・check 412秒)。cran-comments の 10/13 の行は提出済みなのでそのまま。告知の「win-builder R-devel 0/0/0」はこれで裏づけられた
+
+## 2026-10-26 CRAN公開と告知
+- exametrika 2.2.0 が CRAN に公開(Published: 2026-10-25)
+- GitHub Release v2.2.0(target=793dd83・CRAN-SUBMISSION の SHA)と Discussions を投稿: #44(日本語) https://github.com/kosugitti/exametrika/discussions/44 ／ #45(英語) https://github.com/kosugitti/exametrika/discussions/45 。本文は `MobileTemp/exametrika_release/` の3本(日付を 2026-10-25 に埋めたもの)
+- 次: 2.3.0(多値BNMの推定関数・DAG探索と CPDAG・igraph を計算から外す段階1)

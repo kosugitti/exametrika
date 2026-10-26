@@ -2,6 +2,8 @@
 
 ## exametrika 2.2.0 (development)
 
+CRAN release: 2026-10-25
+
 ### New: `predict()` classifies new respondents with a fitted model
 
 `predict(fit, newdata)` holds the estimated parameters (and, for

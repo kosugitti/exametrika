@@ -30,11 +30,11 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.png" class="logo" alt=""><h1>Changelog</h1>
-      <small>Source: <a href="https://github.com/kosugitti/exametrika/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
+      <small>Source: <a href="https://github.com/kosugitti/exametrika/blob/v2.2.0/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="2.2.0" id="exametrika-220-development">exametrika 2.2.0 (development)<a class="anchor" aria-label="anchor" href="#exametrika-220-development"></a></h2>
+<h2 class="pkg-version" data-toc-text="2.2.0" id="exametrika-220-development">exametrika 2.2.0 (development)<a class="anchor" aria-label="anchor" href="#exametrika-220-development"></a></h2><p class="text-muted">CRAN release: 2026-10-25</p>
 <div class="section level3">
 <h3 id="new-predict-classifies-new-respondents-with-a-fitted-model-2-2-0">New: <code>predict()</code> classifies new respondents with a fitted model<a class="anchor" aria-label="anchor" href="#new-predict-classifies-new-respondents-with-a-fitted-model-2-2-0"></a></h3>
 <p><code>predict(fit, newdata)</code> holds the estimated parameters (and, for biclustering, the field memberships of the items) fixed and runs one E-step on new responses, returning the membership probabilities, the estimated class or rank and each respondent’s log-likelihood. It covers <code><a href="../reference/LCA.html">LCA()</a></code> (binary, nominal, ordinal, rated), <code><a href="../reference/LRA.html">LRA()</a></code> (binary, ordinal, rated) and <code><a href="../reference/Biclustering.html">Biclustering()</a></code> / Ranklustering (binary, nominal, ordinal, rated). Items are matched by name, missing responses are left out of the likelihood, and a response in a category the fitted data never used for that item is treated as missing with a warning. On the data the model was fitted to it reproduces the stored membership.</p>

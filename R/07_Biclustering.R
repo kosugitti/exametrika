@@ -224,8 +224,10 @@ Biclustering.default <- function(U, na = NULL, Z = NULL, w = NULL, ...) {
 #'     directly in the M-step (default). For binary data this is a weighted
 #'     pool-adjacent-violators step, which under the default flat prior is the
 #'     exact order-restricted MLE (Ayer et al. 1955); for ordinal data it is
-#'     the stochastic-order-restricted multinomial MAP solved by the
-#'     Fenchel-dual algorithm (El Barmi & Dykstra 1994).
+#'     the stochastic-order-restricted multinomial MAP, reduced to an MLE by
+#'     treating counts plus Dirichlet pseudocounts as data and solved by a
+#'     Fenchel-dual algorithm in the framework of El Barmi & Dykstra (1994),
+#'     who treat multinomial MLE under general convex constraints.
 #'   * "GTM": the original filter-based smoothing of Shojima (2012).
 #' @param conf Confirmatory parameter for pre-specified field assignments. Can be either:
 #'   * A vector with items and corresponding fields in sequence

@@ -67,6 +67,19 @@ neuroticism items). Binary data still return the three historical components.
 Rated and nominal data are rejected with an error that names the function
 called.
 
+## Documentation
+
+* The help for `Biclustering()` (argument `estimation`) and the internal notes
+  on the order-restricted ordinal M-step now cite El Barmi & Dykstra (1994)
+  only for what the paper covers: maximum likelihood for a multinomial under a
+  general convex restriction. The rank-direction stochastic order is an
+  instance of its Example 3 (an intersection of half-spaces) once an item's
+  rank-by-category table is embedded in one multinomial, and the MAP is reduced
+  to that maximum likelihood by treating the counts plus Dirichlet
+  pseudocounts as data. Neither step is in the paper. The coincidence with
+  weighted PAVA for two categories is now credited to Ayer et al. (1955).
+  Estimates are unchanged.
+
 # exametrika 2.2.0 (development)
 
 ## New: `predict()` classifies new respondents with a fitted model

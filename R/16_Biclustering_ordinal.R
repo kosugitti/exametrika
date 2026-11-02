@@ -328,10 +328,13 @@ Biclustering.ordinal <- function(U,
 
       if (use_isotonic) {
         # Order-restricted MAP per field: the stochastic-order-restricted
-        # multinomial MAP across ranks (El Barmi & Dykstra 1994), imposing that
-        # each field's upper-cumulative (boundary) probabilities are monotone
-        # non-decreasing across ranks at every threshold. Solved exactly by the
-        # Fenchel-dual coordinate ascent in R/00_isotonic_CORE.R. This replaces
+        # multinomial MAP across ranks, imposing that each field's
+        # upper-cumulative (boundary) probabilities are monotone non-decreasing
+        # across ranks at every threshold. The MAP is reduced to an MLE by
+        # treating counts plus Dirichlet pseudocounts (U + alpha - 1) as data,
+        # and that MLE is solved by the Fenchel-dual coordinate ascent in
+        # R/00_isotonic_CORE.R (El Barmi & Dykstra 1994, who treat the MLE only
+        # under general convex constraints). This replaces
         # the independent per-cell boundary MLE plus the crude `mic` relabelling.
         for (f in 1:nfld) {
           Mcount <- matrix(Ufcq_prior[f, , ], nrow = ncls, ncol = maxQ)

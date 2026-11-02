@@ -316,10 +316,17 @@ iso_upper_cum <- function(P) {
 #' readable. Do not call it from model code: it is 100-500x slower.
 #'
 #' Solves the stochastic-order-restricted multinomial MAP for a single item's
-#' expected-count matrix by dual coordinate ascent (El Barmi & Dykstra 1994).
-#' Each constraint (boundary \eqn{b}, adjacent rank pair \eqn{(c,c+1)}:
-#' \eqn{S_{cb} \le S_{c+1,b}}) carries a non-negative dual multiplier, cyclically
-#' raised until its boundary ties (or left at zero if slack). Nesting (each row a
+#' expected-count matrix by dual coordinate ascent. The MAP is reduced to a
+#' maximum-likelihood problem by treating \code{Mcount} (\eqn{U + \alpha - 1},
+#' expected counts plus Dirichlet pseudocounts; valid for \eqn{\alpha \ge 1})
+#' as data. The restricted multinomial MLE is then solved within the Fenchel-dual
+#' framework of El Barmi & Dykstra (1994), which covers multinomial MLE under
+#' general convex constraints; our constraints are an intersection of
+#' half-spaces, the type of their Example 3. That paper treats the MLE only, not
+#' the MAP. Each constraint (boundary \eqn{b}, adjacent rank pair \eqn{(c,c+1)}:
+#' \eqn{S_{cb} \le S_{c+1,b}}) carries a non-negative dual multiplier; on each
+#' cyclic visit it is reset to zero and, if the constraint is then violated,
+#' raised until its boundary ties (otherwise it stays at zero). Nesting (each row a
 #' valid distribution) is automatic from the rational form when counts are
 #' positive, so no separate projection is needed. For a single boundary
 #' (\eqn{ncat=2}) this reduces to weighted PAVA (Ayer et al. 1955).
@@ -459,8 +466,11 @@ iso_dual_map_ref <- function(Mcount, maxiter = 1000, tol = 1e-7,
 
 #' @title Order-restricted MAP for one ordinal item (Fenchel dual)
 #' @description
-#' Dual coordinate ascent for the stochastic-order-restricted multinomial MAP
-#' (El Barmi & Dykstra 1994). This is the entry point used by
+#' Dual coordinate ascent for the stochastic-order-restricted multinomial MAP.
+#' The MAP is reduced to an MLE by treating \code{Mcount} (counts plus Dirichlet
+#' pseudocounts) as data; the restricted MLE follows the Fenchel-dual framework
+#' of El Barmi & Dykstra (1994), which treats the MLE only (see
+#' \code{iso_dual_map_ref()}). This is the entry point used by
 #' \code{LRA.ordinal()} and \code{Biclustering.ordinal()}; the work is done in
 #' C++ (\code{src/isotonic_core.cpp}). The C++ routine follows the same
 #' arithmetic as the R reference \code{iso_dual_map_ref()} and additionally

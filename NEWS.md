@@ -80,7 +80,7 @@ called.
   weighted PAVA for two categories is now credited to Ayer et al. (1955).
   Estimates are unchanged.
 
-# exametrika 2.2.0 (development)
+# exametrika 2.2.0
 
 ## New: `predict()` classifies new respondents with a fitted model
 

@@ -25,8 +25,10 @@ test_that("ManifestMonotonicity agrees with mokken::check.monotonicity", {
     for (j in seq_along(res$violations)) {
       r <- ref[ref$case == nm & ref$item == j & ref$stat %in% vi_stats, ]
       got <- res$violations[[j]][cbind(r$row, match(r$stat, vi_stats))]
-      expect_equal(got, r$value, tolerance = 1e-10,
-        label = paste(nm, "item", j, "violations"))
+      expect_equal(got, r$value,
+        tolerance = 1e-10,
+        label = paste(nm, "item", j, "violations")
+      )
 
       g <- ref[ref$case == nm & ref$item == j & !(ref$stat %in% vi_stats), ]
       tab <- res$groups[[j]]
@@ -36,7 +38,8 @@ test_that("ManifestMonotonicity agrees with mokken::check.monotonicity", {
       gp <- g[g$stat != "N", ]
       k <- as.integer(sub("^P", "", gp$stat))
       expect_equal(as.matrix(tab[, pcols])[cbind(gp$row, k)], gp$value,
-        tolerance = 1e-10, label = paste(nm, "item", j, "P"))
+        tolerance = 1e-10, label = paste(nm, "item", j, "P")
+      )
     }
   }
 })

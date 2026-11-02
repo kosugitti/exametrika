@@ -554,8 +554,10 @@ MonotonicityCheck <- function(U, na = NULL, Z = NULL, w = NULL, fields = NULL,
       )
     }
     X <- X_all[keep, cols, drop = FALSE]
-    res <- mc_check_field(X, labels[cols], dat$response.type, minvi, minsize,
-                          weak_h, max_rounds)
+    res <- mc_check_field(
+      X, labels[cols], dat$response.type, minvi, minsize,
+      weak_h, max_rounds
+    )
     used_minsize <- c(used_minsize, res$minsize)
     item_rows[[fid]] <- cbind(Field = fid, res$items)
     field_rows[[fid]] <- data.frame(

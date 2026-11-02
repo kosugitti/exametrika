@@ -17,16 +17,21 @@ test_that("Scalability agrees with mokken::coefH on complete data", {
   for (nm in names(cases)) {
     sc <- suppressMessages(Scalability(cases[[nm]]))
 
-    expect_equal(sc$H, get_ref(ref, nm, "H")$value, tolerance = 1e-10,
-      label = paste(nm, "H"))
+    expect_equal(sc$H, get_ref(ref, nm, "H")$value,
+      tolerance = 1e-10,
+      label = paste(nm, "H")
+    )
 
     r_hj <- get_ref(ref, nm, "Hj")
-    expect_equal(unname(sc$Hj[r_hj$i]), r_hj$value, tolerance = 1e-10,
-      label = paste(nm, "Hj"))
+    expect_equal(unname(sc$Hj[r_hj$i]), r_hj$value,
+      tolerance = 1e-10,
+      label = paste(nm, "Hj")
+    )
 
     r_hij <- get_ref(ref, nm, "Hij")
     expect_equal(unname(sc$Hij[cbind(r_hij$i, r_hij$j)]), r_hij$value,
-      tolerance = 1e-10, label = paste(nm, "Hij"))
+      tolerance = 1e-10, label = paste(nm, "Hij")
+    )
   }
 })
 

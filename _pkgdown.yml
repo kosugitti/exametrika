@@ -54,6 +54,13 @@ reference:
     - OmegaCoefficient
     - Dimensionality
 
+  - title: Scale Diagnostics
+    desc: Unidimensionality and monotonicity checks (Mokken-type scalability)
+    contents:
+    - Scalability
+    - ManifestMonotonicity
+    - MonotonicityCheck
+
   - title: Item Analysis
     desc: Item-level analysis functions
     contents:

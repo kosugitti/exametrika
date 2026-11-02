@@ -80,6 +80,9 @@ called.
   weighted PAVA for two categories is now credited to Ayer et al. (1955).
   Estimates are unchanged.
 
+* The pkgdown reference index gains a "Scale Diagnostics" section for
+  `Scalability()`, `ManifestMonotonicity()` and `MonotonicityCheck()`.
+
 # exametrika 2.2.0
 
 ## New: `predict()` classifies new respondents with a fitted model

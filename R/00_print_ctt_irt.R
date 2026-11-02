@@ -104,6 +104,28 @@ print_monotonicity_case <- function(x, digits) {
   return(invisible(x))
 }
 
+#' @title Print helper: MonotonicityCheck
+#' @noRd
+print_monotonicity_check_case <- function(x, digits) {
+  cat("Unidimensionality and Monotonicity Check\n")
+  cat(sprintf("minvi = %s, weak if Hj < %s\n", format(x$minvi), format(x$weak_h)))
+  for (k in seq_len(nrow(x$fields))) {
+    f <- x$fields[k, ]
+    cat(sprintf(
+      "\nField %s: %d items, %d respondents, H = %s (unflagged items: %s), %d round(s)\n",
+      f$Field, f$n_items, f$n_used, format(round(f$H_all, digits), nsmall = digits),
+      format(round(f$H_clean, digits), nsmall = digits), f$rounds
+    ))
+    it <- x$items[x$items$Field == f$Field, -1]
+    num <- vapply(it, is.numeric, logical(1))
+    it[num] <- lapply(it[num], function(v) round(v, digits))
+    print(it, row.names = FALSE)
+  }
+  cat("\nFlags are judged against the rest score over the unflagged items.\n")
+  cat("A single significant violation sets 'non-monotone'; with large samples, check n_significant and z_max.\n")
+  return(invisible(x))
+}
+
 #' @title Print helper: exametrikaData
 #' @noRd
 print_exametrika_data_case <- function(x, digits) {

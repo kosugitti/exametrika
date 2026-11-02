@@ -1,5 +1,19 @@
 # exametrika 2.3.0 (development)
 
+## New: `MonotonicityCheck()` before an order-restricted analysis
+
+`MonotonicityCheck()` gathers the checks that an isotonic analysis takes for
+granted. For each item it reports the item-rest correlation, the
+first-component loading, `Hj` and the violations of manifest monotonicity,
+and flags items as `reverse?`, `non-monotone` or `weak` (`Hj` below 0.3).
+Two features make the flags trustworthy. (1) The rest score is built from a
+reference set that starts from the items loading in the majority direction
+and loses the worst flagged item one at a time, so a reverse-keyed item no
+longer distorts the yardstick for the sound ones (unrecoded, the bfi
+extraversion items all show violations; checked this way only E1 and E2 do).
+(2) With `fields`, each subscale is checked on its own; pooled over the five
+bfi factors, the reverse-keyed items stay hidden. The function only reports.
+
 ## New: `Scalability()` computes Loevinger's H coefficients
 
 `Scalability()` returns the scalability coefficients of Mokken scale analysis

@@ -429,3 +429,302 @@ mm_violations <- function(x, member, cats, minvi) {
   out[K, 10] <- sum(out[-K, 10])
   return(out)
 }
+
+#' @title Check Unidimensionality and Monotonicity Before an Ordered Analysis
+#'
+#' @description
+#' Runs the checks that an order-restricted (isotonic) analysis takes for
+#' granted: that every item rises with the same latent order, with no
+#' reverse-keyed item left unrecoded and no item that peaks in the middle.
+#' For each item it reports the item-rest correlation, the loading on the
+#' first principal component, the scalability coefficient \eqn{H_j}, and the
+#' violations of manifest monotonicity, and flags the items that look
+#' reverse-keyed, non-monotone or weak.
+#'
+#' @details
+#' \strong{Reference set and iteration.} An item is judged against the rest
+#' score, but a reverse-keyed or non-monotone item inside the rest score
+#' distorts the yardstick for every other item, so that sound items also
+#' show violations. The rest score is therefore built from a reference set
+#' of items that is cleaned step by step. It starts from the items whose
+#' first-component loading has the majority sign. In each round every item
+#' is judged against the reference set (excluding itself); if an item in the
+#' set is flagged as reverse-keyed or non-monotone, the worst one (most
+#' significant violations, then lowest item-rest correlation) leaves the set
+#' and the round is repeated. Removing one item at a time keeps a heavily
+#' contaminated first round from discarding every item. The items outside
+#' the final set after each round are kept in \code{rounds}.
+#'
+#' \strong{Subscales.} When \code{fields} is given, each subscale is checked
+#' on its own. This matters: on a multidimensional scale the item-total
+#' relations are dominated by the mixture of dimensions, and reverse-keyed
+#' items can stay hidden when all items are pooled.
+#'
+#' \strong{Flags.} An item is flagged \code{"reverse?"} when its correlation
+#' with the clean rest score is negative, \code{"non-monotone"} when it has at
+#' least one significant violation of manifest monotonicity (see
+#' \code{\link{ManifestMonotonicity}}; with large samples even a small
+#' decrease becomes significant, so read the flag together with the number
+#' of violations and the largest \eqn{z}), and \code{"weak"} when \eqn{H_j}
+#' against the clean items is below \code{weak_h} (0.3, Mokken's rule of
+#' thumb). The first-component loading is computed once on all items of the
+#' subscale (tetrachoric or polychoric correlations) and reported for
+#' reference; its sign is oriented to sum to a positive value, so it marks
+#' items against the majority rather than against a known direction.
+#'
+#' Respondents with a missing response in a subscale are dropped for that
+#' subscale. The function only reports; recoding or dropping items is left
+#' to the person who prepares the data.
+#'
+#' @inheritParams ManifestMonotonicity
+#' @param fields Optional vector with one entry per item giving its
+#'   subscale (field). \code{NULL} (default) treats all items as one scale.
+#' @param weak_h Threshold of \eqn{H_j} below which an item is flagged as
+#'   weak. Default 0.3.
+#' @param max_rounds Maximum number of rounds of the iteration. \code{NULL}
+#'   (default) allows as many rounds as there are items.
+#'
+#' @return An object of class \code{c("exametrika", "MonotonicityCheck")}
+#' with
+#' \describe{
+#'   \item{items}{Data frame, one row per item: field, item, item-rest
+#'     correlation, first-component loading, \eqn{H_j}, number of violations,
+#'     number of significant violations, largest \eqn{z}, and the flags (all
+#'     against the clean rest score of the final round).}
+#'   \item{fields}{Data frame, one row per field: number of items and
+#'     respondents used, \eqn{H} over all items, \eqn{H} over the items left
+#'     unflagged, number of flagged items and rounds used.}
+#'   \item{rounds}{List per field of the flagged items in each round.}
+#'   \item{detail}{List per field of the rest-score group tables of the final
+#'     round, as in \code{\link{ManifestMonotonicity}}.}
+#'   \item{minsize, minvi, weak_h}{The settings used.}
+#' }
+#'
+#' @seealso \code{\link{Scalability}}, \code{\link{ManifestMonotonicity}},
+#'   \code{\link{Dimensionality}}
+#'
+#' @examples
+#' \donttest{
+#' mc <- MonotonicityCheck(J5S1000)
+#' mc
+#' }
+#'
+#' @export
+MonotonicityCheck <- function(U, na = NULL, Z = NULL, w = NULL, fields = NULL,
+                              minvi = 0.03, minsize = NULL, weak_h = 0.3,
+                              max_rounds = NULL) {
+  if (!inherits(U, "exametrika")) {
+    dat <- dataFormat(U, na = na, Z = Z, w = w)
+  } else {
+    dat <- U
+  }
+  if (dat$response.type == "nominal") {
+    response_type_error(dat$response.type, "MonotonicityCheck")
+  }
+  X_all <- if (dat$response.type == "ordinal") dat$Q else dat$U
+  labels <- dat$ItemLabel
+  J <- ncol(X_all)
+  if (is.null(fields)) {
+    fields <- rep("All", J)
+  }
+  if (length(fields) != J) {
+    stop("fields must have one entry per item (", J, ").")
+  }
+  field_ids <- unique(fields)
+
+  item_rows <- list()
+  field_rows <- list()
+  rounds <- list()
+  detail <- list()
+  used_minsize <- integer(0)
+  for (fid in field_ids) {
+    cols <- which(fields == fid)
+    if (length(cols) < 3) {
+      warning(
+        "MonotonicityCheck: field '", fid, "' has fewer than three items ",
+        "and is skipped."
+      )
+      next
+    }
+    keep <- rowSums(dat$Z[, cols, drop = FALSE] == 0) == 0
+    if (sum(!keep) > 0) {
+      message(
+        "MonotonicityCheck: ", sum(!keep), " respondents with missing ",
+        "responses were dropped for field '", fid, "'."
+      )
+    }
+    X <- X_all[keep, cols, drop = FALSE]
+    res <- mc_check_field(X, labels[cols], dat$response.type, minvi, minsize,
+                          weak_h, max_rounds)
+    used_minsize <- c(used_minsize, res$minsize)
+    item_rows[[fid]] <- cbind(Field = fid, res$items)
+    field_rows[[fid]] <- data.frame(
+      Field = fid, n_items = length(cols), n_used = nrow(X),
+      H_all = res$H_all, H_clean = res$H_clean,
+      n_flagged = sum(res$items$flag != ""), rounds = length(res$rounds),
+      stringsAsFactors = FALSE
+    )
+    rounds[[fid]] <- res$rounds
+    detail[[fid]] <- res$groups
+  }
+  items <- do.call(rbind, item_rows)
+  rownames(items) <- NULL
+  field_tab <- do.call(rbind, field_rows)
+  rownames(field_tab) <- NULL
+
+  ret <- structure(
+    list(
+      items = items,
+      fields = field_tab,
+      rounds = rounds,
+      detail = detail,
+      minsize = used_minsize,
+      minvi = minvi,
+      weak_h = weak_h
+    ),
+    class = c("exametrika", "MonotonicityCheck")
+  )
+  return(ret)
+}
+
+#' Iterated check of one field
+#' @noRd
+mc_check_field <- function(X, labels, response_type, minvi, minsize, weak_h,
+                           max_rounds) {
+  N <- nrow(X)
+  J <- ncol(X)
+  if (is.null(minsize)) {
+    minsize <- mm_default_minsize(N)
+  }
+  if (minsize > N / 2) {
+    stop("minsize is larger than half the number of respondents.")
+  }
+  cats <- seq(min(X), max(X))
+  pair <- mc_pair_cov(X)
+  loading <- mc_first_loading(X, response_type)
+
+  # Start from the items that load in the majority direction, then drop the
+  # worst flagged item from the reference set one at a time. Removing one at a
+  # time keeps a contaminated first round from discarding every item.
+  clean <- which(loading >= 0)
+  if (length(clean) < 2) {
+    clean <- seq_len(J)
+  }
+  history <- list(labels[setdiff(seq_len(J), clean)])
+  if (is.null(max_rounds)) {
+    max_rounds <- J
+  }
+  for (round in seq_len(max_rounds)) {
+    stats <- mc_round(X, clean, pair, cats, minvi, minsize)
+    bad <- clean[stats$r_rest[clean] < 0 | stats$n_significant[clean] > 0]
+    bad <- bad[!is.na(bad)]
+    if (length(bad) == 0 || length(clean) <= 2) {
+      break
+    }
+    # Worst = most significant violations, then lowest item-rest correlation
+    worst <- bad[order(-stats$n_significant[bad], stats$r_rest[bad])][1]
+    clean <- setdiff(clean, worst)
+    history[[length(history) + 1]] <- labels[setdiff(seq_len(J), clean)]
+  }
+  flagged <- labels[setdiff(seq_len(J), clean)]
+
+  flag <- vapply(seq_len(J), function(j) {
+    f <- c(
+      if (stats$r_rest[j] < 0) "reverse?",
+      if (stats$n_significant[j] > 0) "non-monotone",
+      if (is.finite(stats$Hj[j]) && stats$Hj[j] < weak_h) "weak"
+    )
+    return(paste(f, collapse = ", "))
+  }, character(1))
+
+  clean_final <- setdiff(seq_len(J), match(flagged, labels))
+  H_clean <- if (length(clean_final) >= 2) {
+    mc_h(pair, clean_final)
+  } else {
+    NA_real_
+  }
+  items <- data.frame(
+    Item = labels,
+    r_rest = stats$r_rest,
+    loading = unname(loading),
+    Hj = stats$Hj,
+    n_violation = stats$n_violation,
+    n_significant = stats$n_significant,
+    z_max = stats$z_max,
+    flag = flag,
+    stringsAsFactors = FALSE
+  )
+  groups <- stats$groups
+  names(groups) <- labels
+  ret <- list(
+    items = items, H_all = mc_h(pair, seq_len(J)), H_clean = H_clean,
+    rounds = history, groups = groups, minsize = minsize
+  )
+  return(ret)
+}
+
+#' Statistics of every item against the rest score over `clean` items
+#' @noRd
+mc_round <- function(X, clean, pair, cats, minvi, minsize) {
+  J <- ncol(X)
+  out <- list(
+    r_rest = numeric(J), Hj = numeric(J), n_violation = numeric(J),
+    n_significant = numeric(J), z_max = numeric(J), groups = vector("list", J)
+  )
+  for (j in seq_len(J)) {
+    ref <- setdiff(clean, j)
+    rest <- rowSums(X[, ref, drop = FALSE])
+    out$r_rest[j] <- if (stats::sd(rest) > 0 && stats::sd(X[, j]) > 0) {
+      stats::cor(X[, j], rest)
+    } else {
+      NA_real_
+    }
+    out$Hj[j] <- sum(pair$num[j, ref]) / sum(pair$den[j, ref])
+    member <- mm_rest_groups(rest, minsize)
+    out$groups[[j]] <- mm_group_table(X[, j], rest, member, cats)
+    v <- mm_violations(X[, j], member, cats, minvi)
+    tot <- v[nrow(v), ]
+    out$n_violation[j] <- tot[2]
+    out$n_significant[j] <- tot[10]
+    out$z_max[j] <- tot[7]
+  }
+  return(out)
+}
+
+#' Observed and maximal covariances of all item pairs (complete data)
+#' @noRd
+mc_pair_cov <- function(X) {
+  J <- ncol(X)
+  num <- matrix(0, J, J)
+  den <- matrix(0, J, J)
+  for (i in seq_len(J - 1)) {
+    for (j in seq(i + 1, J)) {
+      cv <- scalability_pair(X[, i], X[, j])
+      num[i, j] <- num[j, i] <- cv[1]
+      den[i, j] <- den[j, i] <- cv[2]
+    }
+  }
+  return(list(num = num, den = den))
+}
+
+#' Test H over a subset of items
+#' @noRd
+mc_h <- function(pair, idx) {
+  num <- pair$num[idx, idx]
+  den <- pair$den[idx, idx]
+  return(sum(num[upper.tri(num)]) / sum(den[upper.tri(den)]))
+}
+
+#' First-component loadings of one field (tetrachoric or polychoric)
+#' @noRd
+mc_first_loading <- function(X, response_type) {
+  type <- if (response_type == "ordinal") "ordinal" else "binary"
+  tmp <- suppressMessages(dataFormat(X, response.type = type))
+  R <- if (type == "ordinal") {
+    PolychoricCorrelationMatrix(tmp)
+  } else {
+    TetrachoricCorrelationMatrix(tmp)
+  }
+  res <- dimensionality_result(R, colnames(X))
+  return(res$first_loading)
+}

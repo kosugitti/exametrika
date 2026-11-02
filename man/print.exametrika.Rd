@@ -30,6 +30,7 @@ varying by object subclass:
 \item{QitemStatistics}{Item statistics for polytomous items}
 \item{Scalability}{Loevinger's H scalability coefficients}
 \item{ManifestMonotonicity}{Rest-score regression check of monotonicity}
+\item{MonotonicityCheck}{Unidimensionality and monotonicity check}
 \item{exametrikaData}{Data structure details including response patterns and weights}
 \item{IIAnalysis}{Item-item relationship measures (tetrachoric correlations, etc.)}
 \item{CTT}{Classical Test Theory reliability measures}

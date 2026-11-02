@@ -4062,3 +4062,13 @@ scratchpad の `audit_*/`(セッション限り)。詳細は NEWS 2.2.0 の3節(
 - 収束: 脚注に「定理3.1は文字どおりには当てはまらず，nloptr との数値照合(8条件・max|Δπ|≤2e-7)で確認」を追記
 - ビルド: Algorithm_LRA(lualatex→biber→lualatex×2)・Dykstra_memo_ja(lualatex×2)とも警告数は前と同じ，未定義引用なし。中間ファイルは削除
 - 残: NEWS.md への記載(ドキュメントのみの変更)は未記入。コミットは先生の判断待ち
+
+## 2026-11-02 一次元性・単調性の点検関数(2.3.0)
+
+- `R/26_ScaleCheck.R`(02H から改名): `Scalability()`(Loevinger/Molenaar の H，Hij・Hj・H。共分散と，並べ替えた得点を組にした最大共分散の比)，`ManifestMonotonicity()`(残余得点群・minvi 0.03・z=2|√((a+1)(d+1))−√(bc)|/√(n−1)・z>1.6449・群の最小人数は mokken 3.1.2 と同じ規則)，`MonotonicityCheck()`(第1主成分の負荷の多数派の符号から出発し，印のついた最悪の項目を1つずつ外す。fields 引数でフィールドごと)
+- `R/02E_ItemAssociation.R`: Dimensionality に `first_loading`(和が正になる向き)。`R/03_CTT.R`: ordinal で Alpha/Omega をポリコリック相関から(エラーにしない)。print 3種＋Dimensionality の負荷
+- テスト: test-scalability・test-monotonicity・test-monotonicity-check・test-reliability-ordinal・test-dimensionality-loading・helper-scalability.R。mokken の値は `develop/*_reference_mokken.R` で作ったフィクスチャ(mokken は GPL なので参照値だけ・依存にしない。z の式と群の作り方は JSS 論文になく mokken のソースを読んで独立に実装＝先生に申告済み)
+- DESCRIPTION 2.3.0・NEWS・inst/WORDLIST(+35語)・CLAUDE.md の Roadmap(2.3.0 に点検関数，多値 BNM は 2.4.0 へ)。`develop/20261102.R` は先生の確認用
+- コミット 74e66bd・b201faa・56b38cd・a6e6ff6(**未 push・ahead 4**)。`R CMD check --as-cran` は手元の HTML Tidy の NOTE 1件のみ・テスト15秒＝ready for submit の状態
+- 確認: bfi 25項目で H=0.049(逆転項目と5因子)。フィールドごとなら逆転7項目すべてに印
+- 残=(a) dataFormat で ordinal 指定時に項目-残余相関が負の項目へ軽い警告。CRAN 提出は 11/25 以降。push は先生の承認待ち

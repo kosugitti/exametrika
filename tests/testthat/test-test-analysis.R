@@ -59,8 +59,9 @@ test_that("Dimensionality Analysis", {
   # test-ctt-tiny.R), including the missing-data handling. This full-size
   # comparison stays for local runs, where the extra seconds cost nothing.
   skip_on_cran()
-  result <- Dimensionality(dat) |>
-    unclass() |>
+  # Only the four eigenvalue fields are in the reference (first_loading, added
+  # in 2.3.0, is checked in test-dimensionality-loading.R)
+  result <- unclass(Dimensionality(dat))[c("Component", "Eigenvalue", "PerOfVar", "CumOfPer")] |>
     unlist() |>
     matrix(ncol = 4)
   expect <- Dimensionality_ref |>

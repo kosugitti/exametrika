@@ -17,13 +17,16 @@ OmegaCoefficient(x, na = NULL, Z = NULL, w = NULL)
 }
 \value{
 For a correlation/covariance matrix input, returns a single numeric value
-representing the omega coefficient. For a data matrix input, returns a list with
+representing the omega coefficient. For binary data, returns a list with
 three components:
 \describe{
 \item{OmegaCov}{Omega coefficient calculated from covariance matrix}
 \item{OmegaPhi}{Omega coefficient calculated from phi coefficient matrix}
 \item{OmegaTetrachoric}{Omega coefficient calculated from tetrachoric correlation matrix}
 }
+For ordinal data, returns a list with \code{OmegaCov} (from the covariance
+matrix of the category scores) and \code{OmegaPolychoric} (from the
+polychoric correlation matrix). Rated and nominal data are not supported.
 }
 \description{
 This function computes the omega coefficient of the tau-congeneric measurement model (McDonald, 1999) for a given data set.

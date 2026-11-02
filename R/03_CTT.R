@@ -6,14 +6,20 @@
 #' @param w This parameter is an item weight vector. It is only required if 'x' is a data matrix.
 #' @param na This parameter identifies the numbers or characters that should be treated as missing values when 'x' is a data matrix.
 #' @return For a correlation/covariance matrix input, returns a single numeric value
-#'   representing the alpha coefficient. For a data matrix input, returns a list with
+#'   representing the alpha coefficient. For binary data, returns a list with
 #'   three components:
 #'   \describe{
 #'     \item{AlphaCov}{Alpha coefficient calculated from covariance matrix}
 #'     \item{AlphaPhi}{Alpha coefficient calculated from phi coefficient matrix}
 #'     \item{AlphaTetrachoric}{Alpha coefficient calculated from tetrachoric correlation matrix}
 #'   }
+#'   For ordinal data, returns a list with \code{AlphaCov} (from the covariance
+#'   matrix of the category scores) and \code{AlphaPolychoric} (from the
+#'   polychoric correlation matrix, the ordinal alpha of Zumbo et al., 2007).
+#'   Rated and nominal data are not supported.
 #' @references Cronbach, L. J. (1951). Coefficient alpha and the internal structure of a test. Psychometrika, 16,297–334.
+#'
+#' Zumbo, B. D., Gadermann, A. M., & Zeisser, C. (2007). Ordinal versions of coefficients alpha and theta for Likert rating scales. Journal of Modern Applied Statistical Methods, 6(1), 21--29.
 #' @importFrom stats cov
 #' @export
 
@@ -32,18 +38,10 @@ AlphaCoefficient <- function(x, na = NULL, Z = NULL, w = NULL) {
     } else {
       tmp <- x
     }
-    V2 <- exametrika::PhiCoefficient(tmp)
-    V3 <- exametrika::TetrachoricCorrelationMatrix(tmp)
-    tmp$U[tmp$Z == 0] <- NA
-    V1 <- stats::cov(tmp$U, use = "pairwise")
-    alpha1 <- calcs(V1)
-    alpha2 <- calcs(V2)
-    alpha3 <- calcs(V3)
-    return(list(
-      AlphaCov = alpha1,
-      AlphaPhi = alpha2,
-      AlphaTetrachoric = alpha3
-    ))
+    mats <- reliability_matrices(tmp, "AlphaCoefficient")
+    ret <- lapply(mats, calcs)
+    names(ret) <- paste0("Alpha", names(mats))
+    return(ret)
   } else {
     return(calcs(x))
   }
@@ -107,13 +105,16 @@ AlphaIfDel <- function(x, delItem = NULL, na = NULL, Z = NULL, w = NULL) {
 #' @param w This parameter is an item weight vector. It is only required if 'x' is a data matrix.
 #' @param na This parameter identifies the numbers or characters that should be treated as missing values when 'x' is a data matrix.
 #' @return For a correlation/covariance matrix input, returns a single numeric value
-#'   representing the omega coefficient. For a data matrix input, returns a list with
+#'   representing the omega coefficient. For binary data, returns a list with
 #'   three components:
 #'   \describe{
 #'     \item{OmegaCov}{Omega coefficient calculated from covariance matrix}
 #'     \item{OmegaPhi}{Omega coefficient calculated from phi coefficient matrix}
 #'     \item{OmegaTetrachoric}{Omega coefficient calculated from tetrachoric correlation matrix}
 #'   }
+#'   For ordinal data, returns a list with \code{OmegaCov} (from the covariance
+#'   matrix of the category scores) and \code{OmegaPolychoric} (from the
+#'   polychoric correlation matrix). Rated and nominal data are not supported.
 #' @importFrom stats cov runif
 #' @export
 
@@ -152,18 +153,10 @@ OmegaCoefficient <- function(x, na = NULL, Z = NULL, w = NULL) {
     } else {
       tmp <- x
     }
-    V2 <- exametrika::PhiCoefficient(tmp)
-    V3 <- exametrika::TetrachoricCorrelationMatrix(tmp)
-    tmp$U[tmp$Z == 0] <- NA
-    V1 <- stats::cov(tmp$U, use = "pairwise")
-    omega1 <- calcs(V1)
-    omega2 <- calcs(V2)
-    omega3 <- calcs(V3)
-    return(list(
-      OmegaCov = omega1,
-      OmegaPhi = omega2,
-      OmegaTetrachoric = omega3
-    ))
+    mats <- reliability_matrices(tmp, "OmegaCoefficient")
+    ret <- lapply(mats, calcs)
+    names(ret) <- paste0("Omega", names(mats))
+    return(ret)
   } else {
     return(calcs(x))
   }
@@ -231,4 +224,35 @@ CTT <- function(U, na = NULL, Z = NULL, w = NULL) {
   ))
   ret <- list(Reliability = df, ReliabilityExcludingItem = df2)
   structure(ret, class = c("exametrika", "CTT"))
+}
+
+#' Matrices on which alpha and omega are computed, by response type
+#'
+#' Binary data give the covariance, phi and tetrachoric matrices (the
+#' historical three). Ordinal data give the covariance of the category scores
+#' and the polychoric correlation matrix. Missing cells are excluded pair-wise.
+#'
+#' @param tmp An exametrika data object.
+#' @param fun_name Name of the calling function, for the error message.
+#' @return A named list of matrices.
+#' @noRd
+reliability_matrices <- function(tmp, fun_name) {
+  if (tmp$response.type == "binary") {
+    Ux <- tmp$U
+    Ux[tmp$Z == 0] <- NA
+    return(list(
+      Cov = stats::cov(Ux, use = "pairwise"),
+      Phi = exametrika::PhiCoefficient(tmp),
+      Tetrachoric = exametrika::TetrachoricCorrelationMatrix(tmp)
+    ))
+  }
+  if (tmp$response.type == "ordinal") {
+    Qx <- tmp$Q
+    Qx[tmp$Z == 0] <- NA
+    return(list(
+      Cov = stats::cov(Qx, use = "pairwise"),
+      Polychoric = unclass(exametrika::PolychoricCorrelationMatrix(tmp))
+    ))
+  }
+  response_type_error(tmp$response.type, fun_name)
 }

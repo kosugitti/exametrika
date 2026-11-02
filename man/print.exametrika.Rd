@@ -28,6 +28,8 @@ varying by object subclass:
 \item{Dimensionality}{Eigenvalue analysis results with scree plot}
 \item{ItemStatistics}{Item-level statistics and psychometric properties}
 \item{QitemStatistics}{Item statistics for polytomous items}
+\item{Scalability}{Loevinger's H scalability coefficients}
+\item{ManifestMonotonicity}{Rest-score regression check of monotonicity}
 \item{exametrikaData}{Data structure details including response patterns and weights}
 \item{IIAnalysis}{Item-item relationship measures (tetrachoric correlations, etc.)}
 \item{CTT}{Classical Test Theory reliability measures}

@@ -17,17 +17,23 @@ AlphaCoefficient(x, na = NULL, Z = NULL, w = NULL)
 }
 \value{
 For a correlation/covariance matrix input, returns a single numeric value
-representing the alpha coefficient. For a data matrix input, returns a list with
+representing the alpha coefficient. For binary data, returns a list with
 three components:
 \describe{
 \item{AlphaCov}{Alpha coefficient calculated from covariance matrix}
 \item{AlphaPhi}{Alpha coefficient calculated from phi coefficient matrix}
 \item{AlphaTetrachoric}{Alpha coefficient calculated from tetrachoric correlation matrix}
 }
+For ordinal data, returns a list with \code{AlphaCov} (from the covariance
+matrix of the category scores) and \code{AlphaPolychoric} (from the
+polychoric correlation matrix, the ordinal alpha of Zumbo et al., 2007).
+Rated and nominal data are not supported.
 }
 \description{
 This function computes Tau-Equivalent Measurement, also known as Cronbach's alpha coefficient, for a given data set.
 }
 \references{
 Cronbach, L. J. (1951). Coefficient alpha and the internal structure of a test. Psychometrika, 16,297–334.
+
+Zumbo, B. D., Gadermann, A. M., & Zeisser, C. (2007). Ordinal versions of coefficients alpha and theta for Likert rating scales. Journal of Modern Applied Statistical Methods, 6(1), 21--29.
 }

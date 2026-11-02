@@ -24,6 +24,14 @@ print_dimensionality_case <- function(x, digits) {
   print(x$PerOfVar)
   cat("Cumulative Percentage\n")
   print(x$CumOfPer)
+  if (!is.null(x$first_loading)) {
+    cat("Loadings on the First Component\n")
+    print(round(x$first_loading, digits))
+    neg <- names(x$first_loading)[x$first_loading < 0]
+    if (length(neg) > 0) {
+      cat("Opposite sign to the rest (reverse-keyed?):", paste(neg, collapse = ", "), "\n")
+    }
+  }
   xdim <- x$Component
   ydim <- x$Eigenvalue
   plot(xdim, ydim,
@@ -48,6 +56,52 @@ print_qitem_statistics_case <- function(x, digits) {
   tmp <- as.data.frame(unclass(x))
   rownames(tmp) <- NULL
   print(tmp, digits = digits)
+}
+
+#' @title Print helper: Scalability
+#' @noRd
+print_scalability_case <- function(x, digits) {
+  strength <- if (!is.finite(x$H)) {
+    "not available"
+  } else if (x$H >= 0.5) {
+    "strong"
+  } else if (x$H >= 0.4) {
+    "moderate"
+  } else if (x$H >= 0.3) {
+    "weak"
+  } else {
+    "below 0.3: not a scale by Mokken's rule of thumb"
+  }
+  cat("Scalability Coefficients (Loevinger's H)\n")
+  cat(sprintf("Test H = %s (%s)\n\n", format(round(x$H, digits), nsmall = digits), strength))
+  flag <- ifelse(x$Hj < 0, "negative: reverse-keyed or non-monotone?",
+    ifelse(x$Hj < 0.3, "below 0.3", "")
+  )
+  cat("Item coefficients\n")
+  print(data.frame(Item = x$ItemLabel, Hj = round(x$Hj, digits), Note = flag),
+    row.names = FALSE
+  )
+  cat("\nItem-pair coefficients (Hij)\n")
+  print(round(x$Hij, digits))
+  return(invisible(x))
+}
+
+#' @title Print helper: ManifestMonotonicity
+#' @noRd
+print_monotonicity_case <- function(x, digits) {
+  cat("Manifest Monotonicity (rest-score regression)\n")
+  cat(sprintf(
+    "minsize = %d, minvi = %s%s\n\n", as.integer(x$minsize), format(x$minvi),
+    if (x$n_dropped > 0) sprintf(", %d respondents dropped for missing responses", x$n_dropped) else ""
+  ))
+  s <- x$summary
+  s$Note <- ifelse(s$n_significant > 0, "significant violation",
+    ifelse(s$n_violation > 0, "violation (not significant)", "")
+  )
+  num <- vapply(s, is.numeric, logical(1))
+  s[num] <- lapply(s[num], function(v) round(v, digits))
+  print(s, row.names = FALSE)
+  return(invisible(x))
 }
 
 #' @title Print helper: exametrikaData

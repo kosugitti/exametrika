@@ -794,6 +794,11 @@ TetrachoricCorrelationMatrix.binary <- function(U, na = NULL, Z = NULL, w = NULL
 #'     \item{Eigenvalue}{Eigenvalues of the tetrachoric correlation matrix}
 #'     \item{PerOfVar}{Percentage of variance explained by each component}
 #'     \item{CumOfPer}{Cumulative percentage of variance explained}
+#'     \item{first_loading}{Loadings of the items on the first principal
+#'       component, \eqn{v_1 \sqrt{\lambda_1}}, named by item. The sign of an
+#'       eigenvector is arbitrary, so it is oriented to make the loadings sum to
+#'       a positive value. An item loading with the opposite sign to the rest
+#'       is a candidate for a reverse-keyed item that has not been recoded.}
 #'   }
 #'
 #' @export
@@ -822,21 +827,7 @@ Dimensionality.default <- function(U, na = NULL, Z = NULL, w = NULL) {
 Dimensionality.binary <- function(U, na = NULL, Z = NULL, w = NULL) {
   tmp <- dataFormat(data = U, na = na, Z = Z, w = w)
   R <- TetrachoricCorrelationMatrix(tmp)
-  Esystem <- eigen(R)
-  Eval <- Esystem$values
-  EvalVariance <- Esystem$values / length(Eval) * 100
-  CumVari <- cumsum(EvalVariance)
-  ret <-
-    structure(
-      list(
-        Component = seq(1:length(Eval)),
-        Eigenvalue = Eval,
-        PerOfVar = EvalVariance,
-        CumOfPer = CumVari
-      ),
-      class = c("exametrika", "Dimensionality")
-    )
-
+  ret <- dimensionality_result(R, tmp$ItemLabel)
   return(ret)
 }
 
@@ -845,21 +836,7 @@ Dimensionality.binary <- function(U, na = NULL, Z = NULL, w = NULL) {
 Dimensionality.rated <- function(U, na = NULL, Z = NULL, w = NULL) {
   tmp <- dataFormat(data = U, na = na, Z = Z, w = w)
   R <- TetrachoricCorrelationMatrix(tmp$U)
-  Esystem <- eigen(R)
-  Eval <- Esystem$values
-  EvalVariance <- Esystem$values / length(Eval) * 100
-  CumVari <- cumsum(EvalVariance)
-  ret <-
-    structure(
-      list(
-        Component = seq(1:length(Eval)),
-        Eigenvalue = Eval,
-        PerOfVar = EvalVariance,
-        CumOfPer = CumVari
-      ),
-      class = c("exametrika", "Dimensionality")
-    )
-
+  ret <- dimensionality_result(R, tmp$ItemLabel)
   return(ret)
 }
 
@@ -868,20 +845,38 @@ Dimensionality.rated <- function(U, na = NULL, Z = NULL, w = NULL) {
 Dimensionality.ordinal <- function(U, na = NULL, Z = NULL, w = NULL) {
   tmp <- dataFormat(data = U, na = na, Z = Z, w = w)
   R <- PolychoricCorrelationMatrix(tmp)
-  Esystem <- eigen(R)
-  Eval <- Esystem$values
-  EvalVariance <- Esystem$values / length(Eval) * 100
-  CumVari <- cumsum(EvalVariance)
-  ret <-
-    structure(
-      list(
-        Component = seq(1:length(Eval)),
-        Eigenvalue = Eval,
-        PerOfVar = EvalVariance,
-        CumOfPer = CumVari
-      ),
-      class = c("exametrika", "Dimensionality")
-    )
+  ret <- dimensionality_result(R, tmp$ItemLabel)
+  return(ret)
+}
 
+#' Eigen-decomposition summary shared by the Dimensionality methods
+#'
+#' @param R Correlation matrix (tetrachoric or polychoric).
+#' @param labels Item labels.
+#' @return An object of class c("exametrika", "Dimensionality").
+#' @noRd
+dimensionality_result <- function(R, labels) {
+  Esystem <- eigen(unclass(R), symmetric = TRUE)
+  Eval <- Esystem$values
+  EvalVariance <- Eval / length(Eval) * 100
+  CumVari <- cumsum(EvalVariance)
+  loading <- Esystem$vectors[, 1] * sqrt(max(Eval[1], 0))
+  # The sign of an eigenvector is arbitrary; orient it so that the loadings
+  # sum to a positive value, which makes "opposite sign" mean "against the
+  # bulk of the items".
+  if (sum(loading) < 0) {
+    loading <- -loading
+  }
+  names(loading) <- labels
+  ret <- structure(
+    list(
+      Component = seq_along(Eval),
+      Eigenvalue = Eval,
+      PerOfVar = EvalVariance,
+      CumOfPer = CumVari,
+      first_loading = loading
+    ),
+    class = c("exametrika", "Dimensionality")
+  )
   return(ret)
 }

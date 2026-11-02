@@ -36,6 +36,11 @@ Returns a list of class c("exametrika", "Dimensionality") containing:
 \item{Eigenvalue}{Eigenvalues of the tetrachoric correlation matrix}
 \item{PerOfVar}{Percentage of variance explained by each component}
 \item{CumOfPer}{Cumulative percentage of variance explained}
+\item{first_loading}{Loadings of the items on the first principal
+component, \eqn{v_1 \sqrt{\lambda_1}}, named by item. The sign of an
+eigenvector is arbitrary, so it is oriented to make the loadings sum to
+a positive value. An item loading with the opposite sign to the rest
+is a candidate for a reverse-keyed item that has not been recoded.}
 }
 }
 \description{

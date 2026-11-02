@@ -37,6 +37,8 @@
 #'   \item{Dimensionality}{Eigenvalue analysis results with scree plot}
 #'   \item{ItemStatistics}{Item-level statistics and psychometric properties}
 #'   \item{QitemStatistics}{Item statistics for polytomous items}
+#'   \item{Scalability}{Loevinger's H scalability coefficients}
+#'   \item{ManifestMonotonicity}{Rest-score regression check of monotonicity}
 #'   \item{exametrikaData}{Data structure details including response patterns and weights}
 #'   \item{IIAnalysis}{Item-item relationship measures (tetrachoric correlations, etc.)}
 #'   \item{CTT}{Classical Test Theory reliability measures}
@@ -71,6 +73,8 @@ print.exametrika <- function(x, digits = 3, fit_indices = c("both", "pattern", "
     Dimensionality = print_dimensionality_case(x, digits),
     ItemStatistics = print_item_statistics_case(x, digits),
     QitemStatistics = print_qitem_statistics_case(x, digits),
+    Scalability = print_scalability_case(x, digits),
+    ManifestMonotonicity = print_monotonicity_case(x, digits),
     exametrikaData = print_exametrika_data_case(x, digits),
     IIAnalysis = print_ii_analysis_case(x, digits),
     IIAnalysis.ordinal = print_ii_analysis_ordinal_case(x, digits),

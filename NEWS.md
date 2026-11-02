@@ -1,3 +1,58 @@
+# exametrika 2.3.0 (development)
+
+## New: `Scalability()` computes Loevinger's H coefficients
+
+`Scalability()` returns the scalability coefficients of Mokken scale analysis
+for ordinal, binary and rated data: the item-pair coefficients `Hij`, the item
+coefficients `Hj` and the test coefficient `H` (Loevinger, 1948; Molenaar,
+1991, for polytomous items). Each is a normed covariance, so a negative value
+flags a reverse-keyed item that has not been recoded, or an item whose
+relation to the others is not monotone. Missing responses are handled
+pair-wise. With complete data the results agree with `mokken::coefH()` to
+machine precision; the tests compare against frozen reference values, and
+mokken is not a dependency. Standard errors are not computed. This is the
+first piece of a planned check of unidimensionality and monotonicity to run
+before an order-restricted (isotonic) analysis. `print()` shows the test H with
+Mokken's rule of thumb, flags items with a negative or below-0.3 `Hj`, and
+lists the item-pair matrix.
+
+## New: `ManifestMonotonicity()` checks monotonicity by rest-score regression
+
+`ManifestMonotonicity()` checks, item by item, whether the proportion
+reaching each category rises across rest-score groups (manifest
+monotonicity; Molenaar & Sijtsma, 2000; van der Ark, 2007). It reports, per
+item step and per item, the active pairs, violations larger than `minvi`
+(default 0.03), the largest and summed violations, and a normal-approximation
+z for each violation (Molenaar & Sijtsma's statistic, one-sided 5%). Rest-score
+groups and the default `minsize` follow the mokken package; respondents with
+missing responses are dropped listwise with a message. A single-peaked item,
+which the item-rest correlation and `Scalability()` show only as weak,
+appears here as significant violations. With complete data the output
+agrees exactly with `mokken::check.monotonicity()`; the tests compare against
+frozen reference values, and mokken is not a dependency.
+
+## `Dimensionality()` returns the loadings on the first component
+
+`Dimensionality()` gains a `first_loading` element: the loadings of the items
+on the first principal component of the tetrachoric (binary, rated) or
+polychoric (ordinal) correlation matrix. The eigenvector's sign is oriented
+so the loadings sum to a positive value; an item with the opposite sign is a
+candidate for a reverse-keyed item that has not been recoded, and `print()`
+lists such items. The four existing elements are unchanged.
+
+## Bug fix: `AlphaCoefficient()` and `OmegaCoefficient()` accept ordinal data
+
+Given ordinal data, both functions stopped with "Function PhiCoefficient is
+not applicable to ordinal response data": the data-matrix path always built
+the phi and tetrachoric matrices, which exist only for binary items. Ordinal
+data now return `AlphaCov`/`OmegaCov` (covariance of the category scores) and
+`AlphaPolychoric`/`OmegaPolychoric` (polychoric correlation matrix; the
+polychoric alpha is the ordinal alpha of Zumbo et al., 2007, and agrees with
+`psych::alpha()` on `psych::polychoric()` to six decimals on the bfi
+neuroticism items). Binary data still return the three historical components.
+Rated and nominal data are rejected with an error that names the function
+called.
+
 # exametrika 2.2.0 (development)
 
 ## New: `predict()` classifies new respondents with a fitted model

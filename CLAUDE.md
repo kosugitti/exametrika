@@ -8,7 +8,7 @@ CTT, IRT, GRM, LCA, LRA, Biclustering, BNM, LDLRA, LDB, BINET.
 
 - **Current version**: **2.2.0 (2026-10-25 に CRAN
   へ提出・受理待ち)**。CRAN は 2.1.0 (受理
-  2026-09-25)。受理されたら告知の下書き(`~/Dropbox/MobileTemp/exametrika_release/`)の日付を埋め，先生の確認後に
+  2026-09-25)。受理されたら告知の下書き(`~/Dropbox/02_研究/exametrika_family/リリース作業/exametrika_release/`)の日付を埋め，先生の確認後に
   Release と Discussions。**2.2.0 で多値バイクラの `log_lik` を ELBO
   へ変更し，全モデルに `elbo`/`log_lik_marginal`/`entropy`/`ICL`
   を追加済み** (`R/00_VariationalFit.R`・WORKLOG
@@ -606,7 +606,33 @@ does — LCA classes are unordered, and sorting would imply otherwise.
 の告知では冒頭で「多値バイクラの結果が変わる」と明記する**。ggExametrika・shinyExametrika
 は 2.2.0 で全テスト通過を確認済み(2026-10-14)。
 
-**2.3.0 — ネットワーク系の版(年内〜年明け)** 1. **多値 BNM(StepReg /
+**2.3.0 — 年内〜年明け(2026-11-02 改訂: 多値 BNM(下の1)は 2.4.0
+へ延期。A11 が進んでいないため)** - **一次元性・単調性の点検(2026-11-02
+先生指示・A3 の追加シミュレーションの前提)**: 二段構え＝(a)
+[`dataFormat()`](https://kosugitti.github.io/exametrika/reference/dataFormat.md)
+で順序データのとき項目-残余の相関([`ItemReport()`](https://kosugitti.github.io/exametrika/reference/ItemReport.md)
+の `ItemCORR_R` と同じ量)が負なら逆転項目の可能性を軽く警告，(b)
+独立の点検関数(仮称
+[`MonotonicityCheck()`](https://kosugitti.github.io/exametrika/reference/MonotonicityCheck.md))＝項目-残余の相関・ポリコリック第1主成分の負荷量の符号([`Dimensionality()`](https://kosugitti.github.io/exametrika/reference/Dimensionality.md)
+に固有ベクトルを返させる)・項目-残余回帰の違反(P(X\>=x)
+を残余得点群で・minvi 0.03・minsize は N に応じて・van der Ark
+2007)・印のついた項目を外して点検し直す・下位尺度ごと。報告するだけで直さない。**(b)
+は実装・コミット済み**(74e66bd・b201faa，`R/26_ScaleCheck.R`)＝[`Scalability()`](https://kosugitti.github.io/exametrika/reference/Scalability.md)(H・mokken::coefH
+と機械精度で一致)・[`ManifestMonotonicity()`](https://kosugitti.github.io/exametrika/reference/ManifestMonotonicity.md)(mokken::check.monotonicity
+と完全一致。群の分け方と z の式は mokken
+のソースで確かめ自前で書いた)・[`MonotonicityCheck()`](https://kosugitti.github.io/exametrika/reference/MonotonicityCheck.md)(負荷量の多数派から始めて最悪の1項目ずつ基準から外す・fields
+で下位尺度ごと・有意な違反1つで non-monotone は先生判断)。あわせて
+[`Dimensionality()`](https://kosugitti.github.io/exametrika/reference/Dimensionality.md)
+に first_loading，順序データの Alpha/Omega(ポリコリック)を修正。参照値は
+`develop/*_reference_mokken.R` で作り fixtures に固定(mokken は GPL
+なので依存に入れない)。**残りは (a) の dataFormat の警告** 0. **厳密な
+ICL(`ICL_exact`)を足す(2026-10-30 先生指示・A3 の §3.3 用)**:
+ブロックはディリクレ-多項の閉形式， isotonic は包含事前分布の補正(P(R)
+は (C,Q,α) の表)，GTM は
+NA。推定(EM)には触らず推定後に度数から計算する。 設計の正本は
+`develop/Design_exactICL_20261030.md`(混合比は 1/C・1/F
+に固定で決定(10/31)・標本サイズは log N
+にそろえる・残る要決定＝モンテカルロの既定)。 1. **多値 BNM(StepReg /
 case C)の推定関数**: DAG を所与とした順序 BN(子は累積プロビット，親は
 brms の `mo()` と 同じ単調効果 b \* D_k \*
 単体の累積)。**秘書セッションの `fit_mo_cumprobit()`(stats::optim の

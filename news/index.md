@@ -1,6 +1,105 @@
 # Changelog
 
-## exametrika 2.2.0 (development)
+## exametrika 2.3.0 (development)
+
+### New: `MonotonicityCheck()` before an order-restricted analysis
+
+[`MonotonicityCheck()`](https://kosugitti.github.io/exametrika/reference/MonotonicityCheck.md)
+gathers the checks that an isotonic analysis takes for granted. For each
+item it reports the item-rest correlation, the first-component loading,
+`Hj` and the violations of manifest monotonicity, and flags items as
+`reverse?`, `non-monotone` or `weak` (`Hj` below 0.3). Two features make
+the flags trustworthy. (1) The rest score is built from a reference set
+that starts from the items loading in the majority direction and loses
+the worst flagged item one at a time, so a reverse-keyed item no longer
+distorts the yardstick for the sound ones (unrecoded, the bfi
+extraversion items all show violations; checked this way only E1 and E2
+do). (2) With `fields`, each subscale is checked on its own; pooled over
+the five bfi factors, the reverse-keyed items stay hidden. The function
+only reports.
+
+### New: `Scalability()` computes Loevinger’s H coefficients
+
+[`Scalability()`](https://kosugitti.github.io/exametrika/reference/Scalability.md)
+returns the scalability coefficients of Mokken scale analysis for
+ordinal, binary and rated data: the item-pair coefficients `Hij`, the
+item coefficients `Hj` and the test coefficient `H` (Loevinger, 1948;
+Molenaar, 1991, for polytomous items). Each is a normed covariance, so a
+negative value flags a reverse-keyed item that has not been recoded, or
+an item whose relation to the others is not monotone. Missing responses
+are handled pair-wise. With complete data the results agree with
+`mokken::coefH()` to machine precision; the tests compare against frozen
+reference values, and mokken is not a dependency. Standard errors are
+not computed. This is the first piece of a planned check of
+unidimensionality and monotonicity to run before an order-restricted
+(isotonic) analysis. [`print()`](https://rdrr.io/r/base/print.html)
+shows the test H with Mokken’s rule of thumb, flags items with a
+negative or below-0.3 `Hj`, and lists the item-pair matrix.
+
+### New: `ManifestMonotonicity()` checks monotonicity by rest-score regression
+
+[`ManifestMonotonicity()`](https://kosugitti.github.io/exametrika/reference/ManifestMonotonicity.md)
+checks, item by item, whether the proportion reaching each category
+rises across rest-score groups (manifest monotonicity; Molenaar &
+Sijtsma, 2000; van der Ark, 2007). It reports, per item step and per
+item, the active pairs, violations larger than `minvi` (default 0.03),
+the largest and summed violations, and a normal-approximation z for each
+violation (Molenaar & Sijtsma’s statistic, one-sided 5%). Rest-score
+groups and the default `minsize` follow the mokken package; respondents
+with missing responses are dropped listwise with a message. A
+single-peaked item, which the item-rest correlation and
+[`Scalability()`](https://kosugitti.github.io/exametrika/reference/Scalability.md)
+show only as weak, appears here as significant violations. With complete
+data the output agrees exactly with `mokken::check.monotonicity()`; the
+tests compare against frozen reference values, and mokken is not a
+dependency.
+
+### `Dimensionality()` returns the loadings on the first component
+
+[`Dimensionality()`](https://kosugitti.github.io/exametrika/reference/Dimensionality.md)
+gains a `first_loading` element: the loadings of the items on the first
+principal component of the tetrachoric (binary, rated) or polychoric
+(ordinal) correlation matrix. The eigenvector’s sign is oriented so the
+loadings sum to a positive value; an item with the opposite sign is a
+candidate for a reverse-keyed item that has not been recoded, and
+[`print()`](https://rdrr.io/r/base/print.html) lists such items. The
+four existing elements are unchanged.
+
+### Bug fix: `AlphaCoefficient()` and `OmegaCoefficient()` accept ordinal data
+
+Given ordinal data, both functions stopped with “Function PhiCoefficient
+is not applicable to ordinal response data”: the data-matrix path always
+built the phi and tetrachoric matrices, which exist only for binary
+items. Ordinal data now return `AlphaCov`/`OmegaCov` (covariance of the
+category scores) and `AlphaPolychoric`/`OmegaPolychoric` (polychoric
+correlation matrix; the polychoric alpha is the ordinal alpha of Zumbo
+et al., 2007, and agrees with `psych::alpha()` on `psych::polychoric()`
+to six decimals on the bfi neuroticism items). Binary data still return
+the three historical components. Rated and nominal data are rejected
+with an error that names the function called.
+
+### Documentation
+
+- The help for
+  [`Biclustering()`](https://kosugitti.github.io/exametrika/reference/Biclustering.md)
+  (argument `estimation`) and the internal notes on the order-restricted
+  ordinal M-step now cite El Barmi & Dykstra (1994) only for what the
+  paper covers: maximum likelihood for a multinomial under a general
+  convex restriction. The rank-direction stochastic order is an instance
+  of its Example 3 (an intersection of half-spaces) once an item’s
+  rank-by-category table is embedded in one multinomial, and the MAP is
+  reduced to that maximum likelihood by treating the counts plus
+  Dirichlet pseudocounts as data. Neither step is in the paper. The
+  coincidence with weighted PAVA for two categories is now credited to
+  Ayer et al. (1955). Estimates are unchanged.
+
+- The pkgdown reference index gains a “Scale Diagnostics” section for
+  [`Scalability()`](https://kosugitti.github.io/exametrika/reference/Scalability.md),
+  [`ManifestMonotonicity()`](https://kosugitti.github.io/exametrika/reference/ManifestMonotonicity.md)
+  and
+  [`MonotonicityCheck()`](https://kosugitti.github.io/exametrika/reference/MonotonicityCheck.md).
+
+## exametrika 2.2.0
 
 CRAN release: 2026-10-25
 

@@ -1099,6 +1099,17 @@ CTT reliability and item analysis
 - [`Dimensionality()`](https://kosugitti.github.io/exametrika/reference/Dimensionality.md)
   : Dimensionality
 
+## Scale Diagnostics
+
+Unidimensionality and monotonicity checks (Mokken-type scalability)
+
+- [`Scalability()`](https://kosugitti.github.io/exametrika/reference/Scalability.md)
+  : Scalability Coefficients (Loevinger's H)
+- [`ManifestMonotonicity()`](https://kosugitti.github.io/exametrika/reference/ManifestMonotonicity.md)
+  : Manifest Monotonicity (Rest-Score Regression)
+- [`MonotonicityCheck()`](https://kosugitti.github.io/exametrika/reference/MonotonicityCheck.md)
+  : Check Unidimensionality and Monotonicity Before an Ordered Analysis
+
 ## Item Analysis
 
 Item-level analysis functions

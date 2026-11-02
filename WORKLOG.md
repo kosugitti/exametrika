@@ -4923,3 +4923,104 @@ scratchpad の `audit_*/`(セッション限り)。詳細は NEWS 2.2.0
   `MobileTemp/exametrika_release/` の3本(日付を 2026-10-25 に埋めたもの)
 - 次: 2.3.0(多値BNMの推定関数・DAG探索と CPDAG・igraph
   を計算から外す段階1)
+
+## 2026-10-30 El Barmi & Dykstra (1994) の原典照合(A3 の文献読み)
+
+詳細要約=`~/Dropbox/02_研究/多値バイクラスタリング/文献/翻訳/ElBarmiDykstra1994_Fenchel_ja_summary.pdf`(末尾に
+`develop/Algorithm_LRA.tex`
+との対応)。**メモ・文書の直す候補(先生の確認待ち・未修正)**: 1.
+「多項尤度の順序制約への応用が El Barmi & Dykstra
+(1994)」は不正確。論文は**一般の凸制約領域での制約つき多項最尤**で，C
+個の母集団(ランク)間の確率的順序を直接は扱っていない(例4は1つの正方表の2周辺の順序)。「一般の凸制約の枠組みで，ランク方向の確率的順序はその一例」と書く。項目
+j の C×Q 表を1つの多項(p_cq=w_c
+π_cq)に埋め込むと対応がつく(埋め込みは論文にない) 2. **論文は最尤のみで
+MAP(ディリクレ事前)は扱わない**。MAP は γ=U+α−1
+をデータとみなして帰着(α≥1 のとき。定理3.1の p̂\>0 まで要るなら
+α\>1)。roxygen の「Fenchel-dual stochastic-order MAP, El Barmi & Dykstra
+1994」の MAP の部分は論文の範囲外＝出典の書き方を直す 3. メモ脚注の「KL
+の I 射影」は向きが逆。最尤は KL(p̂‖p) を p について最小化＝逆向き(M
+射影) 4. メモのアルゴリズム1の擬似コードが「満たしていれば
+θ←0」と読める(等号で張っている θ\>0
+を落とす)。**実装(isotonic_core.cpp)は θ=0
+に戻してから判定＝論文どおりで正しい**。擬似コードの文言だけ実装に合わせる
+5. 「Q=2 で重み付き PAVA と一致」の出典は Robertson, Wright & Dykstra
+(1988) を引くほうが正確(論文が示すのは1つの多項が isotonic
+錐に入る場合) - 対応の要点: 双対の根拠=定理2.1(有理形 p̄=p̂/(a+ȳ))。nice
+な領域=隣接ランク対×閾値の半空間 (C−1)(Q−1)
+枚。巡回上昇は実装と対応。**収束の定理3.1は等式方向を全領域で共有する形にはそのまま使えない**(条件3.1が文字どおりには成り立たない。趣旨は成り立つと思われるが証明の範囲外)
+
+### 2026-10-31 El Barmi 直す候補 1・4・5 の判断材料(先生は 1〜5 を妥当と判断)
+
+- 1: 原典の例は 例1=1つの多項の isotonic 錐，例2=最小二乗の特殊ケースで
+  Dykstra(1983) と同値，例3=半空間 C_j={p: Σx_ji p_i ≤ 0}
+  の共通部分(K_j\*=非負の半直線)，例4=正方表の2周辺。**A3
+  の部品(隣接ランク対×閾値の半空間)は例3の型**。ランク間の確率的順序そのものは扱っていない＝修正1は妥当，書くときは例3を足場に
+- 4: 字義どおり版(今の θ で判定し満たしていれば θ←0 で次へ)を
+  `iso_dual_map_ref` から作って比較(乱数表4例)。実装は viol≤1e-6
+  で収束，字義どおり版は viol=0.03〜0.18 で制約を満たさないまま止まる(ll
+  は見かけ上高い)。実装＝論文の手順2(他を固定して半直線上で最適化＝0
+  に戻して判定)。修正4は擬似コードの文言だけ
+- 5: Q=2 は各ランクの行が二項＝順序つき二項の最尤＝重み付き PAVA は Ayer
+  et
+  al.(1955)。原典の例1は1つの多項のセル確率の順序で別問題。修正5は妥当
+- 検証スクリプト=scratchpad の chk4.R(使い捨て)
+
+### 2026-10-31 El Barmi 直す候補 1〜5 を反映(先生の承認済み・未コミット)
+
+- 1(位置づけ): `develop/Algorithm_LRA.tex` の Fenchel
+  双対の脚注を「凸制約のもとの多項最尤の一般の枠組み，ランク方向の確率的順序はその一例，部品は例3の型，C×Q
+  表の1つの多項への埋め込みはこちらの構成，例2=最小二乗では
+  Dykstra(1983) の一版」に書き換え。`develop/Dykstra_memo_ja.tex`
+  の「注意(L2とKL)」段落も同趣旨に。outline.md §1.4.1 も同趣旨
+- 2(MAP): 同脚注に「論文は最尤のみ。γ=U+α−1 をデータとみなして MAP
+  を最尤へ帰着(α≥1，p̂\>0 まで要るなら
+  α\>1)」。roxygen/コメント=`R/00_isotonic_CORE.R`(iso_dual_map_ref・iso_dual_map
+  の説明，@noRd)，`R/16_Biclustering_ordinal.R`(isotonic
+  分岐のコメント)，`R/07_Biclustering.R`(estimation 引数・公開)→
+  `devtools::document()` で `man/Biclustering.Rd` のみ変化
+- 3(I 射影→M 射影): Algorithm_LRA.tex
+  脚注・Dykstra_memo_ja.tex・outline.md §2.4.3 を KL(p̂‖p)
+  の第2引数の最小化(M 射影)に
+- 4(擬似コード): Algorithm_LRA.tex のアルゴリズム1を「θ←0
+  で構成し直してから判定，破れていれば等号まで上げる」に，手順の枠の
+  1・2 も同趣旨に。iso_dual_map_ref の roxygen
+  も「各巡回で0に戻して判定」に。コードは不変
+- 5(Q=2): Algorithm_LRA.tex「重み付きPAVAと一致する理論的性質」に Ayer
+  et al.(1955)・教科書 Robertson et al.(1988) を付けた(bib は既存)
+- 収束: 脚注に「定理3.1は文字どおりには当てはまらず，nloptr
+  との数値照合(8条件・max\|Δπ\|≤2e-7)で確認」を追記
+- ビルド:
+  Algorithm_LRA(lualatex→biber→lualatex×2)・Dykstra_memo_ja(lualatex×2)とも警告数は前と同じ，未定義引用なし。中間ファイルは削除
+- 残: NEWS.md
+  への記載(ドキュメントのみの変更)は未記入。コミットは先生の判断待ち
+
+## 2026-11-02 一次元性・単調性の点検関数(2.3.0)
+
+- `R/26_ScaleCheck.R`(02H から改名):
+  [`Scalability()`](https://kosugitti.github.io/exametrika/reference/Scalability.md)(Loevinger/Molenaar
+  の
+  H，Hij・Hj・H。共分散と，並べ替えた得点を組にした最大共分散の比)，[`ManifestMonotonicity()`](https://kosugitti.github.io/exametrika/reference/ManifestMonotonicity.md)(残余得点群・minvi
+  0.03・z=2\|√((a+1)(d+1))−√(bc)\|/√(n−1)・z\>1.6449・群の最小人数は
+  mokken 3.1.2
+  と同じ規則)，[`MonotonicityCheck()`](https://kosugitti.github.io/exametrika/reference/MonotonicityCheck.md)(第1主成分の負荷の多数派の符号から出発し，印のついた最悪の項目を1つずつ外す。fields
+  引数でフィールドごと)
+- `R/02E_ItemAssociation.R`: Dimensionality に
+  `first_loading`(和が正になる向き)。`R/03_CTT.R`: ordinal で
+  Alpha/Omega をポリコリック相関から(エラーにしない)。print
+  3種＋Dimensionality の負荷
+- テスト:
+  test-scalability・test-monotonicity・test-monotonicity-check・test-reliability-ordinal・test-dimensionality-loading・helper-scalability.R。mokken
+  の値は `develop/*_reference_mokken.R` で作ったフィクスチャ(mokken は
+  GPL なので参照値だけ・依存にしない。z の式と群の作り方は JSS
+  論文になく mokken のソースを読んで独立に実装＝先生に申告済み)
+- DESCRIPTION 2.3.0・NEWS・inst/WORDLIST(+35語)・CLAUDE.md の
+  Roadmap(2.3.0 に点検関数，多値 BNM は 2.4.0 へ)。`develop/20261102.R`
+  は先生の確認用
+- コミット 74e66bd・b201faa・56b38cd・a6e6ff6(**未 push・ahead
+  4**)。`R CMD check --as-cran` は手元の HTML Tidy の NOTE
+  1件のみ・テスト15秒＝ready for submit の状態
+- 確認: bfi 25項目で
+  H=0.049(逆転項目と5因子)。フィールドごとなら逆転7項目すべてに印
+- 残=(a) dataFormat で ordinal
+  指定時に項目-残余相関が負の項目へ軽い警告。CRAN 提出は 11/25
+  以降。push は先生の承認待ち

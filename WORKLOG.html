@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="index.html">exametrika</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.2.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.3.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -2732,6 +2732,40 @@ rhub / win-devel               本日の版で流し直し中</code></pre>
 <ul><li>exametrika 2.2.0 が CRAN に公開(Published: 2026-10-25)</li>
 <li>GitHub Release v2.2.0(target=793dd83・CRAN-SUBMISSION の SHA)と Discussions を投稿: #44(日本語) <a href="https://github.com/kosugitti/exametrika/discussions/44" class="external-link uri">https://github.com/kosugitti/exametrika/discussions/44</a> ／ #45(英語) <a href="https://github.com/kosugitti/exametrika/discussions/45" class="external-link uri">https://github.com/kosugitti/exametrika/discussions/45</a> 。本文は <code>MobileTemp/exametrika_release/</code> の3本(日付を 2026-10-25 に埋めたもの)</li>
 <li>次: 2.3.0(多値BNMの推定関数・DAG探索と CPDAG・igraph を計算から外す段階1)</li>
+</ul></div>
+<div class="section level2">
+<h2 id="id_2026-10-30-el-barmi--dykstra-1994-の原典照合a3-の文献読み">2026-10-30 El Barmi &amp; Dykstra (1994) の原典照合(A3 の文献読み)<a class="anchor" aria-label="anchor" href="#id_2026-10-30-el-barmi--dykstra-1994-%E3%81%AE%E5%8E%9F%E5%85%B8%E7%85%A7%E5%90%88a3-%E3%81%AE%E6%96%87%E7%8C%AE%E8%AA%AD%E3%81%BF"></a></h2>
+<p>詳細要約=<code>~/Dropbox/02_研究/多値バイクラスタリング/文献/翻訳/ElBarmiDykstra1994_Fenchel_ja_summary.pdf</code>(末尾に <code>develop/Algorithm_LRA.tex</code> との対応)。<strong>メモ・文書の直す候補(先生の確認待ち・未修正)</strong>: 1. 「多項尤度の順序制約への応用が El Barmi &amp; Dykstra (1994)」は不正確。論文は<strong>一般の凸制約領域での制約つき多項最尤</strong>で，C 個の母集団(ランク)間の確率的順序を直接は扱っていない(例4は1つの正方表の2周辺の順序)。「一般の凸制約の枠組みで，ランク方向の確率的順序はその一例」と書く。項目 j の C×Q 表を1つの多項(p_cq=w_c π_cq)に埋め込むと対応がつく(埋め込みは論文にない) 2. <strong>論文は最尤のみで MAP(ディリクレ事前)は扱わない</strong>。MAP は γ=U+α−1 をデータとみなして帰着(α≥1 のとき。定理3.1の p̂&gt;0 まで要るなら α&gt;1)。roxygen の「Fenchel-dual stochastic-order MAP, El Barmi &amp; Dykstra 1994」の MAP の部分は論文の範囲外＝出典の書き方を直す 3. メモ脚注の「KL の I 射影」は向きが逆。最尤は KL(p̂‖p) を p について最小化＝逆向き(M 射影) 4. メモのアルゴリズム1の擬似コードが「満たしていれば θ←0」と読める(等号で張っている θ&gt;0 を落とす)。<strong>実装(isotonic_core.cpp)は θ=0 に戻してから判定＝論文どおりで正しい</strong>。擬似コードの文言だけ実装に合わせる 5. 「Q=2 で重み付き PAVA と一致」の出典は Robertson, Wright &amp; Dykstra (1988) を引くほうが正確(論文が示すのは1つの多項が isotonic 錐に入る場合) - 対応の要点: 双対の根拠=定理2.1(有理形 p̄=p̂/(a+ȳ))。nice な領域=隣接ランク対×閾値の半空間 (C−1)(Q−1) 枚。巡回上昇は実装と対応。<strong>収束の定理3.1は等式方向を全領域で共有する形にはそのまま使えない</strong>(条件3.1が文字どおりには成り立たない。趣旨は成り立つと思われるが証明の範囲外)</p>
+<div class="section level3">
+<h3 id="id_2026-10-31-el-barmi-直す候補-145-の判断材料先生は-15-を妥当と判断">2026-10-31 El Barmi 直す候補 1・4・5 の判断材料(先生は 1〜5 を妥当と判断)<a class="anchor" aria-label="anchor" href="#id_2026-10-31-el-barmi-%E7%9B%B4%E3%81%99%E5%80%99%E8%A3%9C-145-%E3%81%AE%E5%88%A4%E6%96%AD%E6%9D%90%E6%96%99%E5%85%88%E7%94%9F%E3%81%AF-15-%E3%82%92%E5%A6%A5%E5%BD%93%E3%81%A8%E5%88%A4%E6%96%AD"></a></h3>
+<ul><li>1: 原典の例は 例1=1つの多項の isotonic 錐，例2=最小二乗の特殊ケースで Dykstra(1983) と同値，例3=半空間 C_j={p: Σx_ji p_i ≤ 0} の共通部分(K_j*=非負の半直線)，例4=正方表の2周辺。<strong>A3 の部品(隣接ランク対×閾値の半空間)は例3の型</strong>。ランク間の確率的順序そのものは扱っていない＝修正1は妥当，書くときは例3を足場に</li>
+<li>4: 字義どおり版(今の θ で判定し満たしていれば θ←0 で次へ)を <code>iso_dual_map_ref</code> から作って比較(乱数表4例)。実装は viol≤1e-6 で収束，字義どおり版は viol=0.03〜0.18 で制約を満たさないまま止まる(ll は見かけ上高い)。実装＝論文の手順2(他を固定して半直線上で最適化＝0 に戻して判定)。修正4は擬似コードの文言だけ</li>
+<li>5: Q=2 は各ランクの行が二項＝順序つき二項の最尤＝重み付き PAVA は Ayer et al.(1955)。原典の例1は1つの多項のセル確率の順序で別問題。修正5は妥当</li>
+<li>検証スクリプト=scratchpad の chk4.R(使い捨て)</li>
+</ul></div>
+<div class="section level3">
+<h3 id="id_2026-10-31-el-barmi-直す候補-15-を反映先生の承認済み未コミット">2026-10-31 El Barmi 直す候補 1〜5 を反映(先生の承認済み・未コミット)<a class="anchor" aria-label="anchor" href="#id_2026-10-31-el-barmi-%E7%9B%B4%E3%81%99%E5%80%99%E8%A3%9C-15-%E3%82%92%E5%8F%8D%E6%98%A0%E5%85%88%E7%94%9F%E3%81%AE%E6%89%BF%E8%AA%8D%E6%B8%88%E3%81%BF%E6%9C%AA%E3%82%B3%E3%83%9F%E3%83%83%E3%83%88"></a></h3>
+<ul><li>1(位置づけ): <code>develop/Algorithm_LRA.tex</code> の Fenchel 双対の脚注を「凸制約のもとの多項最尤の一般の枠組み，ランク方向の確率的順序はその一例，部品は例3の型，C×Q 表の1つの多項への埋め込みはこちらの構成，例2=最小二乗では Dykstra(1983) の一版」に書き換え。<code>develop/Dykstra_memo_ja.tex</code> の「注意(L2とKL)」段落も同趣旨に。outline.md §1.4.1 も同趣旨</li>
+<li>2(MAP): 同脚注に「論文は最尤のみ。γ=U+α−1 をデータとみなして MAP を最尤へ帰着(α≥1，p̂&gt;0 まで要るなら α&gt;1)」。roxygen/コメント=<code>R/00_isotonic_CORE.R</code>(iso_dual_map_ref・iso_dual_map の説明，@noRd)，<code>R/16_Biclustering_ordinal.R</code>(isotonic 分岐のコメント)，<code>R/07_Biclustering.R</code>(estimation 引数・公開)→ <code>devtools::document()</code> で <code>man/Biclustering.Rd</code> のみ変化</li>
+<li>3(I 射影→M 射影): Algorithm_LRA.tex 脚注・Dykstra_memo_ja.tex・outline.md §2.4.3 を KL(p̂‖p) の第2引数の最小化(M 射影)に</li>
+<li>4(擬似コード): Algorithm_LRA.tex のアルゴリズム1を「θ←0 で構成し直してから判定，破れていれば等号まで上げる」に，手順の枠の 1・2 も同趣旨に。iso_dual_map_ref の roxygen も「各巡回で0に戻して判定」に。コードは不変</li>
+<li>5(Q=2): Algorithm_LRA.tex「重み付きPAVAと一致する理論的性質」に Ayer et al.(1955)・教科書 Robertson et al.(1988) を付けた(bib は既存)</li>
+<li>収束: 脚注に「定理3.1は文字どおりには当てはまらず，nloptr との数値照合(8条件・max|Δπ|≤2e-7)で確認」を追記</li>
+<li>ビルド: Algorithm_LRA(lualatex→biber→lualatex×2)・Dykstra_memo_ja(lualatex×2)とも警告数は前と同じ，未定義引用なし。中間ファイルは削除</li>
+<li>残: NEWS.md への記載(ドキュメントのみの変更)は未記入。コミットは先生の判断待ち</li>
+</ul></div>
+</div>
+<div class="section level2">
+<h2 id="id_2026-11-02-一次元性単調性の点検関数230">2026-11-02 一次元性・単調性の点検関数(2.3.0)<a class="anchor" aria-label="anchor" href="#id_2026-11-02-%E4%B8%80%E6%AC%A1%E5%85%83%E6%80%A7%E5%8D%98%E8%AA%BF%E6%80%A7%E3%81%AE%E7%82%B9%E6%A4%9C%E9%96%A2%E6%95%B0230"></a></h2>
+<ul><li>
+<code>R/26_ScaleCheck.R</code>(02H から改名): <code><a href="reference/Scalability.html">Scalability()</a></code>(Loevinger/Molenaar の H，Hij・Hj・H。共分散と，並べ替えた得点を組にした最大共分散の比)，<code><a href="reference/ManifestMonotonicity.html">ManifestMonotonicity()</a></code>(残余得点群・minvi 0.03・z=2|√((a+1)(d+1))−√(bc)|/√(n−1)・z&gt;1.6449・群の最小人数は mokken 3.1.2 と同じ規則)，<code><a href="reference/MonotonicityCheck.html">MonotonicityCheck()</a></code>(第1主成分の負荷の多数派の符号から出発し，印のついた最悪の項目を1つずつ外す。fields 引数でフィールドごと)</li>
+<li>
+<code>R/02E_ItemAssociation.R</code>: Dimensionality に <code>first_loading</code>(和が正になる向き)。<code>R/03_CTT.R</code>: ordinal で Alpha/Omega をポリコリック相関から(エラーにしない)。print 3種＋Dimensionality の負荷</li>
+<li>テスト: test-scalability・test-monotonicity・test-monotonicity-check・test-reliability-ordinal・test-dimensionality-loading・helper-scalability.R。mokken の値は <code>develop/*_reference_mokken.R</code> で作ったフィクスチャ(mokken は GPL なので参照値だけ・依存にしない。z の式と群の作り方は JSS 論文になく mokken のソースを読んで独立に実装＝先生に申告済み)</li>
+<li>DESCRIPTION 2.3.0・NEWS・inst/WORDLIST(+35語)・CLAUDE.md の Roadmap(2.3.0 に点検関数，多値 BNM は 2.4.0 へ)。<code>develop/20261102.R</code> は先生の確認用</li>
+<li>コミット 74e66bd・b201faa・56b38cd・a6e6ff6(<strong>未 push・ahead 4</strong>)。<code>R CMD check --as-cran</code> は手元の HTML Tidy の NOTE 1件のみ・テスト15秒＝ready for submit の状態</li>
+<li>確認: bfi 25項目で H=0.049(逆転項目と5因子)。フィールドごとなら逆転7項目すべてに印</li>
+<li>残=(a) dataFormat で ordinal 指定時に項目-残余相関が負の項目へ軽い警告。CRAN 提出は 11/25 以降。push は先生の承認待ち</li>
 </ul></div>
 </div>
 

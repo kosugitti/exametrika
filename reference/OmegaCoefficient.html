@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">exametrika</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.2.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.3.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -66,7 +66,7 @@
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>For a correlation/covariance matrix input, returns a single numeric value
-representing the omega coefficient. For a data matrix input, returns a list with
+representing the omega coefficient. For binary data, returns a list with
 three components:</p><dl><dt>OmegaCov</dt>
 <dd><p>Omega coefficient calculated from covariance matrix</p></dd>
 
@@ -77,7 +77,10 @@ three components:</p><dl><dt>OmegaCov</dt>
 <dd><p>Omega coefficient calculated from tetrachoric correlation matrix</p></dd>
 
 
-</dl></div>
+</dl><p>For ordinal data, returns a list with <code>OmegaCov</code> (from the covariance
+matrix of the category scores) and <code>OmegaPolychoric</code> (from the
+polychoric correlation matrix). Rated and nominal data are not supported.</p>
+    </div>
     <div class="section level2">
     <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>
     <p>McDonald, R. P. (1999). Test theory: A unified treatment. Erlbaum.</p>

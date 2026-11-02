@@ -58,6 +58,18 @@ content varying by object subclass:
 
   Item statistics for polytomous items
 
+- Scalability:
+
+  Loevinger's H scalability coefficients
+
+- ManifestMonotonicity:
+
+  Rest-score regression check of monotonicity
+
+- MonotonicityCheck:
+
+  Unidimensionality and monotonicity check
+
 - exametrikaData:
 
   Data structure details including response patterns and weights

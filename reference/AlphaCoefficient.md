@@ -33,8 +33,8 @@ AlphaCoefficient(x, na = NULL, Z = NULL, w = NULL)
 ## Value
 
 For a correlation/covariance matrix input, returns a single numeric
-value representing the alpha coefficient. For a data matrix input,
-returns a list with three components:
+value representing the alpha coefficient. For binary data, returns a
+list with three components:
 
 - AlphaCov:
 
@@ -48,7 +48,16 @@ returns a list with three components:
 
   Alpha coefficient calculated from tetrachoric correlation matrix
 
+For ordinal data, returns a list with `AlphaCov` (from the covariance
+matrix of the category scores) and `AlphaPolychoric` (from the
+polychoric correlation matrix, the ordinal alpha of Zumbo et al., 2007).
+Rated and nominal data are not supported.
+
 ## References
 
 Cronbach, L. J. (1951). Coefficient alpha and the internal structure of
 a test. Psychometrika, 16,297–334.
+
+Zumbo, B. D., Gadermann, A. M., & Zeisser, C. (2007). Ordinal versions
+of coefficients alpha and theta for Likert rating scales. Journal of
+Modern Applied Statistical Methods, 6(1), 21–29.

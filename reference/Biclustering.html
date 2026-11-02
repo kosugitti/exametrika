@@ -13,7 +13,7 @@ in the data by creating a matrix with rows and columns arranged to highlight blo
 
     <a class="navbar-brand me-2" href="../index.html">exametrika</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.2.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.3.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -169,8 +169,10 @@ classes are unordered:</p><ul><li><p>"isotonic": order-restricted estimation, im
 directly in the M-step (default). For binary data this is a weighted
 pool-adjacent-violators step, which under the default flat prior is the
 exact order-restricted MLE (Ayer et al. 1955); for ordinal data it is
-the stochastic-order-restricted multinomial MAP solved by the
-Fenchel-dual algorithm (El Barmi &amp; Dykstra 1994).</p></li>
+the stochastic-order-restricted multinomial MAP, reduced to an MLE by
+treating counts plus Dirichlet pseudocounts as data and solved by a
+Fenchel-dual algorithm in the framework of El Barmi &amp; Dykstra (1994),
+who treat multinomial MLE under general convex constraints.</p></li>
 <li><p>"GTM": the original filter-based smoothing of Shojima (2012).</p></li>
 </ul></dd>
 

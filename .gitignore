@@ -68,3 +68,7 @@ Rplots.pdf
 /doc/
 /Meta/
 .positai
+
+# 手元専用の作業メモ(Dropbox で同期・公開しない。pkgdown がルートの .md をページにするため追跡しない)
+CLAUDE.md
+WORKLOG.md

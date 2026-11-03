@@ -303,8 +303,7 @@ LDLRA_PBIL <- function(U, na = NULL, Z = NULL, w = NULL,
   if (!is.null(filename)) {
     g.df <- data.frame()
     for (i in 1:ncls) {
-      g <- igraph::graph_from_adjacency_matrix(adj_list[[i]])
-      edge_df <- igraph::as_data_frame(g)
+      edge_df <- edges_from_adj(adj_list[[i]])
       edge_df$Rank <- i
       g.df <- rbind(g.df, edge_df)
     }

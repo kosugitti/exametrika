@@ -20,24 +20,7 @@ dag_layout_base <- function(adj) {
   if (n == 0) {
     return(data.frame(x = numeric(0), y = numeric(0), layer = integer(0)))
   }
-  diag(adj) <- 0
-  # --- layers -----------------------------------------------------------
-  layer <- rep(NA_integer_, n)
-  indeg <- colSums(adj)
-  remaining <- rep(TRUE, n)
-  cur <- 0L
-  while (any(remaining)) {
-    src <- which(remaining & indeg <= 0)
-    if (length(src) == 0) {
-      # cycle: release the remaining node with the fewest open parents
-      cand <- which(remaining)
-      src <- cand[which.min(indeg[cand])]
-    }
-    layer[src] <- cur
-    remaining[src] <- FALSE
-    indeg <- indeg - colSums(adj[src, , drop = FALSE])
-    cur <- cur + 1L
-  }
+  layer <- kahn_layers(adj)$layer
   # --- order within layers (barycenter sweeps) --------------------------
   pos <- numeric(n)
   for (l in unique(sort(layer))) {

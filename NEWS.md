@@ -66,6 +66,20 @@ disguise, which is why the likelihood keeps rising. The same data give a
 negative `model_df` once `ncls` exceeds the number of distinct total scores,
 because the benchmark model has one parameter per score group and item.
 
+## igraph is no longer used in the computations of the network models
+
+`BNM()`, `BNM_GA()`, `BNM_PBIL()`, `LDLRA()`, `LDLRA_GA()`, `LDB()` and
+`BINET()` now do their structure checks (acyclic, weakly connected) and
+their conversions between edge lists, files and adjacency matrices on the
+adjacency matrix itself (`R/00_graph_base.R`: Kahn's algorithm for cycles,
+breadth-first search for connectivity). igraph is called only to read a
+graph object given as input and to build the `g`, `g_list` and `all_g`
+elements of the result, which are kept for compatibility and will be
+replaced by adjacency matrices in 3.0.0. Results are unchanged; the tests
+compare the new functions with igraph on random graphs. Together with the
+base-graphics network plots this is the first step of dropping the igraph
+dependency.
+
 ## Bug fix: network plots no longer draw two items on one spot
 
 The graphs printed for `BNM()`, `BNM_GA()`, `BNM_PBIL()`, `LDLRA()` and

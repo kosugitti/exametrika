@@ -225,12 +225,10 @@ BNM_GA <- function(U, na = NULL, Z = NULL, w = NULL,
   }
   adj_best <- gene_list[1, ]
   adj[upper.tri(adj)] <- adj_best
-  GA_g <- graph_from_adjacency_matrix(adj)
-
-  ret <- BNM(tmp, g = GA_g)
+  ret <- BNM(tmp, adj_matrix = adj_with_names(adj, tmp$ItemLabel))
 
   if (!is.null(filename)) {
-    write.table(igraph::as_data_frame(GA_g),
+    write.table(edges_from_adj(adj_with_names(adj, tmp$ItemLabel)),
       sep = ",",
       row.names = FALSE,
       col.names = TRUE,
@@ -449,12 +447,10 @@ BNM_PBIL <- function(U, na = NULL, Z = NULL, w = NULL,
     adj[upper.tri(adj)] <- round(gene)
   }
 
-  GA_g <- graph_from_adjacency_matrix(adj)
-
-  ret <- BNM(tmp, g = GA_g)
+  ret <- BNM(tmp, adj_matrix = adj_with_names(adj, tmp$ItemLabel))
 
   if (!is.null(filename)) {
-    write.table(igraph::as_data_frame(GA_g),
+    write.table(edges_from_adj(adj_with_names(adj, tmp$ItemLabel)),
       sep = ",",
       row.names = FALSE,
       col.names = TRUE,

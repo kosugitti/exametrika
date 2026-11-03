@@ -1,6 +1,8 @@
-#' @title Data Frame DAG to adj
-#' @description inner function of return full length adj from data.frame
-#' @param g igraph object
+#' @title Graph to a full-length adjacency matrix
+#' @description Returns the labels x labels adjacency matrix of a graph given
+#' as an igraph object (still accepted as input) or as an adjacency matrix
+#' with dimnames. Vertices are matched by name.
+#' @param g igraph object, or a square matrix with dimnames
 #' @param ItemLabel Labels for all items. Information should held by the
 #' exametrika class data.
 #' @importFrom igraph as_adjacency_matrix
@@ -9,7 +11,17 @@
 
 fill_adj <- function(g, ItemLabel) {
   testlength <- length(ItemLabel)
-  tmp_adj <- as.matrix(igraph::as_adjacency_matrix(g))
+  if (inherits(g, "igraph")) {
+    tmp_adj <- as.matrix(igraph::as_adjacency_matrix(g))
+  } else {
+    tmp_adj <- as.matrix(g)
+    if (is.null(rownames(tmp_adj)) || is.null(colnames(tmp_adj))) {
+      stop("The adjacency matrix needs row and column names.")
+    }
+    if (!all(c(rownames(tmp_adj), colnames(tmp_adj)) %in% ItemLabel)) {
+      stop("Some labels in the graph do not align with the item labels.")
+    }
+  }
   adj <- matrix(0, ncol = testlength, nrow = testlength)
   colnames(adj) <- rownames(adj) <- ItemLabel
   tmp_col_names <- colnames(tmp_adj)
@@ -271,32 +283,31 @@ BNM <- function(U, na = NULL, Z = NULL, w = NULL,
       stop("The provided graph is not compatible with the igraph class.")
     }
   }
+  # get Adj matrix (no igraph on the matrix and file paths, 2.3.0)
   if (!is.null(adj_matrix)) {
-    g <- igraph::graph_from_adjacency_matrix(adj_with_names(adj_matrix, tmp$ItemLabel))
-  }
-  if (!is.null(adj_file)) {
+    adj <- fill_adj(adj_with_names(adj_matrix, tmp$ItemLabel), tmp$ItemLabel)
+  } else if (!is.null(adj_file)) {
     DAG <- read.csv(adj_file, header = TRUE)
-    g <- igraph::graph_from_data_frame(DAG)
+    adj <- adj_from_edges(DAG, tmp$ItemLabel)
+  } else {
+    graph_label <- V(g)$name
+    if (!any(graph_label %in% tmp$ItemLabel)) {
+      stop("Some labels in the graph do not align with the item labels.")
+    }
+    adj <- fill_adj(g, tmp$ItemLabel)
   }
-
-  graph_label <- V(g)$name
-  if (!any(graph_label %in% tmp$ItemLabel)) {
-    stop("Some labels in the graph do not align with the item labels.")
+  # The igraph object is kept in the result for compatibility; it is built
+  # once here and will be dropped in 3.0.0.
+  if (is.null(g)) {
+    g <- igraph::graph_from_adjacency_matrix(adj)
   }
-
-  # get Adj matrix
-  adj <- fill_adj(g, tmp$ItemLabel)
 
   ### Adj mat check
   adjU <- adj + t(adj)
   simpleFLG <- ifelse(max(adjU) <= 1, 1, 0)
   testlength <- ncol(adj)
-  # `adj^i` is R's elementwise power, not matrix power, so it never actually
-  # tests for cycles/paths of length i. Use igraph's own DAG/connectivity
-  # checks on the same adjacency matrix instead.
-  adj_graph <- igraph::graph_from_adjacency_matrix(adj)
-  acyclicFLG <- ifelse(igraph::is_dag(adj_graph), 1, 0)
-  connectedFLG <- ifelse(igraph::is_connected(adj_graph, mode = "weak"), 1, 0)
+  acyclicFLG <- ifelse(is_dag_base(adj), 1, 0)
+  connectedFLG <- ifelse(is_connected_base(adj), 1, 0)
   dag <- simpleFLG * acyclicFLG
   cdag <- dag * connectedFLG
 

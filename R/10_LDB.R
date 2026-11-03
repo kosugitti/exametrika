@@ -183,8 +183,7 @@ LDB <- function(U, na = NULL, Z = NULL, w = NULL,
            Please specify a graph for all classes.")
     }
     for (j in 1:ncls) {
-      g <- igraph::graph_from_adjacency_matrix(adj_with_names(adj_list[[j]], FieldLabel))
-      adj_list[[j]] <- fill_adj(g, FieldLabel)
+      adj_list[[j]] <- fill_adj(adj_with_names(adj_list[[j]], FieldLabel), FieldLabel)
     }
   }
   # adj_file check
@@ -196,8 +195,7 @@ LDB <- function(U, na = NULL, Z = NULL, w = NULL,
     adj_list <- list()
     for (i in 1:ncls) {
       adj_R <- g_csv[g_csv$Rank == i, 1:2]
-      g_tmp <- igraph::graph_from_data_frame(adj_R)
-      adj_list[[i]] <- fill_adj(g_tmp, FieldLabel)
+      adj_list[[i]] <- adj_from_edges(adj_R, FieldLabel)
     }
   }
 

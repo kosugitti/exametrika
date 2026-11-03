@@ -212,8 +212,7 @@ BINET <- function(U, na = NULL, Z = NULL, w = NULL,
            Please specify an adjacency matrix for all fields.")
     }
     for (j in 1:nfld) {
-      g <- igraph::graph_from_adjacency_matrix(adj_with_names(adj_list[[j]], FieldLabel))
-      adj_list[[j]] <- fill_adj(g, FieldLabel)
+      adj_list[[j]] <- fill_adj(adj_with_names(adj_list[[j]], FieldLabel), FieldLabel)
     }
   }
 
@@ -225,8 +224,7 @@ BINET <- function(U, na = NULL, Z = NULL, w = NULL,
     g_csv$To <- sprintf("Class%02d", g_csv$To)
     for (i in 1:nfld) {
       adj_R <- g_csv[g_csv$Field == i, 1:2]
-      g_tmp <- igraph::graph_from_data_frame(adj_R)
-      adj_list[[i]] <- fill_adj(g_tmp, FieldLabel)
+      adj_list[[i]] <- adj_from_edges(adj_R, FieldLabel)
     }
     g_csv$Field <- sprintf("Field%02d", g_csv$Field)
   }
@@ -277,9 +275,8 @@ BINET <- function(U, na = NULL, Z = NULL, w = NULL,
   # matrix, not a graph object at all, so it could not test connectivity
   # either. Use igraph's own DAG/connectivity checks on the class-level
   # adjacency matrix instead.
-  all_adj_graph <- igraph::graph_from_adjacency_matrix(all_adj)
-  acyclicFLG <- ifelse(igraph::is_dag(all_adj_graph), 1, 0)
-  connectedFLG <- ifelse(igraph::is_connected(all_adj_graph, mode = "weak"), 1, 0)
+  acyclicFLG <- ifelse(is_dag_base(all_adj), 1, 0)
+  connectedFLG <- ifelse(is_connected_base(all_adj), 1, 0)
   dag <- simpleFLG * acyclicFLG
   cdag <- dag * connectedFLG
 

@@ -2,6 +2,156 @@
 
 ## exametrika 2.3.0 (development)
 
+### New: `BIC_elbo`, a BIC on the observed-data log-likelihood
+
+Every model that reports `elbo` now also reports
+`BIC_elbo = -2 elbo + k log N`, where `k` counts the reference-profile
+(or block) parameters plus the class weights when they were estimated;
+for biclustering the block parameters are penalised with `log(nJ)` as in
+the ICL.
+[`GridSearch()`](https://kosugitti.github.io/exametrika/reference/GridSearch.md)
+accepts `index = "BIC_elbo"`. The default `BIC` in `TestFitIndices` is
+Shojima’s: a chi-square against the benchmark model built on the
+expected complete-data log-likelihood. The two can disagree on the
+number of classes; on the checklist data below the default BIC keeps
+falling with `ncls` even with estimated class weights, while `BIC_elbo`
+turns up after five classes.
+
+### New: `mixing = "estimate"` lets `LCA()`, `LRA()` and binary `Biclustering()` estimate the class weights
+
+Binary
+[`LCA()`](https://kosugitti.github.io/exametrika/reference/LCA.md),
+[`LRA()`](https://kosugitti.github.io/exametrika/reference/LRA.md)
+(isotonic and GTM methods) and binary
+[`Biclustering()`](https://kosugitti.github.io/exametrika/reference/Biclustering.md)
+(Biclustering and Ranklustering, isotonic and GTM) gain
+`mixing = c("equal", "estimate")`. The default `"equal"` keeps every
+class or rank at 1/C, which is the model of Shojima (2022) and
+reproduces every earlier result. With `"estimate"` the M-step updates
+the weights as the mean posterior membership, the E-step and the
+observed-data log-likelihood use them in place of 1/C, `C - 1`
+parameters are charged to the test fit indices (the item indices are
+untouched), [`predict()`](https://rdrr.io/r/stats/predict.html) applies
+them, and they are returned as `ClassWeight` / `RankWeight` and shown by
+[`print()`](https://rdrr.io/r/base/print.html). With complete data the
+LCA fit agrees with the `poLCA` package (the test compares against
+frozen reference values; that package is not a dependency). In
+biclustering only the class side is estimated; the field weights stay at
+1/F, and the weight term is added to the quantity the EM monitors so
+that the stopping rule covers the weight update (with equal weights
+nothing changes). A weakly identified fit, such as one where every item
+lands in one field, can take over a thousand cycles to converge; raise
+`maxiter`.
+
+This is the remedy for the duplicated classes described in the next
+entry: on the nine-item depression checklist that prompted it (82%
+all-zero patterns), `"equal"` spends three of five classes on the
+all-zero profile and its BIC keeps falling with `ncls`, while
+`"estimate"` gives four or five distinct profiles with weights
+0.90/0.05/0.03/0.02 and a `BIC_elbo` that turns up after five classes.
+Polytomous LCA, ordinal and rated LRA, polytomous Biclustering and
+[`M2()`](https://kosugitti.github.io/exametrika/reference/M2.md) keep
+the fixed weights for now.
+
+### `GridSearch()` no longer picks a setting that left a class empty
+
+On data dominated by one response pattern (for example a symptom
+checklist where most respondents answer no to everything),
+[`LCA()`](https://kosugitti.github.io/exametrika/reference/LCA.md) with
+more classes than the data support converges to duplicate reference
+profiles: several classes carry the same profile, the MAP assignment
+goes to the first copy, and the latent class distribution shows zeros.
+The fit index of such a fit describes a model with fewer effective
+classes than requested, yet it kept improving with `ncls` and
+[`GridSearch()`](https://kosugitti.github.io/exametrika/reference/GridSearch.md)
+reported, say, 14 classes of which 11 were empty.
+[`GridSearch()`](https://kosugitti.github.io/exametrika/reference/GridSearch.md)
+now records every converged fit index as before but, with the new
+`skip_empty = TRUE` (default), a setting whose fit has a zero in `LCD`,
+`LRD` or `LFD` is not eligible as the optimum; the settings are listed
+in the result (`empty_settings`, and `empty_vec` or `empty_matrix`) and
+in [`print()`](https://rdrr.io/r/base/print.html). If every converged
+setting is of that kind the optimum is chosen among them with a message.
+`skip_empty = FALSE` restores the old selection. The result also keeps
+the name of the index and of the analysis function (`index`, `fun`).
+
+Why this happens: the latent classes of
+[`LCA()`](https://kosugitti.github.io/exametrika/reference/LCA.md) share
+a uniform prior (there is no class-size parameter, following Shojima,
+2022), so the only way the model can give one profile most of the
+population is to spend several classes on it. The duplicates are the
+estimate of a class weight in disguise, which is why the likelihood
+keeps rising. The same data give a negative `model_df` once `ncls`
+exceeds the number of distinct total scores, because the benchmark model
+has one parameter per score group and item.
+
+### Bug fix: network plots no longer draw two items on one spot
+
+The graphs printed for
+[`BNM()`](https://kosugitti.github.io/exametrika/reference/BNM.md),
+[`BNM_GA()`](https://kosugitti.github.io/exametrika/reference/BNM_GA.md),
+[`BNM_PBIL()`](https://kosugitti.github.io/exametrika/reference/BNM_PBIL.md),
+[`LDLRA()`](https://kosugitti.github.io/exametrika/reference/LDLRA.md)
+and [`LDB()`](https://kosugitti.github.io/exametrika/reference/LDB.md)
+took a grid layout and reordered its x coordinates by out-degree and its
+y coordinates by correct response rate separately, so the pairs were
+recombined at random and two items could land on the same point; on a
+nine-item depression checklist only eight nodes were visible, and edges
+ran across other nodes. The graphs are now laid out in layers with
+parents above children (longest-path layering with barycenter ordering,
+the Sugiyama heuristic), every node has its own position, the nodes are
+large enough to carry the item label, and the arrows end at the node
+border. The BINET total graph is drawn the same way, with the field
+written on each edge, instead of a force-directed layout. The drawing is
+done with base graphics from the adjacency matrix; igraph is no longer
+used for printing (a step of the plan to drop that dependency in 3.0.0).
+[`BINET()`](https://kosugitti.github.io/exametrika/reference/BINET.md)
+returns the edge list behind `all_adj` as `all_edges`.
+
+### Bug fix: class, rank and field sizes no longer double-count a tie
+
+`LCD`, `LRD` and `LFD` (and the `clsdist`/`flddist` behind `TRP`)
+counted each respondent or item in every class whose membership
+probability was equal to the row maximum, by way of
+`sign(memb - rowmax) + 1`. When two classes carry the same reference
+profile, which is exactly what happens on data dominated by one response
+pattern, every respondent ties between them and the sizes summed to more
+than the sample (for example `825, 825, 825, 17, 158` for 1000
+respondents and five classes). The sizes are now the counts of the MAP
+assignment, with ties going to the first class as the `Estimate` column
+already did; a tied duplicate class therefore shows the zero that
+[`GridSearch()`](https://kosugitti.github.io/exametrika/reference/GridSearch.md)
+now acts on. All models that report these sizes (LCA, LRA, LDLRA, LDB,
+BINET, and binary, ordinal, nominal and rated Biclustering with and
+without the IRM) share one helper. Values are unchanged whenever there
+is no exact tie.
+
+### Bug fix: the binary EM keeps a profile that lost all its support
+
+In `emclus()` a class whose posterior probability fell to exactly zero
+for every respondent, which a long test can produce, had a zero
+denominator in the M-step under the flat prior and wrote `0/0` into the
+reference matrix, from which the whole fit became `NaN`. The previous
+profile of such a class is now kept. Values are unchanged otherwise.
+
+### New: `plot()` for a `GridSearch()` result
+
+[`plot()`](https://rdrr.io/r/graphics/plot.default.html) on a
+[`GridSearch()`](https://kosugitti.github.io/exametrika/reference/GridSearch.md)
+result draws the fit index against the number of classes or ranks
+(`type = "Fit"`, the default and only type). For Biclustering one line
+is drawn per number of fields, or a surface with `style = "persp"`.
+Settings that failed to converge are left blank, settings that left a
+class, rank or field empty are open triangles, and the optimum is a
+filled red point.
+
+### `RMSEA` no longer warns on a non-positive `model_df`
+
+[`calcFitIndices()`](https://kosugitti.github.io/exametrika/reference/calcFitIndices.md)
+set `RMSEA` to `NaN` when `model_df <= 0` but took the square root
+first, so every such item raised “NaNs produced”. The root is now taken
+only where the degrees of freedom are positive; values are unchanged.
+
 ### New: `MonotonicityCheck()` before an order-restricted analysis
 
 [`MonotonicityCheck()`](https://kosugitti.github.io/exametrika/reference/MonotonicityCheck.md)

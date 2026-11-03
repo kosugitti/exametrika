@@ -15,7 +15,7 @@ plot(
   x,
   type = c("IRF", "TRF", "IIF", "TIF", "IIC", "ICC", "TIC", "IRP", "TRP", "LCD", "CMP",
     "FRP", "RMP", "LRD", "Array", "CRV", "RRV", "FCRP", "FCBR", "ScoreField",
-    "FieldPIRP", "LDPSR", "ScoreFreq", "ScoreRank", "ICRP", "ICBR"),
+    "FieldPIRP", "LDPSR", "ScoreFreq", "ScoreRank", "ICRP", "ICBR", "Fit"),
   items = NULL,
   students = NULL,
   nc = 1,
@@ -157,6 +157,16 @@ plot(
   :   Heatmap of expected scores across fields and latent classes/ranks
       for polytomous Biclustering.
 
+  Fit
+
+  :   Fit index against the number of classes/ranks for a
+      [`GridSearch`](https://kosugitti.github.io/exametrika/reference/GridSearch.md)
+      result (the default, and only, type for that object). For
+      Biclustering one line is drawn per number of fields, or a surface
+      with `style = "persp"`. Settings that failed to converge are left
+      blank, settings that left a class or field empty are drawn as open
+      triangles, and the optimum is marked.
+
 - items:
 
   Numeric vector specifying which items to plot. If NULL, all items are
@@ -227,8 +237,11 @@ plot(
 
 - style:
 
-  Character string specifying the display style for FCRP plots. One of
-  "line" (default) or "bar" (stacked bar chart).
+  Character string specifying the display style for FCRP plots (`"line"`
+  or `"bar"`) and for the `Fit` plot of a Biclustering grid search
+  (`"line"`, one line per number of fields, or `"persp"`, a surface over
+  classes and fields). One of "line" (default) or "bar" (stacked bar
+  chart).
 
 - ...:
 

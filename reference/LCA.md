@@ -26,6 +26,7 @@ LCA(
   beta1 = 1,
   beta2 = 1,
   conf = NULL,
+  mixing = c("equal", "estimate"),
   ...
 )
 
@@ -113,6 +114,18 @@ LCA(
   (0, 1). When row names are present, items are matched by label;
   otherwise by position. Default is NULL (fully exploratory).
 
+- mixing:
+
+  Binary data only. How the class weights (mixing proportions) are
+  treated. `"equal"` (default) fixes every class at \\1/C\\, which is
+  the model of Shojima (2022) and reproduces earlier versions.
+  `"estimate"` updates the weights in the M-step as the mean posterior
+  membership, adds \\C - 1\\ parameters to the test fit indices, and
+  returns them in `ClassWeight`. Use it when one response pattern
+  dominates the data: with equal weights the only way the model can give
+  one profile most of the sample is to spend several classes on it,
+  which shows up as duplicate columns of `IRP` and zeros in `LCD`.
+
 - alpha:
 
   Dirichlet prior parameter for the category profiles (nominal data
@@ -175,6 +188,15 @@ An object of class "exametrika" and "LCA" containing:
   Item Reference Profile matrix where each row represents an item and
   each column represents a latent class. Values indicate the probability
   of a correct response for members of that class.
+
+- mixing:
+
+  Binary data only. `"equal"` or `"estimate"`.
+
+- ClassWeight:
+
+  Binary data only. The class weights used in the fit: \\1/C\\ each, or
+  the estimated mixing proportions.
 
 - ItemFitIndices:
 

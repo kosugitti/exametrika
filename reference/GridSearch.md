@@ -14,6 +14,7 @@ GridSearch(
   fun = "Biclustering",
   index = "BIC",
   verbose = FALSE,
+  skip_empty = TRUE,
   ...
 )
 ```
@@ -43,16 +44,35 @@ GridSearch(
   Valid options: "BIC" (default), "AIC", "CAIC", "model_log_like",
   "model_Chi_sq", "RMSEA", "NFI", "RFI", "IFI", "TLI", "CFI". Aliases
   are also accepted: "loglik", "log_lik", "LogLik", "LL" (all map to
-  "model_log_like"), "Chi_sq", "chi_sq" (map to "model_Chi_sq").
+  "model_log_like"), "Chi_sq", "chi_sq" (map to "model_Chi_sq"). Four
+  indices are taken from the top level of the fit instead: "elbo" and
+  "log_lik_marginal" (maximised), "ICL" and "BIC_elbo" (minimised).
+  "BIC_elbo" is the BIC on the observed-data log-likelihood
+  (`-2 elbo + k log N`); the default "BIC" is built on the expected
+  complete-data log-likelihood against the benchmark model and behaves
+  differently when classes are added (see the LCA entry in the 2.3.0
+  news).
 
 - verbose:
 
   Logical; if TRUE, displays detailed progress messages during grid
   search. Default is FALSE.
 
+- skip_empty:
+
+  Logical; if TRUE (default), a setting whose fit leaves a class, rank
+  or field with no member (a zero in `LCD`, `LRD` or `LFD`) is recorded
+  in the index table but is not eligible as the optimum. Such a fit has
+  fewer effective classes than requested, usually because the EM
+  produced duplicate reference profiles, so its fit index describes a
+  smaller model. Set to FALSE to choose among all converged settings.
+
 - ...:
 
-  Additional arguments passed to the analysis function
+  Additional arguments passed to the analysis function, for example
+  `mixing = "estimate"` for
+  [`LCA`](https://kosugitti.github.io/exametrika/reference/LCA.md) and
+  [`LRA`](https://kosugitti.github.io/exametrika/reference/LRA.md)
 
 ## Value
 
@@ -78,6 +98,23 @@ A list containing: For Biclustering:
 
   List of parameter combinations that failed to converge
 
+- empty_settings:
+
+  List of parameter combinations whose fit left a class, rank or field
+  empty (see `skip_empty`)
+
+- empty_matrix:
+
+  Logical matrix marking those cells
+
+- index:
+
+  Name of the fit index searched
+
+- fun:
+
+  Name of the analysis function
+
 For LCA/LRA:
 
 - index_vec:
@@ -96,6 +133,28 @@ For LCA/LRA:
 
   List of parameter combinations that failed to converge
 
+- empty_settings:
+
+  List of parameter combinations whose fit left a class or rank empty
+  (see `skip_empty`)
+
+- empty_vec:
+
+  Logical vector marking those settings
+
+- index:
+
+  Name of the fit index searched
+
+- fun:
+
+  Name of the analysis function
+
+[`plot()`](https://rdrr.io/r/graphics/plot.default.html) on the returned
+object draws the fit index against the number of classes (one line per
+`nfld` for Biclustering, or a surface with `style = "persp"`); see
+[`plot.exametrika`](https://kosugitti.github.io/exametrika/reference/plot.exametrika.md).
+
 ## Examples
 
 ``` r
@@ -105,5 +164,16 @@ result <- GridSearch(J35S515, max_ncls = 5, max_nfld = 5)
 
 # Grid search for LCA
 result <- GridSearch(J35S515, max_ncls = 8, fun = "LCA")
+
+# Fit index against the number of classes
+plot(result)
+
+# Arguments for the analysis function pass through: estimate the class
+# weights instead of fixing them at 1/C (see ?LCA), and select on the BIC
+# of the observed-data log-likelihood
+result <- GridSearch(J35S515,
+  max_ncls = 8, fun = "LCA", mixing = "estimate",
+  index = "BIC_elbo"
+)
 } # }
 ```

@@ -118,6 +118,7 @@ Biclustering(J35S515, nfld = 5, ncls = 6, method = "B")
 #> entropy_class      160.682
 #> entropy_field        0.001
 #> ICL              15759.940
+#> BIC_elbo         15700.714
 ```
 
 ### Ranklustering

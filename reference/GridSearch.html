@@ -56,6 +56,7 @@ and LRA (Latent Rank Analysis).</p>
 <span>  fun <span class="op">=</span> <span class="st">"Biclustering"</span>,</span>
 <span>  index <span class="op">=</span> <span class="st">"BIC"</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  skip_empty <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -88,15 +89,32 @@ each function. Valid options: "BIC" (default), "AIC", "CAIC",
 "model_log_like", "model_Chi_sq", "RMSEA", "NFI", "RFI", "IFI",
 "TLI", "CFI". Aliases are also accepted: "loglik", "log_lik",
 "LogLik", "LL" (all map to "model_log_like"), "Chi_sq", "chi_sq"
-(map to "model_Chi_sq").</p></dd>
+(map to "model_Chi_sq"). Four indices are taken from the top level of
+the fit instead: "elbo" and "log_lik_marginal" (maximised), "ICL" and
+"BIC_elbo" (minimised). "BIC_elbo" is the BIC on the observed-data
+log-likelihood (<code>-2 elbo + k log N</code>); the default "BIC" is built on
+the expected complete-data log-likelihood against the benchmark model
+and behaves differently when classes are added (see the LCA entry in the
+2.3.0 news).</p></dd>
 
 
 <dt id="arg-verbose">verbose<a class="anchor" aria-label="anchor" href="#arg-verbose"></a></dt>
 <dd><p>Logical; if TRUE, displays detailed progress messages during grid search. Default is FALSE.</p></dd>
 
 
+<dt id="arg-skip-empty">skip_empty<a class="anchor" aria-label="anchor" href="#arg-skip-empty"></a></dt>
+<dd><p>Logical; if TRUE (default), a setting whose fit leaves a
+class, rank or field with no member (a zero in <code>LCD</code>, <code>LRD</code> or <code>LFD</code>) is
+recorded in the index table but is not eligible as the optimum. Such a fit
+has fewer effective classes than requested, usually because the EM
+produced duplicate reference profiles, so its fit index describes a
+smaller model. Set to FALSE to choose among all converged settings.</p></dd>
+
+
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
-<dd><p>Additional arguments passed to the analysis function</p></dd>
+<dd><p>Additional arguments passed to the analysis function, for
+example <code>mixing = "estimate"</code> for <code><a href="LCA.html">LCA</a></code> and
+<code><a href="LRA.html">LRA</a></code></p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -119,6 +137,19 @@ ncls/nfld combination</p></dd>
 <dt>failed_settings</dt>
 <dd><p>List of parameter combinations that failed to converge</p></dd>
 
+<dt>empty_settings</dt>
+<dd><p>List of parameter combinations whose fit left a
+class, rank or field empty (see <code>skip_empty</code>)</p></dd>
+
+<dt>empty_matrix</dt>
+<dd><p>Logical matrix marking those cells</p></dd>
+
+<dt>index</dt>
+<dd><p>Name of the fit index searched</p></dd>
+
+<dt>fun</dt>
+<dd><p>Name of the analysis function</p></dd>
+
 
 </dl><p>For LCA/LRA:</p>
 <dl><dt>index_vec</dt>
@@ -133,7 +164,24 @@ ncls/nfld combination</p></dd>
 <dt>failed_settings</dt>
 <dd><p>List of parameter combinations that failed to converge</p></dd>
 
-</dl></div>
+<dt>empty_settings</dt>
+<dd><p>List of parameter combinations whose fit left a
+class or rank empty (see <code>skip_empty</code>)</p></dd>
+
+<dt>empty_vec</dt>
+<dd><p>Logical vector marking those settings</p></dd>
+
+<dt>index</dt>
+<dd><p>Name of the fit index searched</p></dd>
+
+<dt>fun</dt>
+<dd><p>Name of the analysis function</p></dd>
+
+
+</dl><p><code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> on the returned object draws the fit index against the number
+of classes (one line per <code>nfld</code> for Biclustering, or a surface with
+<code>style = "persp"</code>); see <code><a href="plot.exametrika.html">plot.exametrika</a></code>.</p>
+    </div>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
@@ -143,6 +191,17 @@ ncls/nfld combination</p></dd>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Grid search for LCA</span></span></span>
 <span class="r-in"><span><span class="va">result</span> <span class="op">&lt;-</span> <span class="fu">GridSearch</span><span class="op">(</span><span class="va">J35S515</span>, max_ncls <span class="op">=</span> <span class="fl">8</span>, fun <span class="op">=</span> <span class="st">"LCA"</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Fit index against the number of classes</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">result</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Arguments for the analysis function pass through: estimate the class</span></span></span>
+<span class="r-in"><span><span class="co"># weights instead of fixing them at 1/C (see ?LCA), and select on the BIC</span></span></span>
+<span class="r-in"><span><span class="co"># of the observed-data log-likelihood</span></span></span>
+<span class="r-in"><span><span class="va">result</span> <span class="op">&lt;-</span> <span class="fu">GridSearch</span><span class="op">(</span><span class="va">J35S515</span>,</span></span>
+<span class="r-in"><span>  max_ncls <span class="op">=</span> <span class="fl">8</span>, fun <span class="op">=</span> <span class="st">"LCA"</span>, mixing <span class="op">=</span> <span class="st">"estimate"</span>,</span></span>
+<span class="r-in"><span>  index <span class="op">=</span> <span class="st">"BIC_elbo"</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
 <span class="r-in"><span></span></span>
 </code></pre></div>

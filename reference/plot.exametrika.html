@@ -54,7 +54,7 @@ BINET). Each model has its own compatible plot types, accessible by specifying t
 <span>  <span class="va">x</span>,</span>
 <span>  type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"IRF"</span>, <span class="st">"TRF"</span>, <span class="st">"IIF"</span>, <span class="st">"TIF"</span>, <span class="st">"IIC"</span>, <span class="st">"ICC"</span>, <span class="st">"TIC"</span>, <span class="st">"IRP"</span>, <span class="st">"TRP"</span>, <span class="st">"LCD"</span>, <span class="st">"CMP"</span>,</span>
 <span>    <span class="st">"FRP"</span>, <span class="st">"RMP"</span>, <span class="st">"LRD"</span>, <span class="st">"Array"</span>, <span class="st">"CRV"</span>, <span class="st">"RRV"</span>, <span class="st">"FCRP"</span>, <span class="st">"FCBR"</span>, <span class="st">"ScoreField"</span>,</span>
-<span>    <span class="st">"FieldPIRP"</span>, <span class="st">"LDPSR"</span>, <span class="st">"ScoreFreq"</span>, <span class="st">"ScoreRank"</span>, <span class="st">"ICRP"</span>, <span class="st">"ICBR"</span><span class="op">)</span>,</span>
+<span>    <span class="st">"FieldPIRP"</span>, <span class="st">"LDPSR"</span>, <span class="st">"ScoreFreq"</span>, <span class="st">"ScoreRank"</span>, <span class="st">"ICRP"</span>, <span class="st">"ICBR"</span>, <span class="st">"Fit"</span><span class="op">)</span>,</span>
 <span>  items <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  students <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  nc <span class="op">=</span> <span class="fl">1</span>,</span>
@@ -157,6 +157,13 @@ Use <code>style</code> parameter to choose between "line" and "bar" display.</p>
 <dd><p>Heatmap of expected scores across fields and latent classes/ranks
 for polytomous Biclustering.</p></dd>
 
+<dt>Fit</dt>
+<dd><p>Fit index against the number of classes/ranks for a <code><a href="GridSearch.html">GridSearch</a></code>
+result (the default, and only, type for that object). For Biclustering one line
+is drawn per number of fields, or a surface with <code>style = "persp"</code>.
+Settings that failed to converge are left blank, settings that left a class
+or field empty are drawn as open triangles, and the optimum is marked.</p></dd>
+
 
 </dl></dd>
 
@@ -218,7 +225,10 @@ One of "mean" (default), "median", or "mode".</p></dd>
 
 
 <dt id="arg-style">style<a class="anchor" aria-label="anchor" href="#arg-style"></a></dt>
-<dd><p>Character string specifying the display style for FCRP plots.
+<dd><p>Character string specifying the display style for FCRP plots
+(<code>"line"</code> or <code>"bar"</code>) and for the <code>Fit</code> plot of a Biclustering
+grid search (<code>"line"</code>, one line per number of fields, or <code>"persp"</code>,
+a surface over classes and fields).
 One of "line" (default) or "bar" (stacked bar chart).</p></dd>
 
 

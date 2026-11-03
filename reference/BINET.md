@@ -135,6 +135,11 @@ BINET(
 
   Integrated Adjacency matrix used to plot graph.
 
+- all_edges:
+
+  Edge list (From, To, Field) behind `all_adj`, used by
+  [`print()`](https://rdrr.io/r/base/print.html).
+
 - all_g:
 
   Integrated graph object used to plot graph.see also

@@ -29,6 +29,7 @@ Biclustering(
   verbose = FALSE,
   beta1 = 1,
   beta2 = 1,
+  mixing = c("equal", "estimate"),
   ...
 )
 
@@ -194,6 +195,16 @@ Biclustering(
 
   Beta distribution parameter 2 for prior density of field reference
   matrix. Default is 1.
+
+- mixing:
+
+  Binary data only. How the class (rank) weights are treated. `"equal"`
+  (default) fixes every class at \\1/C\\, the model of Shojima (2022).
+  `"estimate"` updates the weights in the M-step as the mean class
+  membership, adds \\C - 1\\ parameters to the test fit indices, and
+  returns them in `ClassWeight`. The field weights stay at \\1/F\\. See
+  [`LCA`](https://kosugitti.github.io/exametrika/reference/LCA.md) for
+  when this matters.
 
 - alpha:
 
@@ -365,6 +376,15 @@ An object of class "exametrika" and "Biclustering" containing:
 
   Matrix showing the probabilities of each examinee belonging to each
   class/rank
+
+- mixing:
+
+  Binary data only. `"equal"` or `"estimate"`.
+
+- ClassWeight:
+
+  Binary data only. The class weights used in the fit: \\1/C\\ each, or
+  the estimated mixing proportions.
 
 - SmoothedMembership:
 

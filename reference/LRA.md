@@ -37,6 +37,7 @@ LRA(
   beta1 = 1,
   beta2 = 1,
   conf = NULL,
+  mixing = c("equal", "estimate"),
   ...
 )
 
@@ -152,6 +153,16 @@ LRA(
   values are freely estimated. Fixed values must be in the open interval
   (0, 1). When row names are present, items are matched by label;
   otherwise by position. Default is NULL (fully exploratory).
+
+- mixing:
+
+  Binary data with the isotonic or GTM method only. How the rank weights
+  (mixing proportions) are treated. `"equal"` (default) fixes every rank
+  at \\1/R\\, the model of Shojima (2022). `"estimate"` updates the
+  weights in the M-step as the mean posterior membership, adds \\R - 1\\
+  parameters to the test fit indices, and returns them in `RankWeight`.
+  See [`LCA`](https://kosugitti.github.io/exametrika/reference/LCA.md)
+  for when this matters.
 
 - trapezoidal:
 

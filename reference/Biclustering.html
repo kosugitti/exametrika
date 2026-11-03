@@ -68,6 +68,7 @@ in the data by creating a matrix with rows and columns arranged to highlight blo
 <span>  verbose <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  beta1 <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  beta2 <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>  mixing <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"equal"</span>, <span class="st">"estimate"</span><span class="op">)</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span>
 <span></span>
@@ -216,6 +217,15 @@ increasing. Default is FALSE.</p></dd>
 <dd><p>Beta distribution parameter 2 for prior density of field reference matrix. Default is 1.</p></dd>
 
 
+<dt id="arg-mixing">mixing<a class="anchor" aria-label="anchor" href="#arg-mixing"></a></dt>
+<dd><p>Binary data only. How the class (rank) weights are treated.
+<code>"equal"</code> (default) fixes every class at \(1/C\), the model of
+Shojima (2022). <code>"estimate"</code> updates the weights in the M-step as
+the mean class membership, adds \(C - 1\) parameters to the test fit
+indices, and returns them in <code>ClassWeight</code>. The field weights stay
+at \(1/F\). See <code><a href="LCA.html">LCA</a></code> for when this matters.</p></dd>
+
+
 <dt id="arg-alpha">alpha<a class="anchor" aria-label="anchor" href="#arg-alpha"></a></dt>
 <dd><p>Dirichlet distribution concentration parameter for prior density of field reference probabilities. Default is 1.</p></dd>
 
@@ -340,6 +350,12 @@ Since 2.2.0.</p></dd>
 
 <dt>ClassMembership</dt>
 <dd><p>Matrix showing the probabilities of each examinee belonging to each class/rank</p></dd>
+
+<dt>mixing</dt>
+<dd><p>Binary data only. <code>"equal"</code> or <code>"estimate"</code>.</p></dd>
+
+<dt>ClassWeight</dt>
+<dd><p>Binary data only. The class weights used in the fit: \(1/C\) each, or the estimated mixing proportions.</p></dd>
 
 <dt>SmoothedMembership</dt>
 <dd><p>Matrix of smoothed class membership probabilities after filtering</p></dd>

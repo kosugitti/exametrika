@@ -120,6 +120,7 @@ LCA(J15S500, ncls = 5)
 #> log_lik_marginal -4118.164
 #> entropy_class      338.476
 #> ICL               9064.738
+#> BIC_elbo          8702.424
 ```
 
 The Class Membership Matrix indicates which latent class each examinee
@@ -308,6 +309,7 @@ LRA(J15S500, nrank = 6)
 #> log_lik_marginal -4131.841
 #> entropy_class      495.998
 #> ICL               9145.928
+#> BIC_elbo          8568.198
 ```
 
 Rank membership probabilities and rank-up/rank-down odds are calculated:

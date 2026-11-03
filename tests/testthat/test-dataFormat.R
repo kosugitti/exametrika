@@ -518,3 +518,38 @@ test_that("rated dataFormat warns (not errors) when CA category is unobserved", 
 
 # Note: the longdataFormat path has the same fix (around line 555). The
 # mechanism is the same as the matrix path, so the tests above cover it.
+
+test_that("dataFormat notes a reverse-keyed ordinal item and leaves the data alone", {
+  set.seed(11)
+  theta <- rnorm(120)
+  Q <- sapply(1:5, function(j) findInterval(theta + rnorm(120, sd = 0.7), c(-1, 0, 1)) + 1)
+  colnames(Q) <- paste0("Item", 1:5)
+  # All items keyed the same way: no message about keying
+  expect_no_message(dataFormat(Q, response.type = "ordinal"), message = "reverse-keyed")
+  # Reverse one item: it is named, and Q is returned as given
+  Q_rev <- Q
+  Q_rev[, 3] <- 5 - Q_rev[, 3]
+  expect_message(
+    dat <- dataFormat(Q_rev, response.type = "ordinal"),
+    "Item\\(s\\) Item3 correlate negatively"
+  )
+  expect_equal(unname(dat$Q[, 3]), Q_rev[, 3])
+  # The quantity is the corrected item-total correlation of ItemReport()
+  r <- exametrika:::item_rest_corr(dat$Q, dat$Z)
+  expect_equal(r, ItemReport(dat)$ItemCORR_R, tolerance = 1e-10)
+  # Not raised for binary data
+  B <- (Q_rev > 2) * 1
+  expect_no_message(dataFormat(B), message = "reverse-keyed")
+})
+
+test_that("item_rest_corr masks missing cells and skips constant items", {
+  Q <- matrix(c(1, 2, 3, 4, 2, 2, 2, 2, 4, 3, 2, 1), ncol = 3)
+  Z <- matrix(1, 4, 3)
+  r <- exametrika:::item_rest_corr(Q, Z)
+  expect_true(is.na(r[2]))
+  expect_lt(r[3], 0)
+  Z[1, 1] <- 0
+  Q[1, 1] <- -1
+  r2 <- exametrika:::item_rest_corr(Q, Z)
+  expect_equal(r2[1], stats::cor(Q[-1, 1], rowSums(Q[-1, -1])))
+})

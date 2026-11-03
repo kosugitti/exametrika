@@ -137,6 +137,22 @@ square root first, so every such item raised "NaNs produced". The root is
 now taken only where the degrees of freedom are positive; values are
 unchanged.
 
+## `dataFormat()` points out an ordinal item that may be reverse-keyed
+
+With `response.type = "ordinal"` (given or detected) `dataFormat()` now
+computes the correlation of each item with the sum of the other items, and
+when it is negative prints a message naming the item. A negative item-rest
+correlation is the usual sign of an item keyed in the opposite direction,
+which an order-restricted analysis (isotonic `LRA()`, Ranklustering) cannot
+accommodate. The data are returned unchanged; the fuller examination is
+`MonotonicityCheck()`. The quantity is `ItemCORR_R` of `ItemReport()`.
+
+`ManifestMonotonicity()` and `MonotonicityCheck()` keep stopping when the
+default `minsize` (50 below 150 respondents, as in mokken) exceeds half the
+sample, which happens below 100 respondents. Such a sample is too small for
+the rest-score regression at its default resolution; pass `minsize`
+deliberately if the check is still wanted.
+
 ## New: `MonotonicityCheck()` before an order-restricted analysis
 
 `MonotonicityCheck()` gathers the checks that an isotonic analysis takes for

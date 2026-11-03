@@ -77,7 +77,10 @@ multiplicity correction) is counted as significant.
 The default \code{minsize} follows the mokken package: \eqn{N/10} for
 \eqn{N \ge 500}, \eqn{N/5} for \eqn{250 < N < 500}, \eqn{N/3} for
 \eqn{N \le 250} and 50 for \eqn{N < 150} (all rounded down). It is
-advisable to repeat the check with a few values of \code{minsize}.
+advisable to repeat the check with a few values of \code{minsize}. Below
+100 respondents the default exceeds half the sample and the function
+stops; such a sample is too small for the regression at its default
+resolution, and \code{minsize} must then be chosen deliberately.
 
 Respondents with any missing response are dropped (listwise), because a
 rest score over different item sets is not comparable; a message reports

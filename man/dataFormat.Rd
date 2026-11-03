@@ -67,4 +67,11 @@ are provided as factors. NULL if no factor data is present.}
 }
 \description{
 This function serves the role of formatting the data prior to the analysis.
+
+For ordinal data the function also computes the correlation of each item
+with the sum of the other items and, when it is negative, prints a message
+naming the item: a negative item-rest correlation usually means the item is
+keyed in the opposite direction, which an order-restricted analysis cannot
+accommodate. The data are returned unchanged; see
+\code{\link{MonotonicityCheck}} for the fuller examination.
 }

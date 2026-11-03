@@ -1,6 +1,13 @@
 #' @title dataFormat
 #' @description
 #' This function serves the role of formatting the data prior to the analysis.
+#'
+#' For ordinal data the function also computes the correlation of each item
+#' with the sum of the other items and, when it is negative, prints a message
+#' naming the item: a negative item-rest correlation usually means the item is
+#' keyed in the opposite direction, which an order-restricted analysis cannot
+#' accommodate. The data are returned unchanged; see
+#' \code{\link{MonotonicityCheck}} for the fuller examination.
 #' @param data is a data matrix of the type matrix or data.frame.
 #' @param na na argument specifies the numbers or characters to be treated as missing values.
 #' @param id id indicates the column containing the examinee ID, specified either
@@ -507,9 +514,64 @@ dataFormat <- function(data, na = NULL, id = NULL, Z = NULL, w = NULL,
   # labels are already the column names.
   ret.list <- label_data_matrices(ret.list)
 
+  # Ordinal data: a negative item-rest correlation usually means the item is
+  # keyed in the opposite direction. Say so once; the data are not changed.
+  if (response.type == "ordinal") {
+    note_reverse_keyed(ret.list$Q, ret.list$Z, ItemLabel)
+  }
+
   # Return with appropriate class structure
   ret <- structure(ret.list, class = c("exametrika", "exametrikaData"))
   return(ret)
+}
+
+#' Item-rest correlation for a polytomous response matrix
+#'
+#' Pearson correlation between each item and the sum of the other items,
+#' using only the respondents to whom the item was presented. A missing cell
+#' in \code{Q} holds -1 and is masked by \code{Z}. The same quantity as
+#' \code{ItemCORR_R} of \code{ItemReport()}; kept separate so that
+#' \code{dataFormat()} does not depend on the report function.
+#' @param Q Polytomous response matrix (missing cells -1).
+#' @param Z Missing indicator matrix.
+#' @return Numeric vector, one correlation per item (\code{NA} when it is
+#'   undefined: fewer than three respondents or a constant item or rest score).
+#' @noRd
+item_rest_corr <- function(Q, Z) {
+  Qz <- Q * Z
+  total <- rowSums(Qz)
+  out <- rep(NA_real_, ncol(Q))
+  for (j in seq_len(ncol(Q))) {
+    keep <- Z[, j] == 1
+    if (sum(keep) < 3) next
+    x <- Qz[keep, j]
+    rest <- total[keep] - x
+    if (stats::sd(x) == 0 || stats::sd(rest) == 0) next
+    out[j] <- stats::cor(x, rest)
+  }
+  return(out)
+}
+
+#' Message when an ordinal item correlates negatively with the rest score
+#'
+#' A light check for reverse-keyed items. Reports only; the data are not
+#' recoded. Order-restricted analyses (isotonic LRA, Ranklustering) assume
+#' every item is keyed in the same direction, and \code{MonotonicityCheck()}
+#' is the fuller examination.
+#' @noRd
+note_reverse_keyed <- function(Q, Z, ItemLabel) {
+  r <- item_rest_corr(Q, Z)
+  flagged <- which(!is.na(r) & r < 0)
+  if (length(flagged) == 0) {
+    return(invisible(NULL))
+  }
+  message(
+    "Item(s) ", paste(ItemLabel[flagged], collapse = ", "),
+    " correlate negatively with the rest score and may be reverse-keyed. ",
+    "Recode them before an order-restricted analysis; ",
+    "see MonotonicityCheck()."
+  )
+  return(invisible(flagged))
 }
 
 #' @title Long Format Data Conversion

@@ -449,9 +449,7 @@ LDLRA <- function(U, na = NULL, Z = NULL, w = NULL,
 
   # Student information ---------------------------------------------
   clsNum <- apply(postdist, 1, which.max)
-  bMax <- matrix(rep(apply(postdist, 1, max), ncls), ncol = ncls)
-  cls01 <- sign(postdist - bMax) + 1
-  LRD <- colSums(cls01)
+  LRD <- map_count(postdist)
   RMD <- colSums(postdist)
   StudentClass <- postdist
   RU <- ifelse(clsNum + 1 > ncls, NA, clsNum + 1)

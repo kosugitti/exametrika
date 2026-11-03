@@ -24,6 +24,7 @@ LRA(U, ...)
   beta1 = 1,
   beta2 = 1,
   conf = NULL,
+  mixing = c("equal", "estimate"),
   ...
 )
 
@@ -95,6 +96,14 @@ Same format as the IRP output. Non-NA values are fixed throughout estimation,
 NA values are freely estimated. Fixed values must be in the open interval (0, 1).
 When row names are present, items are matched by label; otherwise by position.
 Default is NULL (fully exploratory).}
+
+\item{mixing}{Binary data with the isotonic or GTM method only. How the
+rank weights (mixing proportions) are treated. \code{"equal"} (default)
+fixes every rank at \eqn{1/R}, the model of Shojima (2022).
+\code{"estimate"} updates the weights in the M-step as the mean posterior
+membership, adds \eqn{R - 1} parameters to the test fit indices, and
+returns them in \code{RankWeight}. See \code{\link{LCA}} for when this
+matters.}
 
 \item{trapezoidal}{Specifies the height of both tails when using a trapezoidal
 prior distribution. Must be less than 1/nrank. The default value is 0, which

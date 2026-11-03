@@ -201,15 +201,11 @@ importFrom(graphics,
   title
 )
 importFrom(igraph,
-  E,
   V,
   as_adjacency_matrix,
   as_data_frame,
   graph_from_adjacency_matrix,
-  graph_from_data_frame,
-  layout_on_grid,
-  layout_with_fr,
-  plot.igraph
+  graph_from_data_frame
 )
 importFrom(mvtnorm,pmvnorm)
 importFrom(stats,

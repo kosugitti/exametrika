@@ -661,6 +661,7 @@ Biclustering_IRM.binary <- function(U, na = NULL, Z = NULL, w = NULL,
     log_lik_marginal = vb$log_lik_marginal,
     entropy = vb$entropy,
     ICL = vb$ICL,
+    BIC_elbo = vb$BIC_elbo,
     # Deprecated fields (for backward compatibility)
     EM_Cycle = EMt
   ), class = c("exametrika", "IRM"))

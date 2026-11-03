@@ -53,6 +53,77 @@ select_optimal_grid_index <- function(ret, minimize) {
   if (is.matrix(idx)) idx[1, , drop = TRUE] else idx[1]
 }
 
+#' @title Does a fitted grid cell leave a class, rank or field empty?
+#' @description
+#' A fit whose latent class distribution (`LCD`), latent rank distribution
+#' (`LRD`) or latent field distribution (`LFD`) contains a zero has fewer
+#' effective classes/fields than the setting asked for: the EM has either
+#' produced duplicate reference profiles (so the MAP assignment goes to the
+#' first copy) or a profile no respondent prefers. The fit index of such a
+#' cell describes a smaller model and must not decide the grid search.
+#' @param result A fitted model, or `NULL`
+#' @return Logical scalar
+#' @noRd
+grid_cell_has_empty_class <- function(result) {
+  if (is.null(result)) {
+    return(FALSE)
+  }
+  for (nm in c("LCD", "LRD", "LFD")) {
+    v <- result[[nm]]
+    if (!is.null(v) && any(v == 0, na.rm = TRUE)) {
+      return(TRUE)
+    }
+  }
+  return(FALSE)
+}
+
+#' @title Report grid cells that left a class, rank or field empty
+#' @param empty_settings List of named-list parameter settings
+#' @noRd
+report_empty_grid_settings <- function(empty_settings) {
+  if (length(empty_settings) == 0) {
+    return(invisible(NULL))
+  }
+  message(
+    "\nNote: The following settings left a class, rank or field with no ",
+    "member\n  and were not considered for the optimum ",
+    "(use skip_empty = FALSE to include them):"
+  )
+  for (setting in empty_settings) {
+    parts <- vapply(
+      names(setting),
+      function(nm) sprintf("%s=%d", nm, setting[[nm]]),
+      character(1)
+    )
+    message("  ", paste(parts, collapse = ", "))
+  }
+}
+
+#' @title Hide empty-class cells from the optimum selection
+#' @description
+#' Returns `ret` with the cells flagged in `empty` set to `NA`, unless that
+#' would leave nothing to choose from: then every converged cell is kept and
+#' a message says so.
+#' @param ret Vector or matrix of fit indices
+#' @param empty Logical vector or matrix of the same shape
+#' @param skip_empty Logical; `FALSE` returns `ret` unchanged
+#' @noRd
+mask_empty_grid_cells <- function(ret, empty, skip_empty) {
+  if (!skip_empty || !any(empty)) {
+    return(ret)
+  }
+  masked <- ret
+  masked[empty] <- NA
+  if (all(is.na(masked))) {
+    message(
+      "\nNote: Every converged setting left a class, rank or field empty; ",
+      "the optimum is chosen among them."
+    )
+    return(ret)
+  }
+  return(masked)
+}
+
 #' Grid Search for Optimal Parameters
 #'
 #' Performs a grid search to find optimal parameters for different
@@ -71,9 +142,23 @@ select_optimal_grid_index <- function(ret, minimize) {
 #'  "model_log_like", "model_Chi_sq", "RMSEA", "NFI", "RFI", "IFI",
 #'  "TLI", "CFI". Aliases are also accepted: "loglik", "log_lik",
 #'  "LogLik", "LL" (all map to "model_log_like"), "Chi_sq", "chi_sq"
-#'  (map to "model_Chi_sq").
+#'  (map to "model_Chi_sq"). Four indices are taken from the top level of
+#'  the fit instead: "elbo" and "log_lik_marginal" (maximised), "ICL" and
+#'  "BIC_elbo" (minimised). "BIC_elbo" is the BIC on the observed-data
+#'  log-likelihood (\code{-2 elbo + k log N}); the default "BIC" is built on
+#'  the expected complete-data log-likelihood against the benchmark model
+#'  and behaves differently when classes are added (see the LCA entry in the
+#'  2.3.0 news).
 #' @param verbose Logical; if TRUE, displays detailed progress messages during grid search. Default is FALSE.
-#' @param ... Additional arguments passed to the analysis function
+#' @param skip_empty Logical; if TRUE (default), a setting whose fit leaves a
+#'  class, rank or field with no member (a zero in `LCD`, `LRD` or `LFD`) is
+#'  recorded in the index table but is not eligible as the optimum. Such a fit
+#'  has fewer effective classes than requested, usually because the EM
+#'  produced duplicate reference profiles, so its fit index describes a
+#'  smaller model. Set to FALSE to choose among all converged settings.
+#' @param ... Additional arguments passed to the analysis function, for
+#'  example \code{mixing = "estimate"} for \code{\link{LCA}} and
+#'  \code{\link{LRA}}
 #'
 #' @return A list containing:
 #'   For Biclustering:
@@ -83,12 +168,26 @@ select_optimal_grid_index <- function(ret, minimize) {
 #'   \item{optimal_nfld}{Optimal number of fields}
 #'   \item{optimal_result}{Analysis result using optimal parameters}
 #'   \item{failed_settings}{List of parameter combinations that failed to converge}
+#'   \item{empty_settings}{List of parameter combinations whose fit left a
+#'    class, rank or field empty (see `skip_empty`)}
+#'   \item{empty_matrix}{Logical matrix marking those cells}
+#'   \item{index}{Name of the fit index searched}
+#'   \item{fun}{Name of the analysis function}
 #'
 #'   For LCA/LRA:
 #'   \item{index_vec}{Vector of fit indices for each ncls}
 #'   \item{optimal_ncls}{Optimal number of classes/clusters}
 #'   \item{optimal_result}{Analysis result using optimal parameters}
 #'   \item{failed_settings}{List of parameter combinations that failed to converge}
+#'   \item{empty_settings}{List of parameter combinations whose fit left a
+#'    class or rank empty (see `skip_empty`)}
+#'   \item{empty_vec}{Logical vector marking those settings}
+#'   \item{index}{Name of the fit index searched}
+#'   \item{fun}{Name of the analysis function}
+#'
+#'   `plot()` on the returned object draws the fit index against the number
+#'   of classes (one line per `nfld` for Biclustering, or a surface with
+#'   `style = "persp"`); see \code{\link{plot.exametrika}}.
 #'
 #' @examples
 #' \dontrun{
@@ -97,6 +196,17 @@ select_optimal_grid_index <- function(ret, minimize) {
 #'
 #' # Grid search for LCA
 #' result <- GridSearch(J35S515, max_ncls = 8, fun = "LCA")
+#'
+#' # Fit index against the number of classes
+#' plot(result)
+#'
+#' # Arguments for the analysis function pass through: estimate the class
+#' # weights instead of fixing them at 1/C (see ?LCA), and select on the BIC
+#' # of the observed-data log-likelihood
+#' result <- GridSearch(J35S515,
+#'   max_ncls = 8, fun = "LCA", mixing = "estimate",
+#'   index = "BIC_elbo"
+#' )
 #' }
 #'
 #' @export
@@ -108,6 +218,7 @@ GridSearch <- function(
   fun = "Biclustering",
   index = "BIC",
   verbose = FALSE,
+  skip_empty = TRUE,
   ...
 ) {
   obj <- dataFormat(obj)
@@ -136,11 +247,12 @@ GridSearch <- function(
   }
 
   # Valid indices and their optimization direction
-  minimize_indices <- c("model_Chi_sq", "RMSEA", "AIC", "CAIC", "BIC", "ICL")
+  minimize_indices <- c("model_Chi_sq", "RMSEA", "AIC", "CAIC", "BIC", "ICL", "BIC_elbo")
   maximize_indices <- c("model_log_like", "NFI", "RFI", "IFI", "TLI", "CFI", "elbo", "log_lik_marginal")
   valid_indices <- c(minimize_indices, maximize_indices)
-  # ICL, elbo and log_lik_marginal live at the top level of a fit (2.2.0)
-  top_level_indices <- c("ICL", "elbo", "log_lik_marginal")
+  # ICL, elbo, log_lik_marginal (2.2.0) and BIC_elbo (2.3.0) live at the top
+  # level of a fit
+  top_level_indices <- c("ICL", "elbo", "log_lik_marginal", "BIC_elbo")
   index_value <- function(result) {
     if (index %in% top_level_indices) result[[index]] else result$TestFitIndices[[index]]
   }
@@ -175,9 +287,11 @@ GridSearch <- function(
     ret <- matrix(NA, nrow = length(2:max_ncls), ncol = length(2:max_nfld))
     colnames(ret) <- paste("nfld", 2:max_nfld)
     rownames(ret) <- paste("ncls", 2:max_ncls)
+    empty <- matrix(FALSE, nrow = nrow(ret), ncol = ncol(ret), dimnames = dimnames(ret))
     args_list <- list()
     extra_args <- list(...)
     failed_settings <- list()
+    empty_settings <- list()
 
     for (ncls in 2:max_ncls) {
       if (verbose) {
@@ -213,6 +327,13 @@ GridSearch <- function(
           )
         } else {
           ret[ncls - 1, nfld - 1] <- index_value(result)
+          if (grid_cell_has_empty_class(result)) {
+            empty[ncls - 1, nfld - 1] <- TRUE
+            empty_settings <- append(
+              empty_settings,
+              list(list(ncls = ncls, nfld = nfld))
+            )
+          }
         }
       }
       if (verbose) {
@@ -223,12 +344,16 @@ GridSearch <- function(
     # Check if all parameters failed to converge
     stop_if_all_grid_failed(ret)
 
-    optimal_idx <- select_optimal_grid_index(ret, minimize = index %in% minimize_indices)
+    optimal_idx <- select_optimal_grid_index(
+      mask_empty_grid_cells(ret, empty, skip_empty),
+      minimize = index %in% minimize_indices
+    )
     optimal_ncls <- optimal_idx["row"] + 1
     optimal_nfld <- optimal_idx["col"] + 1
 
     # Display warning for failed convergence
     report_failed_grid_settings(failed_settings)
+    if (skip_empty) report_empty_grid_settings(empty_settings)
 
     message(paste(
       "\nOptimal ncls/nrank is ",
@@ -254,7 +379,11 @@ GridSearch <- function(
       optimal_ncls = optimal_ncls,
       optimal_nfld = optimal_nfld,
       optimal_result = optimal_result,
-      failed_settings = failed_settings
+      failed_settings = failed_settings,
+      empty_settings = empty_settings,
+      empty_matrix = empty,
+      index = index,
+      fun = fun
     ), class = c("exametrika", "GridSearch"))
     # ------------------------------------------ LCA / LRA
   } else if (fun == "LCA" || fun == "LRA") {
@@ -263,8 +392,11 @@ GridSearch <- function(
     }
     ret <- vector(length = length(2:max_ncls))
     names(ret) <- paste0("ncls", 2:max_ncls)
+    empty <- rep(FALSE, length(ret))
+    names(empty) <- names(ret)
     extra_args <- list(...)
     failed_settings <- list()
+    empty_settings <- list()
 
     for (i in seq_along(2:max_ncls)) {
       ncls <- (2:max_ncls)[i]
@@ -290,16 +422,24 @@ GridSearch <- function(
         )
       } else {
         ret[i] <- index_value(result)
+        if (grid_cell_has_empty_class(result)) {
+          empty[i] <- TRUE
+          empty_settings <- append(empty_settings, list(list(ncls = ncls)))
+        }
       }
     }
 
     # Check if all parameters failed to converge
     stop_if_all_grid_failed(ret)
 
-    optimal_ncls <- select_optimal_grid_index(ret, minimize = index %in% minimize_indices) + 1
+    optimal_ncls <- select_optimal_grid_index(
+      mask_empty_grid_cells(ret, empty, skip_empty),
+      minimize = index %in% minimize_indices
+    ) + 1
 
     # Display warning for failed convergence
     report_failed_grid_settings(failed_settings)
+    if (skip_empty) report_empty_grid_settings(empty_settings)
 
     message("\nOptimal ncls/nrank is ", optimal_ncls)
 
@@ -316,7 +456,11 @@ GridSearch <- function(
       index_vec = ret,
       optimal_ncls = optimal_ncls,
       optimal_result = optimal_result,
-      failed_settings = failed_settings
+      failed_settings = failed_settings,
+      empty_settings = empty_settings,
+      empty_vec = empty,
+      index = index,
+      fun = fun
     ), class = c("exametrika", "GridSearch"))
   }
   return(ret_list)

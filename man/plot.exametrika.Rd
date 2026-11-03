@@ -8,7 +8,7 @@
   x,
   type = c("IRF", "TRF", "IIF", "TIF", "IIC", "ICC", "TIC", "IRP", "TRP", "LCD", "CMP",
     "FRP", "RMP", "LRD", "Array", "CRV", "RRV", "FCRP", "FCBR", "ScoreField",
-    "FieldPIRP", "LDPSR", "ScoreFreq", "ScoreRank", "ICRP", "ICBR"),
+    "FieldPIRP", "LDPSR", "ScoreFreq", "ScoreRank", "ICRP", "ICBR", "Fit"),
   items = NULL,
   students = NULL,
   nc = 1,
@@ -62,6 +62,11 @@ Use \code{style} parameter to choose between "line" and "bar" display.}
 (ordinal Biclustering only).}
 \item{ScoreField}{Heatmap of expected scores across fields and latent classes/ranks
 for polytomous Biclustering.}
+\item{Fit}{Fit index against the number of classes/ranks for a \code{\link{GridSearch}}
+result (the default, and only, type for that object). For Biclustering one line
+is drawn per number of fields, or a surface with \code{style = "persp"}.
+Settings that failed to converge are left blank, settings that left a class
+or field empty are drawn as open triangles, and the optimum is marked.}
 }}
 
 \item{items}{Numeric vector specifying which items to plot. If NULL, all items are included.
@@ -94,7 +99,10 @@ Supported formats: png, pdf, jpeg, jpg. Format determined by file extension.}
 \item{stat}{Character string specifying the summary statistic for polytomous FRP and RRV plots.
 One of "mean" (default), "median", or "mode".}
 
-\item{style}{Character string specifying the display style for FCRP plots.
+\item{style}{Character string specifying the display style for FCRP plots
+(\code{"line"} or \code{"bar"}) and for the \code{Fit} plot of a Biclustering
+grid search (\code{"line"}, one line per number of fields, or \code{"persp"},
+a surface over classes and fields).
 One of "line" (default) or "bar" (stacked bar chart).}
 
 \item{...}{Additional graphical parameters passed to the underlying base R

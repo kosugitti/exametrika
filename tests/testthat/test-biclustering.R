@@ -382,3 +382,56 @@ test_that("estimation argument rejects unknown values", {
     "should be one of"
   )
 })
+
+### mixing = "estimate" (2.3.0): class side only
+test_that("Biclustering mixing = 'estimate' estimates the class weights only", {
+  tmp <- dataFormat(J35S515)
+  eq <- Biclustering(tmp, ncls = 3, nfld = 3)
+  expect_equal(eq$mixing, "equal")
+  expect_equal(unname(eq$ClassWeight), rep(1 / 3, 3))
+  es <- Biclustering(tmp, ncls = 3, nfld = 3, mixing = "estimate")
+  expect_equal(es$mixing, "estimate")
+  expect_equal(sum(es$ClassWeight), 1)
+  expect_true(all(es$ClassWeight > 0))
+  expect_equal(es$LogPrior, log(es$ClassWeight))
+  # C - 1 weights charged to the test df; the field side is untouched
+  expect_equal(es$TestFitIndices$model_df, eq$TestFitIndices$model_df - 2)
+  expect_true(es$elbo >= eq$elbo - 1e-8)
+  expect_output(print(es), "Class Weight \\(estimated\\)")
+  expect_no_match(paste(capture.output(print(eq)), collapse = "\n"), "Weight \\(estimated\\)")
+  p <- predict(es, J35S515)
+  expect_equal(unname(as.matrix(p$Membership)), unname(as.matrix(es$Students[, 1:3])),
+    tolerance = 1e-10
+  )
+  expect_error(Biclustering(tmp, ncls = 3, nfld = 3, mixing = "free"), "should be one of")
+})
+
+test_that("Ranklustering mixing = 'estimate' works with isotonic and GTM", {
+  tmp <- dataFormat(J35S515)
+  for (est in c("isotonic", "GTM")) {
+    eq <- Biclustering(tmp, ncls = 3, nfld = 3, method = "R", estimation = est)
+    es <- Biclustering(tmp, ncls = 3, nfld = 3, method = "R", estimation = est, mixing = "estimate")
+    expect_equal(sum(es$ClassWeight), 1)
+    expect_equal(es$TestFitIndices$model_df, eq$TestFitIndices$model_df - 2)
+    expect_output(print(es), "Rank Weight \\(estimated\\)")
+    if (est == "isotonic") {
+      expect_true(all(apply(es$FRP, 1, function(r) all(diff(r) >= -1e-10))))
+    }
+  }
+})
+
+test_that("Biclustering mixing = 'estimate' does not duplicate a dominant pattern", {
+  set.seed(1)
+  U <- rbind(
+    matrix(0L, nrow = 500, ncol = 6),
+    matrix(rbinom(80 * 6, 1, 0.3), nrow = 80, ncol = 6),
+    matrix(rbinom(20 * 6, 1, 0.7), nrow = 20, ncol = 6)
+  )
+  colnames(U) <- paste0("Item", 1:6)
+  dat <- dataFormat(U)
+  eq <- suppressWarnings(Biclustering(dat, ncls = 3, nfld = 2))
+  es <- suppressWarnings(Biclustering(dat, ncls = 3, nfld = 2, mixing = "estimate", maxiter = 3000))
+  expect_true(any(eq$LCD == 0))
+  expect_true(all(es$LCD > 0))
+  expect_true(max(es$ClassWeight) > 0.7)
+})

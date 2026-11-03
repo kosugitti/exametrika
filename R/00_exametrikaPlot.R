@@ -39,6 +39,11 @@
 #'       (ordinal Biclustering only).}
 #'     \item{ScoreField}{Heatmap of expected scores across fields and latent classes/ranks
 #'       for polytomous Biclustering.}
+#'     \item{Fit}{Fit index against the number of classes/ranks for a \code{\link{GridSearch}}
+#'       result (the default, and only, type for that object). For Biclustering one line
+#'       is drawn per number of fields, or a surface with \code{style = "persp"}.
+#'       Settings that failed to converge are left blank, settings that left a class
+#'       or field empty are drawn as open triangles, and the optimum is marked.}
 #'   }
 #' @param items Numeric vector specifying which items to plot. If NULL, all items are included.
 #'   When type is "IIF"/"IIC", specifying 0 will produce a TIF/TIC for the entire test.
@@ -57,7 +62,10 @@
 #' @param dpi Numeric value specifying resolution in dots per inch for raster formats (png/jpeg). Default is 300.
 #' @param stat Character string specifying the summary statistic for polytomous FRP and RRV plots.
 #' One of "mean" (default), "median", or "mode".
-#' @param style Character string specifying the display style for FCRP plots.
+#' @param style Character string specifying the display style for FCRP plots
+#' (\code{"line"} or \code{"bar"}) and for the \code{Fit} plot of a Biclustering
+#' grid search (\code{"line"}, one line per number of fields, or \code{"persp"},
+#' a surface over classes and fields).
 #' One of "line" (default) or "bar" (stacked bar chart).
 #' @param ... Additional graphical parameters passed to the underlying base R
 #'   plotting functions. Standard parameters such as \code{pch}, \code{las},
@@ -134,7 +142,7 @@ plot.exametrika <- function(x,
                               "FRP", "RMP", "LRD", "Array", "CRV", "RRV",
                               "FCRP", "FCBR", "ScoreField",
                               "FieldPIRP", "LDPSR",
-                              "ScoreFreq", "ScoreRank", "ICRP", "ICBR"
+                              "ScoreFreq", "ScoreRank", "ICRP", "ICBR", "Fit"
                             ),
                             items = NULL,
                             students = NULL,
@@ -174,6 +182,10 @@ plot.exametrika <- function(x,
     if (!is.null(filename)) dev.off()
   })
 
+  # A grid search has a single plot, so the type may be omitted
+  if (value == "GridSearch" && missing(type)) {
+    type <- "Fit"
+  }
   if (missing(type)) {
     stop("The 'type' argument must be specified.")
   }
@@ -187,6 +199,7 @@ plot.exametrika <- function(x,
   nobs <- x$nobs
 
   valid_types <- list(
+    GridSearch = "Fit",
     IRT = c("IRF", "TRF", "IIF", "TIF", "IIC", "ICC", "TIC"),
     GRM = c("IRF", "IIF", "TIF", "IIC", "ICC", "TIC"),
     LCA = c("IRP", "TRP", "LCD", "CMP"),
@@ -209,7 +222,9 @@ plot.exametrika <- function(x,
     stop(paste("Warning: The type", type, "does not correspond to the value", value))
   }
 
-  plotItemID <- if (!is.null(items)) {
+  plotItemID <- if (value == "GridSearch") {
+    NULL
+  } else if (!is.null(items)) {
     if (!is.numeric(items) || length(items) > testlength || any(items < 0 | items > testlength)) {
       stop("'items' must be a numeric vector of length at most ", testlength, " and contain numbers between 0 and ", testlength)
     }
@@ -221,7 +236,9 @@ plot.exametrika <- function(x,
     1:testlength
   }
 
-  plotStudentID <- if (!is.null(students)) {
+  plotStudentID <- if (value == "GridSearch") {
+    NULL
+  } else if (!is.null(students)) {
     if (!is.numeric(students) || length(students) > nobs || any(students < 0 | students > nobs)) {
       stop("'students' must be a numeric vector of length at most ", nobs, " and contain numbers between 0 and ", nobs)
     }
@@ -238,6 +255,7 @@ plot.exametrika <- function(x,
 
   # Dispatch to model-specific plot functions
   switch(value,
+    GridSearch = plot_gridsearch(x, style, colors, dots),
     IRT = plot_irt_model(x, type, plotItemID, nc, nr, overlay, colors, dots),
     GRM = plot_grm_model(x, type, plotItemID, nc, nr, colors, dots),
     LCA = ,

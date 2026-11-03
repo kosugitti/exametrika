@@ -63,10 +63,13 @@ pava_up <- function(y, w = rep(1, length(y))) {
 #'   plus \code{item_nparam}.
 #' @noRd
 emclus_isotonic <- function(U, Z, ncls, beta1, beta2, maxiter = 100, mic = FALSE,
-                            verbose = FALSE, conf = NULL, tol = 1e-8) {
+                            verbose = FALSE, conf = NULL, tol = 1e-8, mixing = "equal") {
   # Initialize
   testlength <- NCOL(U)
   const <- exp(-testlength)
+  # Rank weights: 1/C, or estimated in the M-step (see emclus()).
+  w <- rep(1 / ncls, ncls)
+  log_w <- log(w)
   # The starting value must be below any attainable log-likelihood. The old
   # sentinel -1/const = -exp(J) is not: for a short test with many
   # respondents it sits ABOVE the real log-likelihood, so the first cycle
@@ -94,7 +97,7 @@ emclus_isotonic <- function(U, Z, ncls, beta1, beta2, maxiter = 100, mic = FALSE
 
     # E-step (no filter smoothing)
     llmat <- U %*% t(log(classRefMat + const)) + (Z * (1 - U)) %*% t(log(1 - classRefMat + const))
-    postDist <- row_softmax(llmat)
+    postDist <- row_softmax(sweep(llmat, 2, log_w, "+"))
 
     # M-step (posterior used directly; no filter)
     correct_cls <- t(postDist) %*% U
@@ -114,15 +117,25 @@ emclus_isotonic <- function(U, Z, ncls, beta1, beta2, maxiter = 100, mic = FALSE
       classRefMat[fixed] <- conf[fixed]
     }
 
+    old_log_w <- log_w
+    if (mixing == "estimate") {
+      w <- pmax(colMeans(postDist), const)
+      w <- w / sum(w)
+      log_w <- log(w)
+    }
+
     item_log_lik <- colSums(correct_cls * log(classRefMat + const) + incorrect_cls * log(1 - classRefMat + const))
     # Observed-data log-likelihood, for the same reason as in emclus(): the
     # expected log-posterior is not monotone across cycles, so a decrease in it
-    # is not evidence of trouble.
-    llmat_new <- U %*% t(log(classRefMat + const)) +
-      (Z * (1 - U)) %*% t(log(1 - classRefMat + const))
+    # is not evidence of trouble. With equal weights the prior term is the
+    # former -N log(C).
+    llmat_new <- sweep(
+      U %*% t(log(classRefMat + const)) +
+        (Z * (1 - U)) %*% t(log(1 - classRefMat + const)),
+      2, log_w, "+"
+    )
     row_max <- apply(llmat_new, 1, max)
-    test_log_lik <- sum(row_max + log(rowSums(exp(llmat_new - row_max)))) -
-      NROW(U) * log(ncls)
+    test_log_lik <- sum(row_max + log(rowSums(exp(llmat_new - row_max))))
     if (verbose) {
       message(
         sprintf(
@@ -135,6 +148,8 @@ emclus_isotonic <- function(U, Z, ncls, beta1, beta2, maxiter = 100, mic = FALSE
     if (is.finite(old_test_log_lik)) {
       if (test_log_lik - old_test_log_lik <= 0) {
         classRefMat <- old_classRefMat
+        log_w <- old_log_w
+        w <- exp(log_w)
         FLG <- FALSE
       }
       if ((test_log_lik - old_test_log_lik) <= tol * abs(old_test_log_lik)) {
@@ -153,7 +168,7 @@ emclus_isotonic <- function(U, Z, ncls, beta1, beta2, maxiter = 100, mic = FALSE
   # E-step above was computed from the previous cycle's parameters, so it did
   # not match them (and predict() on the same data could not reproduce it).
   llmat <- U %*% t(log(classRefMat + const)) + (Z * (1 - U)) %*% t(log(1 - classRefMat + const))
-  postDist <- row_softmax(llmat)
+  postDist <- row_softmax(sweep(llmat, 2, log_w, "+"))
 
   # Shape-restricted df per item = number of PAVA blocks in the final matrix
   item_nparam <- apply(classRefMat, 2, function(col) length(unique(round(col, 10))))
@@ -163,7 +178,9 @@ emclus_isotonic <- function(U, Z, ncls, beta1, beta2, maxiter = 100, mic = FALSE
     converge = converge,
     postDist = postDist,
     classRefMat = classRefMat,
-    item_nparam = item_nparam
+    item_nparam = item_nparam,
+    w = w,
+    mixing = mixing
   )
   return(ret)
 }

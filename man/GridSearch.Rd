@@ -11,6 +11,7 @@ GridSearch(
   fun = "Biclustering",
   index = "BIC",
   verbose = FALSE,
+  skip_empty = TRUE,
   ...
 )
 }
@@ -30,11 +31,26 @@ each function. Valid options: "BIC" (default), "AIC", "CAIC",
 "model_log_like", "model_Chi_sq", "RMSEA", "NFI", "RFI", "IFI",
 "TLI", "CFI". Aliases are also accepted: "loglik", "log_lik",
 "LogLik", "LL" (all map to "model_log_like"), "Chi_sq", "chi_sq"
-(map to "model_Chi_sq").}
+(map to "model_Chi_sq"). Four indices are taken from the top level of
+the fit instead: "elbo" and "log_lik_marginal" (maximised), "ICL" and
+"BIC_elbo" (minimised). "BIC_elbo" is the BIC on the observed-data
+log-likelihood (\code{-2 elbo + k log N}); the default "BIC" is built on
+the expected complete-data log-likelihood against the benchmark model
+and behaves differently when classes are added (see the LCA entry in the
+2.3.0 news).}
 
 \item{verbose}{Logical; if TRUE, displays detailed progress messages during grid search. Default is FALSE.}
 
-\item{...}{Additional arguments passed to the analysis function}
+\item{skip_empty}{Logical; if TRUE (default), a setting whose fit leaves a
+class, rank or field with no member (a zero in \code{LCD}, \code{LRD} or \code{LFD}) is
+recorded in the index table but is not eligible as the optimum. Such a fit
+has fewer effective classes than requested, usually because the EM
+produced duplicate reference profiles, so its fit index describes a
+smaller model. Set to FALSE to choose among all converged settings.}
+
+\item{...}{Additional arguments passed to the analysis function, for
+example \code{mixing = "estimate"} for \code{\link{LCA}} and
+\code{\link{LRA}}}
 }
 \value{
 A list containing:
@@ -45,12 +61,26 @@ ncls/nfld combination}
 \item{optimal_nfld}{Optimal number of fields}
 \item{optimal_result}{Analysis result using optimal parameters}
 \item{failed_settings}{List of parameter combinations that failed to converge}
+\item{empty_settings}{List of parameter combinations whose fit left a
+class, rank or field empty (see \code{skip_empty})}
+\item{empty_matrix}{Logical matrix marking those cells}
+\item{index}{Name of the fit index searched}
+\item{fun}{Name of the analysis function}
 
 For LCA/LRA:
 \item{index_vec}{Vector of fit indices for each ncls}
 \item{optimal_ncls}{Optimal number of classes/clusters}
 \item{optimal_result}{Analysis result using optimal parameters}
 \item{failed_settings}{List of parameter combinations that failed to converge}
+\item{empty_settings}{List of parameter combinations whose fit left a
+class or rank empty (see \code{skip_empty})}
+\item{empty_vec}{Logical vector marking those settings}
+\item{index}{Name of the fit index searched}
+\item{fun}{Name of the analysis function}
+
+\code{plot()} on the returned object draws the fit index against the number
+of classes (one line per \code{nfld} for Biclustering, or a surface with
+\code{style = "persp"}); see \code{\link{plot.exametrika}}.
 }
 \description{
 Performs a grid search to find optimal parameters for different
@@ -65,6 +95,17 @@ result <- GridSearch(J35S515, max_ncls = 5, max_nfld = 5)
 
 # Grid search for LCA
 result <- GridSearch(J35S515, max_ncls = 8, fun = "LCA")
+
+# Fit index against the number of classes
+plot(result)
+
+# Arguments for the analysis function pass through: estimate the class
+# weights instead of fixing them at 1/C (see ?LCA), and select on the BIC
+# of the observed-data log-likelihood
+result <- GridSearch(J35S515,
+  max_ncls = 8, fun = "LCA", mixing = "estimate",
+  index = "BIC_elbo"
+)
 }
 
 }

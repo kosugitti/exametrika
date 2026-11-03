@@ -103,3 +103,31 @@ test_that("Conditional Correct Response Rate", {
     as.numeric()
   expect_equal(result, expect, tolerance = 1e-4)
 })
+
+test_that("the network layout gives every item its own position", {
+  # Nine items, the shape of the checklist DAG that exposed the overlap
+  adj <- matrix(0, 9, 9, dimnames = list(paste0("I", 1:9), paste0("I", 1:9)))
+  adj["I1", "I3"] <- adj["I3", "I5"] <- adj["I1", "I4"] <- adj["I4", "I5"] <- 1
+  adj["I2", "I6"] <- adj["I6", "I7"] <- adj["I5", "I8"] <- adj["I7", "I9"] <- 1
+  lay <- exametrika:::dag_layout_base(adj)
+  expect_equal(nrow(lay), 9)
+  expect_equal(anyDuplicated(paste(round(lay$x, 8), round(lay$y, 8))), 0)
+  # parents sit above their children
+  edges <- which(adj == 1, arr.ind = TRUE)
+  expect_true(all(lay$y[edges[, 1]] > lay$y[edges[, 2]]))
+  # sources on the top layer
+  expect_equal(unname(lay$layer[c(1, 2)]), c(0, 0))
+  # an edgeless graph is one layer with distinct positions
+  lay0 <- exametrika:::dag_layout_base(adj * 0)
+  expect_equal(anyDuplicated(paste(round(lay0$x, 8), round(lay0$y, 8))), 0)
+  # a cycle does not hang
+  cyc <- adj * 0
+  cyc["I1", "I2"] <- cyc["I2", "I3"] <- cyc["I3", "I1"] <- 1
+  expect_equal(nrow(exametrika:::dag_layout_base(cyc)), 9)
+  pdf(NULL)
+  on.exit(dev.off(), add = TRUE)
+  expect_no_error(exametrika:::plot_dag(adj, main = "test"))
+  expect_no_error(exametrika:::plot_dag(adj,
+    edge_labels = data.frame(From = "I1", To = "I3", Field = "Field01")
+  ))
+})

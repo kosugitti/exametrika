@@ -23,6 +23,7 @@ LCA(U, ...)
   beta1 = 1,
   beta2 = 1,
   conf = NULL,
+  mixing = c("equal", "estimate"),
   ...
 )
 
@@ -79,6 +80,16 @@ NA values are freely estimated. Fixed values must be in the open interval (0, 1)
 When row names are present, items are matched by label; otherwise by position.
 Default is NULL (fully exploratory).}
 
+\item{mixing}{Binary data only. How the class weights (mixing proportions)
+are treated. \code{"equal"} (default) fixes every class at \eqn{1/C},
+which is the model of Shojima (2022) and reproduces earlier versions.
+\code{"estimate"} updates the weights in the M-step as the mean posterior
+membership, adds \eqn{C - 1} parameters to the test fit indices, and
+returns them in \code{ClassWeight}. Use it when one response pattern
+dominates the data: with equal weights the only way the model can give
+one profile most of the sample is to spend several classes on it, which
+shows up as duplicate columns of \code{IRP} and zeros in \code{LCD}.}
+
 \item{alpha}{Dirichlet prior parameter for the category profiles
 (nominal data only). Default 1, which leaves the M-step at the plain
 multinomial MLE.}
@@ -101,6 +112,9 @@ belonging to each latent class. The last column ("Estimate") indicates the most 
 \item{IRP}{Item Reference Profile matrix where each row represents an item and each column
 represents a latent class. Values indicate the probability of a correct response
 for members of that class.}
+\item{mixing}{Binary data only. \code{"equal"} or \code{"estimate"}.}
+\item{ClassWeight}{Binary data only. The class weights used in the fit:
+\eqn{1/C} each, or the estimated mixing proportions.}
 \item{ItemFitIndices}{Fit indices for each item. See also \code{\link{ItemFit}}.}
 \item{CategoryMap}{Nominal, ordinal and rated data only. The raw codes behind
 each item's renumbered categories (the rows of \code{ICRP}); used by

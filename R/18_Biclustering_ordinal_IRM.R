@@ -294,10 +294,8 @@ Biclustering_IRM.ordinal <- function(U,
     fld01[i, fld[i]] <- 1
   }
 
-  fldmemb01 <- sign(fldmemb - apply(fldmemb, 1, max)) + 1
-  flddist <- colSums(fldmemb01)
-  clsmemb01 <- sign(clsmemb - apply(clsmemb, 1, max)) + 1
-  clsdist <- colSums(clsmemb01)
+  flddist <- map_count(fldmemb)
+  clsdist <- map_count(clsmemb)
   StudentRank <- cbind(clsmemb, Estimate = cls)
   rownames(StudentRank) <- tmp$ID
   colnames(StudentRank) <- c(paste("Membership", 1:ncls), "Estimate")
@@ -452,6 +450,7 @@ Biclustering_IRM.ordinal <- function(U,
     log_lik_marginal = vb$log_lik_marginal,
     entropy = vb$entropy,
     ICL = vb$ICL,
+    BIC_elbo = vb$BIC_elbo,
     SOACflg = SOACflg,
     WOACflg = WOACflg
   ), class = c("exametrika", "ordinalBiclustering"))

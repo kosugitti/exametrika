@@ -132,6 +132,10 @@ print_lca_case <- function(x, digits) {
     "Latent Class Distribution",
     "Class Membership Distribution"
   )
+  if (identical(x$mixing, "estimate")) {
+    y <- rbind(y, x$ClassWeight)
+    rownames(y)[nrow(y)] <- "Class Weight (estimated)"
+  }
   colnames(y) <- paste("Class", 1:x$n_class)
   print(round(y, digits))
   cat("\nItem Fit Indices\n")
@@ -166,6 +170,10 @@ print_lra_case <- function(x, digits) {
     "Latent Rank Distribution",
     "Rank Membership Distribution"
   )
+  if (identical(x$mixing, "estimate")) {
+    y <- rbind(y, x$RankWeight)
+    rownames(y)[nrow(y)] <- "Rank Weight (estimated)"
+  }
   colnames(y) <- paste("Rank", 1:x$n_rank)
   print(round(y, digits))
   cat("\nItem Fit Indices\n")

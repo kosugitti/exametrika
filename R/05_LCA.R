@@ -20,6 +20,15 @@
 #'   NA values are freely estimated. Fixed values must be in the open interval (0, 1).
 #'   When row names are present, items are matched by label; otherwise by position.
 #'   Default is NULL (fully exploratory).
+#' @param mixing Binary data only. How the class weights (mixing proportions)
+#'   are treated. \code{"equal"} (default) fixes every class at \eqn{1/C},
+#'   which is the model of Shojima (2022) and reproduces earlier versions.
+#'   \code{"estimate"} updates the weights in the M-step as the mean posterior
+#'   membership, adds \eqn{C - 1} parameters to the test fit indices, and
+#'   returns them in \code{ClassWeight}. Use it when one response pattern
+#'   dominates the data: with equal weights the only way the model can give
+#'   one profile most of the sample is to spend several classes on it, which
+#'   shows up as duplicate columns of \code{IRP} and zeros in \code{LCD}.
 #'
 #' @return
 #' An object of class "exametrika" and "LCA" containing:
@@ -39,6 +48,9 @@
 #'  \item{IRP}{Item Reference Profile matrix where each row represents an item and each column
 #'    represents a latent class. Values indicate the probability of a correct response
 #'    for members of that class.}
+#'  \item{mixing}{Binary data only. \code{"equal"} or \code{"estimate"}.}
+#'  \item{ClassWeight}{Binary data only. The class weights used in the fit:
+#'    \eqn{1/C} each, or the estimated mixing proportions.}
 #'  \item{ItemFitIndices}{Fit indices for each item. See also \code{\link{ItemFit}}.}
 #'  \item{CategoryMap}{Nominal, ordinal and rated data only. The raw codes behind
 #'    each item's renumbered categories (the rows of \code{ICRP}); used by
@@ -161,7 +173,9 @@ LCA.default <- function(U, na = NULL, Z = NULL, w = NULL, ...) {
 #' @rdname LCA
 #' @export
 LCA.binary <- function(U, ncls = 2, na = NULL, Z = NULL, w = NULL, maxiter = 1000,
-                       verbose = FALSE, beta1 = 1, beta2 = 1, conf = NULL, ...) {
+                       verbose = FALSE, beta1 = 1, beta2 = 1, conf = NULL,
+                       mixing = c("equal", "estimate"), ...) {
+  mixing <- match.arg(mixing)
   # data format
   if (!inherits(U, "exametrika")) {
     tmp <- dataFormat(data = U, na = na, Z = Z, w = w)
@@ -187,16 +201,15 @@ LCA.binary <- function(U, ncls = 2, na = NULL, Z = NULL, w = NULL, maxiter = 100
     beta1 = beta1, beta2 = beta2, maxiter = maxiter,
     mic = FALSE,
     verbose = verbose,
-    conf = conf
+    conf = conf,
+    mixing = mixing
   )
 
   ## Returns
   #### Class Information
   TRP <- fit$classRefMat %*% tmp$w
-  bMax <- matrix(rep(apply(fit$postDist, 1, max), ncls), ncol = ncls)
   clsNum <- apply(fit$postDist, 1, which.max)
-  cls01 <- sign(fit$postDist - bMax) + 1
-  LCD <- colSums(cls01)
+  LCD <- map_count(fit$postDist)
   CMD <- colSums(fit$postDist)
   StudentClass <- cbind(fit$postDist, clsNum)
   colnames(StudentClass) <- c(paste("Membership", 1:ncls), "Estimate")
@@ -209,12 +222,18 @@ LCA.binary <- function(U, ncls = 2, na = NULL, Z = NULL, w = NULL, maxiter = 100
   # each Items
   ell_A <- item_log_lik(tmp$U, tmp$Z, fit$postDist, fit$classRefMat)
   FitIndices <- ItemFit(tmp$U, tmp$Z, ell_A, ncls)
+  # Estimated class weights are C - 1 parameters of the test, not of an item
+  n_weight_params <- if (mixing == "estimate") ncls - 1 else 0
+  FitIndices$test <- charge_test_params(FitIndices$test, n_weight_params, NROW(tmp$U))
   # Observed-data log-likelihood, posterior entropy and ICL (see
   # R/00_VariationalFit.R). For a one-mode model elbo is the exact marginal.
+  # The ICL formula already carries (C - 1) log(N) for the mixing term.
   const_vb <- exp(-NCOL(tmp$U))
   L_vb <- tmp$U %*% t(log(fit$classRefMat + const_vb)) +
     (tmp$Z * (1 - tmp$U)) %*% t(log(1 - fit$classRefMat + const_vb))
-  vb <- vb_fit_single(L_vb, fit$postDist, ncls * NCOL(tmp$U))
+  vb <- vb_fit_single(L_vb, fit$postDist, ncls * NCOL(tmp$U),
+    log_prior = log(fit$w), n_weight_params = n_weight_params
+  )
 
   ret <- structure(list(
     msg = "Class",
@@ -228,13 +247,18 @@ LCA.binary <- function(U, ncls = 2, na = NULL, Z = NULL, w = NULL, maxiter = 100
     CMD = as.vector(CMD),
     Students = StudentClass,
     IRP = IRP,
+    mixing = mixing,
+    ClassWeight = fit$w,
+    # log class weights, read by predict() (see pred_ll_irp)
+    LogPrior = log(fit$w),
     ItemFitIndices = FitIndices$item,
     TestFitIndices = FitIndices$test,
     log_lik = FitIndices$test$model_log_like,
     elbo = vb$elbo,
     log_lik_marginal = vb$log_lik_marginal,
     entropy = vb$entropy,
-    ICL = vb$ICL
+    ICL = vb$ICL,
+    BIC_elbo = vb$BIC_elbo
   ), class = c("exametrika", "LCA"))
   ret <- label_result(ret, id = tmp$ID, item = tmp$ItemLabel, class_prefix = "Class")
   return(ret)
@@ -298,9 +322,7 @@ LCA.nominal <- function(U, ncls = 2, na = NULL, Z = NULL, w = NULL, maxiter = 10
   ## Returns
   #### Class Information
   clsNum <- apply(fit$clsmemb, 1, which.max)
-  bMax <- matrix(rep(apply(fit$clsmemb, 1, max), ncls), ncol = ncls)
-  cls01 <- sign(fit$clsmemb - bMax) + 1
-  LCD <- colSums(cls01)
+  LCD <- map_count(fit$clsmemb)
   CMD <- colSums(fit$clsmemb)
   StudentClass <- cbind(fit$clsmemb, clsNum)
   colnames(StudentClass) <- c(paste("Membership", 1:ncls), "Estimate")
@@ -401,7 +423,8 @@ LCA.nominal <- function(U, ncls = 2, na = NULL, Z = NULL, w = NULL, maxiter = 10
     elbo = vb$elbo,
     log_lik_marginal = vb$log_lik_marginal,
     entropy = vb$entropy,
-    ICL = vb$ICL
+    ICL = vb$ICL,
+    BIC_elbo = vb$BIC_elbo
   ), class = c("exametrika", "nominalLCA"))
   ret <- label_result(ret, id = tmp$ID, item = tmp$ItemLabel, class_prefix = "Class")
   return(ret)

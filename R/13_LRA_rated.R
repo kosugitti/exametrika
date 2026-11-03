@@ -525,8 +525,7 @@ LRA.rated <- function(U,
   log_lik <- sum(rankProf * llmat)
 
   rankmemb <- apply(rankProf, 1, which.max)
-  rankmemb01 <- sign(rankProf - apply(rankProf, 1, max)) + 1
-  rankdist <- colSums(rankmemb01)
+  rankdist <- map_count(rankProf)
   RMD <- colSums(rankProf)
 
   StudentRank <- rankProf
@@ -585,7 +584,6 @@ LRA.rated <- function(U,
 
   rankProf_satu <- row_softmax(CijkMat %*% log(catRefmat_satu + const))
   Rank_satu <- apply(rankProf_satu, 1, which.max)
-  Rank_satu01 <- sign(rankProf_satu - apply(rankProf_satu, 1, max)) + 1
 
   # modelfff_jq1 <- t(dat$Z) %*% rankmemb01
   # modelggg_jq1 <- t(CijkMat) %*% rankmemb01
@@ -693,7 +691,8 @@ LRA.rated <- function(U,
     elbo = vb$elbo,
     log_lik_marginal = vb$log_lik_marginal,
     entropy = vb$entropy,
-    ICL = vb$ICL
+    ICL = vb$ICL,
+    BIC_elbo = vb$BIC_elbo
   ), class = c("exametrika", "LRArated"))
   ret <- label_result(ret, id = U$ID, item = U$ItemLabel, class_prefix = "Rank")
   return(ret)

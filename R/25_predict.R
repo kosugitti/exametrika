@@ -214,7 +214,14 @@ pred_ll_irp <- function(object, nd) {
   Z <- 1 * !is.na(nd$X)
   U <- nd$X
   U[is.na(U)] <- 0
-  return(U %*% log(IRP + const) + (Z * (1 - U)) %*% log(1 - IRP + const))
+  L <- U %*% log(IRP + const) + (Z * (1 - U)) %*% log(1 - IRP + const)
+  # Class weights (2.3.0, mixing = "estimate"). The caller subtracts log(C)
+  # for the uniform prior, so the weights are added relative to it; with
+  # equal weights the two cancel. Fits from earlier versions have no LogPrior.
+  if (!is.null(object$LogPrior)) {
+    L <- sweep(L, 2, object$LogPrior + log(NCOL(IRP)), "+")
+  }
+  return(L)
 }
 
 # Nominal / ordinal / rated LCA: ICRP rows follow CategoryMap
@@ -283,7 +290,13 @@ pred_ll_bicl_binary <- function(object, nd) {
   fsr <- (Z * (1 - U)) %*% fldmemb
   if (any(csr <= 0)) csr <- pmax(csr, const)
   if (any(fsr <= 0)) fsr <- pmax(fsr, const)
-  return(csr %*% log(FRP + const) + fsr %*% log(1 - FRP + const))
+  L <- csr %*% log(FRP + const) + fsr %*% log(1 - FRP + const)
+  # Class weights (2.3.0, mixing = "estimate"), relative to the uniform prior
+  # the caller subtracts; see pred_ll_irp()
+  if (!is.null(object$LogPrior)) {
+    L <- sweep(L, 2, object$LogPrior + log(NCOL(FRP)), "+")
+  }
+  return(L)
 }
 
 # Nominal / ordinal / rated biclustering: codes are shifted, never renumbered

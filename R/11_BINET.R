@@ -40,6 +40,7 @@
 #'  \item{ItemLabel}{Label of Items}
 #'  \item{FieldLabel}{Label of Fields}
 #'  \item{all_adj}{Integrated Adjacency matrix used to plot graph.}
+#'  \item{all_edges}{Edge list (From, To, Field) behind \code{all_adj}, used by \code{print()}.}
 #'  \item{all_g}{Integrated graph object used to plot graph.see also
 #'  [plot.exametrika]}
 #'  \item{adj_list}{List of Adjacency matrix used in the model}
@@ -420,7 +421,6 @@ BINET <- function(U, na = NULL, Z = NULL, w = NULL,
 
   clsmemb <- num_Zic / rowSums(num_Zic)
   cls <- apply(clsmemb, 1, which.max)
-  cls01 <- sign(clsmemb - apply(clsmemb, 1, max)) + 1
   Ccj <- t(clsmemb) %*% (tmp$Z * tmp$U)
   Fcj <- t(clsmemb) %*% (tmp$Z * (1 - tmp$U))
   Ncj <- Ccj + Fcj
@@ -480,7 +480,7 @@ BINET <- function(U, na = NULL, Z = NULL, w = NULL,
     "Next Class", "Membership in Next Class",
     "Class-up odds", paste("Recommmended Field", 1:maxadj)
   )
-  clsdist <- colSums(cls01)
+  clsdist <- map_count(clsmemb)
   clsmembdist <- colSums(clsmemb)
 
   ## PSRP matrix
@@ -538,7 +538,7 @@ BINET <- function(U, na = NULL, Z = NULL, w = NULL,
   # Marginal Bicluster Ref mat ----------------------------------------------
   pifr <- t(Pcf)
   TRP <- colSums(pifr * flddist)
-  LCD <- colSums(cls01)
+  LCD <- map_count(clsmemb)
   CMD <- colSums(clsmemb)
 
 
@@ -568,6 +568,8 @@ BINET <- function(U, na = NULL, Z = NULL, w = NULL,
     ItemLabel = tmp$ItemLabel,
     FieldLabel = FieldLabel,
     all_adj = all_adj,
+    # edge list (From, To, Field) behind all_adj, used by print() (2.3.0)
+    all_edges = g_csv,
     all_g = all_g,
     adj_list = adj_list,
     params = param,

@@ -26,6 +26,10 @@ print_biclustering_case <- function(x, digits) {
     paste("Latent", x$msg, "Distribution"),
     paste(x$msg, "Membership Distribution")
   )
+  if (identical(x$mixing, "estimate")) {
+    y <- rbind(y, x$ClassWeight)
+    rownames(y)[nrow(y)] <- paste(x$msg, "Weight (estimated)")
+  }
   colnames(y) <- paste(x$msg, 1:x$n_class)
   print(round(y, digits))
 

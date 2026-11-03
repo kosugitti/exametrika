@@ -113,7 +113,8 @@ vb_fit_block <- function(ZU, clsmemb, fldmemb, logP, nparam) {
 #' @param nparam number of free parameters counted for PiFR
 #' @param const clamp added inside the logarithms, as in the EM
 #' @noRd
-vb_fit_block_binary <- function(U, Z, clsmemb, fldmemb, PiFR, nparam, const) {
+vb_fit_block_binary <- function(U, Z, clsmemb, fldmemb, PiFR, nparam, const,
+                                log_prior = NULL, n_weight_params = 0) {
   fld01 <- hard_membership(fldmemb)
   ZU1 <- Z * U
   ZU0 <- Z * (1 - U)
@@ -121,7 +122,9 @@ vb_fit_block_binary <- function(U, Z, clsmemb, fldmemb, PiFR, nparam, const) {
   lp0 <- log(1 - PiFR + const)
   L_soft <- ZU1 %*% fldmemb %*% lp1 + ZU0 %*% fldmemb %*% lp0
   L_hard <- ZU1 %*% fld01 %*% lp1 + ZU0 %*% fld01 %*% lp0
-  return(vb_fit_from_loglik(L_soft, L_hard, clsmemb, fldmemb, fld01, nparam, NCOL(U)))
+  return(vb_fit_from_loglik(L_soft, L_hard, clsmemb, fldmemb, fld01, nparam, NCOL(U),
+    log_prior = log_prior, n_weight_params = n_weight_params
+  ))
 }
 
 #' Variational fit quantities for a one-mode model (LCA, LRA)
@@ -132,7 +135,7 @@ vb_fit_block_binary <- function(U, Z, clsmemb, fldmemb, PiFR, nparam, const) {
 #' @param nparam number of free parameters counted for the reference profiles
 #' @param log_prior log class prior (length ncls, normalised). Default: uniform.
 #' @noRd
-vb_fit_single <- function(L, postDist, nparam, log_prior = NULL) {
+vb_fit_single <- function(L, postDist, nparam, log_prior = NULL, n_weight_params = 0) {
   L <- as.matrix(L)
   nobs <- nrow(L)
   ncls <- ncol(L)
@@ -144,26 +147,39 @@ vb_fit_single <- function(L, postDist, nparam, log_prior = NULL) {
   completed <- sum(cls01 * L)
   icl <- -2 * (completed + completed_mixing_term(colSums(cls01))) +
     (ncls - 1) * log(nobs) + nparam * log(nobs)
+  # BIC on the observed-data log-likelihood (2.3.0). Unlike the BIC in
+  # TestFitIndices, which is built on the expected complete-data
+  # log-likelihood against the benchmark model, this one penalises the
+  # marginal likelihood directly; the class weights count only when they
+  # were estimated (n_weight_params).
+  bic_elbo <- -2 * elbo + (nparam + n_weight_params) * log(nobs)
   return(list(
     elbo = elbo,
     log_lik_marginal = elbo,
     entropy = c(class = membership_entropy(postDist)),
     ICL = icl,
+    BIC_elbo = bic_elbo,
     completed_log_lik = completed
   ))
 }
 
 #' Shared tail of the two-mode variants
 #' @noRd
-vb_fit_from_loglik <- function(L_soft, L_hard, clsmemb, fldmemb, fld01, nparam, nitems) {
+vb_fit_from_loglik <- function(L_soft, L_hard, clsmemb, fldmemb, fld01, nparam, nitems,
+                               log_prior = NULL, n_weight_params = 0) {
   nobs <- nrow(L_soft)
   ncls <- ncol(L_soft)
   nfld <- ncol(fld01)
+  # Class prior: uniform 1/C unless the class weights were estimated
+  # (Biclustering mixing = "estimate", 2.3.0). The field prior stays 1/F.
+  if (is.null(log_prior)) {
+    log_prior <- rep(-log(ncls), ncls)
+  }
   H_class <- membership_entropy(clsmemb)
   H_field <- membership_entropy(fldmemb)
-  elbo <- sum(clsmemb * L_soft) + H_class + H_field -
-    nobs * log(ncls) - nitems * log(nfld)
-  marginal <- sum_row_logsumexp(L_hard) - nobs * log(ncls)
+  elbo <- sum(clsmemb * L_soft) + H_class + H_field +
+    sum(sweep(clsmemb, 2, log_prior, "*")) - nitems * log(nfld)
+  marginal <- sum_row_logsumexp(sweep(L_hard, 2, log_prior, "+"))
   cls01 <- hard_membership(clsmemb)
   completed <- sum(cls01 * L_hard)
   icl <- -2 * (completed +
@@ -171,11 +187,15 @@ vb_fit_from_loglik <- function(L_soft, L_hard, clsmemb, fldmemb, fld01, nparam, 
     completed_mixing_term(colSums(fld01))) +
     (ncls - 1) * log(nobs) + (nfld - 1) * log(nitems) +
     nparam * log(nobs * nitems)
+  # BIC on the ELBO (2.3.0): the block parameters are penalised with
+  # log(nJ) as in the ICL above; estimated class weights with log(n).
+  bic_elbo <- -2 * elbo + nparam * log(nobs * nitems) + n_weight_params * log(nobs)
   return(list(
     elbo = elbo,
     log_lik_marginal = marginal,
     entropy = c(class = H_class, field = H_field),
     ICL = icl,
+    BIC_elbo = bic_elbo,
     completed_log_lik = completed
   ))
 }
@@ -196,6 +216,9 @@ print_variational_block <- function(x, digits = 3, suffix = "") {
   H <- g("entropy")
   v <- c(ELBO = g("elbo"), log_lik_marginal = g("log_lik_marginal"))
   v <- c(v, stats::setNames(H, paste0("entropy_", names(H))), ICL = g("ICL"))
+  if (!is.null(g("BIC_elbo"))) {
+    v <- c(v, BIC_elbo = g("BIC_elbo"))
+  }
   y <- matrix(v, ncol = 1, dimnames = list(names(v), "value"))
   print(round(y, digits))
   return(invisible(NULL))

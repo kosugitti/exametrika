@@ -15,13 +15,7 @@ print_bnm_case <- function(x, digits) {
   if (x$connectedFLG == 1) {
     print("Your graph is connected DAG.")
   }
-  lay.tree <- layout_on_grid(x$g)
-  xcoord <- lay.tree[, 1]
-  ycoord <- lay.tree[, 2]
-  xcoord <- xcoord[order(rowSums(x$adj))]
-  ycoord <- ycoord[order(x$crr, decreasing = TRUE)]
-
-  plot.igraph(x$g, layout = cbind(xcoord, ycoord))
+  plot_dag(x$adj, labels = x$ItemLabel)
 
   cat("\nParameter Learning\n")
   p_table <- x$param
@@ -62,16 +56,8 @@ print_ldlra_case <- function(x, digits) {
   }
   cat("Adjacency Matrix\n")
   print(x$adj_list)
-  lay.tree <- layout_on_grid(x$g_list[[1]])
-  xcoord <- lay.tree[, 1]
-  ycoord <- lay.tree[, 2]
-  xcoord <- xcoord[order(rowSums(x$adj_list[[1]]))]
-  ycoord <- ycoord[order(x$crr, decreasing = TRUE)]
   for (i in 1:x$n_class) {
-    plot.igraph(x$g_list[[i]],
-      layout = cbind(xcoord, ycoord),
-      main = paste("Graph of ", msg, i)
-    )
+    plot_dag(x$adj_list[[i]], labels = x$ItemLabel, main = paste("Graph of ", msg, i))
   }
 
   cat("\nParameter Learning\n")
@@ -130,16 +116,8 @@ print_ldlra_case <- function(x, digits) {
 print_ldb_case <- function(x, digits) {
   cat("Adjacency Matrix\n")
   print(x$adj_list)
-  lay.tree <- layout_on_grid(x$g_list[[1]])
-  xcoord <- lay.tree[, 1]
-  ycoord <- lay.tree[, 2]
-  xcoord <- xcoord[order(rowSums(x$adj_list[[1]]))]
-  ycoord <- ycoord[order(colSums(x$adj_list[[1]]))]
   for (i in 1:x$n_rank) {
-    plot.igraph(x$g_list[[i]],
-      layout = cbind(xcoord, ycoord),
-      main = paste("Graph at Rank", i)
-    )
+    plot_dag(x$adj_list[[i]], labels = x$FieldLabel, main = paste("Graph at Rank", i))
   }
 
   cat("\nParameter Learning\n")
@@ -191,11 +169,7 @@ print_ldb_case <- function(x, digits) {
 print_binet_case <- function(x, digits) {
   cat("Total Graph\n")
   print(x$all_adj)
-  layout_fr <- layout_with_fr(x$all_g)
-  plot.igraph(x$all_g,
-    layout = layout_fr,
-    edge.label = E(x$all_g)$Field
-  )
+  plot_dag(x$all_adj, edge_labels = x$all_edges, main = "Total Graph")
   cat("Estimation of Parameter set\n")
   for (i in 1:length(x$PSRP)) {
     cat("Field", i, "\n")

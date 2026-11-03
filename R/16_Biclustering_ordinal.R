@@ -589,10 +589,8 @@ Biclustering.ordinal <- function(U,
   cls <- max.col(clsmemb, ties.method = "first")
   fld <- max.col(fldmemb, ties.method = "first")
   check_empty_fields(fld, nfld)
-  fldmemb01 <- sign(fldmemb - do.call(pmax.int, as.data.frame(fldmemb))) + 1
-  flddist <- colSums(fldmemb01)
-  clsmemb01 <- sign(clsmemb - do.call(pmax.int, as.data.frame(clsmemb))) + 1
-  clsdist <- colSums(clsmemb01)
+  flddist <- map_count(fldmemb)
+  clsdist <- map_count(clsmemb)
   StudentRank <- cbind(clsmemb, Estimate = cls)
   rownames(StudentRank) <- tmp$ID
   colnames(StudentRank) <- c(paste("Membership", 1:ncls), "Estimate")
@@ -693,6 +691,7 @@ Biclustering.ordinal <- function(U,
     log_lik_marginal = vb$log_lik_marginal,
     entropy = vb$entropy,
     ICL = vb$ICL,
+    BIC_elbo = vb$BIC_elbo,
     init = init,
     init_selected = names(starts)[which.max(init_elbo)],
     init_elbo = init_elbo,

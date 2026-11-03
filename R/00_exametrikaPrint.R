@@ -61,7 +61,6 @@
 #' }
 #'
 #' @importFrom utils tail
-#' @importFrom igraph plot.igraph layout_on_grid layout_with_fr E
 #' @export
 #'
 
@@ -141,6 +140,22 @@ print.exametrika <- function(x, digits = 3, fit_indices = c("both", "pattern", "
       }
       if (length(x$failed_settings) > 0) {
         cat(sprintf("\n%d setting(s) failed to converge.\n", length(x$failed_settings)))
+      }
+      if (length(x$empty_settings) > 0) {
+        labels <- vapply(x$empty_settings, function(setting) {
+          paste(
+            vapply(
+              names(setting),
+              function(nm) sprintf("%s=%d", nm, setting[[nm]]),
+              character(1)
+            ),
+            collapse = ","
+          )
+        }, character(1))
+        cat(sprintf(
+          "\n%d setting(s) left a class, rank or field empty (not eligible as the optimum):\n  %s\n",
+          length(x$empty_settings), paste(labels, collapse = "; ")
+        ))
       }
       cat("\nUse `$optimal_result` to access the fitted model at the optimal setting.\n")
     },

@@ -68,6 +68,7 @@ correct response rates. Default is 1.}
 \item{ItemLabel}{Label of Items}
 \item{FieldLabel}{Label of Fields}
 \item{all_adj}{Integrated Adjacency matrix used to plot graph.}
+\item{all_edges}{Edge list (From, To, Field) behind \code{all_adj}, used by \code{print()}.}
 \item{all_g}{Integrated graph object used to plot graph.see also
 \link{plot.exametrika}}
 \item{adj_list}{List of Adjacency matrix used in the model}

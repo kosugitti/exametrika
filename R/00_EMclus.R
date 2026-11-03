@@ -21,10 +21,17 @@
 #' @noRd
 
 emclus <- function(U, Z, ncls, Fil, beta1, beta2, maxiter = 100, mic = FALSE,
-                   verbose = FALSE, conf = NULL, tol = 1e-8) {
+                   verbose = FALSE, conf = NULL, tol = 1e-8, mixing = "equal") {
   # Initialize
   testlength <- NCOL(U)
   const <- exp(-testlength)
+  # Class weights. "equal" keeps every class at 1/C (Shojima, 2022), which
+  # is the uniform prior the E-step and the observed-data log-likelihood
+  # carried implicitly before 2.3.0. "estimate" updates them in the M-step
+  # as the mean posterior membership, so a class can hold most of the sample
+  # without being duplicated.
+  w <- rep(1 / ncls, ncls)
+  log_w <- log(w)
   # The starting value must be below any attainable log-likelihood. The old
   # sentinel -1/const = -exp(J) is not: for a short test with many
   # respondents it sits ABOVE the real log-likelihood, so the first cycle
@@ -52,14 +59,19 @@ emclus <- function(U, Z, ncls, Fil, beta1, beta2, maxiter = 100, mic = FALSE,
     old_test_log_lik <- test_log_lik
 
     llmat <- U %*% t(log(classRefMat + const)) + (Z * (1 - U)) %*% t(log(1 - classRefMat + const))
-    postDist <- row_softmax(llmat)
+    postDist <- row_softmax(sweep(llmat, 2, log_w, "+"))
 
     smoothPost <- postDist %*% Fil
     correct_cls <- t(smoothPost) %*% U
     incorrect_cls <- t(smoothPost) %*% (Z * (1 - U))
 
     old_classRefMat <- classRefMat
-    classRefMat <- (correct_cls + beta1 - 1) / (correct_cls + incorrect_cls + beta1 + beta2 - 2)
+    # A class that no respondent supports at all (posterior exactly zero
+    # everywhere, possible on long tests where the softmax underflows) has a
+    # zero denominator under the flat prior; keep its previous profile
+    # instead of writing 0/0 into the matrix (2.3.0).
+    denom <- correct_cls + incorrect_cls + beta1 + beta2 - 2
+    classRefMat <- ifelse(denom > 0, (correct_cls + beta1 - 1) / denom, old_classRefMat)
     classRefMat <- pmax(pmin(classRefMat, 1 - const), const)
 
     # Apply confirmatory constraints after M-step, before mic sort
@@ -71,6 +83,15 @@ emclus <- function(U, Z, ncls, Fil, beta1, beta2, maxiter = 100, mic = FALSE,
       classRefMat <- apply(classRefMat, 2, sort)
     }
 
+    old_log_w <- log_w
+    if (mixing == "estimate") {
+      # Floor at const so that log(w) stays finite; a class below the floor
+      # has lost every respondent anyway.
+      w <- pmax(colMeans(postDist), const)
+      w <- w / sum(w)
+      log_w <- log(w)
+    }
+
     item_log_lik <- colSums(correct_cls * log(classRefMat + const) + incorrect_cls * log(1 - classRefMat + const))
     # Convergence is judged on the OBSERVED-data log-likelihood
     #   sum_s log sum_c (1/C) prod_j p_cj^u (1-p_cj)^(1-u),
@@ -80,11 +101,14 @@ emclus <- function(U, Z, ncls, Fil, beta1, beta2, maxiter = 100, mic = FALSE,
     # point and therefore need not increase; on short tests it does decrease,
     # and the "decreased -> revert and stop" rule then fires on a healthy
     # iteration. See NEWS for the numerical consequences.
-    llmat_new <- U %*% t(log(classRefMat + const)) +
-      (Z * (1 - U)) %*% t(log(1 - classRefMat + const))
+    # With equal weights the prior term is the former -N log(C).
+    llmat_new <- sweep(
+      U %*% t(log(classRefMat + const)) +
+        (Z * (1 - U)) %*% t(log(1 - classRefMat + const)),
+      2, log_w, "+"
+    )
     row_max <- apply(llmat_new, 1, max)
-    test_log_lik <- sum(row_max + log(rowSums(exp(llmat_new - row_max)))) -
-      NROW(U) * log(ncls)
+    test_log_lik <- sum(row_max + log(rowSums(exp(llmat_new - row_max))))
     if (verbose) {
       message(
         sprintf(
@@ -99,6 +123,8 @@ emclus <- function(U, Z, ncls, Fil, beta1, beta2, maxiter = 100, mic = FALSE,
     if (is.finite(old_test_log_lik)) {
       if (test_log_lik - old_test_log_lik <= 0) {
         classRefMat <- old_classRefMat
+        log_w <- old_log_w
+        w <- exp(log_w)
         FLG <- FALSE
       }
       if ((test_log_lik - old_test_log_lik) <= tol * abs(old_test_log_lik)) {
@@ -117,13 +143,15 @@ emclus <- function(U, Z, ncls, Fil, beta1, beta2, maxiter = 100, mic = FALSE,
   # E-step above was computed from the previous cycle's parameters, so it did
   # not match them (and predict() on the same data could not reproduce it).
   llmat <- U %*% t(log(classRefMat + const)) + (Z * (1 - U)) %*% t(log(1 - classRefMat + const))
-  postDist <- row_softmax(llmat)
+  postDist <- row_softmax(sweep(llmat, 2, log_w, "+"))
 
   ret <- list(
     iter = emt,
     converge = converge,
     postDist = postDist,
-    classRefMat = classRefMat
+    classRefMat = classRefMat,
+    w = w,
+    mixing = mixing
   )
   return(ret)
 }

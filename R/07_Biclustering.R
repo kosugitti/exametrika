@@ -10,6 +10,21 @@ softmax <- function(x) {
   return(exp(x) / sum(exp(x)))
 }
 
+#' @title Count members per class/rank/field from a membership matrix
+#' @description
+#' Number of respondents (or items) whose largest membership probability is in
+#' each column, i.e. the size of each class under the MAP assignment. Ties go
+#' to the first column, as `which.max()` does for the `Estimate` column. The
+#' former `sign(memb - rowmax) + 1` construction counted a tied row once in
+#' every tied column, so the sizes could sum to more than the sample (2.3.0).
+#' @param memb Numeric matrix of membership probabilities, one row per unit
+#' @return Integer vector of length `ncol(memb)`
+#' @noRd
+map_count <- function(memb) {
+  memb <- as.matrix(memb)
+  return(tabulate(max.col(memb, ties.method = "first"), ncol(memb)))
+}
+
 #' @title Row-wise softmax
 #' @description
 #' `softmax()` applied to every row, without an R-level loop. Subtracting the
@@ -130,6 +145,8 @@ build_conf_mat <- function(conf, nitems) {
 #'  \item{CMD/RMD}{Class/Rank Membership Distribution - sum of membership probabilities across examinees}
 #'  \item{FieldMembership}{Matrix showing the probabilities of each item belonging to each field}
 #'  \item{ClassMembership}{Matrix showing the probabilities of each examinee belonging to each class/rank}
+#'  \item{mixing}{Binary data only. \code{"equal"} or \code{"estimate"}.}
+#'  \item{ClassWeight}{Binary data only. The class weights used in the fit: \eqn{1/C} each, or the estimated mixing proportions.}
 #'  \item{SmoothedMembership}{Matrix of smoothed class membership probabilities after filtering}
 #'  \item{FieldEstimated}{Vector of the most likely field assignments for each item}
 #'  \item{ClassEstimated}{Vector of the most likely class/rank assignments for each examinee}
@@ -245,6 +262,12 @@ Biclustering.default <- function(U, na = NULL, Z = NULL, w = NULL, ...) {
 #' increasing. Default is FALSE.
 #' @param maxiter Maximum number of EM algorithm iterations. Default is 1000.
 #' @param verbose Logical; if TRUE, displays progress during estimation. Default is FALSE.
+#' @param mixing Binary data only. How the class (rank) weights are treated.
+#'   \code{"equal"} (default) fixes every class at \eqn{1/C}, the model of
+#'   Shojima (2022). \code{"estimate"} updates the weights in the M-step as
+#'   the mean class membership, adds \eqn{C - 1} parameters to the test fit
+#'   indices, and returns them in \code{ClassWeight}. The field weights stay
+#'   at \eqn{1/F}. See \code{\link{LCA}} for when this matters.
 #' @param beta1 Beta distribution parameter 1 for prior density of field reference matrix. Default is 1.
 #' @param beta2 Beta distribution parameter 2 for prior density of field reference matrix. Default is 1.
 #' @param ... Additional arguments passed to specific methods.
@@ -286,7 +309,9 @@ Biclustering.binary <- function(U,
                                 maxiter = 1000,
                                 verbose = FALSE,
                                 beta1 = 1,
-                                beta2 = 1, ...) {
+                                beta2 = 1,
+                                mixing = c("equal", "estimate"), ...) {
+  mixing <- match.arg(mixing)
   tmp <- U
   U <- tmp$U * tmp$Z
   testlength <- NCOL(tmp$U)
@@ -421,6 +446,12 @@ Biclustering.binary <- function(U,
     Fil <- create_filter_matrix(ncls)
   }
 
+  # Class weights: 1/C (Shojima, 2022), or estimated in the M-step as the mean
+  # class membership (mixing = "estimate", 2.3.0). The field prior stays 1/F.
+  w <- rep(1 / ncls, ncls)
+  log_w <- log(w)
+  old_log_w <- log_w
+
   ## Algorithm
   FLG <- TRUE
   converge <- TRUE
@@ -451,7 +482,7 @@ Biclustering.binary <- function(U,
     # minllsr <- apply(llsr, 1, min)
     # expllsr <- exp(llsr - minllsr)
     # clsmemb <- round(expllsr / rowSums(expllsr), 1e8)
-    clsmemb <- t(apply(llsr, 1, softmax))
+    clsmemb <- t(apply(sweep(llsr, 2, log_w, "+"), 1, softmax))
 
     if (!is.null(conf_class_mat)) {
       clsmemb <- conf_class_mat
@@ -461,6 +492,14 @@ Biclustering.binary <- function(U,
       smoothed_memb <- clsmemb
     } else {
       smoothed_memb <- clsmemb %*% Fil
+    }
+
+    old_log_w <- log_w
+    if (mixing == "estimate") {
+      # Floor at const so that log(w) stays finite
+      w <- pmax(colMeans(clsmemb), const)
+      w <- w / sum(w)
+      log_w <- log(w)
     }
 
     cjr <- t(tmp$Z * tmp$U) %*% smoothed_memb
@@ -524,6 +563,13 @@ Biclustering.binary <- function(U,
     }
 
     test_log_lik <- sum(cfr * log(PiFR + const) + ffr * log(1 - PiFR + const))
+    if (mixing == "estimate") {
+      # The monitored quantity is the expected complete-data log-likelihood;
+      # with estimated weights their term is added so that the weight update
+      # is part of what has to increase. With equal weights the term is a
+      # constant and is left out, so the stopping rule is unchanged.
+      test_log_lik <- test_log_lik + sum(colSums(clsmemb) * log_w)
+    }
     if (verbose) {
       message(
         sprintf(
@@ -540,6 +586,8 @@ Biclustering.binary <- function(U,
       # is returned belongs together
       PiFR <- oldPiFR
       fldmemb <- oldfldmemb
+      log_w <- old_log_w
+      w <- exp(log_w)
       break
     }
   }
@@ -556,7 +604,7 @@ Biclustering.binary <- function(U,
       fsr <- pmax(fsr, const)
     }
     llsr <- csr %*% log(PiFR + const) + fsr %*% log(1 - PiFR + const)
-    clsmemb <- t(apply(llsr, 1, softmax))
+    clsmemb <- t(apply(sweep(llsr, 2, log_w, "+"), 1, softmax))
     smoothed_memb <- if (use_isotonic) clsmemb else clsmemb %*% Fil
   }
 
@@ -570,10 +618,8 @@ Biclustering.binary <- function(U,
   cls <- apply(clsmemb, 1, which.max)
   fld <- apply(fldmemb, 1, which.max)
   check_empty_fields(fld, nfld)
-  fldmemb01 <- sign(fldmemb - apply(fldmemb, 1, max)) + 1
-  flddist <- colSums(fldmemb01)
-  clsmemb01 <- sign(clsmemb - apply(clsmemb, 1, max)) + 1
-  clsdist <- colSums(clsmemb01)
+  flddist <- map_count(fldmemb)
+  clsdist <- map_count(clsmemb)
   TRP <- colSums(PiFR * flddist)
   StudentRank <- clsmemb
   rownames(StudentRank) <- tmp$ID
@@ -638,11 +684,16 @@ Biclustering.binary <- function(U,
     nparam <- ifelse(model == 1, ncls * nfld, sum(diag(Fil)) * nfld)
   }
   FitIndices <- TestFit(tmp$U, tmp$Z, test_log_lik, nparam)
+  # Estimated class weights are C - 1 parameters of the test
+  n_weight_params <- if (mixing == "estimate") ncls - 1 else 0
+  FitIndices <- charge_test_params(FitIndices, n_weight_params, nobs)
   # Variational quantities, reported alongside. The log_lik above and the fit
   # indices built on it keep the reference implementation's expected
   # log-likelihood; elbo adds the posterior entropies and the class/field
   # prior constants to it. See R/00_VariationalFit.R.
-  vb <- vb_fit_block_binary(tmp$U, tmp$Z, clsmemb, fldmemb, PiFR, nparam, const)
+  vb <- vb_fit_block_binary(tmp$U, tmp$Z, clsmemb, fldmemb, PiFR, nparam, const,
+    log_prior = log_w, n_weight_params = n_weight_params
+  )
 
   ### Field Analysis
   crr <- crr(tmp)
@@ -680,6 +731,10 @@ Biclustering.binary <- function(U,
     FieldMembership = fldmemb,
     ClassMembership = clsmemb,
     SmoothedMembership = smoothed_memb,
+    mixing = mixing,
+    ClassWeight = w,
+    # log class weights, read by predict() (see pred_ll_bicl_binary)
+    LogPrior = log_w,
     FieldEstimated = fld,
     ClassEstimated = cls,
     Students = StudentRank,
@@ -690,6 +745,7 @@ Biclustering.binary <- function(U,
     log_lik_marginal = vb$log_lik_marginal,
     entropy = vb$entropy,
     ICL = vb$ICL,
+    BIC_elbo = vb$BIC_elbo,
     SOACflg = SOACflg,
     WOACflg = WOACflg
   ), class = c("exametrika", "Biclustering"))

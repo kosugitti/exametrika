@@ -82,8 +82,7 @@ Biclustering_IRM.rated <- function(U,
   nfld <- ret_nom$n_field
   fld <- ret_nom$FieldEstimated
   fldmemb <- ret_nom$FieldMembership
-  fldmemb01 <- sign(fldmemb - apply(fldmemb, 1, max)) + 1
-  flddist <- colSums(fldmemb01)
+  flddist <- map_count(fldmemb)
   BCRM <- ret_nom$FRP
 
   # --- Step 3: Sort classes by correct response rate (Ranklustering) ---
@@ -93,8 +92,7 @@ Biclustering_IRM.rated <- function(U,
   clsmemb <- clsmemb[, ord]
   BCRM <- BCRM[, ord, ]
   cls <- apply(clsmemb, 1, which.max)
-  clsmemb01 <- sign(clsmemb - apply(clsmemb, 1, max)) + 1
-  clsdist <- colSums(clsmemb01)
+  clsdist <- map_count(clsmemb)
 
   # --- Step 4: Student rank membership ---
   StudentRank <- clsmemb

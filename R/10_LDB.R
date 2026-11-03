@@ -319,7 +319,6 @@ LDB <- function(U, na = NULL, Z = NULL, w = NULL,
   # No clip here, so the old min-subtraction overflowed to Inf outright and the
   # normalisation returned NaN rather than a merged posterior.
   clsmemb <- round(row_softmax(llsr), 8)
-  cls01 <- sign(clsmemb - apply(clsmemb, 1, max)) + 1
   cls <- apply(clsmemb, 1, which.max)
 
   StudentRank <- clsmemb
@@ -333,7 +332,7 @@ LDB <- function(U, na = NULL, Z = NULL, w = NULL,
     paste("Membership", 1:ncls), "Estimate",
     "Rank-Up Odds", "Rank-Down Odds"
   )
-  clsdist <- colSums(cls01)
+  clsdist <- map_count(clsmemb)
   clsmembdist <- colSums(clsmemb)
 
 

@@ -123,6 +123,13 @@ LRA.default <- function(U, na = NULL, Z = NULL, w = NULL, ...) {
 #' @param verbose Logical; if TRUE, displays detailed progress during estimation. Default is FALSE.
 #' @param beta1 Beta distribution parameter 1 for prior density of rank reference matrix (GTM method only). Default is 1.
 #' @param beta2 Beta distribution parameter 2 for prior density of rank reference matrix (GTM method only). Default is 1.
+#' @param mixing Binary data with the isotonic or GTM method only. How the
+#'   rank weights (mixing proportions) are treated. \code{"equal"} (default)
+#'   fixes every rank at \eqn{1/R}, the model of Shojima (2022).
+#'   \code{"estimate"} updates the weights in the M-step as the mean posterior
+#'   membership, adds \eqn{R - 1} parameters to the test fit indices, and
+#'   returns them in \code{RankWeight}. See \code{\link{LCA}} for when this
+#'   matters.
 #' @param conf Confirmatory IRP matrix (items x nrank) for test equating.
 #'   Same format as the IRP output. Non-NA values are fixed throughout estimation,
 #'   NA values are freely estimated. Fixed values must be in the open interval (0, 1).
@@ -165,7 +172,9 @@ LRA.binary <- function(U,
                        verbose = FALSE,
                        beta1 = 1,
                        beta2 = 1,
-                       conf = NULL, ...) {
+                       conf = NULL,
+                       mixing = c("equal", "estimate"), ...) {
+  mixing <- match.arg(mixing)
   tmp <- U
   testlength <- NCOL(tmp$U)
   samplesize <- NROW(tmp$U)
@@ -186,16 +195,20 @@ LRA.binary <- function(U,
   }
 
   if (method == "SOM") {
+    if (mixing == "estimate") {
+      stop("mixing = \"estimate\" is available for the isotonic and GTM methods only.")
+    }
     fit <- somclus(tmp$U, tmp$Z, ncls,
       mic = mic, maxiter = maxiter,
       BIC.check = BIC.check, seed = seed, verbose = verbose,
       conf = conf
     )
+    fit$w <- rep(1 / ncls, ncls)
   } else if (method == "isotonic") {
     fit <- emclus_isotonic(tmp$U, tmp$Z,
       ncls = ncls,
       beta1, beta2, maxiter = maxiter, mic = mic, verbose = verbose,
-      conf = conf
+      conf = conf, mixing = mixing
     )
   } else {
     # GTM.
@@ -204,7 +217,7 @@ LRA.binary <- function(U,
     fit <- emclus(tmp$U, tmp$Z,
       ncls = ncls,
       Fil = Filter, beta1, beta2, maxiter = maxiter, mic = mic,
-      verbose = verbose, conf = conf
+      verbose = verbose, conf = conf, mixing = mixing
     )
   }
 
@@ -213,10 +226,8 @@ LRA.binary <- function(U,
   nobs <- NROW(tmp$U)
   #### Class Information
   TRP <- fit$classRefMat %*% tmp$w
-  bMax <- matrix(rep(apply(fit$postDist, 1, max), ncls), ncol = ncls)
   clsNum <- apply(fit$postDist, 1, which.max)
-  cls01 <- sign(fit$postDist - bMax) + 1
-  LRD <- colSums(cls01)
+  LRD <- map_count(fit$postDist)
   RMD <- colSums(fit$postDist)
   StudentClass <- fit$postDist
   RU <- ifelse(clsNum + 1 > ncls, NA, clsNum + 1)
@@ -254,12 +265,18 @@ LRA.binary <- function(U,
     nparam <- ncls
   }
   FitIndices <- ItemFit(tmp$U, tmp$Z, ell_A, nparam)
+  # Estimated rank weights are C - 1 parameters of the test, not of an item
+  n_weight_params <- if (mixing == "estimate") ncls - 1 else 0
+  FitIndices$test <- charge_test_params(FitIndices$test, n_weight_params, nobs)
   # Observed-data log-likelihood, posterior entropy and ICL (see
   # R/00_VariationalFit.R). nparam is per item (scalar or vector); ICL needs
-  # the total.
+  # the total, and its formula already carries (C - 1) log(N) for the mixing
+  # term.
   L_vb <- tmp$U %*% t(log(fit$classRefMat + const)) +
     (tmp$Z * (1 - tmp$U)) %*% t(log(1 - fit$classRefMat + const))
-  vb <- vb_fit_single(L_vb, fit$postDist, sum(rep(nparam, length.out = testlength)))
+  vb <- vb_fit_single(L_vb, fit$postDist, sum(rep(nparam, length.out = testlength)),
+    log_prior = log(fit$w), n_weight_params = n_weight_params
+  )
 
   ret <- structure(list(
     method = method,
@@ -276,13 +293,18 @@ LRA.binary <- function(U,
     Students = StudentClass,
     IRP = IRP,
     IRPIndex = IRPIndex,
+    mixing = mixing,
+    RankWeight = fit$w,
+    # log rank weights, read by predict() (see pred_ll_irp)
+    LogPrior = log(fit$w),
     ItemFitIndices = FitIndices$item,
     TestFitIndices = FitIndices$test,
     log_lik = FitIndices$test$model_log_like,
     elbo = vb$elbo,
     log_lik_marginal = vb$log_lik_marginal,
     entropy = vb$entropy,
-    ICL = vb$ICL
+    ICL = vb$ICL,
+    BIC_elbo = vb$BIC_elbo
   ), class = c("exametrika", "LRA"))
   ret <- label_result(ret, id = tmp$ID, item = tmp$ItemLabel, class_prefix = "Rank")
   return(ret)

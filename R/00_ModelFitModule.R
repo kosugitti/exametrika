@@ -65,6 +65,30 @@ assign_last <- function(arr, q, value) {
   return(arr)
 }
 
+#' @title Charge test-level parameters to the test fit indices
+#' @description
+#' `ItemFit()` counts parameters per item, so a parameter that belongs to the
+#' test as a whole (the C - 1 free class weights when `mixing = "estimate"`)
+#' has no item to sit on. This takes it off the test degrees of freedom and
+#' recomputes the indices that depend on them; the item indices are untouched.
+#' @param test A `ModelFit` list as returned in `ItemFit()$test`
+#' @param extra Number of extra parameters
+#' @param nobs Sample size
+#' @return The updated `ModelFit` list
+#' @noRd
+charge_test_params <- function(test, extra, nobs) {
+  if (extra == 0) {
+    return(test)
+  }
+  df_A <- test$model_df - extra
+  idx <- calcFitIndices(test$model_Chi_sq, test$null_Chi_sq, df_A, test$null_df, nobs)
+  test$model_df <- df_A
+  for (nm in names(idx)) {
+    test[[nm]] <- idx[[nm]]
+  }
+  return(test)
+}
+
 #' @title Model Fit Functions for Items
 #' @description
 #' A general function that returns the model fit indices.
@@ -93,7 +117,6 @@ assign_last <- function(arr, q, value) {
 #' \item{BIC}{Bayesian Information Criterion. A lower value indicates a better fit.}
 #' }
 #' @export
-
 ItemFit <- function(U, Z, ell_A, nparam) {
   ## Item Fit Indices
   testlength <- ncol(U)
@@ -347,7 +370,9 @@ TestFitSaturated <- function(U, Z, ell_A, nparam) {
 
 calcFitIndices <- function(chi_A, chi_B, df_A, df_B, nobs) {
   corrected_values <- pmax(chi_A - df_A, 0)
-  RMSEA <- sqrt(corrected_values / (df_A * (nobs - 1)))
+  # RMSEA is undefined for df <= 0 (set to NaN below); taking the square root
+  # of a negative ratio there only raised a warning per item (2.3.0).
+  RMSEA <- ifelse(df_A > 0, sqrt(corrected_values / (pmax(df_A, 1) * (nobs - 1))), NaN)
 
   AIC <- chi_A - 2 * df_A
   CAIC <- chi_A - df_A * (log(nobs) + 1)

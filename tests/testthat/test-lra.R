@@ -161,3 +161,39 @@ test_that("isotonic returns finite fit indices and converges", {
 test_that("isotonic attains higher log-likelihood than GTM (same data)", {
   expect_gt(model_iso$log_lik, model$log_lik)
 })
+
+### mixing = "estimate" (2.3.0)
+test_that("LRA mixing = 'estimate' works for isotonic and GTM and refuses SOM", {
+  tiny <- dataFormat(
+    read.csv(test_path("fixtures", "tiny_data", "tinyLCA.csv"), check.names = FALSE),
+    na = -99
+  )
+  for (m in c("isotonic", "GTM")) {
+    eq <- LRA(tiny, nrank = 3, method = m)
+    es <- LRA(tiny, nrank = 3, method = m, mixing = "estimate")
+    expect_equal(eq$mixing, "equal")
+    expect_equal(unname(eq$RankWeight), rep(1 / 3, 3))
+    expect_equal(es$mixing, "estimate")
+    expect_equal(sum(es$RankWeight), 1)
+    expect_true(all(es$RankWeight > 0))
+    # the R - 1 weights are charged to the test df on top of the item dfs
+    # (for isotonic the per-item block counts may differ between the fits)
+    expect_equal(es$TestFitIndices$model_df, sum(es$ItemFitIndices$model_df) - 2)
+    expect_equal(eq$TestFitIndices$model_df, sum(eq$ItemFitIndices$model_df))
+    expect_true(es$elbo >= eq$elbo - 1e-8)
+    expect_output(print(es), "Rank Weight \\(estimated\\)")
+    # isotonic keeps the order restriction on the profiles
+    if (m == "isotonic") {
+      expect_true(all(apply(es$IRP, 1, function(r) all(diff(r) >= -1e-10))))
+    }
+    raw <- read.csv(test_path("fixtures", "tiny_data", "tinyLCA.csv"), check.names = FALSE)
+    p <- predict(es, raw[, -1], na = -99)
+    expect_equal(unname(as.matrix(p$Membership)), unname(as.matrix(es$Students[, 1:3])),
+      tolerance = 1e-10
+    )
+  }
+  expect_error(
+    LRA(tiny, nrank = 3, method = "SOM", mixing = "estimate"),
+    "isotonic and GTM"
+  )
+})

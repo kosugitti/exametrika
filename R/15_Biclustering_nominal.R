@@ -253,10 +253,8 @@ Biclustering.nominal <- function(U,
   cls <- apply(clsmemb, 1, which.max)
   fld <- apply(fldmemb, 1, which.max)
   check_empty_fields(fld, nfld)
-  fldmemb01 <- sign(fldmemb - apply(fldmemb, 1, max)) + 1
-  flddist <- colSums(fldmemb01)
-  clsmemb01 <- sign(clsmemb - apply(clsmemb, 1, max)) + 1
-  clsdist <- colSums(clsmemb01)
+  flddist <- map_count(fldmemb)
+  clsdist <- map_count(clsmemb)
   StudentRank <- cbind(clsmemb, Estimate = cls)
   rownames(StudentRank) <- tmp$ID
   colnames(StudentRank) <- c(paste("Membership", 1:ncls), "Estimate")
@@ -338,7 +336,8 @@ Biclustering.nominal <- function(U,
     elbo = vb$elbo,
     log_lik_marginal = vb$log_lik_marginal,
     entropy = vb$entropy,
-    ICL = vb$ICL
+    ICL = vb$ICL,
+    BIC_elbo = vb$BIC_elbo
   ), class = c("exametrika", "nominalBiclustering"))
 
   ret <- label_result(ret, id = tmp$ID, item = tmp$ItemLabel, class_prefix = msg)

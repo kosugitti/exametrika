@@ -457,8 +457,7 @@ LRA.ordinal <- function(U,
   testRefVec <- t(catRefMat) %*% unlist(category)
 
   rankmemb <- apply(rankProf, 1, which.max)
-  rankmemb01 <- sign(rankProf - apply(rankProf, 1, max)) + 1
-  rankdist <- colSums(rankmemb01)
+  rankdist <- map_count(rankProf)
   RMD <- colSums(rankProf)
 
   StudentRank <- rankProf
@@ -532,7 +531,6 @@ LRA.ordinal <- function(U,
 
   rankProf_satu <- row_softmax(uuMat %*% log(catRefMat_satu + const))
   Rank_satu <- apply(rankProf_satu, 1, which.max)
-  Rank_satu01 <- sign(rankProf_satu - apply(rankProf_satu, 1, max)) + 1
 
 
   # modelfff_jq1 <- t(dat$Z) %*% rankmemb01
@@ -650,7 +648,8 @@ LRA.ordinal <- function(U,
     elbo = vb$elbo,
     log_lik_marginal = vb$log_lik_marginal,
     entropy = vb$entropy,
-    ICL = vb$ICL
+    ICL = vb$ICL,
+    BIC_elbo = vb$BIC_elbo
   ), class = c("exametrika", "LRAordinal"))
   ret <- label_result(ret, id = U$ID, item = U$ItemLabel, class_prefix = "Rank")
   return(ret)

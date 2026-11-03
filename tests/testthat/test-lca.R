@@ -582,3 +582,78 @@ test_that("the margin baseline does not depend on the model family", {
   expect_equal(a$TestFitIndicesM2$M2_null, b$TestFitIndicesM2$M2_null)
   expect_equal(a$TestFitIndicesM2$df_null, b$TestFitIndicesM2$df_null)
 })
+
+### mixing = "estimate" (2.3.0)
+test_that("LCA mixing = 'estimate' agrees with poLCA on complete data", {
+  # Reference made by develop/mixing_reference_poLCA.R (poLCA, GPL, not a
+  # dependency): best of 50 random starts, three classes, complete cases of
+  # the tiny fixture. Classes are matched by their test reference profile.
+  ref <- read.csv(test_path("fixtures", "lca_mixing_poLCA_reference.csv"), check.names = FALSE)
+  U <- tiny_bin$U[rowSums(tiny_bin$Z) == NCOL(tiny_bin$Z), ]
+  fit <- LCA(dataFormat(U), ncls = 3, mixing = "estimate")
+  expect_equal(fit$mixing, "estimate")
+  expect_true(fit$converge)
+  ord <- order(fit$TRP)
+  expect_equal(unname(fit$ClassWeight[ord]), ref$w, tolerance = 1e-4)
+  irp_ref <- as.matrix(ref[, colnames(U)]) # classes x items
+  expect_equal(unname(t(fit$IRP[, ord])), unname(irp_ref), tolerance = 1e-4)
+  # the deterministic start reaches poLCA's best log-likelihood
+  expect_equal(fit$elbo, ref$loglik[1], tolerance = 1e-5)
+  expect_equal(sum(fit$ClassWeight), 1)
+})
+
+test_that("LCA mixing = 'equal' is the default and keeps the fixed weights", {
+  fit <- LCA(tiny_bin, ncls = 3)
+  expect_equal(fit$mixing, "equal")
+  expect_equal(unname(fit$ClassWeight), rep(1 / 3, 3))
+  expect_equal(fit$LogPrior, log(rep(1 / 3, 3)))
+  fit2 <- LCA(tiny_bin, ncls = 3, mixing = "equal")
+  expect_equal(fit2$IRP, fit$IRP)
+  expect_error(LCA(tiny_bin, ncls = 3, mixing = "free"), "should be one of")
+})
+
+test_that("LCA mixing = 'estimate' charges C - 1 parameters to the test fit only", {
+  eq <- LCA(tiny_bin, ncls = 3)
+  es <- LCA(tiny_bin, ncls = 3, mixing = "estimate")
+  expect_equal(es$TestFitIndices$model_df, eq$TestFitIndices$model_df - 2)
+  # item fit keeps the per-item count
+  expect_equal(es$ItemFitIndices$model_df, eq$ItemFitIndices$model_df)
+  # BIC = chi - df log N holds after the charge
+  expect_equal(
+    es$TestFitIndices$BIC,
+    es$TestFitIndices$model_Chi_sq - es$TestFitIndices$model_df * log(es$nobs)
+  )
+  # the weights are a free fit, so the observed-data log-likelihood cannot fall
+  expect_true(es$elbo >= eq$elbo - 1e-8)
+})
+
+test_that("LCA mixing = 'estimate' prints the weights and predict() applies them", {
+  es <- LCA(tiny_bin, ncls = 3, mixing = "estimate")
+  expect_output(print(es), "Class Weight \\(estimated\\)")
+  eq <- LCA(tiny_bin, ncls = 3)
+  expect_no_match(paste(capture.output(print(eq)), collapse = "\n"), "Class Weight")
+  raw <- read.csv(test_path("fixtures", "tiny_data", "tinyLCA.csv"), check.names = FALSE)
+  p <- predict(es, raw[, -1], na = -99)
+  expect_equal(unname(as.matrix(p$Membership)), unname(as.matrix(es$Students[, 1:3])),
+    tolerance = 1e-10
+  )
+})
+
+test_that("LCA mixing = 'estimate' does not duplicate a dominant pattern", {
+  # The data of the GridSearch test: one pattern dominates. With equal
+  # weights a third class is a duplicate; with estimated weights it is not.
+  set.seed(1)
+  U <- rbind(
+    matrix(0L, nrow = 500, ncol = 6),
+    matrix(rbinom(80 * 6, 1, 0.3), nrow = 80, ncol = 6),
+    matrix(rbinom(20 * 6, 1, 0.7), nrow = 20, ncol = 6)
+  )
+  colnames(U) <- paste0("Item", 1:6)
+  dat <- dataFormat(U)
+  expect_true(any(LCA(dat, ncls = 3)$LCD == 0))
+  es <- LCA(dat, ncls = 3, mixing = "estimate")
+  expect_true(all(es$LCD > 0))
+  expect_true(max(es$ClassWeight) > 0.7)
+  gs <- suppressMessages(GridSearch(dat, max_ncls = 4, fun = "LCA", mixing = "estimate"))
+  expect_equal(length(gs$empty_settings), 0)
+})

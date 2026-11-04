@@ -317,7 +317,8 @@ print(result_lca)
 #> ELBO             -4144.421
 #> log_lik_marginal -4144.421
 #> entropy_class      245.300
-#> ICL               8844.634
+#> ICL               8833.057
 #> BIC_elbo          8568.500
+#> ICL_exact         8751.910
 # }
 ```

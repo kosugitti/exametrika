@@ -117,8 +117,9 @@ Biclustering(J35S515, nfld = 5, ncls = 6, method = "B")
 #> log_lik_marginal -7647.034
 #> entropy_class      160.682
 #> entropy_field        0.001
-#> ICL              15759.940
-#> BIC_elbo         15700.714
+#> ICL              15750.282
+#> BIC_elbo         15594.054
+#> ICL_exact        15767.301
 ```
 
 ### Ranklustering
@@ -371,7 +372,7 @@ result.B.rated
 #> log_lik_marginal -7455.051
 #> entropy_class      154.843
 #> entropy_field        0.000
-#> ICL              15525.792
+#> ICL              15369.416
 #> Weakly Ordinal Alignment Condition is Satisfied.
 plot(result.B.rated, type = "Array")
 ```

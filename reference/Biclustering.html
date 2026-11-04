@@ -403,6 +403,14 @@ complete-data log-likelihood.</p></dd>
 Govaert, 2000) in its BIC-type approximation, on the same scale as AIC and
 BIC (-2 log scale, smaller is better).</p></dd>
 
+<dt>ICL_exact, ICL_exact_se</dt>
+<dd><p>The exact ICL (since 2.3.0), see
+<code><a href="LCA.html">LCA</a></code>: block parameters integrated out under the
+Dirichlet (Beta) prior, memberships at the hard assignment, class
+weights of the model and field weights 1/F. For isotonic Ranklustering
+the rank order of every field enters as its posterior-to-prior
+probability ratio (Monte Carlo); <code>NA</code> for the GTM estimation.</p></dd>
+
 <dt>init, init_selected, init_elbo</dt>
 <dd><p>Ordinal data only. The <code>init</code>
 requested, the start whose fit is returned, and the ELBO reached from

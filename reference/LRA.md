@@ -276,6 +276,14 @@ A list of class "exametrika" and the specific subclass (e.g., "LRA",
   Govaert, 2000) in its BIC-type approximation, on the same scale as AIC
   and BIC (-2 log scale, smaller is better).
 
+- ICL_exact, ICL_exact_se:
+
+  The exact ICL (since 2.3.0), see
+  [`LCA`](https://kosugitti.github.io/exametrika/reference/LCA.md). For
+  the isotonic method the order restriction enters as the
+  posterior-to-prior probability ratio of the rank order (Monte Carlo,
+  `seed` if given); `NA` for GTM and SOM.
+
 Each subclass returns additional specific elements, detailed in their
 respective documentation.
 
@@ -390,6 +398,14 @@ includes:
   Govaert, 2000) in its BIC-type approximation, on the same scale as AIC
   and BIC (-2 log scale, smaller is better).
 
+- ICL_exact, ICL_exact_se:
+
+  The exact ICL (since 2.3.0), see
+  [`LCA`](https://kosugitti.github.io/exametrika/reference/LCA.md). For
+  the isotonic method the order restriction of every item enters as the
+  posterior-to-prior probability ratio of the rank order (Monte Carlo);
+  `NA` for GTM.
+
 For rated data (`LRA.rated`), the returned list additionally includes:
 
 - msg:
@@ -486,6 +502,11 @@ For rated data (`LRA.rated`), the returned list additionally includes:
   Integrated completed likelihood criterion (Biernacki, Celeux and
   Govaert, 2000) in its BIC-type approximation, on the same scale as AIC
   and BIC (-2 log scale, smaller is better).
+
+- ICL_exact, ICL_exact_se:
+
+  `NA`: the rated LRA is a GTM fit, which has no prior model (see
+  [`LCA`](https://kosugitti.github.io/exametrika/reference/LCA.md)).
 
 ## Binary Data Method
 

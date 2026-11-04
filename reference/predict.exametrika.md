@@ -12,10 +12,14 @@ Supported fits:
 [`LCA()`](https://kosugitti.github.io/exametrika/reference/LCA.md)
 (binary, nominal, ordinal, rated),
 [`LRA()`](https://kosugitti.github.io/exametrika/reference/LRA.md)
-(binary, ordinal, rated) and
+(binary, ordinal, rated),
 [`Biclustering()`](https://kosugitti.github.io/exametrika/reference/Biclustering.md)
-/ Ranklustering (binary, nominal, ordinal, rated). The IRM and network
-models are not supported.
+/ Ranklustering (binary, nominal, ordinal, rated) and the reference
+objects of
+[`as_biclustering()`](https://kosugitti.github.io/exametrika/reference/as_biclustering.md).
+The IRM and network models are not supported. To place new items on the
+scale of a fit as well, see
+[`equate()`](https://kosugitti.github.io/exametrika/reference/equate.md).
 
 ## Usage
 

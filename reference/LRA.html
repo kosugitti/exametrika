@@ -288,6 +288,12 @@ complete-data log-likelihood.</p></dd>
 Govaert, 2000) in its BIC-type approximation, on the same scale as AIC and
 BIC (-2 log scale, smaller is better).</p></dd>
 
+<dt>ICL_exact, ICL_exact_se</dt>
+<dd><p>The exact ICL (since 2.3.0), see
+<code><a href="LCA.html">LCA</a></code>. For the isotonic method the order restriction enters
+as the posterior-to-prior probability ratio of the rank order (Monte
+Carlo, <code>seed</code> if given); <code>NA</code> for GTM and SOM.</p></dd>
+
 
 </dl><p>Each subclass returns additional specific elements, detailed in their respective documentation.</p>
 <p>For binary data (<code>LRA.binary</code>), the returned list additionally includes:</p><dl><dt>IRP</dt>
@@ -367,6 +373,12 @@ complete-data log-likelihood.</p></dd>
 Govaert, 2000) in its BIC-type approximation, on the same scale as AIC and
 BIC (-2 log scale, smaller is better).</p></dd>
 
+<dt>ICL_exact, ICL_exact_se</dt>
+<dd><p>The exact ICL (since 2.3.0), see
+<code><a href="LCA.html">LCA</a></code>. For the isotonic method the order restriction of
+every item enters as the posterior-to-prior probability ratio of the rank
+order (Monte Carlo); <code>NA</code> for GTM.</p></dd>
+
 
 </dl><p>For rated data (<code>LRA.rated</code>), the returned list additionally includes:</p><dl><dt>msg</dt>
 <dd><p>A character string indicating the model type.</p></dd>
@@ -437,6 +449,10 @@ complete-data log-likelihood.</p></dd>
 <dd><p>Integrated completed likelihood criterion (Biernacki, Celeux and
 Govaert, 2000) in its BIC-type approximation, on the same scale as AIC and
 BIC (-2 log scale, smaller is better).</p></dd>
+
+<dt>ICL_exact, ICL_exact_se</dt>
+<dd><p><code>NA</code>: the rated LRA is a GTM fit,
+which has no prior model (see <code><a href="LCA.html">LCA</a></code>).</p></dd>
 
 
 </dl></div>

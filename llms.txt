@@ -1301,6 +1301,10 @@ Plot, print and predict methods for exametrika objects
   : Print Method for Exametrika Objects
 - [`predict(`*`<exametrika>`*`)`](https://kosugitti.github.io/exametrika/reference/predict.exametrika.md)
   : Classify new respondents with a fitted model
+- [`equate()`](https://kosugitti.github.io/exametrika/reference/equate.md)
+  : Equate new items and respondents to a fitted model
+- [`as_biclustering()`](https://kosugitti.github.io/exametrika/reference/as_biclustering.md)
+  : Build a biclustering reference from published field profiles
 
 ## Internal
 

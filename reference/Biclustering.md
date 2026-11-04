@@ -446,6 +446,16 @@ An object of class "exametrika" and "Biclustering" containing:
   Govaert, 2000) in its BIC-type approximation, on the same scale as AIC
   and BIC (-2 log scale, smaller is better).
 
+- ICL_exact, ICL_exact_se:
+
+  The exact ICL (since 2.3.0), see
+  [`LCA`](https://kosugitti.github.io/exametrika/reference/LCA.md):
+  block parameters integrated out under the Dirichlet (Beta) prior,
+  memberships at the hard assignment, class weights of the model and
+  field weights 1/F. For isotonic Ranklustering the rank order of every
+  field enters as its posterior-to-prior probability ratio (Monte
+  Carlo); `NA` for the GTM estimation.
+
 - init, init_selected, init_elbo:
 
   Ordinal data only. The `init` requested, the start whose fit is

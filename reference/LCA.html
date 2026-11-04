@@ -244,6 +244,20 @@ complete-data log-likelihood.</p></dd>
 Govaert, 2000) in its BIC-type approximation, on the same scale as AIC and
 BIC (-2 log scale, smaller is better).</p></dd>
 
+<dt>ICL_exact, ICL_exact_se</dt>
+<dd><p>The exact ICL (since 2.3.0): the item
+parameters integrated out under their prior and the memberships at the
+hard (MAP) assignment, -2 log scale. Nothing is counted, so it is the
+criterion of choice for the isotonic models, whose effective number of
+parameters is data-dependent. For an isotonic fit the order restriction
+enters as the ratio of posterior to prior probability of the rank order;
+the posterior probability is a Monte Carlo estimate (10,000 draws on a
+private random stream) and <code>ICL_exact_se</code> is its standard error on
+the -2 log scale (0 for an unordered model; <code>NA</code> with a warning when
+the order probability of some field fell below the Monte Carlo
+resolution, in which case <code>ICL_exact</code> is a lower bound). <code>NA</code>
+for GTM and SOM fits, which have no prior model.</p></dd>
+
 
 </dl></div>
     <div class="section level2">

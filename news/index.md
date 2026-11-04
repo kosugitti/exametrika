@@ -6,9 +6,7 @@
 
 Every model that reports `elbo` now also reports
 `BIC_elbo = -2 elbo + k log N`, where `k` counts the reference-profile
-(or block) parameters plus the class weights when they were estimated;
-for biclustering the block parameters are penalised with `log(nJ)` as in
-the ICL.
+(or block) parameters plus the class weights when they were estimated.
 [`GridSearch()`](https://kosugitti.github.io/exametrika/reference/GridSearch.md)
 accepts `index = "BIC_elbo"`. The default `BIC` in `TestFitIndices` is
 Shojima’s: a chi-square against the benchmark model built on the
@@ -16,6 +14,90 @@ expected complete-data log-likelihood. The two can disagree on the
 number of classes; on the checklist data below the default BIC keeps
 falling with `ncls` even with estimated class weights, while `BIC_elbo`
 turns up after five classes.
+
+### New: `ICL_exact`, the integrated completed likelihood without approximation
+
+[`LCA()`](https://kosugitti.github.io/exametrika/reference/LCA.md),
+[`LRA()`](https://kosugitti.github.io/exametrika/reference/LRA.md) and
+[`Biclustering()`](https://kosugitti.github.io/exametrika/reference/Biclustering.md)
+now return `ICL_exact` next to `ICL`. `ICL` is the BIC-type
+approximation of Keribin et al. (2015); `ICL_exact` is the criterion
+itself: the item or block parameters are integrated out under the prior
+of the fitted model (the Dirichlet or Beta of the estimation, flat by
+default) and the memberships are the hard assignments of the final
+posterior, reported on the -2 log scale of AIC and BIC. The class term
+uses the model’s mixing weights (`-n log C`, or the estimated weights
+with `mixing = "estimate"`) and the field term `-J log F`. Nothing is
+counted, which is the point for the isotonic models: their effective
+number of parameters depends on the data, so a parameter-counting
+penalty has no clean value there.
+
+For an order-restricted (isotonic) fit the prior of a field (or item) is
+the Dirichlet restricted to the region where the upper-cumulative
+probabilities are non-decreasing across ranks, and by the
+encompassing-prior identity (Klugkist, Laudy and Hoijtink, 2005) the
+restricted marginal is the unrestricted one times the posterior-to-prior
+probability ratio of that order. The prior probability is exact under
+the flat prior: the region is the order polytope of a product of two
+chains, whose volume follows from the hook-length formula (for binary
+data it is `1/C!`). The posterior probability is a Monte Carlo estimate
+(10,000 draws on a private random stream that leaves the global one
+untouched, seeded by `seed` where the model has one); `ICL_exact_se` is
+its standard error on the -2 log scale, 0 for an unordered model. The
+estimate is a sequential particle method that adds the rank constraints
+one at a time, so probabilities far below one draw in ten thousand are
+still resolved (for binary data the steps are exact in the Beta
+distribution); when a field’s counts contradict the order so strongly
+that even this fails, a warning is given, `ICL_exact_se` is `NA` and
+`ICL_exact` is a lower bound. With a non-flat prior the prior
+probability is estimated by the same particle method. GTM and SOM fits
+have no prior model and return `NA`.
+[`GridSearch()`](https://kosugitti.github.io/exametrika/reference/GridSearch.md)
+accepts `index = "ICL_exact"`.
+
+Related: the BIC-type `ICL` and `BIC_elbo` now penalise every parameter
+with `log n` (the package’s sample size, as in `BIC`) and use the
+model’s mixing weights in the completed log-likelihood; until 2.2.0
+`ICL` penalised the block parameters of a biclustering with `log(nJ)`
+and used the empirical proportions of the hard assignments with
+`(C - 1) log n` and `(F - 1) log J`. The values change; the ranking of
+models usually does not.
+
+### New: `equate()` puts a new test form on the scale of a fit
+
+`equate(fit, newdata)` takes responses to a form that shares some items
+with the fitted test (the anchor items) and contains items the fit has
+never seen. The parameters of the fit are held fixed, so the new
+respondents are placed in its classes or ranks through the anchor items,
+and the new items are placed on the same scale: for
+[`Biclustering()`](https://kosugitti.github.io/exametrika/reference/Biclustering.md)
+and Ranklustering (binary, nominal, ordinal, rated) each new item is
+assigned to one of the existing fields; for
+[`LCA()`](https://kosugitti.github.io/exametrika/reference/LCA.md)
+(binary, nominal) and
+[`LRA()`](https://kosugitti.github.io/exametrika/reference/LRA.md)
+(binary, ordinal) the reference profile of each new item is estimated,
+under the order restriction of an isotonic fit or with the filter of a
+GTM fit. The two unknowns are updated alternately, starting from the
+anchor items alone, until the membership settles. This is the discrete
+analogue of fixed-parameter calibration; no linking transformation is
+involved because the scale is the rank itself.
+
+A biclustering fit cannot give a new item a field of its own, so
+`NewFieldLogBF` reports, for each new item, the log Bayes factor of “a
+field of its own” (the block parameters integrated out under the prior
+of the fit, as in `ICL_exact`) against “one of the existing fields”.
+Because even a fitted item departs measurably from its field profile
+once the respondents are many, the same quantity is computed for the
+anchor items of the new data (`AnchorLogBF`), and a new item is read
+against that range. Estimating the profile of a new field is left to a
+later version.
+
+`as_biclustering(FRP, fields)` builds, from a field reference profile
+and the field of each item, the minimal object that
+[`equate()`](https://kosugitti.github.io/exametrika/reference/equate.md)
+and [`predict()`](https://rdrr.io/r/stats/predict.html) accept, so that
+a form can be equated from published values alone.
 
 ### New: `mixing = "estimate"` lets `LCA()`, `LRA()` and binary `Biclustering()` estimate the class weights
 

@@ -184,8 +184,9 @@ fit
 #> ELBO             -15223.558
 #> log_lik_marginal -15223.558
 #> entropy_class        41.303
-#> ICL               31597.651
+#> ICL               31634.858
 #> BIC_elbo          31598.563
+#> ICL_exact         31254.182
 #> 
 #> Margin based (M2)
 #>             value

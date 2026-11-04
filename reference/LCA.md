@@ -240,6 +240,21 @@ An object of class "exametrika" and "LCA" containing:
   Govaert, 2000) in its BIC-type approximation, on the same scale as AIC
   and BIC (-2 log scale, smaller is better).
 
+- ICL_exact, ICL_exact_se:
+
+  The exact ICL (since 2.3.0): the item parameters integrated out under
+  their prior and the memberships at the hard (MAP) assignment, -2 log
+  scale. Nothing is counted, so it is the criterion of choice for the
+  isotonic models, whose effective number of parameters is
+  data-dependent. For an isotonic fit the order restriction enters as
+  the ratio of posterior to prior probability of the rank order; the
+  posterior probability is a Monte Carlo estimate (10,000 draws on a
+  private random stream) and `ICL_exact_se` is its standard error on the
+  -2 log scale (0 for an unordered model; `NA` with a warning when the
+  order probability of some field fell below the Monte Carlo resolution,
+  in which case `ICL_exact` is a lower bound). `NA` for GTM and SOM
+  fits, which have no prior model.
+
 ## Details
 
 Latent Class Analysis is a statistical method for identifying unobserved

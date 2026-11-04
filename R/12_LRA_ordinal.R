@@ -50,6 +50,10 @@
 #' \item{ICL}{Integrated completed likelihood criterion (Biernacki, Celeux and
 #'   Govaert, 2000) in its BIC-type approximation, on the same scale as AIC and
 #'   BIC (-2 log scale, smaller is better).}
+#' \item{ICL_exact, ICL_exact_se}{The exact ICL (since 2.3.0), see
+#'   \code{\link{LCA}}. For the isotonic method the order restriction of
+#'   every item enters as the posterior-to-prior probability ratio of the rank
+#'   order (Monte Carlo); \code{NA} for GTM.}
 #' }
 #'
 #' @examples
@@ -528,6 +532,18 @@ LRA.ordinal <- function(U,
   vb <- vb_fit_single(uuMat %*% log(catRefMat + const), rankProf, nparam_vb,
     log_prior = log(log_prior / sum(log_prior))
   )
+  # Exact ICL (see R/00_ExactICL.R): the isotonic fit carries the order
+  # restriction as its prior; GTM has no prior model.
+  if (method == "isotonic") {
+    ZU_ex <- UU
+    ZU_ex[is.na(ZU_ex)] <- 0
+    icl_ex <- icl_exact(ZU_ex, rankProf,
+      alpha = alpha, ncat = ncat,
+      log_prior_cls = log(log_prior / sum(log_prior)), ordered = TRUE
+    )
+  } else {
+    icl_ex <- list(ICL_exact = NA_real_, ICL_exact_se = NA_real_)
+  }
 
   rankProf_satu <- row_softmax(uuMat %*% log(catRefMat_satu + const))
   Rank_satu <- apply(rankProf_satu, 1, which.max)
@@ -649,7 +665,9 @@ LRA.ordinal <- function(U,
     log_lik_marginal = vb$log_lik_marginal,
     entropy = vb$entropy,
     ICL = vb$ICL,
-    BIC_elbo = vb$BIC_elbo
+    BIC_elbo = vb$BIC_elbo,
+    ICL_exact = icl_ex$ICL_exact,
+    ICL_exact_se = icl_ex$ICL_exact_se
   ), class = c("exametrika", "LRAordinal"))
   ret <- label_result(ret, id = U$ID, item = U$ItemLabel, class_prefix = "Rank")
   return(ret)

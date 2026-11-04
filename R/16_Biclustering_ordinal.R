@@ -533,6 +533,16 @@ Biclustering.ordinal <- function(U,
   # the respondent-side marginal, the posterior entropies and ICL.
   vb <- vb_fit_block(ZU, clsmemb, fldmemb, log(pmax(BCRM, 0) + const), nparam)
   testell <- vb$elbo
+  # Exact ICL (see R/00_ExactICL.R): Biclustering blocks are unordered;
+  # isotonic Ranklustering carries the rank order as its prior; GTM has none.
+  if (model == 1 || use_isotonic) {
+    icl_ex <- icl_exact(ZU, clsmemb, fldmemb,
+      alpha = alpha, ncat = rep(maxQ, nfld), log_prior_cls = rep(-log(ncls), ncls),
+      ordered = use_isotonic, seed = seed
+    )
+  } else {
+    icl_ex <- list(ICL_exact = NA_real_, ICL_exact_se = NA_real_)
+  }
 
   ptn <- apply(tmp$Q, 1, function(x) paste(x, collapse = ""))
   benchG <- as.numeric(as.factor(ptn))
@@ -692,6 +702,8 @@ Biclustering.ordinal <- function(U,
     entropy = vb$entropy,
     ICL = vb$ICL,
     BIC_elbo = vb$BIC_elbo,
+    ICL_exact = icl_ex$ICL_exact,
+    ICL_exact_se = icl_ex$ICL_exact_se,
     init = init,
     init_selected = names(starts)[which.max(init_elbo)],
     init_elbo = init_elbo,

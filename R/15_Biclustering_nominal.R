@@ -270,6 +270,11 @@ Biclustering.nominal <- function(U,
   ZU <- Uq * as.vector(tmp$Z)
   vb <- vb_fit_block(ZU, clsmemb, fldmemb, log(BCRM + const), nparam)
   testell <- vb$elbo
+  # Exact ICL from the hard assignments (see R/00_ExactICL.R); every block
+  # holds a maxQ-category Dirichlet(alpha), as in the estimation.
+  icl_ex <- icl_exact(ZU, clsmemb, fldmemb,
+    alpha = alpha, ncat = rep(maxQ, nfld), log_prior_cls = rep(-log(ncls), ncls)
+  )
 
   # Null model.
   # colSums(X, dims=1) sums over the 1st dim, replacing apply(X, c(2,3), sum).
@@ -337,7 +342,9 @@ Biclustering.nominal <- function(U,
     log_lik_marginal = vb$log_lik_marginal,
     entropy = vb$entropy,
     ICL = vb$ICL,
-    BIC_elbo = vb$BIC_elbo
+    BIC_elbo = vb$BIC_elbo,
+    ICL_exact = icl_ex$ICL_exact,
+    ICL_exact_se = icl_ex$ICL_exact_se
   ), class = c("exametrika", "nominalBiclustering"))
 
   ret <- label_result(ret, id = tmp$ID, item = tmp$ItemLabel, class_prefix = msg)

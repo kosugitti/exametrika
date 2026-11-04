@@ -131,5 +131,5 @@ test_that("GridSearch accepts index = 'BIC_elbo' and the fits carry it", {
   gb <- suppressMessages(GridSearch(J35S515, max_ncls = 3, max_nfld = 3, index = "BIC_elbo"))
   b <- Biclustering(J35S515, ncls = 2, nfld = 2)
   expect_equal(unname(gb$index_matrix["ncls 2", "nfld 2"]), b$BIC_elbo)
-  expect_equal(b$BIC_elbo, -2 * b$elbo + 4 * log(b$nobs * b$testlength))
+  expect_equal(b$BIC_elbo, -2 * b$elbo + 4 * log(b$nobs)) # log n since 2.3.0
 })

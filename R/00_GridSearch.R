@@ -247,12 +247,12 @@ GridSearch <- function(
   }
 
   # Valid indices and their optimization direction
-  minimize_indices <- c("model_Chi_sq", "RMSEA", "AIC", "CAIC", "BIC", "ICL", "BIC_elbo")
+  minimize_indices <- c("model_Chi_sq", "RMSEA", "AIC", "CAIC", "BIC", "ICL", "BIC_elbo", "ICL_exact")
   maximize_indices <- c("model_log_like", "NFI", "RFI", "IFI", "TLI", "CFI", "elbo", "log_lik_marginal")
   valid_indices <- c(minimize_indices, maximize_indices)
   # ICL, elbo, log_lik_marginal (2.2.0) and BIC_elbo (2.3.0) live at the top
   # level of a fit
-  top_level_indices <- c("ICL", "elbo", "log_lik_marginal", "BIC_elbo")
+  top_level_indices <- c("ICL", "elbo", "log_lik_marginal", "BIC_elbo", "ICL_exact")
   index_value <- function(result) {
     if (index %in% top_level_indices) result[[index]] else result$TestFitIndices[[index]]
   }

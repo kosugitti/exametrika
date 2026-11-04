@@ -171,6 +171,12 @@ build_conf_mat <- function(conf, nitems) {
 #'  \item{ICL}{Integrated completed likelihood criterion (Biernacki, Celeux and
 #'    Govaert, 2000) in its BIC-type approximation, on the same scale as AIC and
 #'    BIC (-2 log scale, smaller is better).}
+#'  \item{ICL_exact, ICL_exact_se}{The exact ICL (since 2.3.0), see
+#'    \code{\link{LCA}}: block parameters integrated out under the
+#'    Dirichlet (Beta) prior, memberships at the hard assignment, class
+#'    weights of the model and field weights 1/F. For isotonic Ranklustering
+#'    the rank order of every field enters as its posterior-to-prior
+#'    probability ratio (Monte Carlo); \code{NA} for the GTM estimation.}
 #'  \item{init, init_selected, init_elbo}{Ordinal data only. The \code{init}
 #'    requested, the start whose fit is returned, and the ELBO reached from
 #'    each start that was run. Since 2.2.0.}
@@ -694,6 +700,16 @@ Biclustering.binary <- function(U,
   vb <- vb_fit_block_binary(tmp$U, tmp$Z, clsmemb, fldmemb, PiFR, nparam, const,
     log_prior = log_w, n_weight_params = n_weight_params
   )
+  # Exact ICL (see R/00_ExactICL.R): Biclustering blocks are unordered;
+  # isotonic Ranklustering carries the rank order as its prior; GTM has none.
+  if (model == 1 || use_isotonic) {
+    icl_ex <- icl_exact(binary_indicator_array(tmp$U, tmp$Z), clsmemb, fldmemb,
+      alpha = c(beta2, beta1), ncat = rep(2, nfld), log_prior_cls = log_w,
+      ordered = use_isotonic
+    )
+  } else {
+    icl_ex <- list(ICL_exact = NA_real_, ICL_exact_se = NA_real_)
+  }
 
   ### Field Analysis
   crr <- crr(tmp)
@@ -746,6 +762,8 @@ Biclustering.binary <- function(U,
     entropy = vb$entropy,
     ICL = vb$ICL,
     BIC_elbo = vb$BIC_elbo,
+    ICL_exact = icl_ex$ICL_exact,
+    ICL_exact_se = icl_ex$ICL_exact_se,
     SOACflg = SOACflg,
     WOACflg = WOACflg
   ), class = c("exametrika", "Biclustering"))

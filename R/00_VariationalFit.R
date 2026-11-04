@@ -27,17 +27,25 @@
 #                     (2015) for the latent block model. Reported on the same
 #                     scale as AIC and BIC in this package (-2 x log scale,
 #                     smaller is better):
-#                       -2 [ log p(Q | c_hat, f_hat) + sum_c n_c log(n_c/n)
-#                            + sum_f m_f log(m_f/J) ]
-#                       + (C-1) log n + (F-1) log J + nparam log(nJ)
-#                     with hard MAP assignments c_hat, f_hat. For a one-mode
-#                     model the item terms are absent and the block penalty is
-#                     nparam log n.
+#                       -2 [ log p(Q | c_hat, f_hat) + sum_c n_c log w_c
+#                            - J log F ]
+#                       + (nparam + n_weight) log n
+#                     with hard MAP assignments c_hat, f_hat, the mixing
+#                     weights w_c of the fitted model (1/C unless they were
+#                     estimated, in which case n_weight = C - 1 counts them)
+#                     and the field weights fixed at 1/F. For a one-mode
+#                     model the field term is absent. Since 2.3.0 the sample
+#                     size in the penalty is n for every parameter, as in the
+#                     package's BIC; until 2.2.0 the block parameters of a
+#                     biclustering were penalised with log(nJ) and the mixing
+#                     terms used the empirical proportions.
+#   BIC_elbo          -2 elbo + (nparam + n_weight) log n (2.3.0).
+#   ICL_exact         Computed separately from the hard assignments, see
+#                     R/00_ExactICL.R.
 #
 # Mixing proportions are fixed at 1/C (and 1/F) in the E-steps of this package,
-# following the reference implementation, and elbo / log_lik_marginal use the
-# same constants. ICL uses the empirical proportions of the hard assignments as
-# in the cited definition.
+# following the reference implementation, unless mixing = "estimate"; elbo,
+# log_lik_marginal and ICL use the same weights.
 
 #' Entropy of a row-stochastic membership matrix, summed over rows
 #' @param M matrix whose rows are probability vectors
@@ -65,17 +73,6 @@ hard_membership <- function(M) {
   H <- matrix(0, nrow = nrow(M), ncol = ncol(M))
   H[cbind(seq_len(nrow(M)), max.col(M, ties.method = "first"))] <- 1
   return(H)
-}
-
-#' Mixing-proportion term of a completed log-likelihood
-#'
-#' sum_k n_k log(n_k / n) over the groups of a hard assignment; empty groups
-#' contribute nothing.
-#' @noRd
-completed_mixing_term <- function(counts) {
-  n <- sum(counts)
-  k <- counts[counts > 0]
-  return(sum(k * log(k / n)))
 }
 
 #' Variational fit quantities for a polytomous bicluster model
@@ -145,8 +142,10 @@ vb_fit_single <- function(L, postDist, nparam, log_prior = NULL, n_weight_params
   elbo <- sum_row_logsumexp(sweep(L, 2, log_prior, "+"))
   cls01 <- hard_membership(postDist)
   completed <- sum(cls01 * L)
-  icl <- -2 * (completed + completed_mixing_term(colSums(cls01))) +
-    (ncls - 1) * log(nobs) + nparam * log(nobs)
+  # The mixing term uses the model's weights (1/C, or the estimated ones),
+  # and the weights are counted as parameters only when they were estimated.
+  icl <- -2 * (completed + sum(colSums(cls01) * log_prior)) +
+    (nparam + n_weight_params) * log(nobs)
   # BIC on the observed-data log-likelihood (2.3.0). Unlike the BIC in
   # TestFitIndices, which is built on the expected complete-data
   # log-likelihood against the benchmark model, this one penalises the
@@ -182,14 +181,12 @@ vb_fit_from_loglik <- function(L_soft, L_hard, clsmemb, fldmemb, fld01, nparam, 
   marginal <- sum_row_logsumexp(sweep(L_hard, 2, log_prior, "+"))
   cls01 <- hard_membership(clsmemb)
   completed <- sum(cls01 * L_hard)
-  icl <- -2 * (completed +
-    completed_mixing_term(colSums(cls01)) +
-    completed_mixing_term(colSums(fld01))) +
-    (ncls - 1) * log(nobs) + (nfld - 1) * log(nitems) +
-    nparam * log(nobs * nitems)
-  # BIC on the ELBO (2.3.0): the block parameters are penalised with
-  # log(nJ) as in the ICL above; estimated class weights with log(n).
-  bic_elbo <- -2 * elbo + nparam * log(nobs * nitems) + n_weight_params * log(nobs)
+  # Class weights of the model (1/C or estimated), field weights fixed at
+  # 1/F; every parameter is penalised with log n (2.3.0, see the header).
+  icl <- -2 * (completed + sum(colSums(cls01) * log_prior) - nitems * log(nfld)) +
+    (nparam + n_weight_params) * log(nobs)
+  # BIC on the ELBO (2.3.0), same penalty.
+  bic_elbo <- -2 * elbo + (nparam + n_weight_params) * log(nobs)
   return(list(
     elbo = elbo,
     log_lik_marginal = marginal,
@@ -218,6 +215,12 @@ print_variational_block <- function(x, digits = 3, suffix = "") {
   v <- c(v, stats::setNames(H, paste0("entropy_", names(H))), ICL = g("ICL"))
   if (!is.null(g("BIC_elbo"))) {
     v <- c(v, BIC_elbo = g("BIC_elbo"))
+  }
+  if (!is.null(g("ICL_exact"))) {
+    v <- c(v, ICL_exact = g("ICL_exact"))
+    if (!is.null(g("ICL_exact_se")) && isTRUE(g("ICL_exact_se") > 0)) {
+      v <- c(v, ICL_exact_se = g("ICL_exact_se"))
+    }
   }
   y <- matrix(v, ncol = 1, dimnames = list(names(v), "value"))
   print(round(y, digits))

@@ -48,6 +48,10 @@
 #'  \item{ICL}{Integrated completed likelihood criterion (Biernacki, Celeux and
 #'    Govaert, 2000) in its BIC-type approximation, on the same scale as AIC and
 #'    BIC (-2 log scale, smaller is better).}
+#'  \item{ICL_exact, ICL_exact_se}{The exact ICL (since 2.3.0), see
+#'    \code{\link{LCA}}. For the isotonic method the order restriction enters
+#'    as the posterior-to-prior probability ratio of the rank order (Monte
+#'    Carlo, \code{seed} if given); \code{NA} for GTM and SOM.}
 #' }
 #'
 #' Each subclass returns additional specific elements, detailed in their respective documentation.
@@ -277,6 +281,17 @@ LRA.binary <- function(U,
   vb <- vb_fit_single(L_vb, fit$postDist, sum(rep(nparam, length.out = testlength)),
     log_prior = log(fit$w), n_weight_params = n_weight_params
   )
+  # Exact ICL (see R/00_ExactICL.R). The isotonic fit carries the order
+  # restriction as its prior; GTM and SOM have no prior model.
+  if (method == "isotonic") {
+    icl_ex <- icl_exact(binary_indicator_array(tmp$U, tmp$Z), fit$postDist,
+      alpha = c(beta2, beta1), ncat = rep(2, testlength),
+      log_prior_cls = log(fit$w), ordered = TRUE,
+      seed = if (is.null(seed)) 1 else seed
+    )
+  } else {
+    icl_ex <- list(ICL_exact = NA_real_, ICL_exact_se = NA_real_)
+  }
 
   ret <- structure(list(
     method = method,
@@ -304,7 +319,9 @@ LRA.binary <- function(U,
     log_lik_marginal = vb$log_lik_marginal,
     entropy = vb$entropy,
     ICL = vb$ICL,
-    BIC_elbo = vb$BIC_elbo
+    BIC_elbo = vb$BIC_elbo,
+    ICL_exact = icl_ex$ICL_exact,
+    ICL_exact_se = icl_ex$ICL_exact_se
   ), class = c("exametrika", "LRA"))
   ret <- label_result(ret, id = tmp$ID, item = tmp$ItemLabel, class_prefix = "Rank")
   return(ret)

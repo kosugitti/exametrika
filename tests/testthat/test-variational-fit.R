@@ -15,7 +15,6 @@ test_that("helpers: entropy, log-sum-exp, hard assignment", {
     (-1000 + log(1 + exp(-1))) + (1 + log(1 + exp(-1)))
   )
   expect_equal(exametrika:::hard_membership(M), matrix(c(1, 0, 1, 0, 0, 1), ncol = 2, byrow = TRUE))
-  expect_equal(exametrika:::completed_mixing_term(c(3, 0, 1)), 3 * log(3 / 4) + 1 * log(1 / 4))
 })
 
 test_that("one-mode models: elbo is the observed-data log-likelihood", {

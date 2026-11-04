@@ -69,6 +69,18 @@
 #'  \item{ICL}{Integrated completed likelihood criterion (Biernacki, Celeux and
 #'    Govaert, 2000) in its BIC-type approximation, on the same scale as AIC and
 #'    BIC (-2 log scale, smaller is better).}
+#'  \item{ICL_exact, ICL_exact_se}{The exact ICL (since 2.3.0): the item
+#'    parameters integrated out under their prior and the memberships at the
+#'    hard (MAP) assignment, -2 log scale. Nothing is counted, so it is the
+#'    criterion of choice for the isotonic models, whose effective number of
+#'    parameters is data-dependent. For an isotonic fit the order restriction
+#'    enters as the ratio of posterior to prior probability of the rank order;
+#'    the posterior probability is a Monte Carlo estimate (10,000 draws on a
+#'    private random stream) and \code{ICL_exact_se} is its standard error on
+#'    the -2 log scale (0 for an unordered model; \code{NA} with a warning when
+#'    the order probability of some field fell below the Monte Carlo
+#'    resolution, in which case \code{ICL_exact} is a lower bound). \code{NA}
+#'    for GTM and SOM fits, which have no prior model.}
 #' }
 #'
 #' @details
@@ -234,6 +246,11 @@ LCA.binary <- function(U, ncls = 2, na = NULL, Z = NULL, w = NULL, maxiter = 100
   vb <- vb_fit_single(L_vb, fit$postDist, ncls * NCOL(tmp$U),
     log_prior = log(fit$w), n_weight_params = n_weight_params
   )
+  # Exact ICL from the hard assignments (see R/00_ExactICL.R); the flat
+  # Beta(1, 1) prior of the item parameters is the model's.
+  icl_ex <- icl_exact(binary_indicator_array(tmp$U, tmp$Z), fit$postDist,
+    alpha = 1, ncat = rep(2, NCOL(tmp$U)), log_prior_cls = log(fit$w)
+  )
 
   ret <- structure(list(
     msg = "Class",
@@ -258,7 +275,9 @@ LCA.binary <- function(U, ncls = 2, na = NULL, Z = NULL, w = NULL, maxiter = 100
     log_lik_marginal = vb$log_lik_marginal,
     entropy = vb$entropy,
     ICL = vb$ICL,
-    BIC_elbo = vb$BIC_elbo
+    BIC_elbo = vb$BIC_elbo,
+    ICL_exact = icl_ex$ICL_exact,
+    ICL_exact_se = icl_ex$ICL_exact_se
   ), class = c("exametrika", "LCA"))
   ret <- label_result(ret, id = tmp$ID, item = tmp$ItemLabel, class_prefix = "Class")
   return(ret)
@@ -375,6 +394,11 @@ LCA.nominal <- function(U, ncls = 2, na = NULL, Z = NULL, w = NULL, maxiter = 10
     L_vb <- L_vb + ZU[, , q] %*% log(fit$profile[, , q] + const)
   }
   vb <- vb_fit_single(L_vb, fit$clsmemb, nparam)
+  # Exact ICL from the hard assignments; each item keeps its own number of
+  # categories and the Dirichlet(alpha) prior of the estimation.
+  icl_ex <- icl_exact(ZU, fit$clsmemb,
+    alpha = alpha, ncat = ncat, log_prior_cls = rep(-log(ncls), ncls)
+  )
   AIC <- -2 * testell + 2 * nparam
   CAIC <- -2 * testell + nparam * (log(nobs) + 1)
   BIC <- -2 * testell + nparam * log(nobs)
@@ -424,7 +448,9 @@ LCA.nominal <- function(U, ncls = 2, na = NULL, Z = NULL, w = NULL, maxiter = 10
     log_lik_marginal = vb$log_lik_marginal,
     entropy = vb$entropy,
     ICL = vb$ICL,
-    BIC_elbo = vb$BIC_elbo
+    BIC_elbo = vb$BIC_elbo,
+    ICL_exact = icl_ex$ICL_exact,
+    ICL_exact_se = icl_ex$ICL_exact_se
   ), class = c("exametrika", "nominalLCA"))
   ret <- label_result(ret, id = tmp$ID, item = tmp$ItemLabel, class_prefix = "Class")
   return(ret)
@@ -530,7 +556,8 @@ LCA.rated <- function(U, ncls = 2, na = NULL, Z = NULL, w = NULL, maxiter = 1000
     elbo_nominal = ret_nom$elbo,
     log_lik_marginal_nominal = ret_nom$log_lik_marginal,
     entropy_nominal = ret_nom$entropy,
-    ICL_nominal = ret_nom$ICL
+    ICL_nominal = ret_nom$ICL,
+    ICL_exact_nominal = ret_nom$ICL_exact
   ), class = c("exametrika", "ratedLCA"))
   ret <- label_result(ret, id = tmp$ID, item = tmp$ItemLabel, class_prefix = "Class")
   return(ret)

@@ -68,6 +68,7 @@ dag_layout_base <- function(adj) {
 #' @param node_col,border_col,edge_col Colours
 #' @param ... Further arguments to `plot()`
 #' @noRd
+#' @importFrom graphics arrows symbols strwidth strheight
 plot_dag <- function(adj, labels = NULL, main = NULL, edge_labels = NULL,
                      node_col = "#DCE9F5", border_col = "#4A6FA5",
                      edge_col = "#555555", ...) {

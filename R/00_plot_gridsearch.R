@@ -13,6 +13,7 @@
 #' line
 #' @param dots Additional graphical parameters
 #' @noRd
+#' @importFrom graphics points persp
 plot_gridsearch <- function(x, style = "line", colors = NULL, dots = list()) {
   index_name <- if (is.null(x$index)) "Fit index" else x$index
   unit <- if (identical(x$fun, "LRA")) "ranks" else "classes"

@@ -173,6 +173,8 @@ reference:
     - plot.exametrika
     - print.exametrika
     - predict.exametrika
+    - equate
+    - as_biclustering
 
   - title: Internal
     desc: Internal helper functions (not intended for direct use)

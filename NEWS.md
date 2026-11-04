@@ -52,6 +52,35 @@ the block parameters of a biclustering with `log(nJ)` and used the
 empirical proportions of the hard assignments with `(C - 1) log n` and
 `(F - 1) log J`. The values change; the ranking of models usually does not.
 
+## New: `equate()` puts a new test form on the scale of a fit
+
+`equate(fit, newdata)` takes responses to a form that shares some items
+with the fitted test (the anchor items) and contains items the fit has
+never seen. The parameters of the fit are held fixed, so the new
+respondents are placed in its classes or ranks through the anchor items,
+and the new items are placed on the same scale: for `Biclustering()` and
+Ranklustering (binary, nominal, ordinal, rated) each new item is assigned
+to one of the existing fields; for `LCA()` (binary, nominal) and `LRA()`
+(binary, ordinal) the reference profile of each new item is estimated,
+under the order restriction of an isotonic fit or with the filter of a GTM
+fit. The two unknowns are updated alternately, starting from the anchor
+items alone, until the membership settles. This is the discrete analogue of
+fixed-parameter calibration; no linking transformation is involved because
+the scale is the rank itself.
+
+A biclustering fit cannot give a new item a field of its own, so
+`NewFieldLogBF` reports, for each new item, the log Bayes factor of "a
+field of its own" (the block parameters integrated out under the prior of
+the fit, as in `ICL_exact`) against "one of the existing fields". Because
+even a fitted item departs measurably from its field profile once the
+respondents are many, the same quantity is computed for the anchor items of
+the new data (`AnchorLogBF`), and a new item is read against that range.
+Estimating the profile of a new field is left to a later version.
+
+`as_biclustering(FRP, fields)` builds, from a field reference profile and
+the field of each item, the minimal object that `equate()` and `predict()`
+accept, so that a form can be equated from published values alone.
+
 ## New: `mixing = "estimate"` lets `LCA()`, `LRA()` and binary `Biclustering()` estimate the class weights
 
 Binary `LCA()`, `LRA()` (isotonic and GTM methods) and binary

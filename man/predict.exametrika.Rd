@@ -43,8 +43,10 @@ by \code{trapezoidal} in the ordinal and rated LRA). On the data the model was
 fitted to, the result reproduces the membership stored in the fit.
 
 Supported fits: \code{LCA()} (binary, nominal, ordinal, rated), \code{LRA()} (binary,
-ordinal, rated) and \code{Biclustering()} / Ranklustering (binary, nominal,
-ordinal, rated). The IRM and network models are not supported.
+ordinal, rated), \code{Biclustering()} / Ranklustering (binary, nominal,
+ordinal, rated) and the reference objects of \code{\link[=as_biclustering]{as_biclustering()}}. The IRM
+and network models are not supported. To place new items on the scale of
+a fit as well, see \code{\link[=equate]{equate()}}.
 }
 \examples{
 \donttest{

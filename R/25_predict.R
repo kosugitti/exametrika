@@ -8,8 +8,10 @@
 #' fitted to, the result reproduces the membership stored in the fit.
 #'
 #' Supported fits: `LCA()` (binary, nominal, ordinal, rated), `LRA()` (binary,
-#' ordinal, rated) and `Biclustering()` / Ranklustering (binary, nominal,
-#' ordinal, rated). The IRM and network models are not supported.
+#' ordinal, rated), `Biclustering()` / Ranklustering (binary, nominal,
+#' ordinal, rated) and the reference objects of [as_biclustering()]. The IRM
+#' and network models are not supported. To place new items on the scale of
+#' a fit as well, see [equate()].
 #'
 #' @param object A fitted model.
 #' @param newdata New responses: a matrix or data frame with the items in
@@ -45,12 +47,14 @@ predict.exametrika <- function(object, newdata, na = NULL, ...) {
   supported <- c(
     "LCA", "nominalLCA", "ratedLCA", "LRA", "LRAordinal", "LRArated",
     "Biclustering", "nominalBiclustering", "ordinalBiclustering",
-    "ratedBiclustering"
+    "ratedBiclustering", "BiclusteringReference"
   )
   if (!model %in% supported) {
     stop("predict() is not available for ", model, " objects.", call. = FALSE)
   }
-  binary <- model %in% c("LCA", "LRA", "Biclustering")
+  # A reference built by as_biclustering() is binary when its FRP is a matrix
+  binary <- model %in% c("LCA", "LRA", "Biclustering") ||
+    (model == "BiclusteringReference" && is.matrix(object$FRP))
   nd <- pred_newdata(object, newdata, na, binary)
   L <- switch(model,
     LCA = ,
@@ -60,6 +64,7 @@ predict.exametrika <- function(object, newdata, na = NULL, ...) {
     LRAordinal = ,
     LRArated = pred_ll_icrp_lra(object, nd),
     Biclustering = pred_ll_bicl_binary(object, nd),
+    BiclusteringReference = if (binary) pred_ll_bicl_binary(object, nd) else pred_ll_bicl_poly(object, nd),
     nominalBiclustering = ,
     ordinalBiclustering = ,
     ratedBiclustering = pred_ll_bicl_poly(object, nd)

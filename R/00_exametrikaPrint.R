@@ -106,6 +106,7 @@ print.exametrika <- function(x, digits = 3, fit_indices = c("both", "pattern", "
     ratedBiclustering = print_rated_biclustering_case(x, digits),
     nominalBiclustering = print_nominal_biclustering_case(x, digits, fit_indices),
     ordinalBiclustering = print_ordinal_biclustering_case(x, digits, fit_indices),
+    BiclusteringReference = print_biclustering_reference_case(x, digits),
     IRM = print_irm_case(x, digits),
     BNM = print_bnm_case(x, digits),
     LDLRA = print_ldlra_case(x, digits),

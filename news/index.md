@@ -55,6 +55,15 @@ have no prior model and return `NA`.
 [`GridSearch()`](https://kosugitti.github.io/exametrika/reference/GridSearch.md)
 accepts `index = "ICL_exact"`.
 
+When a bound occurs the warning names the fields (or items) and the
+order of magnitude reached, since the cause is local: the block counts
+of the hard assignment run against the rank order in those fields.
+[`GridSearch()`](https://kosugitti.github.io/exametrika/reference/GridSearch.md)
+keeps that warning quiet over the grid and instead lists the settings
+concerned once (`bound_settings`, `bound_matrix` / `bound_vec`, and in
+[`print()`](https://rdrr.io/r/base/print.html)), because a bound is not
+a value to compare.
+
 Related: the BIC-type `ICL` and `BIC_elbo` now penalise every parameter
 with `log n` (the package’s sample size, as in `BIC`) and use the
 model’s mixing weights in the completed log-likelihood; until 2.2.0
@@ -62,6 +71,51 @@ model’s mixing weights in the completed log-likelihood; until 2.2.0
 and used the empirical proportions of the hard assignments with
 `(C - 1) log n` and `(F - 1) log J`. The values change; the ranking of
 models usually does not.
+
+### Minor
+
+- [`BINET()`](https://kosugitti.github.io/exametrika/reference/BINET.md)
+  now reports `msg = "Class"`: it has latent classes (`LCD`, `CMD`),
+  like the
+  [`LCA()`](https://kosugitti.github.io/exametrika/reference/LCA.md) and
+  [`Biclustering()`](https://kosugitti.github.io/exametrika/reference/Biclustering.md)
+  it is built on, but said `"Rank"`. Nothing in the package read the
+  value; ggExametrika decides between class and rank plots by it.
+
+### Fit indices of the ordinal and rated LRA use the number of respondents
+
+The RMSEA, CAIC and BIC of
+[`LRA()`](https://kosugitti.github.io/exametrika/reference/LRA.md) on
+ordinal and rated data used, as the sample size, each item’s number of
+observed responses in the item fit indices and their total over the
+items (34,290 for `J15S3810`, whose respondents number 3,810) in the
+test fit indices. Every other model, and Shojima’s reference
+implementation, uses the number of respondents, which
+[`LRA()`](https://kosugitti.github.io/exametrika/reference/LRA.md) now
+does too; with no missing data the item indices are unchanged and the
+test indices move. On `J15S3810` all eleven test and item fit indices
+now agree with the Mathematica reference. AIC, the chi-square and the
+relative indices (NFI to CFI) never depended on it.
+
+### Unknown arguments are reported instead of ignored
+
+[`LCA()`](https://kosugitti.github.io/exametrika/reference/LCA.md),
+[`LRA()`](https://kosugitti.github.io/exametrika/reference/LRA.md),
+[`Biclustering()`](https://kosugitti.github.io/exametrika/reference/Biclustering.md)
+and
+[`Biclustering_IRM()`](https://kosugitti.github.io/exametrika/reference/Biclustering_IRM.md)
+take `...` so that S3 dispatch can pass the arguments on to the method
+for the response type. Anything that method did not use was silently
+dropped, so `Biclustering(U, dataType = "rated")` (for
+`response.type = "rated"`) or `LCA(U, ncls = 3, maxiterations = 50)` ran
+with the defaults and no sign of it. The terminal methods now warn,
+naming the arguments they ignored. The deprecated `max_iter` of
+[`Biclustering_IRM()`](https://kosugitti.github.io/exametrika/reference/Biclustering_IRM.md)
+keeps its own message.
+[`Biclustering()`](https://kosugitti.github.io/exametrika/reference/Biclustering.md)
+on nominal data accepts `method = "B"` (it was documented but not an
+argument) and refuses `method = "R"` with a message, since nominal
+categories have no order to rank.
 
 ### New: `equate()` puts a new test form on the scale of a fit
 
@@ -74,14 +128,17 @@ and the new items are placed on the same scale: for
 and Ranklustering (binary, nominal, ordinal, rated) each new item is
 assigned to one of the existing fields; for
 [`LCA()`](https://kosugitti.github.io/exametrika/reference/LCA.md)
-(binary, nominal) and
+(binary, nominal, rated) and
 [`LRA()`](https://kosugitti.github.io/exametrika/reference/LRA.md)
-(binary, ordinal) the reference profile of each new item is estimated,
-under the order restriction of an isotonic fit or with the filter of a
-GTM fit. The two unknowns are updated alternately, starting from the
-anchor items alone, until the membership settles. This is the discrete
-analogue of fixed-parameter calibration; no linking transformation is
-involved because the scale is the rank itself.
+(binary, ordinal, rated) the reference profile of each new item is
+estimated, under the order restriction of an isotonic fit or with the
+filter of a GTM fit. For a rated fit the correct answers of the new
+items (`CA`, or those of an `exametrikaData` newdata) pick their
+correct-response profiles out of the category profiles. The two unknowns
+are updated alternately, starting from the anchor items alone, until the
+membership settles. This is the discrete analogue of fixed-parameter
+calibration; no linking transformation is involved because the scale is
+the rank itself.
 
 A biclustering fit cannot give a new item a field of its own, so
 `NewFieldLogBF` reports, for each new item, the log Bayes factor of “a

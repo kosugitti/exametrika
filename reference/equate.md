@@ -37,6 +37,7 @@ equate(
   alpha = 1,
   M = 10000,
   seed = 1,
+  CA = NULL,
   ...
 )
 ```
@@ -47,14 +48,13 @@ equate(
 
   A fitted model:
   [`LCA()`](https://kosugitti.github.io/exametrika/reference/LCA.md)
-  (binary, nominal),
+  (binary, nominal, rated),
   [`LRA()`](https://kosugitti.github.io/exametrika/reference/LRA.md)
-  (binary, ordinal),
+  (binary, ordinal, rated),
   [`Biclustering()`](https://kosugitti.github.io/exametrika/reference/Biclustering.md)
   (binary, nominal, ordinal, rated) or a reference object from
   [`as_biclustering()`](https://kosugitti.github.io/exametrika/reference/as_biclustering.md).
-  The rated LCA and LRA, the SOM, the IRM and the network models are not
-  supported.
+  The SOM, the IRM and the network models are not supported.
 
 - newdata:
 
@@ -99,6 +99,15 @@ equate(
 
   Seed of that Monte Carlo (the global stream is left untouched).
 
+- CA:
+
+  Rated LCA / LRA only: the correct answer of each new item, named by
+  item or in the order of the new items in `newdata`. Not needed when
+  `newdata` is an `exametrikaData` object made with
+  `response.type = "rated"`, which carries them. Without it the category
+  profiles (`ICRP`) of the new items are still estimated, but not their
+  correct-response profiles (`IRP`).
+
 ## Value
 
 An object of class `exametrikaEquate`, a list with
@@ -140,12 +149,18 @@ An object of class `exametrikaEquate`, a list with
 - IRP:
 
   Binary LCA / LRA: the item reference profile of each new item (items x
-  classes).
+  classes). Rated LCA / LRA with `CA`: the row of `ICRP` at the correct
+  answer of each new item.
 
 - ICRP:
 
-  Nominal LCA / ordinal LRA: the category reference profile of each new
-  item, one row per category, in the layout of the fit.
+  Nominal, rated LCA / ordinal, rated LRA: the category reference
+  profile of each new item, one row per category, in the layout of the
+  fit.
+
+- CA:
+
+  Rated LCA / LRA: the correct answers used for `IRP`.
 
 - n_cycle, converge, total_log_lik:
 

@@ -107,6 +107,18 @@ A list containing: For Biclustering:
 
   Logical matrix marking those cells
 
+- bound_settings:
+
+  List of parameter combinations whose `ICL_exact` is a lower bound (the
+  order probability of some field fell below the Monte Carlo resolution;
+  see
+  [`Biclustering`](https://kosugitti.github.io/exametrika/reference/Biclustering.md)).
+  They are reported once, and the per-fit warning is not repeated.
+
+- bound_matrix:
+
+  Logical matrix marking those cells
+
 - index:
 
   Name of the fit index searched
@@ -139,6 +151,14 @@ For LCA/LRA:
   (see `skip_empty`)
 
 - empty_vec:
+
+  Logical vector marking those settings
+
+- bound_settings:
+
+  As above, for `ICL_exact`
+
+- bound_vec:
 
   Logical vector marking those settings
 

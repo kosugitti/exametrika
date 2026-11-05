@@ -94,6 +94,7 @@ one anchor item is required.</p>
 <span>  alpha <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  M <span class="op">=</span> <span class="fl">10000</span>,</span>
 <span>  seed <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>  CA <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -103,10 +104,10 @@ one anchor item is required.</p>
 
 
 <dl><dt id="arg-fit">fit<a class="anchor" aria-label="anchor" href="#arg-fit"></a></dt>
-<dd><p>A fitted model: <code><a href="LCA.html">LCA()</a></code> (binary, nominal), <code><a href="LRA.html">LRA()</a></code> (binary,
-ordinal), <code><a href="Biclustering.html">Biclustering()</a></code> (binary, nominal, ordinal, rated) or a
-reference object from <code><a href="as_biclustering.html">as_biclustering()</a></code>. The rated LCA and LRA, the
-SOM, the IRM and the network models are not supported.</p></dd>
+<dd><p>A fitted model: <code><a href="LCA.html">LCA()</a></code> (binary, nominal, rated), <code><a href="LRA.html">LRA()</a></code>
+(binary, ordinal, rated), <code><a href="Biclustering.html">Biclustering()</a></code> (binary, nominal, ordinal,
+rated) or a reference object from <code><a href="as_biclustering.html">as_biclustering()</a></code>. The SOM, the IRM
+and the network models are not supported.</p></dd>
 
 
 <dt id="arg-newdata">newdata<a class="anchor" aria-label="anchor" href="#arg-newdata"></a></dt>
@@ -150,6 +151,14 @@ restriction in the diagnostic of an isotonic fit; see <code>ICL_exact</code>.</p
 <dt id="arg-seed">seed<a class="anchor" aria-label="anchor" href="#arg-seed"></a></dt>
 <dd><p>Seed of that Monte Carlo (the global stream is left untouched).</p></dd>
 
+
+<dt id="arg-ca">CA<a class="anchor" aria-label="anchor" href="#arg-ca"></a></dt>
+<dd><p>Rated LCA / LRA only: the correct answer of each new item, named
+by item or in the order of the new items in <code>newdata</code>. Not needed when
+<code>newdata</code> is an <code>exametrikaData</code> object made with <code>response.type = "rated"</code>, which carries them. Without it the category profiles (<code>ICRP</code>)
+of the new items are still estimated, but not their correct-response
+profiles (<code>IRP</code>).</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
@@ -183,11 +192,16 @@ stands out only when it scores well above the anchor items.</p></dd>
 
 <dt>IRP</dt>
 <dd><p>Binary LCA / LRA: the item reference profile of each new
-item (items x classes).</p></dd>
+item (items x classes). Rated LCA / LRA with <code>CA</code>: the row of <code>ICRP</code>
+at the correct answer of each new item.</p></dd>
 
 <dt>ICRP</dt>
-<dd><p>Nominal LCA / ordinal LRA: the category reference profile of
-each new item, one row per category, in the layout of the fit.</p></dd>
+<dd><p>Nominal, rated LCA / ordinal, rated LRA: the category
+reference profile of each new item, one row per category, in the
+layout of the fit.</p></dd>
+
+<dt>CA</dt>
+<dd><p>Rated LCA / LRA: the correct answers used for <code>IRP</code>.</p></dd>
 
 <dt>n_cycle, converge, total_log_lik</dt>
 <dd><p>Cycles run, whether <code>tol</code> was

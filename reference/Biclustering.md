@@ -38,6 +38,7 @@ Biclustering(
   U,
   ncls = 2,
   nfld = 2,
+  method = "B",
   conf = NULL,
   conf_class = NULL,
   mic = FALSE,

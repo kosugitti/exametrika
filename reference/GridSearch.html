@@ -144,6 +144,15 @@ class, rank or field empty (see <code>skip_empty</code>)</p></dd>
 <dt>empty_matrix</dt>
 <dd><p>Logical matrix marking those cells</p></dd>
 
+<dt>bound_settings</dt>
+<dd><p>List of parameter combinations whose
+<code>ICL_exact</code> is a lower bound (the order probability of some field
+fell below the Monte Carlo resolution; see <code><a href="Biclustering.html">Biclustering</a></code>).
+They are reported once, and the per-fit warning is not repeated.</p></dd>
+
+<dt>bound_matrix</dt>
+<dd><p>Logical matrix marking those cells</p></dd>
+
 <dt>index</dt>
 <dd><p>Name of the fit index searched</p></dd>
 
@@ -169,6 +178,12 @@ class, rank or field empty (see <code>skip_empty</code>)</p></dd>
 class or rank empty (see <code>skip_empty</code>)</p></dd>
 
 <dt>empty_vec</dt>
+<dd><p>Logical vector marking those settings</p></dd>
+
+<dt>bound_settings</dt>
+<dd><p>As above, for <code>ICL_exact</code></p></dd>
+
+<dt>bound_vec</dt>
 <dd><p>Logical vector marking those settings</p></dd>
 
 <dt>index</dt>

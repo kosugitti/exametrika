@@ -584,7 +584,12 @@ LRA.ordinal <- function(U,
 
   # Item Fit Indices
   # ItemFitIndices1 <- calcFitIndices(model_itemchisq1, null_itemchisq1, itemdf, null_itemdf, colSums(dat$Z))
-  ItemFits <- calcFitIndices(model_itemchisq2, null_itemchisq2, itemdf, null_itemdf, colSums(U$Z))
+  # The sample size of every fit index is the number of respondents, as in
+  # the other models and in Shojima's Mathematica: until 2.3.0 each item used
+  # its own number of observed responses here and the test their total
+  # (34,290 for J15S3810), which moved RMSEA, CAIC and BIC with the missing
+  # data. AIC and the relative indices do not depend on it.
+  ItemFits <- calcFitIndices(model_itemchisq2, null_itemchisq2, itemdf, null_itemdf, nobs)
   ItemFitIndices <- structure(
     c(list(
       model_log_like = model_itemll2,
@@ -612,7 +617,7 @@ LRA.ordinal <- function(U,
     sum(null_itemchisq2) + const,
     sum(itemdf),
     sum(null_itemdf),
-    sum(colSums(U$Z))
+    nobs
   )
 
   TestFitIndices <- structure(

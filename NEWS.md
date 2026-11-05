@@ -66,6 +66,18 @@ empirical proportions of the hard assignments with `(C - 1) log n` and
   `"Rank"`. Nothing in the package read the value; ggExametrika decides
   between class and rank plots by it.
 
+## Fit indices of the ordinal and rated LRA use the number of respondents
+
+The RMSEA, CAIC and BIC of `LRA()` on ordinal and rated data used, as the
+sample size, each item's number of observed responses in the item fit
+indices and their total over the items (34,290 for `J15S3810`, whose
+respondents number 3,810) in the test fit indices. Every other model, and
+Shojima's reference implementation, uses the number of respondents, which
+`LRA()` now does too; with no missing data the item indices are unchanged
+and the test indices move. On `J15S3810` all eleven test and item fit
+indices now agree with the Mathematica reference. AIC, the chi-square and
+the relative indices (NFI to CFI) never depended on it.
+
 ## Unknown arguments are reported instead of ignored
 
 `LCA()`, `LRA()`, `Biclustering()` and `Biclustering_IRM()` take `...` so

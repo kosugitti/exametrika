@@ -158,15 +158,10 @@ test_that("Item Fit", {
   names(expect) <- names(actual) <- NULL
   expect <- as.matrix(expect)
   actual <- as.matrix(actual)
-  # Compare Chi-sq(1), df(2), NFI(3), RFI(4), IFI(5), TLI(6), CFI(7), AIC(9)
-  # Known discrepancies in RMSEA(8), CAIC(10), BIC(11):
-  #   - CAIC formula is now unified: both R and Mathematica use log(n)+1 (Bozdogan 1987)
-  #   - However, nobs handling differs: R uses per-item nobs (colSums(Z)),
-  #     Mathematica uses total nobs (3810)
-  #   - This causes RMSEA, CAIC, BIC to differ (J15S3810 has significant missing data)
-  # TODO: Investigate whether to unify nobs handling
-  cols_to_test <- c(1:7, 9)
-  expect_equal(actual[, cols_to_test], expect[, cols_to_test], tolerance = 1e-4)
+  # All eleven columns, RMSEA, CAIC and BIC included: since 2.3.0 the sample
+  # size is the number of respondents (3810), as in Mathematica; until then
+  # each item used its own number of observed responses
+  expect_equal(actual, expect, tolerance = 1e-4)
 })
 
 test_that("Test Fit", {
@@ -182,14 +177,10 @@ test_that("Test Fit", {
     unlist() |>
     as.numeric()
   actual <- actual[-c(1, 2, 3, 5, 7)]
-  # Compare Chi-sq(1), df(2), NFI(3), RFI(4), IFI(5), TLI(6), CFI(7)
-  # Known discrepancies in RMSEA(8), AIC(9), CAIC(10), BIC(11):
-  #   - CAIC formula is now unified: both R and Mathematica use log(n)+1 (Bozdogan 1987)
-  #   - However, R uses sum(colSums(Z))=34290 as nobs, Mathematica uses 3810
-  #   - This causes RMSEA, AIC, CAIC, BIC to differ
-  # TODO: Investigate test-level nobs handling for ordinal LRA
-  cols_to_test <- 1:7
-  expect_equal(actual[cols_to_test], expect[cols_to_test], tolerance = 1e-4)
+  # All eleven values: the test-level sample size is the number of
+  # respondents (3810) since 2.3.0, not the total number of observed
+  # responses (34290)
+  expect_equal(actual, expect, tolerance = 1e-4)
 })
 
 ### Mixed category counts -----------------------------------------------------

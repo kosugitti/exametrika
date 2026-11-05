@@ -86,6 +86,48 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// grm_em_estep_cpp
+List grm_em_estep_cpp(IntegerMatrix dat, IntegerVector ncat, NumericVector a_vec, List b_list, NumericVector nodes, NumericVector weights);
+RcppExport SEXP _exametrika_grm_em_estep_cpp(SEXP datSEXP, SEXP ncatSEXP, SEXP a_vecSEXP, SEXP b_listSEXP, SEXP nodesSEXP, SEXP weightsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< IntegerMatrix >::type dat(datSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type ncat(ncatSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type a_vec(a_vecSEXP);
+    Rcpp::traits::input_parameter< List >::type b_list(b_listSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type nodes(nodesSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type weights(weightsSEXP);
+    rcpp_result_gen = Rcpp::wrap(grm_em_estep_cpp(dat, ncat, a_vec, b_list, nodes, weights));
+    return rcpp_result_gen;
+END_RCPP
+}
+// grm_item_ll_cpp
+double grm_item_ll_cpp(NumericVector target, NumericMatrix counts, NumericVector nodes);
+RcppExport SEXP _exametrika_grm_item_ll_cpp(SEXP targetSEXP, SEXP countsSEXP, SEXP nodesSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericVector >::type target(targetSEXP);
+    Rcpp::traits::input_parameter< NumericMatrix >::type counts(countsSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type nodes(nodesSEXP);
+    rcpp_result_gen = Rcpp::wrap(grm_item_ll_cpp(target, counts, nodes));
+    return rcpp_result_gen;
+END_RCPP
+}
+// grm_item_grad_cpp
+NumericVector grm_item_grad_cpp(NumericVector target, NumericMatrix counts, NumericVector nodes);
+RcppExport SEXP _exametrika_grm_item_grad_cpp(SEXP targetSEXP, SEXP countsSEXP, SEXP nodesSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericVector >::type target(targetSEXP);
+    Rcpp::traits::input_parameter< NumericMatrix >::type counts(countsSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type nodes(nodesSEXP);
+    rcpp_result_gen = Rcpp::wrap(grm_item_grad_cpp(target, counts, nodes));
+    return rcpp_result_gen;
+END_RCPP
+}
 // irm_gibbs_core_cpp
 List irm_gibbs_core_cpp(NumericVector Uq_vec, IntegerVector Uq_dim, NumericMatrix Z, NumericMatrix cls01_init, NumericMatrix fld01_init, double gamma_c, double gamma_f, NumericVector alpha_vec_R, int max_iter, int stable_limit, bool verbose);
 RcppExport SEXP _exametrika_irm_gibbs_core_cpp(SEXP Uq_vecSEXP, SEXP Uq_dimSEXP, SEXP ZSEXP, SEXP cls01_initSEXP, SEXP fld01_initSEXP, SEXP gamma_cSEXP, SEXP gamma_fSEXP, SEXP alpha_vec_RSEXP, SEXP max_iterSEXP, SEXP stable_limitSEXP, SEXP verboseSEXP) {
@@ -222,6 +264,9 @@ static const R_CallMethodDef CallEntries[] = {
     {"_exametrika_score_function_analytical_grm", (DL_FUNC) &_exametrika_score_function_analytical_grm, 3},
     {"_exametrika_score_function_numerical_grm", (DL_FUNC) &_exametrika_score_function_numerical_grm, 3},
     {"_exametrika_compare_gradients_grm", (DL_FUNC) &_exametrika_compare_gradients_grm, 3},
+    {"_exametrika_grm_em_estep_cpp", (DL_FUNC) &_exametrika_grm_em_estep_cpp, 6},
+    {"_exametrika_grm_item_ll_cpp", (DL_FUNC) &_exametrika_grm_item_ll_cpp, 3},
+    {"_exametrika_grm_item_grad_cpp", (DL_FUNC) &_exametrika_grm_item_grad_cpp, 3},
     {"_exametrika_irm_gibbs_core_cpp", (DL_FUNC) &_exametrika_irm_gibbs_core_cpp, 11},
     {"_exametrika_iso_build_pi_cpp", (DL_FUNC) &_exametrika_iso_build_pi_cpp, 2},
     {"_exametrika_iso_upper_cum_cpp", (DL_FUNC) &_exametrika_iso_upper_cum_cpp, 1},

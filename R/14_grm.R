@@ -146,6 +146,74 @@ params_to_target <- function(a_vec, b_list) {
   return(c(target_a, target_b))
 }
 
+#' @title EM cycles for the graded response model
+#' @description
+#' Runs Bock-Aitkin EM cycles from a starting point in target coding and
+#' stops when the item parameters move by less than `tol` (or after `maxit`
+#' cycles). The E-step is `grm_em_estep_cpp()`; the M-step solves each item's
+#' small expected-count problem with BFGS. Used by [GRM()].
+#' @param target starting parameters in target coding
+#' @param dat integer response matrix coded 1..ncat with NA for missing
+#' @param nitems number of items
+#' @param ncat number of categories per item
+#' @param n_quad_points number of quadrature points
+#' @param maxit maximum number of EM cycles
+#' @param tol largest absolute change in any item parameter (slope or
+#'   threshold) at which the cycles stop
+#' @param verbose print the marginal log-likelihood every ten cycles
+#' @return a list with the final `target`, the marginal `loglik` at the last
+#'   E-step and the number of `cycles`
+#' @keywords internal
+grm_em_fit <- function(target, dat, nitems, ncat, n_quad_points = 51,
+                       maxit = 500, tol = 1e-5, verbose = FALSE) {
+  quad <- simple_quadrature_grm(n_quad_points)
+  nodes <- quad$nodes
+  weights <- quad$weights
+  # item j occupies target[idx[[j]]]: log(a_j) then its threshold coding
+  idx <- vector("list", nitems)
+  pos <- nitems
+  for (j in seq_len(nitems)) {
+    idx[[j]] <- c(j, pos + seq_len(ncat[j] - 1))
+    pos <- pos + ncat[j] - 1
+  }
+  loglik <- NA_real_
+  cycles <- 0L
+  for (cycle in seq_len(maxit)) {
+    params <- target_to_params_grm(target, nitems, ncat)
+    es <- grm_em_estep_cpp(dat, ncat, params$a, params$b, nodes, weights)
+    loglik <- es$loglik
+    if (verbose && cycle %% 10 == 1) {
+      cat("EM cycle", cycle, "| LL:", round(loglik, 3), "\n")
+    }
+    for (j in seq_len(nitems)) {
+      counts <- es$counts[[j]]
+      # Box constraints keep the first quasi-Newton step from overshooting
+      # into the flat region a -> 0 (where every gradient vanishes and the
+      # optimiser would stop); the final polish on the marginal likelihood
+      # is unconstrained.
+      k <- ncat[j] - 1
+      opt <- optim(
+        par = target[idx[[j]]],
+        fn = function(x) -grm_item_ll_cpp(x, counts, nodes),
+        gr = function(x) -grm_item_grad_cpp(x, counts, nodes),
+        method = "L-BFGS-B",
+        lower = c(log(0.01), -15, rep(log(1e-3), k - 1)),
+        upper = c(log(25), 15, rep(log(15), k - 1)),
+        control = list(maxit = 50, factr = 1e5)
+      )
+      target[idx[[j]]] <- opt$par
+    }
+    cycles <- cycle
+    new_params <- target_to_params_grm(target, nitems, ncat)
+    delta <- max(
+      abs(new_params$a - params$a),
+      abs(unlist(new_params$b) - unlist(params$b))
+    )
+    if (delta < tol) break
+  }
+  return(list(target = target, loglik = loglik, cycles = cycles))
+}
+
 #' @title Graded Response Model (GRM)
 #' @description
 #' Implements Samejima's (1969) Graded Response Model (GRM), which is an Item Response Theory
@@ -165,7 +233,8 @@ params_to_target <- function(a_vec, b_list) {
 #'   \item{testlength}{Length of the test (number of items)}
 #'   \item{nobs}{Sample size (number of rows in the dataset)}
 #'   \item{log_lik}{Log-likelihood value at convergence}
-#'   \item{iterations}{Number of iterations and function evaluations from optimization}
+#'   \item{iterations}{Number of EM cycles, followed by the function and
+#'     gradient evaluations of the final BFGS polish}
 #'   \item{params}{Matrix containing the estimated item parameters}
 #'   \item{EAP}{Ability parameters of examinees estimated by EAP method}
 #'   \item{MAP}{Ability parameters of examinees estimated by MAP method}
@@ -228,14 +297,25 @@ GRM <- function(U, na = NULL, Z = NULL, w = NULL, verbose = FALSE) {
   target <- params_to_target(start_vals$a, start_vals$b)
   if (verbose) {
     cat(
-      "Parameters:", length(target), "| Initial LL:",
-      round(log_lik_grm_cpp(target, dat, n_quad_points), 3), "\n"
+      "Parameters:", length(target), "\n"
     )
   }
 
+  # Bock-Aitkin EM: the E-step (C++) walks the respondents once per cycle and
+  # returns the expected category counts at each quadrature node; the M-step
+  # maximises each item's expected log-likelihood from that small table, so
+  # its cost does not grow with the number of respondents.  A few BFGS steps
+  # on the full marginal likelihood then polish the EM solution, which
+  # approaches the optimum only geometrically.
+  em <- grm_em_fit(target, dat, nitems, ncat, n_quad_points, verbose = verbose)
+  quad <- simple_quadrature_grm(n_quad_points)
+  marginal_ll <- function(x) {
+    p <- target_to_params_grm(x, nitems, ncat)
+    return(grm_em_estep_cpp(dat, ncat, p$a, p$b, quad$nodes, quad$weights)$loglik)
+  }
   result <- optim(
-    par = target,
-    fn = function(x) -log_lik_grm_cpp(x, dat, n_quad_points),
+    par = em$target,
+    fn = function(x) -marginal_ll(x),
     gr = function(x) -score_function_analytical_grm(x, dat, n_quad_points),
     method = "BFGS",
     control = list(
@@ -251,6 +331,7 @@ GRM <- function(U, na = NULL, Z = NULL, w = NULL, verbose = FALSE) {
     )
   }
   final_params <- target_to_params_grm(result$par, nitems, ncat)
+  iterations <- c(em_cycles = em$cycles, result$counts)
 
   est_a <- final_params$a
   est_b <- final_params$b
@@ -398,7 +479,7 @@ GRM <- function(U, na = NULL, Z = NULL, w = NULL, verbose = FALSE) {
     testlength = nitems,
     nobs = nobs,
     log_lik = -result$value,
-    iterations = result$counts,
+    iterations = iterations,
     params = as.data.frame(est_mat),
     EAP = EAP,
     MAP = MAP,

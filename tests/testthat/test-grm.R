@@ -353,3 +353,49 @@ test_that("GRM posterior ability estimates use the product likelihood", {
   # product posterior spreads it out
   expect_gt(sd(fit$EAP), 0.5)
 })
+
+test_that("GRM item M-step gradient matches central differences", {
+  set.seed(7)
+  nodes <- simple_quadrature_grm(51)$nodes
+  counts <- matrix(runif(4 * 51), 4, 51)
+  tg <- c(log(1.3), -0.8, log(0.7), log(0.5))
+  num <- vapply(seq_along(tg), function(k) {
+    h <- 1e-6
+    e <- rep(0, length(tg))
+    e[k] <- h
+    (grm_item_ll_cpp(tg + e, counts, nodes) - grm_item_ll_cpp(tg - e, counts, nodes)) / (2 * h)
+  }, numeric(1))
+  expect_equal(grm_item_grad_cpp(tg, counts, nodes), num, tolerance = 1e-6)
+})
+
+test_that("GRM EM reaches the same optimum as direct BFGS on the marginal likelihood", {
+  # Since 2.3.0 GRM() runs Bock-Aitkin EM cycles and polishes with BFGS;
+  # before that it ran BFGS on the full marginal likelihood from the start.
+  # Both maximise the same objective, so the estimates must agree.
+  skip_on_cran()
+  data("J5S1000", package = "exametrika")
+  U <- J5S1000$Q[1:200, ]
+  fit <- GRM(U, verbose = FALSE)
+
+  tmp <- dataFormat(U, response.type = "ordinal")
+  dat <- tmp$Q
+  dat[tmp$Z == 0] <- NA
+  for (j in seq_len(ncol(dat))) {
+    dat[, j] <- match(dat[, j], sort(unique(dat[!is.na(dat[, j]), j])))
+  }
+  sv <- generate_start_values(dat)
+  direct <- optim(
+    params_to_target(sv$a, sv$b),
+    function(x) -log_lik_grm_cpp(x, dat, 51),
+    function(x) -score_function_analytical_grm(x, dat, 51),
+    method = "BFGS", control = list(maxit = 500, reltol = 1e-10)
+  )
+  ncat <- apply(dat, 2, max, na.rm = TRUE)
+  ref <- target_to_params_grm(direct$par, ncol(dat), ncat)
+  b_fit <- as.numeric(t(as.matrix(fit$params[, -1])))
+  b_fit <- b_fit[!is.na(b_fit)]
+  expect_equal(fit$params$Slope, ref$a, tolerance = 1e-3)
+  expect_equal(b_fit, unlist(ref$b), tolerance = 1e-3)
+  expect_equal(fit$log_lik, -direct$value, tolerance = 1e-6)
+  expect_named(fit$iterations, c("em_cycles", "function", "gradient"))
+})

@@ -25,6 +25,42 @@ compare_gradients_grm <- function(target, dat, n_quad_points = 51L) {
     .Call(`_exametrika_compare_gradients_grm`, target, dat, n_quad_points)
 }
 
+#' E-step of the GRM EM algorithm
+#'
+#' @param dat integer matrix of responses coded 1..ncat (NA for missing)
+#' @param ncat number of categories per item
+#' @param a_vec slopes
+#' @param b_list list of threshold vectors
+#' @param nodes quadrature nodes
+#' @param weights quadrature weights (sum to one)
+#' @return a list with the marginal log-likelihood at the current
+#'   parameters and, per item, the ncat x nq matrix of expected counts
+#' @keywords internal
+#' @noRd
+grm_em_estep_cpp <- function(dat, ncat, a_vec, b_list, nodes, weights) {
+    .Call(`_exametrika_grm_em_estep_cpp`, dat, ncat, a_vec, b_list, nodes, weights)
+}
+
+#' Expected complete-data log-likelihood of one item
+#'
+#' @param target the item's parameters in target coding
+#' @param counts ncat x nq matrix of expected counts from the E-step
+#' @param nodes quadrature nodes
+#' @keywords internal
+#' @noRd
+grm_item_ll_cpp <- function(target, counts, nodes) {
+    .Call(`_exametrika_grm_item_ll_cpp`, target, counts, nodes)
+}
+
+#' Gradient of grm_item_ll_cpp() with respect to the target coding
+#'
+#' @inheritParams grm_item_ll_cpp
+#' @keywords internal
+#' @noRd
+grm_item_grad_cpp <- function(target, counts, nodes) {
+    .Call(`_exametrika_grm_item_grad_cpp`, target, counts, nodes)
+}
+
 irm_gibbs_core_cpp <- function(Uq_vec, Uq_dim, Z, cls01_init, fld01_init, gamma_c, gamma_f, alpha_vec_R, max_iter, stable_limit, verbose) {
     .Call(`_exametrika_irm_gibbs_core_cpp`, Uq_vec, Uq_dim, Z, cls01_init, fld01_init, gamma_c, gamma_f, alpha_vec_R, max_iter, stable_limit, verbose)
 }

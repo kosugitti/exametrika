@@ -160,7 +160,7 @@ BINET <- function(U, na = NULL, Z = NULL, w = NULL,
     stop("Please specify the appropriate number of fields.")
   }
 
-  if (ncls < 2 | ncls > 20) {
+  if (ncls < 2 || ncls > 20) {
     stop("Please set the number of classes to a number between 2 and less than 20.")
   }
 
@@ -172,7 +172,7 @@ BINET <- function(U, na = NULL, Z = NULL, w = NULL,
     if (length(conf) != NCOL(U)) {
       stop("conf vector size does NOT match with data.")
     }
-  } else if (is.matrix(conf) | is.data.frame(conf)) {
+  } else if (is.matrix(conf) || is.data.frame(conf)) {
     if (NROW(conf) != NCOL(U)) {
       stop("conf matrix size does NOT match with data.")
     }
@@ -362,8 +362,8 @@ BINET <- function(U, na = NULL, Z = NULL, w = NULL,
     }
   }
 
-  for (i in 1:nrow(Pcf2)) {
-    for (j in 1:ncol(Pcf2)) {
+  for (i in seq_len(nrow(Pcf2))) {
+    for (j in seq_len(ncol(Pcf2))) {
       if (is.numeric(Pcf2[[i, j]][[1]])) {
         Pcf2[[i, j]] <- (1 - Pcf01[i, j]) * Pcf[i, j] + Pcf2[i, j][[1]]
       } else {
@@ -378,7 +378,7 @@ BINET <- function(U, na = NULL, Z = NULL, w = NULL,
     for (j in 1:nfld) {
       fld_item <- which(fld == j)
       if (Pcf01[i, j] == 1) {
-        for (k in 1:length(fld_item)) {
+        for (k in seq_along(fld_item)) {
           tg <- fld_item[k]
           Pcj[i, tg] <- Pcf2[i, j][[1]][k]
         }
@@ -510,7 +510,7 @@ BINET <- function(U, na = NULL, Z = NULL, w = NULL,
       "Parent Class", paste("Parent CCR", 1:Dmax),
       "Child Class", paste("Child CCR", 1:Dmax)
     )
-  for (i in 1:length(param)) {
+  for (i in seq_along(param)) {
     LDPSR_table[i, 1] <- param[[i]]$field
     item_vec <- tmp$ItemLabel[param[[i]]$fld]
     if (length(item_vec) < Dmax) {

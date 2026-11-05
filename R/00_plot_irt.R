@@ -40,7 +40,7 @@ plot_irt_model <- function(x, type, plotItemID, nc, nr, overlay, colors, dots = 
         ),
         dots
       )
-      for (i in 1:nrow(params)) {
+      for (i in seq_len(nrow(params))) {
         a <- params[i, 1]
         b <- params[i, 2]
         c <- if (x$model > 2) params[i, 3] else 0
@@ -54,13 +54,13 @@ plot_irt_model <- function(x, type, plotItemID, nc, nr, overlay, colors, dots = 
       }
       draw_legend_strip(
         legend = paste("Item", plotItemID),
-        lty = 1:nrow(params),
-        col = 1:nrow(params),
+        lty = seq_len(nrow(params)),
+        col = seq_len(nrow(params)),
         lwd = 2, bty = "n",
         ncol = min(nrow(params), 5)
       )
     } else {
-      for (i in 1:nrow(params)) {
+      for (i in seq_len(nrow(params))) {
         a <- params[i, 1]
         b <- params[i, 2]
         c <- if (x$model > 2) params[i, 3] else 0
@@ -185,7 +185,7 @@ plot_grm_model <- function(x, type, plotItemID, nc, nr, colors, dots = list()) {
   if (type == "IRF") {
     setup_legend_layout(nrow(params), nc)
     max_K <- 0
-    for (j in 1:nrow(params)) {
+    for (j in seq_len(nrow(params))) {
       a <- params[j, 1]
       b <- params[j, -1]
       b <- b[!is.na(b)]
@@ -207,7 +207,7 @@ plot_grm_model <- function(x, type, plotItemID, nc, nr, colors, dots = list()) {
     )
   }
   if (type == "IIF") {
-    for (j in 1:nrow(params)) {
+    for (j in seq_len(nrow(params))) {
       a <- params[j, 1]
       b <- params[j, -1]
       b <- b[!is.na(b)]
@@ -218,13 +218,13 @@ plot_grm_model <- function(x, type, plotItemID, nc, nr, colors, dots = list()) {
   if (type == "TIF") {
     thetas <- seq(-4, 4, 0.01)
     I <- matrix(nrow = testlength, ncol = length(thetas))
-    for (j in 1:NROW(params)) {
+    for (j in seq_len(NROW(params))) {
       a <- params[j, 1]
       b <- params[j, -1]
       b <- b[!is.na(b)]
       I[j, ] <- sapply(thetas, function(theta) grm_iif(theta, a, b))
     }
-    TestInfo <- colSums(I, na.rm = T)
+    TestInfo <- colSums(I, na.rm = TRUE)
     call_plot(
       plot,
       list(

@@ -245,7 +245,7 @@ plot_array <- function(x, cell_width, cell_height, colors, dots = list(),
 #' graphics device resolves the raster by *averaging*: `interpolate = FALSE` is
 #' not honoured on the way down. 4,000 alternating orange/blue rows drawn into
 #' 400 pixels come out as one uniform blend that is in neither category's
-#' colour — a fabricated colour in a plot whose colours are supposed to be
+#' colour -- a fabricated colour in a plot whose colours are supposed to be
 #' categorical. Picking one source row per output pixel keeps every drawn pixel
 #' a colour that actually occurs in the data.
 #'

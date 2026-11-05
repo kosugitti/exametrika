@@ -315,7 +315,7 @@ IRT <- function(U, model = 2, na = NULL, Z = NULL, w = NULL, verbose = FALSE) {
     posttheta_numerator <- exp(
       (tmp$Z * tmp$U) %*% lpj +
         (tmp$Z * (1 - tmp$U)) %*% lqj -
-        matrix(rep(quadrature^2 / 2, NROW(tmp$U)), nrow = NROW(tmp$U), byrow = T)
+        matrix(rep(quadrature^2 / 2, NROW(tmp$U)), nrow = NROW(tmp$U), byrow = TRUE)
     )
 
     post_theta <- posttheta_numerator / rowSums(posttheta_numerator)
@@ -338,7 +338,7 @@ IRT <- function(U, model = 2, na = NULL, Z = NULL, w = NULL, verbose = FALSE) {
       warning_flg <- FALSE
       max_attempt <- 100
       attempt <- 0
-      while (!optim_flg & attempt < max_attempt) {
+      while (!optim_flg && attempt < max_attempt) {
         attempt <- attempt + 1
         tryCatch(
           {
@@ -409,8 +409,8 @@ IRT <- function(U, model = 2, na = NULL, Z = NULL, w = NULL, verbose = FALSE) {
 
   ### Ability Scores
   EAP <- post_theta %*% quadrature
-  tmpA <- matrix(rep(quadrature, NROW(tmp$U)), nrow = NROW(tmp$U), byrow = T)
-  tmpB <- matrix(rep(EAP, length(quadrature)), nrow = NROW(tmp$U), byrow = F)
+  tmpA <- matrix(rep(quadrature, NROW(tmp$U)), nrow = NROW(tmp$U), byrow = TRUE)
+  tmpB <- matrix(rep(EAP, length(quadrature)), nrow = NROW(tmp$U), byrow = FALSE)
   # row-wise expectation; the former diag(post %*% t(.)) built an n x n matrix
   PSD <- sqrt(rowSums(post_theta * (tmpA - tmpB)^2))
 

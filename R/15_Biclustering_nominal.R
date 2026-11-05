@@ -9,7 +9,7 @@
 #'   * For nominal data, only "Biclustering" is available.
 #' @param conf Confirmatory parameter for pre-specified field assignments. Can be either:
 #'   * A vector with items and corresponding fields in sequence
-#'   * A field membership profile matrix (items × fields) with 0/1 values
+#'   * A field membership profile matrix (items x fields) with 0/1 values
 #'   * NULL (default) for exploratory analysis where field memberships are estimated
 #' @param maxiter Maximum number of EM algorithm iterations. Default is 1000.
 #' @param verbose Logical; if TRUE, displays progress during estimation. Default is FALSE.
@@ -59,7 +59,7 @@ Biclustering.nominal <- function(U,
   emt <- 0
   maxemt <- maxiter
 
-  ncat <- as.vector(tmp$categories)
+  # ncat <- as.vector(tmp$categories)
   maxQ <- max(tmp$Q[tmp$Z == 1])
 
   ## confirmatory
@@ -84,10 +84,10 @@ Biclustering.nominal <- function(U,
         stop("conf_class vector size does NOT match with the number of respondents.")
       }
       conf_class_mat <- matrix(0, nrow = nobs, ncol = max(conf_class))
-      for (i in 1:NROW(conf_class_mat)) {
+      for (i in seq_len(NROW(conf_class_mat))) {
         conf_class_mat[i, conf_class[i]] <- 1
       }
-    } else if (is.matrix(conf_class) | is.data.frame(conf_class)) {
+    } else if (is.matrix(conf_class) || is.data.frame(conf_class)) {
       if (NROW(conf_class) != nobs) {
         stop("conf_class matrix size does NOT match with the number of respondents.")
       }
@@ -106,7 +106,7 @@ Biclustering.nominal <- function(U,
     conf_class_mat <- NULL
   }
 
-  if (ncls < 2 | ncls > 20) {
+  if (ncls < 2 || ncls > 20) {
     stop("Please set the number of classes to a number between 2 and less than 20.")
   }
 

@@ -132,7 +132,7 @@ BNM_bench_stats <- function(U, Z) {
 #' @title BIC-only fitness kernel for BNM structure search
 #' @description
 #' Computes the BIC of a candidate adjacency matrix without any of `BNM()`'s
-#' output construction (CCRR table, igraph objects, DAG checks — GA/PBIL
+#' output construction (CCRR table, igraph objects, DAG checks -- GA/PBIL
 #' candidates live on the upper triangle, so they are always simple DAGs).
 #' Reproduces `BNM()`'s numbers exactly: the adjacency matrix is sorted by
 #' label first (as `fill_adj()` does), and the BIC expression matches
@@ -314,7 +314,7 @@ BNM <- function(U, na = NULL, Z = NULL, w = NULL,
   # Initialize
   # Parent-response pattern counts: the per-(subject, item) binary encoding
   # and the one-hot PIRP array are replaced by one matrix product and one
-  # rowsum() per item inside BNM_pirp_counts() — same numbers, no S x J loop.
+  # rowsum() per item inside BNM_pirp_counts() -- same numbers, no S x J loop.
   counts <- BNM_pirp_counts(tmp, adj)
   npa <- counts$npa
   item_pattern_max <- counts$item_pattern_max
@@ -325,12 +325,12 @@ BNM <- function(U, na = NULL, Z = NULL, w = NULL,
 
   param <- beta_posterior_mode(n_PIRP_1, n_PIRP_0 + n_PIRP_1, beta1, beta2)
   rownames(param) <- tmp$ItemLabel
-  colnames(param) <- paste("PIRP", 1:ncol(param))
+  colnames(param) <- paste("PIRP", seq_len(ncol(param)))
 
   # Model Fit
   const <- pmin(exp(-testlength), 1e-10)
   bounded <- pmax(pmin((param * denom0 + const), 1 - const), const)
-  model_loglike <- sum(n_PIRP_1 * log(bounded) + n_PIRP_0 * log(1 - bounded), na.rm = T)
+  model_loglike <- sum(n_PIRP_1 * log(bounded) + n_PIRP_0 * log(1 - bounded), na.rm = TRUE)
   model_nparam <- sum(denom0)
   FitIndices <- TestFit(tmp$U, tmp$Z, model_loglike, model_nparam)
 

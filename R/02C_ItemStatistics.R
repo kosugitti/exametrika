@@ -91,7 +91,7 @@ ItemStatistics.ordinal <- function(U, na = NULL, Z = NULL, w = NULL) {
   ncat <- sapply(Threshold, length)
   thr.mat <- matrix(nrow = length(Threshold), ncol = max(ncat))
   colnames(thr.mat) <- 1:max(ncat)
-  for (j in 1:length(Threshold)) {
+  for (j in seq_along(Threshold)) {
     thr.mat[j, 1:ncat[j]] <- Threshold[[j]]
   }
 

@@ -277,7 +277,7 @@ CCRR.nominal <- function(U, na = NULL, Z = NULL, w = NULL) {
 #' item j was answered correctly.
 #' @references Brin, S., Motwani, R., Ullman, J., & Tsur, S. (1997). Dynamic itemset counting and
 #' implication rules for market basket data. In Proceedings of ACM SIGMOD International Conference
-#' on Management of Data (pp. 255–264). https://dl.acm.org/doi/10.1145/253262.253325
+#' on Management of Data (pp. 255-264). https://dl.acm.org/doi/10.1145/253262.253325
 #' @examples
 #' # example code
 #' # Calculate ItemLift using sample dataset J5S10
@@ -410,7 +410,7 @@ MutualInformation.binary <- function(U, na = NULL, Z = NULL, w = NULL, base = 2)
 #' @export
 MutualInformation.ordinal <- function(U, na = NULL, Z = NULL, w = NULL, base = 2) {
   if (is.character(base)) {
-    if (base != "V" & base != "v" & base != "e") {
+    if (base != "V" && base != "v" && base != "e") {
       stop("The base of the logarithm must be a number, 'V', or 'e'.")
     }
   }
@@ -428,7 +428,7 @@ MutualInformation.ordinal <- function(U, na = NULL, Z = NULL, w = NULL, base = 2
       y <- y[pairwise]
       tbl <- table(x, y) / sum(length(x))
 
-      if (base == "V" | base == "v") {
+      if (base == "V" || base == "v") {
         tei <- min(ncat[i], ncat[j])
       } else if (base == "e") {
         tei <- exp(1)
@@ -438,8 +438,8 @@ MutualInformation.ordinal <- function(U, na = NULL, Z = NULL, w = NULL, base = 2
       mi <- 0
       cSum <- colSums(tbl)
       rSum <- rowSums(tbl)
-      for (k in 1:NROW(tbl)) {
-        for (m in 1:NCOL(tbl)) {
+      for (k in seq_len(NROW(tbl))) {
+        for (m in seq_len(NCOL(tbl))) {
           if (tbl[k, m] > 0) { # 0 log 0 = 0
             mi <- mi + (tbl[k, m] * (log(tbl[k, m] / rSum[k] / cSum[m], base = tei)))
           }
@@ -515,11 +515,11 @@ PhiCoefficient.binary <- function(U, na = NULL, Z = NULL, w = NULL) {
 #' Tetrachoric Correlation is superior to the phi coefficient as a measure of the
 #' relation of an item pair. See Divgi, 1979; Olsson, 1979;Harris, 1988.
 #' @references Divgi, D. R. (1979). Calculation of the tetrachoric correlation coefficient.
-#' Psychometrika, 44, 169–172.
+#' Psychometrika, 44, 169-172.
 #' @references Olsson, U. (1979). Maximum likelihood estimation of the polychoric correlation
-#'  coefficient. Psychometrika,44, 443–460.
+#'  coefficient. Psychometrika,44, 443-460.
 #' @references Harris, B. (1988). Tetrachoric correlation coefficient. In L. Kotz, & N. L. Johnson
-#'  (Eds.), Encyclopedia of statistical sciences (Vol. 9, pp. 223–225). Wiley.
+#'  (Eds.), Encyclopedia of statistical sciences (Vol. 9, pp. 223-225). Wiley.
 #' @param x binary vector x
 #' @param y binary vector y
 #' @importFrom mvtnorm pmvnorm

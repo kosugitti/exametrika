@@ -129,7 +129,7 @@ who treat multinomial MLE under general convex constraints.
 on the respondent side. Mirrors \code{conf} but operates on classes. Can be:
 \itemize{
 \item A vector with respondents and corresponding class indices
-\item A class membership profile matrix (respondents × classes) with 0/1 values
+\item A class membership profile matrix (respondents x classes) with 0/1 values
 \item NULL (default) for exploratory class estimation
 When supplied, class memberships are held fixed during EM. For Ranklustering
 (\code{method = "R"}), the neighbour-smoothing step is skipped because smoothing
@@ -204,7 +204,7 @@ An object of class "exametrika" and "Biclustering" containing:
 \item{CategoryShift}{Nominal and ordinal data only. The amount added to
 every category code to make the codes start at 1; used by
 \code{\link[=predict.exametrika]{predict.exametrika()}}.}
-\item{FRPIndex}{Field Reference Profile indices (Kumagai, 2007) — data.frame with 6 columns:
+\item{FRPIndex}{Field Reference Profile indices (Kumagai, 2007) -- data.frame with 6 columns:
 \describe{
 \item{Alpha}{Maximum-slope location: class transition where the largest increase occurs}
 \item{A}{Maximum slope: largest consecutive-class difference in the profile}

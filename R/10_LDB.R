@@ -143,7 +143,7 @@ LDB <- function(U, na = NULL, Z = NULL, w = NULL,
   testlength <- NCOL(tmp$U)
   nobs <- NROW(tmp$U)
 
-  if (ncls < 2 | ncls > 20) {
+  if (ncls < 2 || ncls > 20) {
     stop("Please set the number of classes to a number between 2 and less than 20.")
   }
 
@@ -367,7 +367,7 @@ LDB <- function(U, na = NULL, Z = NULL, w = NULL,
   CCRR_table[, 3:NCOL(CCRR_table)] <- table_tmp
 
   colnames(pifr) <- FieldLabel
-  rownames(pifr) <- paste("Rank", 1:NROW(pifr))
+  rownames(pifr) <- paste("Rank", seq_len(NROW(pifr)))
   pifr <- t(pifr)
 
   FRPIndex <- IRPindex(pifr)

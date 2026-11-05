@@ -174,7 +174,7 @@ print_lra_case <- function(x, digits) {
     y <- rbind(y, x$RankWeight)
     rownames(y)[nrow(y)] <- "Rank Weight (estimated)"
   }
-  colnames(y) <- paste("Rank", 1:x$n_rank)
+  colnames(y) <- paste("Rank", seq_len(x$n_rank))
   print(round(y, digits))
   cat("\nItem Fit Indices\n")
   y <- unclass(x$ItemFitIndices)
@@ -207,7 +207,7 @@ print_lra_ordinal_case <- function(x, digits, fit_indices = "both") {
     "Latent Rank Distribution",
     "Rank Membership Distribution"
   )
-  colnames(y) <- paste("Rank", 1:x$n_rank)
+  colnames(y) <- paste("Rank", seq_len(x$n_rank))
   print(round(y, digits))
   cat("\nItem Fit Indices\n")
   y <- unclass(x$ItemFitIndices)
@@ -245,7 +245,7 @@ print_lra_rated_case <- function(x, digits) {
     "Latent Rank Distribution",
     "Rank Membership Distribution"
   )
-  colnames(y) <- paste("Rank", 1:x$n_rank)
+  colnames(y) <- paste("Rank", seq_len(x$n_rank))
   print(round(y, digits))
   cat("\nItem Fit Indices\n")
   y <- unclass(x$ItemFitIndices)

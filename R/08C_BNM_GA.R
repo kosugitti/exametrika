@@ -186,7 +186,7 @@ BNM_GA <- function(U, na = NULL, Z = NULL, w = NULL,
       # CrossOver
       if (crossover == 2) {
         # two-points crossover (candidate cut points prebuilt before the loop)
-        cut_off <- combinations[, sample(1:ncol(combinations), size = 1)]
+        cut_off <- combinations[, sample(seq_len(ncol(combinations)), size = 1)]
         child <- c(
           parent1[1:(cut_off[1] - 1)],
           parent2[cut_off[1]:cut_off[2]],
@@ -293,7 +293,7 @@ BNM_GA <- function(U, na = NULL, Z = NULL, w = NULL,
 #' }
 #' @references Fukuda, S., Yamanaka, Y., & Yoshihiro, T. (2014). A Probability-based evolutionary
 #'  algorithm with mutations to learn Bayesian networks. International Journal of Artificial
-#'  Intelligence and Interactive Multimedia, 3, 7–13. DOI: 10.9781/ijimai.2014.311
+#'  Intelligence and Interactive Multimedia, 3, 7-13. DOI: 10.9781/ijimai.2014.311
 #' @importFrom stats runif rbinom
 #' @examples
 #' \donttest{

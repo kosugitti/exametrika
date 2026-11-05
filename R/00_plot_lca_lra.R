@@ -16,7 +16,7 @@ plot_common_profiles <- function(x, type, value, plotItemID, plotStudentID, test
     } else {
       steps <- x$n_class
     }
-    for (i in 1:nrow(params)) {
+    for (i in seq_len(nrow(params))) {
       y <- params[i, ]
       call_plot(
         plot,
@@ -38,7 +38,7 @@ plot_common_profiles <- function(x, type, value, plotItemID, plotStudentID, test
     # Field Reference Profile ----------------------------------------
     params <- x$FRP
     msg <- x$msg
-    for (i in 1:nrow(params)) {
+    for (i in seq_len(nrow(params))) {
       y <- params[i, ]
       call_plot(
         plot,
@@ -54,7 +54,7 @@ plot_common_profiles <- function(x, type, value, plotItemID, plotStudentID, test
       )
     }
   }
-  if (type == "CRV" | type == "RRV") {
+  if (type == "CRV" || type == "RRV") {
     # Rank Reference Vector -------------------------------------------
     msg <- x$msg
     RRV <- t(x$FRP)
@@ -99,11 +99,11 @@ plot_common_profiles <- function(x, type, value, plotItemID, plotStudentID, test
       add = TRUE
     )
     par(mar = c(5, 4, 4, 4) + 0.1)
-    if (value == "LCA" | value == "ratedLCA" | value == "IRM" | value == "BINET") {
+    if (value == "LCA" || value == "ratedLCA" || value == "IRM" || value == "BINET") {
       target <- x$LCD
-    } else if (value == "LRA" | value == "LDLRA" | value == "LDB") {
+    } else if (value == "LRA" || value == "LDLRA" || value == "LDB") {
       target <- x$LRD
-    } else if (value == "Biclustering" | value == "ordinalBiclustering" | value == "nominalBiclustering" |
+    } else if (value == "Biclustering" || value == "ordinalBiclustering" || value == "nominalBiclustering" ||
       value == "ratedBiclustering") {
       target <- x$LRD
       if (is.null(target)) {
@@ -148,7 +148,7 @@ plot_common_profiles <- function(x, type, value, plotItemID, plotStudentID, test
     call_plot(graphics::axis, list(side = 4, at = pretty(range(0, testlength))), dots)
     mtext("Expected Score", side = 4, line = 3)
   }
-  if (type == "LCD" | type == "LRD") {
+  if (type == "LCD" || type == "LRD") {
     # Latent Class Distribution ----------------------------------------
     old_par <- par(no.readonly = TRUE)
     on.exit(
@@ -160,11 +160,11 @@ plot_common_profiles <- function(x, type, value, plotItemID, plotStudentID, test
       add = TRUE
     )
     par(mar = c(5, 4, 4, 4) + 0.1)
-    if (value == "LCA" | value == "nominalLCA" | value == "ratedLCA" | value == "BINET") {
+    if (value == "LCA" || value == "nominalLCA" || value == "ratedLCA" || value == "BINET") {
       target1 <- x$LCD
       target2 <- x$CMD
-    } else if (value == "Biclustering" | value == "ordinalBiclustering" | value == "nominalBiclustering" |
-      value == "ratedBiclustering" | value == "LRA" | value == "LDLRA" | value == "LDB") {
+    } else if (value == "Biclustering" || value == "ordinalBiclustering" || value == "nominalBiclustering" ||
+      value == "ratedBiclustering" || value == "LRA" || value == "LDLRA" || value == "LDB") {
       target1 <- x$LRD
       target2 <- x$RMD
     }
@@ -204,7 +204,7 @@ plot_common_profiles <- function(x, type, value, plotItemID, plotStudentID, test
     call_plot(graphics::axis, list(side = 4, at = pretty(range(0, max(target2) + 10))), dots)
     mtext("Frequency", side = 4, line = 3)
   }
-  if (type == "CMP" | type == "RMP") {
+  if (type == "CMP" || type == "RMP") {
     # Class Membership Profile ----------------------------------------
     msg <- x$msg
     if (is.null(x$n_class)) {
@@ -213,7 +213,7 @@ plot_common_profiles <- function(x, type, value, plotItemID, plotStudentID, test
       steps <- x$n_class
     }
     params <- x$Students[plotStudentID, 1:steps, drop = FALSE]
-    for (i in 1:NROW(params)) {
+    for (i in seq_len(NROW(params))) {
       y <- params[i, ]
       call_plot(
         plot,
@@ -279,7 +279,7 @@ score_rank_plot <- function(x, dots = list()) {
   call_plot(
     graphics::image,
     list(
-      x = 1:ncol(score_rank_matrix),
+      x = seq_len(ncol(score_rank_matrix)),
       y = as.numeric(rownames(score_rank_matrix)),
       z = t(score_rank_matrix),
       col = gray(seq(1, 0, length.out = 100)),
@@ -290,13 +290,13 @@ score_rank_plot <- function(x, dots = list()) {
     ),
     dots
   )
-  call_plot(graphics::axis, list(side = 1, at = 1:ncol(score_rank_matrix)), dots)
+  call_plot(graphics::axis, list(side = 1, at = seq_len(ncol(score_rank_matrix))), dots)
 }
 
 #' Item Category Reference Profile plot for nominal LCA
 #'
-#' Both axes are unordered here — the classes carry no order and neither do the
-#' categories — so the profiles are drawn as grouped bars rather than as lines
+#' Both axes are unordered here -- the classes carry no order and neither do the
+#' categories -- so the profiles are drawn as grouped bars rather than as lines
 #' across classes, which would suggest a trend that the model does not claim.
 #' @noRd
 plot_nominal_icrp <- function(x, plotItemID, dots = list()) {
@@ -335,7 +335,7 @@ IC_RP_BR_plot <- function(x, type, plotItemID, dots = list()) {
     tmp <- x$ICBR[x$ICBR$ItemLabel %in% label, ]
   }
   yRange <- range(tmp[, -c(1:2)])
-  for (i in 1:length(plotItemID)) {
+  for (i in seq_along(plotItemID)) {
     slice <- tmp[tmp$ItemLabel == label[i], ]
     slice <- unname(as.matrix(slice[, -c(1:2)]))
     call_plot(
@@ -348,8 +348,8 @@ IC_RP_BR_plot <- function(x, type, plotItemID, dots = list()) {
       ),
       dots
     )
-    call_plot(graphics::axis, list(side = 1, at = 1:ncol(slice), labels = 1:x$n_rank), dots)
-    for (j in 1:nrow(slice)) {
+    call_plot(graphics::axis, list(side = 1, at = seq_len(ncol(slice)), labels = seq_len(x$n_rank)), dots)
+    for (j in seq_len(nrow(slice))) {
       call_plot(graphics::lines, list(x = slice[j, ], lty = j), dots)
       text(
         x = ncol(slice), y = slice[j, ncol(slice)],

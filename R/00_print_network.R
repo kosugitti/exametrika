@@ -20,11 +20,11 @@ print_bnm_case <- function(x, digits) {
   cat("\nParameter Learning\n")
   p_table <- x$param
   rownames(p_table) <- x$ItemLabel
-  colnames(p_table) <- paste("PIRP", 1:ncol(p_table))
+  colnames(p_table) <- paste("PIRP", seq_len(ncol(p_table)))
   print(p_table, na.print = "", digits = digits)
 
   cat("\nConditional Correct Response Rate\n")
-  for (j in 1:NROW(x$CCRR_table)) {
+  for (j in seq_len(NROW(x$CCRR_table))) {
     v <- x$CCRR_table[j, 5]
     # BNM() writes the literal "NaN(0/0)" for unobserved parent patterns, which
     # turns the column into character; is.nan() on a string is always FALSE.
@@ -71,7 +71,7 @@ print_ldlra_case <- function(x, digits) {
   print(y)
 
   cat("\nConditional Correct Response Rate\n")
-  for (j in 1:NROW(x$CCRR_table)) {
+  for (j in seq_len(NROW(x$CCRR_table))) {
     if (is.nan(x$CCRR_table[j, 6])) {
       x$CCRR_table[j, 6] <- "NaN(0/0)"
     } else {
@@ -116,12 +116,12 @@ print_ldlra_case <- function(x, digits) {
 print_ldb_case <- function(x, digits) {
   cat("Adjacency Matrix\n")
   print(x$adj_list)
-  for (i in 1:x$n_rank) {
+  for (i in seq_len(x$n_rank)) {
     plot_dag(x$adj_list[[i]], labels = x$FieldLabel, main = paste("Graph at Rank", i))
   }
 
   cat("\nParameter Learning\n")
-  for (i in 1:x$n_rank) {
+  for (i in seq_len(x$n_rank)) {
     tbl <- x$IRP[i, , ]
     tbl[tbl == 0] <- NA
     rownames(tbl) <- x$FieldLabel
@@ -141,7 +141,7 @@ print_ldb_case <- function(x, digits) {
     "Latent Rank Distribution",
     "Rank Membership Distribution"
   )
-  colnames(y) <- paste("Rank", 1:x$n_rank)
+  colnames(y) <- paste("Rank", seq_len(x$n_rank))
   print(round(y, digits))
 
   cat("\nLatent Field Distribution\n")
@@ -156,10 +156,10 @@ print_ldb_case <- function(x, digits) {
   colnames(y) <- "value"
   print(round(y, digits))
 
-  if (x$SOACflg & x$WOACflg) {
+  if (x$SOACflg && x$WOACflg) {
     message("Strongly ordinal alignment condition was satisfied.")
   }
-  if (!x$SOACflg & x$WOACflg) {
+  if (!x$SOACflg && x$WOACflg) {
     message("Weakly ordinal alignment condition was satisfied.")
   }
 }
@@ -171,13 +171,13 @@ print_binet_case <- function(x, digits) {
   print(x$all_adj)
   plot_dag(x$all_adj, edge_labels = x$all_edges, main = "Total Graph")
   cat("Estimation of Parameter set\n")
-  for (i in 1:length(x$PSRP)) {
+  for (i in seq_along(x$PSRP)) {
     cat("Field", i, "\n")
     print(x$PSRP[[i]], na.print = "", digits = digits)
   }
   cat("Local Dependence Passing Student Rate\n")
   df <- x$LDPSR
-  for (j in 1:NCOL(df)) {
+  for (j in seq_len(NCOL(df))) {
     if (is.numeric(df[, j])) {
       df[, j] <- sprintf(paste0("%.", digits, "f"), df[, j])
     }

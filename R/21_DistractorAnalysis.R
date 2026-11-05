@@ -192,9 +192,9 @@ distractor_core <- function(Q, Z, rank_est, CA, nrank, maxQ, item_labels) {
 #' @export
 print.DistractorAnalysis <- function(x, items = NULL, ranks = NULL, digits = 4, ...) {
   if (is.null(items)) items <- 1:x$nitems
-  if (is.null(ranks)) ranks <- 1:x$n_rank
+  if (is.null(ranks)) ranks <- seq_len(x$n_rank)
 
-  rank_cols <- paste0("Rank", ranks)
+  # rank_cols <- paste0("Rank", ranks)
   msg <- if (!is.null(x$msg)) x$msg else "Rank"
 
   cat("Distractor Analysis\n\n")
@@ -260,7 +260,7 @@ plot.DistractorAnalysis <- function(x, type = "Distractor",
                                     items = NULL, ranks = NULL,
                                     nc = 1, nr = 1, ...) {
   if (is.null(items)) items <- 1:x$nitems
-  if (is.null(ranks)) ranks <- 1:x$n_rank
+  if (is.null(ranks)) ranks <- seq_len(x$n_rank)
 
   old_par <- par(no.readonly = TRUE)
   on.exit(par(old_par))

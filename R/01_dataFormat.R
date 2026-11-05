@@ -173,7 +173,7 @@ dataFormat <- function(data, na = NULL, id = NULL, Z = NULL, w = NULL,
       ID <- as.character(first_col)
       response.matrix <- data[, -1, drop = FALSE]
     } else {
-      # First column treated as response data → auto-generate IDs
+      # First column treated as response data -> auto-generate IDs
       ID <- paste0("Student", seq_len(nrow(data)))
       response.matrix <- data
       message(
@@ -463,7 +463,7 @@ dataFormat <- function(data, na = NULL, id = NULL, Z = NULL, w = NULL,
     }
 
     unsupported <- integer(0)
-    for (i in 1:length(CA)) {
+    for (i in seq_along(CA)) {
       resp_cats <- unique(response.matrix[, i][response.matrix[, i] != -1])
       if (!CA[i] %in% resp_cats) unsupported <- c(unsupported, i)
     }
@@ -474,7 +474,7 @@ dataFormat <- function(data, na = NULL, id = NULL, Z = NULL, w = NULL,
       ))
     }
     U <- matrix(NA, nrow = nrow(response.matrix), ncol = ncol(response.matrix))
-    for (i in 1:nrow(response.matrix)) {
+    for (i in seq_len(nrow(response.matrix))) {
       U[i, ] <- ifelse(response.matrix[i, ] == -1, 0,
         ifelse(response.matrix[i, ] == CA, 1, 0)
       )
@@ -782,7 +782,7 @@ longdataFormat <- function(data, na = NULL,
 
   # Create response matrix
   response_matrix <- matrix(NA, ncol = max(Qid_num), nrow = max(Sid_num))
-  for (i in 1:length(Resp_vec)) {
+  for (i in seq_along(Resp_vec)) {
     response_matrix[Sid_num[i], Qid_num[i]] <- Resp_vec[i]
   }
 

@@ -388,11 +388,11 @@ calcFitIndices <- function(chi_A, chi_B, df_A, df_B, nobs) {
   vars <- list(NFI, RFI, IFI, TLI, CFI)
   names <- c("NFI", "RFI", "IFI", "TLI", "CFI")
 
-  for (i in 1:length(vars)) {
+  for (i in seq_along(vars)) {
     assign(names[i], 1 - pmin(pmax(vars[[i]], 0), 1))
   }
 
-  for (i in 1:length(chi_A)) {
+  for (i in seq_along(chi_A)) {
     if (df_A[i] <= 0) {
       RFI[i] <- NaN
       TLI[i] <- NaN

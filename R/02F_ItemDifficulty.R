@@ -404,7 +404,7 @@ BiserialCorrelation <- function(i, t) {
   unique_i <- length(unique(na.omit(i)))
   unique_t <- length(unique(na.omit(t)))
   # Check if one is binary and the other is continuous
-  if (!((unique_i == 2 && unique_t > 2) | (unique_t == 2 && unique_i > 2))) {
+  if (!((unique_i == 2 && unique_t > 2) || (unique_t == 2 && unique_i > 2))) {
     stop("One argument must be binary and the other must be continuous.")
   }
   ## if switched...

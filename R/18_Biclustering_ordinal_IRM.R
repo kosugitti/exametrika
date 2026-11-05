@@ -351,10 +351,10 @@ Biclustering_IRM.ordinal <- function(U,
     }
   }
   if (verbose) {
-    if (SOACflg & WOACflg) {
+    if (SOACflg && WOACflg) {
       message("Strongly ordinal alignment condition was satisfied.")
     }
-    if (!SOACflg & WOACflg) {
+    if (!SOACflg && WOACflg) {
       message("Weakly ordinal alignment condition was satisfied.")
     }
   }

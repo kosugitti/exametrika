@@ -85,7 +85,7 @@ LRA.ordinal <- function(U,
                         verbose = FALSE, ...) {
   warn_unused_dots(list(...), "LRA")
   ## check method
-  if (method != "isotonic" & method != "GTM") {
+  if (method != "isotonic" && method != "GTM") {
     stop("The method must be either 'isotonic' or 'GTM'.")
   }
 
@@ -237,7 +237,7 @@ LRA.ordinal <- function(U,
   }))
 
   design4 <- matrix(0, nrow = nitems, ncol = sum(ncat))
-  for (i in 1:nrow(design3)) {
+  for (i in seq_len(nrow(design3))) {
     design4[design3[i, 1], design3[i, 2]] <- 1
   }
 
@@ -322,7 +322,7 @@ LRA.ordinal <- function(U,
   # monotonic increasing check
   col_sums <- colSums(refMat111_satu)
   if (col_sums[1] > col_sums[ncol(refMat111_satu)]) {
-    refMat111_satu <- refMat111_satu[, ncol(refMat111_satu):1]
+    refMat111_satu <- refMat111_satu[, rev(seq_len(ncol(refMat111_satu)))]
   }
   if (mic) {
     refMat111_satu <- t(apply(refMat111_satu, 1, sort))
@@ -393,7 +393,7 @@ LRA.ordinal <- function(U,
       # probabilities. Columns are ranks; comparing rows (boundaries) here, as
       # before 2.2.0, flipped the direction on almost every cycle.
       if (sum(refMat111[, 1]) > sum(refMat111[, nrank])) {
-        refMat111 <- refMat111[, ncol(refMat111):1]
+        refMat111 <- refMat111[, rev(seq_len(ncol(refMat111)))]
       }
 
       if (mic == 1) {
@@ -547,16 +547,16 @@ LRA.ordinal <- function(U,
   }
 
   rankProf_satu <- row_softmax(uuMat %*% log(catRefMat_satu + const))
-  Rank_satu <- apply(rankProf_satu, 1, which.max)
+  # Rank_satu <- apply(rankProf_satu, 1, which.max)
 
 
   # modelfff_jq1 <- t(dat$Z) %*% rankmemb01
   # modelggg_jq1 <- t(uuMat) %*% rankmemb01
   # satufff_jq1 <- t(dat$Z) %*% Rank_satu01
   # satuggg_jq1 <- t(uuMat) %*% Rank_satu01
-  modelfff_jq2 <- t(U$Z) %*% rankProf
+  # modelfff_jq2 <- t(U$Z) %*% rankProf
   modelggg_jq2 <- t(uuMat) %*% rankProf
-  satufff_jq2 <- t(U$Z) %*% rankProf_satu
+  # satufff_jq2 <- t(U$Z) %*% rankProf_satu
   satuggg_jq2 <- t(uuMat) %*% rankProf_satu
 
   # Model item log-likelihood

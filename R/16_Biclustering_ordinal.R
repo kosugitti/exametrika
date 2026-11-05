@@ -10,7 +10,7 @@
 #'   * "R" or "Ranklustering": Ranklustering with ordered class structure
 #' @param conf Confirmatory parameter for pre-specified field assignments. Can be either:
 #'   * A vector with items and corresponding fields in sequence
-#'   * A field membership profile matrix (items × fields) with 0/1 values
+#'   * A field membership profile matrix (items x fields) with 0/1 values
 #'   * NULL (default) for exploratory analysis where field memberships are estimated
 #' @param mic Logical; if TRUE, forces Field Reference Profiles to be monotonically
 #' increasing. Default is FALSE.
@@ -68,18 +68,18 @@ Biclustering.ordinal <- function(U,
   nitems <- NCOL(tmp$Q)
   const <- exp(-nitems)
   maxemt <- maxiter
-  ncat <- as.vector(tmp$categories)
+  # ncat <- as.vector(tmp$categories)
   maxQ <- max(tmp$Q[tmp$Z == 1])
   # if (length(unique(ncat)) > 1) {
   #   stop("Error: Variables have different numbers of categories. Nominal data processing requires the same number of categories for all variables.")
   # }
 
-  if (method == "B" | method == "Biclustering") {
+  if (method == "B" || method == "Biclustering") {
     if (verbose) {
       message("Biclustering is chosen.")
     }
     model <- 1
-  } else if (method == "R" | method == "Ranklustering") {
+  } else if (method == "R" || method == "Ranklustering") {
     if (verbose) {
       message("Ranklustering is chosen.")
     }
@@ -121,10 +121,10 @@ Biclustering.ordinal <- function(U,
         stop("conf_class vector size does NOT match with the number of respondents.")
       }
       conf_class_mat <- matrix(0, nrow = nobs, ncol = max(conf_class))
-      for (i in 1:NROW(conf_class_mat)) {
+      for (i in seq_len(NROW(conf_class_mat))) {
         conf_class_mat[i, conf_class[i]] <- 1
       }
-    } else if (is.matrix(conf_class) | is.data.frame(conf_class)) {
+    } else if (is.matrix(conf_class) || is.data.frame(conf_class)) {
       if (NROW(conf_class) != nobs) {
         stop("conf_class matrix size does NOT match with the number of respondents.")
       }
@@ -143,7 +143,7 @@ Biclustering.ordinal <- function(U,
     conf_class_mat <- NULL
   }
 
-  if (ncls < 2 | ncls > 20) {
+  if (ncls < 2 || ncls > 20) {
     stop("Please set the number of classes to a number between 2 and less than 20.")
   }
 
@@ -654,10 +654,10 @@ Biclustering.ordinal <- function(U,
     }
   }
   if (verbose) {
-    if (SOACflg & WOACflg) {
+    if (SOACflg && WOACflg) {
       message("Strongly ordinal alignment condition was satisfied.")
     }
-    if (!SOACflg & WOACflg) {
+    if (!SOACflg && WOACflg) {
       message("Weakly ordinal alignment condition was satisfied.")
     }
   }

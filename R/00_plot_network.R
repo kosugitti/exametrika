@@ -24,9 +24,9 @@ plot_field_pirp <- function(x, dots = list()) {
       ),
       dots
     )
-    for (j in 1:NROW(mat)) {
+    for (j in seq_len(NROW(mat))) {
       y <- as.vector(na.omit(mat[j, ]))
-      xvals_j <- seq(0, nrs)[1:length(y)]
+      xvals_j <- seq(0, nrs)[seq_along(y)]
       labels <- rep(as.character(j), length(y))
       call_plot(graphics::lines, list(x = xvals_j, y = y, type = "l", lwd = 2), dots)
       text(xvals_j, y, labels = labels, pos = 1)
@@ -38,7 +38,7 @@ plot_field_pirp <- function(x, dots = list()) {
 #' LDPSR plot (BINET only)
 #' @noRd
 plot_ldpsr <- function(x, dots = list()) {
-  for (i in 1:length(x$params)) {
+  for (i in seq_along(x$params)) {
     target <- x$params[[i]]
     ln <- length(target$fld)
     lb <- names(target$chap)

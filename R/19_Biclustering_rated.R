@@ -181,10 +181,10 @@ Biclustering.rated <- function(U,
     }
   }
   if (verbose) {
-    if (SOACflg & WOACflg) {
+    if (SOACflg && WOACflg) {
       message("\nStrongly ordinal alignment condition was satisfied.")
     }
-    if (!SOACflg & WOACflg) {
+    if (!SOACflg && WOACflg) {
       message("\nWeakly ordinal alignment condition was satisfied.")
     }
   }

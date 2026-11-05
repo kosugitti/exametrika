@@ -118,7 +118,7 @@ LD_param_est <- function(tmp, adj_list, classRefMat, ncls, smoothpost, beta1 = 2
   # Fitness-only path: the PBIL loop consumes nothing but the BIC, so skip
   # the posterior-distribution / IRP blocks (the largest arrays in this
   # function) and compute the BIC directly from the cached benchmark
-  # statistics — term by term the same expression as calcFitIndices().
+  # statistics -- term by term the same expression as calcFitIndices().
   if (fit_only) {
     model_nparam <- sum(apply(sign(n_correct + n_incorrect), 1:2, sum))
     chi_A <- 2 * (bench$ell_B - test_ell)
@@ -284,16 +284,16 @@ LDLRA <- function(U, na = NULL, Z = NULL, w = NULL,
   testlength <- NCOL(tmp$U)
   nobs <- NROW(tmp$U)
 
-  if (ncls < 2 | ncls > 20) {
+  if (ncls < 2 || ncls > 20) {
     stop("Please set the number of classes to a number between 2 and less than 20.")
   }
 
-  if (method == "C" | method == "Class") {
+  if (method == "C" || method == "Class") {
     if (verbose) {
       message("local dependence latent Class model is chosen.")
     }
     model <- 1
-  } else if (method == "R" | method == "Rank") {
+  } else if (method == "R" || method == "Rank") {
     if (verbose) {
       message("local dependence latent Rank model is chosen.")
     }

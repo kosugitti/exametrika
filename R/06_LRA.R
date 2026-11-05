@@ -186,11 +186,11 @@ LRA.binary <- function(U,
   const <- exp(-testlength)
   ncls <- nrank
 
-  if (method != "SOM" & method != "GTM" & method != "isotonic") {
+  if (method != "SOM" && method != "GTM" && method != "isotonic") {
     stop("The method must be selected as one of SOM, GTM, or isotonic.")
   }
 
-  if (ncls < 2 | ncls > 20) {
+  if (ncls < 2 || ncls > 20) {
     stop("Please set the number of classes to a number between 2 and less than 20.")
   }
 

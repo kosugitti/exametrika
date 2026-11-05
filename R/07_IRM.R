@@ -173,7 +173,7 @@ Biclustering_IRM.binary <- function(U, na = NULL, Z = NULL, w = NULL,
   fld <- 1:testlength
   crr <- crr(tmp)
   df_tmp <- data.frame(fld, crr)
-  df_tmp <- df_tmp[order(crr, decreasing = T), ]
+  df_tmp <- df_tmp[order(crr, decreasing = TRUE), ]
   sorted_list <- df_tmp$fld
   fld <- order(sorted_list)
   fld01 <- matrix(0, nrow = testlength, ncol = nfld)
@@ -227,7 +227,7 @@ Biclustering_IRM.binary <- function(U, na = NULL, Z = NULL, w = NULL,
     ### Gibbs sampler i
     Cif <- tmp$U %*% fld01 # SxF. number of correct response Studet S in Field f
     Fif <- (tmp$Z * (1 - tmp$U)) %*% fld01 # SxF. number of incorrect response Studet S in Field f
-    iRand <- sample(1:nobs, nobs, replace = F)
+    iRand <- sample(1:nobs, nobs, replace = FALSE)
 
     for (loop in 1:nobs) {
       target <- iRand[loop]
@@ -238,8 +238,8 @@ Biclustering_IRM.binary <- function(U, na = NULL, Z = NULL, w = NULL,
         Ncf[cls[target], ] <- Ncf[cls[target], ] - Nf
         Ccf[cls[target], ] <- Ccf[cls[target], ] - Cif[target, ]
         Fcf[cls[target], ] <- Fcf[cls[target], ] - Fif[target, ]
-        CcfPlus <- Ccf + matrix(rep(Cif[target, ], ncls), nrow = ncls, byrow = T)
-        FcfPlus <- Fcf + matrix(rep(Fif[target, ], ncls), nrow = ncls, byrow = T)
+        CcfPlus <- Ccf + matrix(rep(Cif[target, ], ncls), nrow = ncls, byrow = TRUE)
+        FcfPlus <- Fcf + matrix(rep(Fif[target, ], ncls), nrow = ncls, byrow = TRUE)
 
         if (Nc[cls[target]] == 0) {
           ## if the class disappeared...
@@ -362,7 +362,7 @@ Biclustering_IRM.binary <- function(U, na = NULL, Z = NULL, w = NULL,
     oldField <- fld # J x C
     Cjc <- t(tmp$U) %*% cls01
     Fjc <- t(tmp$Z * (1 - tmp$U)) %*% cls01
-    jRand <- sample(1:testlength, testlength, replace = F)
+    jRand <- sample(1:testlength, testlength, replace = FALSE)
 
     for (loop in 1:testlength) {
       target <- jRand[loop]
@@ -372,8 +372,8 @@ Biclustering_IRM.binary <- function(U, na = NULL, Z = NULL, w = NULL,
       Ccf[, fld[target]] <- Ccf[, fld[target]] - t(Cjc[target, ])
       Fcf[, fld[target]] <- Fcf[, fld[target]] - t(Fjc[target, ])
       Ncf <- Ccf + Fcf
-      CcfPlus <- Ccf + matrix(rep(Cjc[target, ], nfld), nrow = ncls, byrow = F)
-      FcfPlus <- Fcf + matrix(rep(Fjc[target, ], nfld), nrow = ncls, byrow = F)
+      CcfPlus <- Ccf + matrix(rep(Cjc[target, ], nfld), nrow = ncls, byrow = FALSE)
+      FcfPlus <- Fcf + matrix(rep(Fjc[target, ], nfld), nrow = ncls, byrow = FALSE)
 
       ## ## if the field disappeared...
       if (Nf[fld[target]] == 0) {
@@ -490,8 +490,8 @@ Biclustering_IRM.binary <- function(U, na = NULL, Z = NULL, w = NULL,
 
 
   # Reorganizing small-sized classses -------------------------------
-  zero_position <- which(rowSums(tmp$Z * tmp$U, na.rm = T) == 0)
-  full_position <- which(rowSums(tmp$Z * tmp$U, na.rm = T) == testlength)
+  zero_position <- which(rowSums(tmp$Z * tmp$U, na.rm = TRUE) == 0)
+  full_position <- which(rowSums(tmp$Z * tmp$U, na.rm = TRUE) == testlength)
   delt <- 0
   delrep <- ncls
   EMt <- 0 # stays 0 when no class falls below minSize (2.2.0)
@@ -555,8 +555,8 @@ Biclustering_IRM.binary <- function(U, na = NULL, Z = NULL, w = NULL,
       zero_scorer[1] <- 1
       full_scorer <- rep(0, ncls)
       full_scorer[ncls] <- 1
-      cls01[zero_position, ] <- matrix(rep(zero_scorer, length(zero_position)), nrow = length(zero_position), byrow = T)
-      cls01[full_position, ] <- matrix(rep(full_scorer, length(full_position)), nrow = length(full_position), byrow = T)
+      cls01[zero_position, ] <- matrix(rep(zero_scorer, length(zero_position)), nrow = length(zero_position), byrow = TRUE)
+      cls01[full_position, ] <- matrix(rep(full_scorer, length(full_position)), nrow = length(full_position), byrow = TRUE)
 
       cls <- cls01 %*% (1:ncls)
 

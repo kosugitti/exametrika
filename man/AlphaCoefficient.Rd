@@ -33,7 +33,7 @@ Rated and nominal data are not supported.
 This function computes Tau-Equivalent Measurement, also known as Cronbach's alpha coefficient, for a given data set.
 }
 \references{
-Cronbach, L. J. (1951). Coefficient alpha and the internal structure of a test. Psychometrika, 16,297–334.
+Cronbach, L. J. (1951). Coefficient alpha and the internal structure of a test. Psychometrika, 16,297-334.
 
 Zumbo, B. D., Gadermann, A. M., & Zeisser, C. (2007). Ordinal versions of coefficients alpha and theta for Likert rating scales. Journal of Modern Applied Statistical Methods, 6(1), 21--29.
 }

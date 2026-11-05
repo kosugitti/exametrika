@@ -88,7 +88,7 @@ grm_iif <- function(theta, a, b) {
 #' @param tmp dataset
 #' @keywords internal
 generate_start_values <- function(tmp) {
-  nobs <- nrow(tmp)
+  # nobs <- nrow(tmp)
   nitems <- ncol(tmp)
   ncat <- apply(tmp, 2, max, na.rm = TRUE)
 
@@ -337,7 +337,7 @@ GRM <- function(U, na = NULL, Z = NULL, w = NULL, verbose = FALSE) {
   for (i in 1:nobs) {
     MsG[i, pattern_groups[i]] <- 1
   }
-  group_size <- colSums(MsG)
+  # group_size <- colSums(MsG)
   ell_B <- rep(0, nitems)
   for (j in 1:nitems) {
     for (g in 1:n_pattern) {

@@ -200,7 +200,7 @@ LCA.binary <- function(U, ncls = 2, na = NULL, Z = NULL, w = NULL, maxiter = 100
     response_type_error(tmp$response.type, "LCA")
   }
 
-  if (ncls < 2 | ncls > 20) {
+  if (ncls < 2 || ncls > 20) {
     stop("Please set the number of classes to a number between 2 and less than 20.")
   }
 
@@ -320,7 +320,7 @@ LCA.nominal <- function(U, ncls = 2, na = NULL, Z = NULL, w = NULL, maxiter = 10
     response_type_error(tmp$response.type, "LCA")
   }
 
-  if (ncls < 2 | ncls > 20) {
+  if (ncls < 2 || ncls > 20) {
     stop("Please set the number of classes to a number between 2 and less than 20.")
   }
 
@@ -461,7 +461,7 @@ LCA.nominal <- function(U, ncls = 2, na = NULL, Z = NULL, w = NULL, maxiter = 10
 #' @rdname LCA
 #' @details
 #' For rated data (multiple-choice items with a key) the estimation is the
-#' nominal one — \code{LCA.rated} calls \code{LCA.nominal} internally — and the
+#' nominal one -- \code{LCA.rated} calls \code{LCA.nominal} internally -- and the
 #' key is used afterwards to recover the quantities that need a notion of a
 #' correct answer. The Item Reference Profile is the model-implied probability
 #' of the keyed category, \code{IRP[j, c] = rho[j, CA[j] | c]}, and the Test

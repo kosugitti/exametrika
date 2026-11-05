@@ -66,11 +66,11 @@ IRPindex <- function(IRP) {
     # lag: difference between adjacent classes (c minus c-1)
     lags <- vec - c(NA, vec[1:(NC - 1)])
     # A: maximum lag (steepest ascent)
-    A[i] <- max(lags, na.rm = T)
+    A[i] <- max(lags, na.rm = TRUE)
     # Alpha: position of maximum lag (source class number)
     Alpha[i] <- which.max(lags) - 1
     # C: sum of negative lags (monotonicity violation; 0 = perfectly monotone)
-    C[i] <- sum(lags[lags < 0], na.rm = T)
+    C[i] <- sum(lags[lags < 0], na.rm = TRUE)
     if (C[i] != 0) {
       # Gamma: proportion of non-monotone transitions
       Gamma[i] <- (length(lags[lags < 0]) - 1) / (NC - 1)

@@ -354,14 +354,14 @@ ItemReport <- function(U, na = NULL, Z = NULL, w = NULL) {
   zzzScoreSD <- sqrt(colSums(dat$Z * score^2) / colSums(dat$Z) - zzzScoreMean^2)
   itemScoreCorr <- (colSums(dat$Z * dat$Q * score) / colSums(dat$Z) - itemMean * zzzScoreMean) / (zzzScoreSD * itemSD)
   scoreRemainder <- matrix(0, nrow = nrow(dat$Q), ncol = ncol(dat$Q))
-  for (j in 1:ncol(dat$Q)) {
+  for (j in seq_len(ncol(dat$Q))) {
     scoreRemainder[, j] <- dat$Z[, j] * (score - dat$Q[, j])
   }
   zzzScoreReminderMean <- colSums(scoreRemainder) / zzzTotal
   zzzScoreRemainderSD <- sqrt(colSums(scoreRemainder^2) / zzzTotal - zzzScoreReminderMean^2)
 
   itemScoreRemainderCorr <- rep(NA, ncol(dat$Q))
-  for (j in 1:ncol(dat$Q)) {
+  for (j in seq_len(ncol(dat$Q))) {
     term1 <- sum((dat$Z[, j] * dat$Q[, j] * scoreRemainder[, j]) / zzzTotal[j])
     term2 <- itemMean[j] * sum((scoreRemainder[, j]) / zzzTotal[j])
     itemScoreRemainderCorr[j] <- (term1 - term2) / (zzzScoreRemainderSD[j] * itemSD[j])

@@ -41,7 +41,7 @@ print_biclustering_case <- function(x, digits) {
   print(y)
 
   cat("Latent Field Distribution\n")
-  y <- matrix(x$LFD, byrow = T, nrow = 1)
+  y <- matrix(x$LFD, byrow = TRUE, nrow = 1)
   rownames(y) <- "N of Items"
   colnames(y) <- paste("Field", 1:x$n_field)
   print(round(y, digits))
@@ -71,7 +71,7 @@ print_rated_biclustering_case <- function(x, digits) {
   cat(sprintf("%s Analysis (Rated)%s\n\n", model_name, mic_suffix))
 
   cat(paste(model_name, "Reference Matrix Profile (Nominal)\n"))
-  for (q in 1:dim(x$FRP)[3]) {
+  for (q in seq_len(dim(x$FRP)[3])) {
     cat(paste("For category", q, "\n"))
     y <- x$FRP[, , q]
     colnames(y) <- paste(x$msg, 1:x$n_class)
@@ -147,7 +147,7 @@ print_rated_biclustering_case <- function(x, digits) {
 #' @noRd
 print_nominal_biclustering_case <- function(x, digits, fit_indices = "both") {
   cat(paste("Biclustering Reference Matrix Profile\n"))
-  for (q in 1:dim(x$FRP)[3]) {
+  for (q in seq_len(dim(x$FRP)[3])) {
     cat(paste("For category", q, "\n"))
     y <- x$FRP[, , q]
     colnames(y) <- paste(x$msg, 1:x$n_class)
@@ -164,7 +164,7 @@ print_nominal_biclustering_case <- function(x, digits, fit_indices = "both") {
   print(round(y, digits))
 
   cat("Latent Field Distribution\n")
-  y <- matrix(x$LFD, byrow = T, nrow = 1)
+  y <- matrix(x$LFD, byrow = TRUE, nrow = 1)
   rownames(y) <- "N of Items"
   colnames(y) <- paste("Field", 1:x$n_field)
   print(round(y, digits))
@@ -193,7 +193,7 @@ print_ordinal_biclustering_case <- function(x, digits, fit_indices = "both") {
   cat(sprintf("%s Analysis%s\n\n", model_name, mic_suffix))
 
   cat(paste(model_name, "Reference Matrix Profile\n"))
-  for (q in 1:dim(x$FRP)[3]) {
+  for (q in seq_len(dim(x$FRP)[3])) {
     cat(paste("For category", q, "\n"))
     y <- x$FRP[, , q]
     colnames(y) <- paste(x$msg, 1:x$n_class)
@@ -209,7 +209,7 @@ print_ordinal_biclustering_case <- function(x, digits, fit_indices = "both") {
   colnames(y) <- paste(x$msg, 1:x$n_class)
   print(round(y, digits))
   cat("Latent Field Distribution\n")
-  y <- matrix(x$LFD, byrow = T, nrow = 1)
+  y <- matrix(x$LFD, byrow = TRUE, nrow = 1)
   rownames(y) <- "N of Items"
   colnames(y) <- paste("Field", 1:x$n_field)
   print(round(y, digits))
@@ -263,7 +263,7 @@ print_irm_case <- function(x, digits) {
   print(round(y, digits))
 
   cat("Latent Field Distribution\n")
-  y <- matrix(x$LFD, byrow = T, nrow = 1)
+  y <- matrix(x$LFD, byrow = TRUE, nrow = 1)
   rownames(y) <- "N of Items"
   colnames(y) <- paste("Field", 1:x$n_field)
   print(round(y, digits))

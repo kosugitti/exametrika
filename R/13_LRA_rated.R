@@ -164,7 +164,7 @@ LRA.rated <- function(U,
   expand_Zij <- matrix(0, nrow = nobs, ncol = sum(useNcat))
   current_col <- 1
 
-  for (j in 1:ncol(U$Z)) {
+  for (j in seq_len(ncol(U$Z))) {
     for (k in 1:useNcat[j]) {
       expand_Zij[, current_col] <- U$Z[, j]
       current_col <- current_col + 1
@@ -311,7 +311,7 @@ LRA.rated <- function(U,
   }))
 
   design4 <- matrix(0, nrow = nitems, ncol = sum(useNcat))
-  for (i in 1:nrow(design3)) {
+  for (i in seq_len(nrow(design3))) {
     design4[design3[i, 1], design3[i, 2]] <- 1
   }
 
@@ -396,7 +396,7 @@ LRA.rated <- function(U,
 
 
   if (first_sum > last_sum) {
-    catRefmat_satu <- catRefmat_satu[, ncol(catRefmat_satu):1]
+    catRefmat_satu <- catRefmat_satu[, rev(seq_len(ncol(catRefmat_satu)))]
   }
 
   catRefbox_satu <- vector("list", nitems)
@@ -441,7 +441,7 @@ LRA.rated <- function(U,
     first_col_sum <- sum(catRefmat[design6, 1])
     last_col_sum <- sum(catRefmat[design6, ncol(catRefmat)])
     if (first_col_sum > last_col_sum) {
-      catRefmat <- catRefmat[, ncol(catRefmat):1]
+      catRefmat <- catRefmat[, rev(seq_len(ncol(catRefmat)))]
     }
     for (j in 1:nitems) {
       catRefbox[[j]] <- catRefmat[design1[j, 1]:design1[j, 2], ]
@@ -586,15 +586,15 @@ LRA.rated <- function(U,
   null_testdf <- sum(null_itemdf)
 
   rankProf_satu <- row_softmax(CijkMat %*% log(catRefmat_satu + const))
-  Rank_satu <- apply(rankProf_satu, 1, which.max)
+  # Rank_satu <- apply(rankProf_satu, 1, which.max)
 
   # modelfff_jq1 <- t(dat$Z) %*% rankmemb01
   # modelggg_jq1 <- t(CijkMat) %*% rankmemb01
   # satufff_jq1 <- t(dat$Z) %*% Rank_satu01
   # satuggg_jq1 <- t(CijkMat) %*% Rank_satu01
-  modelfff_jq2 <- t(U$Z) %*% rankProf
+  # modelfff_jq2 <- t(U$Z) %*% rankProf
   modelggg_jq2 <- t(CijkMat) %*% rankProf
-  satufff_jq2 <- t(U$Z) %*% rankProf_satu
+  # satufff_jq2 <- t(U$Z) %*% rankProf_satu
   satuggg_jq2 <- t(CijkMat) %*% rankProf_satu
 
   # Model item log-likelihood

@@ -71,10 +71,10 @@ build_conf_mat <- function(conf, nitems) {
       stop("conf vector size does NOT match with data.")
     }
     conf_mat <- matrix(0, nrow = nitems, ncol = max(conf))
-    for (i in 1:NROW(conf_mat)) {
+    for (i in seq_len(NROW(conf_mat))) {
       conf_mat[i, conf[i]] <- 1
     }
-  } else if (is.matrix(conf) | is.data.frame(conf)) {
+  } else if (is.matrix(conf) || is.data.frame(conf)) {
     if (NROW(conf) != nitems) {
       stop("conf matrix size does NOT match with data.")
     }
@@ -121,7 +121,7 @@ build_conf_mat <- function(conf, nitems) {
 #'  \item{CategoryShift}{Nominal and ordinal data only. The amount added to
 #'    every category code to make the codes start at 1; used by
 #'    [predict.exametrika()].}
-#'  \item{FRPIndex}{Field Reference Profile indices (Kumagai, 2007) — data.frame with 6 columns:
+#'  \item{FRPIndex}{Field Reference Profile indices (Kumagai, 2007) -- data.frame with 6 columns:
 #'    \describe{
 #'      \item{Alpha}{Maximum-slope location: class transition where the largest increase occurs}
 #'      \item{A}{Maximum slope: largest consecutive-class difference in the profile}
@@ -254,12 +254,12 @@ Biclustering.default <- function(U, na = NULL, Z = NULL, w = NULL, ...) {
 #'   * "GTM": the original filter-based smoothing of Shojima (2012).
 #' @param conf Confirmatory parameter for pre-specified field assignments. Can be either:
 #'   * A vector with items and corresponding fields in sequence
-#'   * A field membership profile matrix (items × fields) with 0/1 values
+#'   * A field membership profile matrix (items x fields) with 0/1 values
 #'   * NULL (default) for exploratory analysis where field memberships are estimated
 #' @param conf_class Confirmatory parameter for pre-specified class assignments
 #'   on the respondent side. Mirrors `conf` but operates on classes. Can be:
 #'   * A vector with respondents and corresponding class indices
-#'   * A class membership profile matrix (respondents × classes) with 0/1 values
+#'   * A class membership profile matrix (respondents x classes) with 0/1 values
 #'   * NULL (default) for exploratory class estimation
 #'   When supplied, class memberships are held fixed during EM. For Ranklustering
 #'   (`method = "R"`), the neighbour-smoothing step is skipped because smoothing
@@ -326,12 +326,12 @@ Biclustering.binary <- function(U,
   const <- .Machine$double.eps
   ret.TS <- TestStatistics(tmp)
 
-  if (method == "B" | method == "Biclustering") {
+  if (method == "B" || method == "Biclustering") {
     if (verbose) {
       message("Biclustering is chosen.")
     }
     model <- 1
-  } else if (method == "R" | method == "Ranklustering") {
+  } else if (method == "R" || method == "Ranklustering") {
     if (verbose) {
       message("Ranklustering is chosen.")
     }
@@ -372,10 +372,10 @@ Biclustering.binary <- function(U,
         stop("conf_class vector size does NOT match with the number of respondents.")
       }
       conf_class_mat <- matrix(0, nrow = nobs, ncol = max(conf_class))
-      for (i in 1:NROW(conf_class_mat)) {
+      for (i in seq_len(NROW(conf_class_mat))) {
         conf_class_mat[i, conf_class[i]] <- 1
       }
-    } else if (is.matrix(conf_class) | is.data.frame(conf_class)) {
+    } else if (is.matrix(conf_class) || is.data.frame(conf_class)) {
       if (NROW(conf_class) != nobs) {
         stop("conf_class matrix size does NOT match with the number of respondents.")
       }
@@ -394,7 +394,7 @@ Biclustering.binary <- function(U,
     conf_class_mat <- NULL
   }
 
-  if (ncls < 2 | ncls > 20) {
+  if (ncls < 2 || ncls > 20) {
     stop("Please set the number of classes to a number between 2 and less than 20.")
   }
 
@@ -672,10 +672,10 @@ Biclustering.binary <- function(U,
     }
   }
   if (verbose) {
-    if (SOACflg & WOACflg) {
+    if (SOACflg && WOACflg) {
       message("\nStrongly ordinal alignment condition was satisfied.")
     }
-    if (!SOACflg & WOACflg) {
+    if (!SOACflg && WOACflg) {
       message("\nWeakly ordinal alignment condition was satisfied.")
     }
   }

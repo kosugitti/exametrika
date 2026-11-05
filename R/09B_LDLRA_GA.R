@@ -61,7 +61,7 @@
 #' }
 #' @references Fukuda, S., Yamanaka, Y., & Yoshihiro, T. (2014). A Probability-based evolutionary
 #'  algorithm with mutations to learn Bayesian networks. International Journal of Artificial
-#'  Intelligence and Interactive Multimedia, 3, 7–13. DOI: 10.9781/ijimai.2014.311
+#'  Intelligence and Interactive Multimedia, 3, 7-13. DOI: 10.9781/ijimai.2014.311
 #' @importFrom stats runif rbinom
 #' @examples
 #' \donttest{
@@ -107,14 +107,14 @@ LDLRA_PBIL <- function(U, na = NULL, Z = NULL, w = NULL,
   testlength <- NCOL(tmp$U)
   nobs <- NROW(tmp$U)
 
-  if (ncls < 2 | ncls > 20) {
+  if (ncls < 2 || ncls > 20) {
     stop("Please set the number of classes to a number between 2 and less than 20.")
   }
 
-  if (method == "C" | method == "Class") {
+  if (method == "C" || method == "Class") {
     if (verbose) message("local dependence latent Class model is chosen.")
     model <- 1
-  } else if (method == "R" | method == "Rank") {
+  } else if (method == "R" || method == "Rank") {
     if (verbose) message("local dependence latent Rank model is chosen.")
     model <- 2
   } else {

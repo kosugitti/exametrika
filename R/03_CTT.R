@@ -17,7 +17,7 @@
 #'   matrix of the category scores) and \code{AlphaPolychoric} (from the
 #'   polychoric correlation matrix, the ordinal alpha of Zumbo et al., 2007).
 #'   Rated and nominal data are not supported.
-#' @references Cronbach, L. J. (1951). Coefficient alpha and the internal structure of a test. Psychometrika, 16,297–334.
+#' @references Cronbach, L. J. (1951). Coefficient alpha and the internal structure of a test. Psychometrika, 16,297-334.
 #'
 #' Zumbo, B. D., Gadermann, A. M., & Zeisser, C. (2007). Ordinal versions of coefficients alpha and theta for Likert rating scales. Journal of Modern Applied Statistical Methods, 6(1), 21--29.
 #' @importFrom stats cov

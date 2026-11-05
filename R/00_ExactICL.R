@@ -340,6 +340,8 @@ icl_exact <- function(ZU, clsmemb, fldmemb = NULL, alpha = 1, ncat,
       lq <- 0
       vs <- 0
       cp <- FALSE
+      cap_rows <- integer()
+      cap_logp <- numeric()
       prior_cache <- list()
       for (f in seq_len(dim(counts)[1])) {
         Qf <- ncat[f]
@@ -355,19 +357,34 @@ icl_exact <- function(ZU, clsmemb, fldmemb = NULL, alpha = 1, ncat,
         lp <- lp + po$log_p
         lq <- lq + pr$log_p
         vs <- vs + po$se^2 + pr$se^2
-        cp <- cp || po$capped
+        if (po$capped) {
+          cp <- TRUE
+          cap_rows <- c(cap_rows, f)
+          cap_logp <- c(cap_logp, po$log_p)
+        }
       }
-      list(lp = lp, lq = lq, vs = vs, cp = cp)
+      list(lp = lp, lq = lq, vs = vs, cp = cp, cap_rows = cap_rows, cap_logp = cap_logp)
     })
     log_post <- res$lp
     log_prior <- res$lq
     var_sum <- res$vs
     capped <- res$cp
     if (capped) {
+      # Name the rows: a field of a biclustering, an item of a one-mode model.
+      # The block counts of the hard assignment run against the rank order
+      # there, so hard that no particle of the posterior satisfies it.
+      what <- if (is.null(fld01)) "item" else "field"
+      where <- paste0(
+        what, " ", res$cap_rows,
+        " (log10 P <= ", formatC(res$cap_logp / log(10), digits = 1, format = "f"), ")"
+      )
       warning(
         "ICL_exact: the posterior probability of the rank order fell below ",
-        "the Monte Carlo resolution in at least one field; ICL_exact is a ",
-        "bound there."
+        "the Monte Carlo resolution in ", paste(where, collapse = ", "),
+        ": the block counts of the hard assignment run against the order ",
+        "there. ICL_exact is a lower bound (the true value is larger) and ",
+        "ICL_exact_se is NA.",
+        call. = FALSE
       )
     }
   }

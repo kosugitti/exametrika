@@ -64,6 +64,11 @@ ncls/nfld combination}
 \item{empty_settings}{List of parameter combinations whose fit left a
 class, rank or field empty (see \code{skip_empty})}
 \item{empty_matrix}{Logical matrix marking those cells}
+\item{bound_settings}{List of parameter combinations whose
+\code{ICL_exact} is a lower bound (the order probability of some field
+fell below the Monte Carlo resolution; see \code{\link{Biclustering}}).
+They are reported once, and the per-fit warning is not repeated.}
+\item{bound_matrix}{Logical matrix marking those cells}
 \item{index}{Name of the fit index searched}
 \item{fun}{Name of the analysis function}
 
@@ -75,6 +80,8 @@ For LCA/LRA:
 \item{empty_settings}{List of parameter combinations whose fit left a
 class or rank empty (see \code{skip_empty})}
 \item{empty_vec}{Logical vector marking those settings}
+\item{bound_settings}{As above, for \code{ICL_exact}}
+\item{bound_vec}{Logical vector marking those settings}
 \item{index}{Name of the fit index searched}
 \item{fun}{Name of the analysis function}
 

@@ -158,6 +158,22 @@ print.exametrika <- function(x, digits = 3, fit_indices = c("both", "pattern", "
           length(x$empty_settings), paste(labels, collapse = "; ")
         ))
       }
+      if (identical(x$index, "ICL_exact") && length(x$bound_settings) > 0) {
+        labels <- vapply(x$bound_settings, function(setting) {
+          paste(
+            vapply(
+              names(setting),
+              function(nm) sprintf("%s=%d", nm, setting[[nm]]),
+              character(1)
+            ),
+            collapse = ","
+          )
+        }, character(1))
+        cat(sprintf(
+          "\nICL_exact is a lower bound at %d setting(s) (order probability below the Monte Carlo resolution):\n  %s\n",
+          length(x$bound_settings), paste(labels, collapse = "; ")
+        ))
+      }
       cat("\nUse `$optimal_result` to access the fitted model at the optimal setting.\n")
     },
     all = {

@@ -158,7 +158,7 @@ test_that("ordinal models return ICL_exact", {
 
 test_that("GridSearch accepts index = 'ICL_exact'", {
   skip_on_cran()
-  gs <- GridSearch(J15S500, fun = "LRA", min_ncls = 2, max_ncls = 4, index = "ICL_exact", verbose = FALSE)
+  gs <- GridSearch(J15S500, fun = "LRA", max_ncls = 4, index = "ICL_exact", verbose = FALSE)
   expect_true(gs$optimal_ncls %in% 2:4)
 })
 
@@ -173,4 +173,25 @@ test_that("the BIC-type ICL uses the model's mixing weights and log n", {
   w <- c(0.5, 0.3, 0.2)
   vb2 <- exametrika:::vb_fit_single(L, post, nparam = 6, log_prior = log(w), n_weight_params = 2)
   expect_equal(vb2$ICL, -2 * (sum(cls01 * L) + sum(colSums(cls01) * log(w))) + 8 * log(20))
+})
+
+test_that("a bound names the rows whose counts run against the order", {
+  # One item, three ranks, every respondent of rank 1 in the top category and
+  # of rank 3 in the bottom one: the posterior order probability is far below
+  # any Monte Carlo resolution
+  N <- 300
+  ZU <- array(0, dim = c(N, 1, 3))
+  rank <- rep(1:3, each = 100)
+  cat_of <- c(3, 2, 1)[rank]
+  ZU[cbind(seq_len(N), 1, cat_of)] <- 1
+  clsmemb <- matrix(0, N, 3)
+  clsmemb[cbind(seq_len(N), rank)] <- 1
+  expect_warning(
+    res <- exametrika:::icl_exact(ZU, clsmemb,
+      alpha = 1, ncat = 3, log_prior_cls = rep(-log(3), 3), ordered = TRUE, M = 2000
+    ),
+    "item 1 \\(log10 P <= -[0-9.]+\\): the block counts of the hard assignment run against the order"
+  )
+  expect_true(is.na(res$ICL_exact_se))
+  expect_true(is.finite(res$ICL_exact))
 })

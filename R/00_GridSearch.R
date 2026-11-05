@@ -35,6 +35,57 @@ report_failed_grid_settings <- function(failed_settings) {
   }
 }
 
+#' @title Did ICL_exact of a fit stop at a bound?
+#' @description `ICL_exact_se` is `NA` exactly when the order probability of
+#' some field fell below the Monte Carlo resolution (see `icl_exact()`), in
+#' which case `ICL_exact` is a lower bound.
+#' @param result A fitted model (one grid cell).
+#' @noRd
+grid_cell_is_bound <- function(result) {
+  return(
+    !is.null(result$ICL_exact) && !is.na(result$ICL_exact) &&
+      !is.null(result$ICL_exact_se) && is.na(result$ICL_exact_se)
+  )
+}
+
+#' @title Fit one grid cell, keeping the ICL_exact bound warning quiet
+#' @description Every cell computes `ICL_exact`, and an isotonic fit whose
+#' hard counts run against the rank order warns about it. Over a grid that
+#' is one warning per cell saying the same thing, so the warning is muffled
+#' here and the cells concerned are reported once by `GridSearch()` (and
+#' kept in `bound_settings`).
+#' @param expr The call that fits the cell.
+#' @noRd
+muffle_icl_bound <- function(expr) {
+  withCallingHandlers(expr, warning = function(w) {
+    if (grepl("^ICL_exact: the posterior probability", conditionMessage(w))) {
+      invokeRestart("muffleWarning")
+    }
+  })
+}
+
+#' @title Report grid cells where ICL_exact is a bound
+#' @param bound_settings List of named-list parameter settings.
+#' @noRd
+report_bound_grid_settings <- function(bound_settings) {
+  if (length(bound_settings) == 0) {
+    return(invisible(NULL))
+  }
+  message(
+    "
+Note: ICL_exact is a lower bound at the following settings (the ",
+    "order probability of some field fell below the Monte Carlo resolution):"
+  )
+  for (setting in bound_settings) {
+    parts <- vapply(
+      names(setting),
+      function(nm) sprintf("%s=%d", nm, setting[[nm]]),
+      character(1)
+    )
+    message("  ", paste(parts, collapse = ", "))
+  }
+}
+
 #' @title Select the first tied optimum in a grid-search fit-index array
 #' @description
 #' Shared by GridSearch()'s Biclustering (2-D, `ret` is a matrix) and LCA/LRA
@@ -171,6 +222,11 @@ mask_empty_grid_cells <- function(ret, empty, skip_empty) {
 #'   \item{empty_settings}{List of parameter combinations whose fit left a
 #'    class, rank or field empty (see `skip_empty`)}
 #'   \item{empty_matrix}{Logical matrix marking those cells}
+#'   \item{bound_settings}{List of parameter combinations whose
+#'    \code{ICL_exact} is a lower bound (the order probability of some field
+#'    fell below the Monte Carlo resolution; see \code{\link{Biclustering}}).
+#'    They are reported once, and the per-fit warning is not repeated.}
+#'   \item{bound_matrix}{Logical matrix marking those cells}
 #'   \item{index}{Name of the fit index searched}
 #'   \item{fun}{Name of the analysis function}
 #'
@@ -182,6 +238,8 @@ mask_empty_grid_cells <- function(ret, empty, skip_empty) {
 #'   \item{empty_settings}{List of parameter combinations whose fit left a
 #'    class or rank empty (see `skip_empty`)}
 #'   \item{empty_vec}{Logical vector marking those settings}
+#'   \item{bound_settings}{As above, for \code{ICL_exact}}
+#'   \item{bound_vec}{Logical vector marking those settings}
 #'   \item{index}{Name of the fit index searched}
 #'   \item{fun}{Name of the analysis function}
 #'
@@ -288,10 +346,12 @@ GridSearch <- function(
     colnames(ret) <- paste("nfld", 2:max_nfld)
     rownames(ret) <- paste("ncls", 2:max_ncls)
     empty <- matrix(FALSE, nrow = nrow(ret), ncol = ncol(ret), dimnames = dimnames(ret))
+    bound <- empty
     args_list <- list()
     extra_args <- list(...)
     failed_settings <- list()
     empty_settings <- list()
+    bound_settings <- list()
 
     for (ncls in 2:max_ncls) {
       if (verbose) {
@@ -315,7 +375,7 @@ GridSearch <- function(
         # Tolerate per-cell errors: a single Biclustering failure (e.g.
         # empty-cluster edge cases at grid corners) should not abort the
         # entire grid search. Treat errors the same as non-convergence.
-        result <- tryCatch(do.call(fun, args_list),
+        result <- tryCatch(muffle_icl_bound(do.call(fun, args_list)),
           error = function(e) NULL
         )
         if (is.null(result) ||
@@ -331,6 +391,13 @@ GridSearch <- function(
             empty[ncls - 1, nfld - 1] <- TRUE
             empty_settings <- append(
               empty_settings,
+              list(list(ncls = ncls, nfld = nfld))
+            )
+          }
+          if (grid_cell_is_bound(result)) {
+            bound[ncls - 1, nfld - 1] <- TRUE
+            bound_settings <- append(
+              bound_settings,
               list(list(ncls = ncls, nfld = nfld))
             )
           }
@@ -354,6 +421,7 @@ GridSearch <- function(
     # Display warning for failed convergence
     report_failed_grid_settings(failed_settings)
     if (skip_empty) report_empty_grid_settings(empty_settings)
+    if (index == "ICL_exact") report_bound_grid_settings(bound_settings)
 
     message(paste(
       "\nOptimal ncls/nrank is ",
@@ -372,7 +440,7 @@ GridSearch <- function(
       ),
       extra_args
     )
-    optimal_result <- do.call(fun, optimal_args)
+    optimal_result <- muffle_icl_bound(do.call(fun, optimal_args))
 
     ret_list <- structure(list(
       index_matrix = ret,
@@ -382,6 +450,8 @@ GridSearch <- function(
       failed_settings = failed_settings,
       empty_settings = empty_settings,
       empty_matrix = empty,
+      bound_settings = bound_settings,
+      bound_matrix = bound,
       index = index,
       fun = fun
     ), class = c("exametrika", "GridSearch"))
@@ -394,9 +464,11 @@ GridSearch <- function(
     names(ret) <- paste0("ncls", 2:max_ncls)
     empty <- rep(FALSE, length(ret))
     names(empty) <- names(ret)
+    bound <- empty
     extra_args <- list(...)
     failed_settings <- list()
     empty_settings <- list()
+    bound_settings <- list()
 
     for (i in seq_along(2:max_ncls)) {
       ncls <- (2:max_ncls)[i]
@@ -410,7 +482,7 @@ GridSearch <- function(
       size_arg <- if (fun == "LRA") list(nrank = ncls) else list(ncls = ncls)
       args_list <- c(list(U = obj, verbose = FALSE), size_arg, extra_args)
       # Tolerate per-cell errors (see Biclustering branch above for rationale).
-      result <- tryCatch(do.call(fun, args_list),
+      result <- tryCatch(muffle_icl_bound(do.call(fun, args_list)),
         error = function(e) NULL
       )
       if (is.null(result) ||
@@ -426,6 +498,10 @@ GridSearch <- function(
           empty[i] <- TRUE
           empty_settings <- append(empty_settings, list(list(ncls = ncls)))
         }
+        if (grid_cell_is_bound(result)) {
+          bound[i] <- TRUE
+          bound_settings <- append(bound_settings, list(list(ncls = ncls)))
+        }
       }
     }
 
@@ -440,6 +516,7 @@ GridSearch <- function(
     # Display warning for failed convergence
     report_failed_grid_settings(failed_settings)
     if (skip_empty) report_empty_grid_settings(empty_settings)
+    if (index == "ICL_exact") report_bound_grid_settings(bound_settings)
 
     message("\nOptimal ncls/nrank is ", optimal_ncls)
 
@@ -450,7 +527,7 @@ GridSearch <- function(
       if (fun == "LRA") list(nrank = unname(optimal_ncls)) else list(ncls = unname(optimal_ncls)),
       extra_args
     )
-    optimal_result <- do.call(fun, optimal_args)
+    optimal_result <- muffle_icl_bound(do.call(fun, optimal_args))
 
     ret_list <- structure(list(
       index_vec = ret,
@@ -459,6 +536,8 @@ GridSearch <- function(
       failed_settings = failed_settings,
       empty_settings = empty_settings,
       empty_vec = empty,
+      bound_settings = bound_settings,
+      bound_vec = bound,
       index = index,
       fun = fun
     ), class = c("exametrika", "GridSearch"))

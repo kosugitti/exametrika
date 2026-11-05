@@ -45,6 +45,13 @@ so strongly that even this fails, a warning is given, `ICL_exact_se` is
 probability is estimated by the same particle method. GTM and SOM fits have no prior
 model and return `NA`. `GridSearch()` accepts `index = "ICL_exact"`.
 
+When a bound occurs the warning names the fields (or items) and the order
+of magnitude reached, since the cause is local: the block counts of the
+hard assignment run against the rank order in those fields. `GridSearch()`
+keeps that warning quiet over the grid and instead lists the settings
+concerned once (`bound_settings`, `bound_matrix` / `bound_vec`, and in
+`print()`), because a bound is not a value to compare.
+
 Related: the BIC-type `ICL` and `BIC_elbo` now penalise every parameter
 with `log n` (the package's sample size, as in `BIC`) and use the model's
 mixing weights in the completed log-likelihood; until 2.2.0 `ICL` penalised

@@ -54,7 +54,7 @@ and will raise an error if used with polytomous data.
 
 Brin, S., Motwani, R., Ullman, J., & Tsur, S. (1997). Dynamic itemset
 counting and implication rules for market basket data. In Proceedings of
-ACM SIGMOD International Conference on Management of Data (pp. 255–264).
+ACM SIGMOD International Conference on Management of Data (pp. 255-264).
 https://dl.acm.org/doi/10.1145/253262.253325
 
 ## Examples

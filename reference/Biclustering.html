@@ -189,7 +189,7 @@ who treat multinomial MLE under general convex constraints.</p></li>
 <dt id="arg-conf-class">conf_class<a class="anchor" aria-label="anchor" href="#arg-conf-class"></a></dt>
 <dd><p>Confirmatory parameter for pre-specified class assignments
 on the respondent side. Mirrors <code>conf</code> but operates on classes. Can be:</p><ul><li><p>A vector with respondents and corresponding class indices</p></li>
-<li><p>A class membership profile matrix (respondents × classes) with 0/1 values</p></li>
+<li><p>A class membership profile matrix (respondents x classes) with 0/1 values</p></li>
 <li><p>NULL (default) for exploratory class estimation
 When supplied, class memberships are held fixed during EM. For Ranklustering
 (<code>method = "R"</code>), the neighbour-smoothing step is skipped because smoothing
@@ -307,7 +307,7 @@ every category code to make the codes start at 1; used by
 <code><a href="predict.exametrika.html">predict.exametrika()</a></code>.</p></dd>
 
 <dt>FRPIndex</dt>
-<dd><p>Field Reference Profile indices (Kumagai, 2007) — data.frame with 6 columns:</p><dl><dt>Alpha</dt>
+<dd><p>Field Reference Profile indices (Kumagai, 2007) – data.frame with 6 columns:</p><dl><dt>Alpha</dt>
 <dd><p>Maximum-slope location: class transition where the largest increase occurs</p></dd>
 
 <dt>A</dt>

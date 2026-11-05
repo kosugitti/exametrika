@@ -297,7 +297,7 @@ informative. Only AIC, BIC and CAIC are reported; the chi-square based
 indices are NA.
 
 For rated data (multiple-choice items with a key) the estimation is the
-nominal one — `LCA.rated` calls `LCA.nominal` internally — and the key
+nominal one – `LCA.rated` calls `LCA.nominal` internally – and the key
 is used afterwards to recover the quantities that need a notion of a
 correct answer. The Item Reference Profile is the model-implied
 probability of the keyed category, `IRP[j, c] = rho[j, CA[j] | c]`, and

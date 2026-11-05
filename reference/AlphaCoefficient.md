@@ -56,7 +56,7 @@ Rated and nominal data are not supported.
 ## References
 
 Cronbach, L. J. (1951). Coefficient alpha and the internal structure of
-a test. Psychometrika, 16,297–334.
+a test. Psychometrika, 16,297-334.
 
 Zumbo, B. D., Gadermann, A. M., & Zeisser, C. (2007). Ordinal versions
 of coefficients alpha and theta for Likert rating scales. Journal of

@@ -164,7 +164,7 @@ Biclustering(
 
   - A vector with respondents and corresponding class indices
 
-  - A class membership profile matrix (respondents × classes) with 0/1
+  - A class membership profile matrix (respondents x classes) with 0/1
     values
 
   - NULL (default) for exploratory class estimation When supplied, class
@@ -314,7 +314,7 @@ An object of class "exametrika" and "Biclustering" containing:
 
 - FRPIndex:
 
-  Field Reference Profile indices (Kumagai, 2007) — data.frame with 6
+  Field Reference Profile indices (Kumagai, 2007) – data.frame with 6
   columns:
 
   Alpha

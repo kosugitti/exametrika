@@ -48,8 +48,8 @@
 </div>
 <div class="section level3">
 <h3 id="minor-2-3-0">Minor<a class="anchor" aria-label="anchor" href="#minor-2-3-0"></a></h3>
-<ul><li>
-<code><a href="../reference/BINET.html">BINET()</a></code> now reports <code>msg = "Class"</code>: it has latent classes (<code>LCD</code>, <code>CMD</code>), like the <code><a href="../reference/LCA.html">LCA()</a></code> and <code><a href="../reference/Biclustering.html">Biclustering()</a></code> it is built on, but said <code>"Rank"</code>. Nothing in the package read the value; ggExametrika decides between class and rank plots by it.</li>
+<ul><li><p><code><a href="../reference/BINET.html">BINET()</a></code> now reports <code>msg = "Class"</code>: it has latent classes (<code>LCD</code>, <code>CMD</code>), like the <code><a href="../reference/LCA.html">LCA()</a></code> and <code><a href="../reference/Biclustering.html">Biclustering()</a></code> it is built on, but said <code>"Rank"</code>. Nothing in the package read the value; ggExametrika decides between class and rank plots by it.</p></li>
+<li><p>Internal clean-up with no change in results: <code>1:n</code> loops use <code><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_len()</a></code>/<code><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_along()</a></code>, <code>T</code>/<code>F</code> are spelled out, <code>if()</code> conditions use <code>||</code>/<code>&amp;&amp;</code>, and assignments that were never read (left over from the Mathematica port) are commented out. A few of them were computed inside EM loops, so those models run marginally faster.</p></li>
 </ul></div>
 <div class="section level3">
 <h3 id="fit-indices-of-the-ordinal-and-rated-lra-use-the-number-of-respondents-2-3-0">Fit indices of the ordinal and rated LRA use the number of respondents<a class="anchor" aria-label="anchor" href="#fit-indices-of-the-ordinal-and-rated-lra-use-the-number-of-respondents-2-3-0"></a></h3>

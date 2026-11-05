@@ -296,3 +296,8 @@ test_that("BINET runs and returns its structure", {
   expect_equal(length(fit$TRP), 13)
   expect_true(all(fit$FRP >= 0 & fit$FRP <= 1, na.rm = TRUE))
 })
+
+test_that("BINET is a class model and says so in msg", {
+  expect_identical(tgt_model()$msg, "Class")
+  expect_false(is.null(tgt_model()$LCD))
+})

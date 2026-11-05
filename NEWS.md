@@ -52,6 +52,13 @@ the block parameters of a biclustering with `log(nJ)` and used the
 empirical proportions of the hard assignments with `(C - 1) log n` and
 `(F - 1) log J`. The values change; the ranking of models usually does not.
 
+## Minor
+
+* `BINET()` now reports `msg = "Class"`: it has latent classes (`LCD`,
+  `CMD`), like the `LCA()` and `Biclustering()` it is built on, but said
+  `"Rank"`. Nothing in the package read the value; ggExametrika decides
+  between class and rank plots by it.
+
 ## New: `equate()` puts a new test form on the scale of a fit
 
 `equate(fit, newdata)` takes responses to a form that shares some items

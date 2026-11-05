@@ -557,7 +557,9 @@ BINET <- function(U, na = NULL, Z = NULL, w = NULL,
   ret <- structure(list(
     U = U,
     testlength = testlength,
-    msg = "Rank",
+    # BINET has latent classes (LCD, CMD): "Class", as LCA and the
+    # Biclustering it is built on report it. Until 2.3.0 this said "Rank".
+    msg = "Class",
     nobs = nobs,
     n_class = ncls,
     n_field = nfld,

@@ -25,12 +25,23 @@
 #' @export
 Biclustering.nominal <- function(U,
                                  ncls = 2, nfld = 2,
+                                 method = "B",
                                  conf = NULL,
                                  conf_class = NULL,
                                  mic = FALSE,
                                  maxiter = 1000,
                                  verbose = FALSE,
                                  alpha = 1, ...) {
+  warn_unused_dots(list(...), "Biclustering")
+  # Nominal categories have no order, so there is no Ranklustering: accept
+  # the spelling of the other methods and refuse "R" by name
+  if (!method %in% c("B", "Biclustering")) {
+    stop(
+      "Nominal data have no rank order, so Ranklustering (method = \"", method,
+      "\") is not available; use method = \"B\", or ordinal data.",
+      call. = FALSE
+    )
+  }
   tmp <- U
   # Codes are shifted, not renumbered per item: a field's items share the
   # block probabilities, so category q must mean the same on every item.

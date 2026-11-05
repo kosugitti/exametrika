@@ -73,6 +73,7 @@ LRA.rated <- function(U,
                       eps = 1e-4,
                       minFreqRatio = 0,
                       verbose = FALSE, ...) {
+  warn_unused_dots(list(...), "LRA")
   ## check trapezoidal prior
   if (trapezoidal > 0) {
     if (trapezoidal > 1 / nrank) {

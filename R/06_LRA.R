@@ -178,6 +178,7 @@ LRA.binary <- function(U,
                        beta2 = 1,
                        conf = NULL,
                        mixing = c("equal", "estimate"), ...) {
+  warn_unused_dots(list(...), "LRA")
   mixing <- match.arg(mixing)
   tmp <- U
   testlength <- NCOL(tmp$U)

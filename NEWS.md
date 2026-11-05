@@ -66,6 +66,19 @@ empirical proportions of the hard assignments with `(C - 1) log n` and
   `"Rank"`. Nothing in the package read the value; ggExametrika decides
   between class and rank plots by it.
 
+## Unknown arguments are reported instead of ignored
+
+`LCA()`, `LRA()`, `Biclustering()` and `Biclustering_IRM()` take `...` so
+that S3 dispatch can pass the arguments on to the method for the response
+type. Anything that method did not use was silently dropped, so
+`Biclustering(U, dataType = "rated")` (for `response.type = "rated"`) or
+`LCA(U, ncls = 3, maxiterations = 50)` ran with the defaults and no sign
+of it. The terminal methods now warn, naming the arguments they ignored.
+The deprecated `max_iter` of `Biclustering_IRM()` keeps its own message.
+`Biclustering()` on nominal data accepts `method = "B"` (it was documented
+but not an argument) and refuses `method = "R"` with a message, since
+nominal categories have no order to rank.
+
 ## New: `equate()` puts a new test form on the scale of a fit
 
 `equate(fit, newdata)` takes responses to a form that shares some items

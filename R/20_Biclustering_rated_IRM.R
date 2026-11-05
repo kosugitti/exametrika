@@ -58,6 +58,7 @@ Biclustering_IRM.rated <- function(U,
                                    maxiter = 100, stable_limit = 5,
                                    minSize = 20, EM_limit = 20,
                                    seed = 123, verbose = FALSE, ...) {
+  warn_unused_dots(list(...), "Biclustering_IRM", allowed = "max_iter")
   maxiter <- resolve_deprecated_max_iter(maxiter, list(...))
   tmp <- U
   nobs <- NROW(tmp$Q)

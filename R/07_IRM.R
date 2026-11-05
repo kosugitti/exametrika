@@ -133,6 +133,7 @@ Biclustering_IRM.binary <- function(U, na = NULL, Z = NULL, w = NULL,
                                     gamma_c = 1, gamma_f = 1,
                                     maxiter = 100, stable_limit = 5, minSize = 20, EM_limit = 20,
                                     seed = 123, verbose = FALSE, ...) {
+  warn_unused_dots(list(...), "Biclustering_IRM", allowed = "max_iter")
   maxiter <- resolve_deprecated_max_iter(maxiter, list(...))
   # data format
   if (!inherits(U, "exametrika")) {

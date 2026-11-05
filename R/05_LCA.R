@@ -187,6 +187,7 @@ LCA.default <- function(U, na = NULL, Z = NULL, w = NULL, ...) {
 LCA.binary <- function(U, ncls = 2, na = NULL, Z = NULL, w = NULL, maxiter = 1000,
                        verbose = FALSE, beta1 = 1, beta2 = 1, conf = NULL,
                        mixing = c("equal", "estimate"), ...) {
+  warn_unused_dots(list(...), "LCA")
   mixing <- match.arg(mixing)
   # data format
   if (!inherits(U, "exametrika")) {
@@ -307,6 +308,7 @@ LCA.binary <- function(U, ncls = 2, na = NULL, Z = NULL, w = NULL, maxiter = 100
 #' @export
 LCA.nominal <- function(U, ncls = 2, na = NULL, Z = NULL, w = NULL, maxiter = 1000,
                         verbose = FALSE, alpha = 1, ...) {
+  warn_unused_dots(list(...), "LCA")
   # data format
   if (!inherits(U, "exametrika")) {
     tmp <- dataFormat(data = U, na = na, Z = Z, w = w)

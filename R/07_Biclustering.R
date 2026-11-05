@@ -317,6 +317,7 @@ Biclustering.binary <- function(U,
                                 beta1 = 1,
                                 beta2 = 1,
                                 mixing = c("equal", "estimate"), ...) {
+  warn_unused_dots(list(...), "Biclustering")
   mixing <- match.arg(mixing)
   tmp <- U
   U <- tmp$U * tmp$Z

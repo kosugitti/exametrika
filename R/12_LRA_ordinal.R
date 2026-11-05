@@ -83,6 +83,7 @@ LRA.ordinal <- function(U,
                         alpha = 1,
                         eps = 1e-4,
                         verbose = FALSE, ...) {
+  warn_unused_dots(list(...), "LRA")
   ## check method
   if (method != "isotonic" & method != "GTM") {
     stop("The method must be either 'isotonic' or 'GTM'.")

@@ -58,6 +58,7 @@ Biclustering.ordinal <- function(U,
                                  nstart = 10,
                                  seed = 1,
                                  ...) {
+  warn_unused_dots(list(...), "Biclustering")
   tmp <- U
   # Codes are shifted, not renumbered per item: a field's items share the
   # block probabilities, so category q must mean the same on every item.

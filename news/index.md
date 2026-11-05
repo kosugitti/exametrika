@@ -82,12 +82,7 @@ models usually does not.
   it is built on, but said `"Rank"`. Nothing in the package read the
   value; ggExametrika decides between class and rank plots by it.
 
-- Internal clean-up with no change in results: `1:n` loops use
-  [`seq_len()`](https://rdrr.io/r/base/seq.html)/[`seq_along()`](https://rdrr.io/r/base/seq.html),
-  `T`/`F` are spelled out, `if()` conditions use `||`/`&&`, and
-  assignments that were never read (left over from the Mathematica port)
-  are commented out. A few of them were computed inside EM loops, so
-  those models run marginally faster.
+- Many small internal clean-ups of the code (no change in results).
 
 ### Fit indices of the ordinal and rated LRA use the number of respondents
 

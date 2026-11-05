@@ -115,7 +115,7 @@ head(result.IRT$ability)
 #> Student003 Student003  0.01379172 0.5529872
 #> Student004 Student004  0.57628083 0.5748167
 #> Student005 Student005 -0.97438596 0.5915842
-#> Student006 Student006  0.85229553 0.5819544
+#> Student006 Student006  0.85229552 0.5819544
 ```
 
 ### Plot Types

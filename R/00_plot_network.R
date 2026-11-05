@@ -7,7 +7,7 @@ plot_field_pirp <- function(x, dots = list()) {
   target <- x$IRP
   ## rank x field x nrs
   Nrank <- dim(target)[1]
-  nfld <- dim(target)[2]
+  # nfld <- dim(target)[2]
   nrs <- dim(target)[3]
   for (i in 1:Nrank) {
     mat <- target[i, , ]

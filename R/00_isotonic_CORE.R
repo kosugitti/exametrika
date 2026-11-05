@@ -124,7 +124,7 @@ emclus_isotonic <- function(U, Z, ncls, beta1, beta2, maxiter = 100, mic = FALSE
       log_w <- log(w)
     }
 
-    item_log_lik <- colSums(correct_cls * log(classRefMat + const) + incorrect_cls * log(1 - classRefMat + const))
+    # item_log_lik <- colSums(correct_cls * log(classRefMat + const) + incorrect_cls * log(1 - classRefMat + const))
     # Observed-data log-likelihood, for the same reason as in emclus(): the
     # expected log-posterior is not monotone across cycles, so a decrease in it
     # is not evidence of trouble. With equal weights the prior term is the

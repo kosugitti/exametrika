@@ -122,7 +122,7 @@ JSR <- function(U, na = NULL, Z = NULL, w = NULL) {
     return(JCRR(U))
   }
   nitems <- NCOL(U$Q)
-  ncat <- U$categories
+  # ncat <- U$categories
   U$Q[U$Z == 0] <- NA
   JSR <- vector("list", nitems)
   for (j in 1:nitems) {

@@ -91,7 +91,7 @@ LRA.rated <- function(U,
   nitems <- NCOL(U$Q)
   correct_answer <- U$CA
   nquan <- nrank
-  missing1error0 <- 0
+  # missing1error0 <- 0
   collapse_indicator <- 100
   const <- 1e-6
 
@@ -158,7 +158,7 @@ LRA.rated <- function(U,
 
   # useNcat,useNcat999
   useNcat <- sapply(usecategory, length)
-  useNcat999 <- sapply(usecategory999, length)
+  # useNcat999 <- sapply(usecategory999, length)
 
   # Expand data matrix
   expand_Zij <- matrix(0, nrow = nobs, ncol = sum(useNcat))
@@ -283,21 +283,21 @@ LRA.rated <- function(U,
   } else {
     log_prior <- rep(1, nrank)
   }
-  lp2 <- logprior_NQmat <- matrix(rep(log(log_prior), nobs), byrow = TRUE, nrow = nobs)
+  logprior_NQmat <- matrix(rep(log(log_prior), nobs), byrow = TRUE, nrow = nobs)
 
 
   # Design Vector/Matrix
-  designfunc <- function(x, y) 1
+  # designfunc <- function(x, y) 1
 
-  create_upper_diagonal_matrix <- function(func, n) {
-    matrix <- matrix(0, n, n)
-    for (i in 1:n) {
-      for (j in 1:n) {
-        if (i <= j) matrix[i, j] <- func(i, j)
-      }
-    }
-    return(matrix)
-  }
+  # create_upper_diagonal_matrix <- function(func, n) {
+  #   matrix <- matrix(0, n, n)
+  #   for (i in 1:n) {
+  #     for (j in 1:n) {
+  #       if (i <= j) matrix[i, j] <- func(i, j)
+  #     }
+  #   }
+  #   return(matrix)
+  # }
 
   design0 <- sapply(1:nitems, function(j) sum(useNcat[1:j]))
   design1 <- cbind(head(c(0, design0) + 1, -1), design0)
@@ -351,7 +351,7 @@ LRA.rated <- function(U,
 
   ij_log_lik_satu <- -10
   iter_satu <- 0
-  converge_satu <- TRUE
+  # converge_satu <- TRUE
   FLG <- TRUE
   while (FLG) {
     old_log_lik_satu <- ij_log_lik_satu
@@ -384,7 +384,7 @@ LRA.rated <- function(U,
       FLG <- FALSE
     }
     if (iter_satu >= maxiter) {
-      converge_satu <- FALSE
+      # converge_satu <- FALSE
       FLG <- FALSE
       message("\nReached the maximum number of iterations.")
       message("Warning: Algorithm may not have converged. Interpret results with caution.")
@@ -573,7 +573,7 @@ LRA.rated <- function(U,
 
   # Fit indices -----------------------------------------------------
   itemdf <- (useNcat - 1) * (nitems - sum(diag(Fil)))
-  testdf <- sum(itemdf)
+  # testdf <- sum(itemdf)
 
   # Observed-data log-likelihood, posterior entropy and ICL (see
   # R/00_VariationalFit.R).
@@ -583,7 +583,7 @@ LRA.rated <- function(U,
     log_prior = log(log_prior / sum(log_prior))
   )
   null_itemdf <- (useNcat - 1) * (nitems - 1)
-  null_testdf <- sum(null_itemdf)
+  # null_testdf <- sum(null_itemdf)
 
   rankProf_satu <- row_softmax(CijkMat %*% log(catRefmat_satu + const))
   # Rank_satu <- apply(rankProf_satu, 1, which.max)

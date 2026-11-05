@@ -255,7 +255,7 @@ LCA.binary <- function(U, ncls = 2, na = NULL, Z = NULL, w = NULL, maxiter = 100
 
   ret <- structure(list(
     msg = "Class",
-    testlength = testlength <- NCOL(tmp$U),
+    testlength = NCOL(tmp$U),
     nobs = NROW(tmp$U),
     n_class = ncls, # New naming convention
     n_cycle = fit$iter, # New naming convention

@@ -416,7 +416,7 @@ BiserialCorrelation <- function(i, t) {
   ## calcs correlation
   tau_j <- qnorm(1 - mean(i, na.rm = TRUE))
   ll <- function(rho, tau_j, i, t) {
-    tmp <- (1 - i) %*% (log(pnorm(tau_j, mean = rho * t, sd = sqrt(1 - rho^2)))) +
+    (1 - i) %*% (log(pnorm(tau_j, mean = rho * t, sd = sqrt(1 - rho^2)))) +
       i %*% (log(1 - pnorm(tau_j, mean = rho * t, sd = sqrt(1 - rho^2))))
   }
   pairwise <- !is.na(i + t)

@@ -125,7 +125,7 @@ LRA.ordinal <- function(U,
     function(x) x[x != -1]
   )
   # number of categories
-  ncat999 <- sapply(category999, length)
+  # ncat999 <- sapply(category999, length)
   # number of categories excluding missing
   ncat <- sapply(category, length)
 
@@ -274,7 +274,7 @@ LRA.ordinal <- function(U,
   if (verbose) {
     message("Starting EM estimation for Saturation Model...")
   }
-  converge_satu <- TRUE
+  # converge_satu <- TRUE
   FLG <- TRUE
   while (FLG) {
     old_log_like_satu <- ij_log_lik_satu
@@ -312,7 +312,7 @@ LRA.ordinal <- function(U,
       FLG <- FALSE
     }
     if (iter_satu >= maxiter) {
-      converge_satu <- FALSE
+      # converge_satu <- FALSE
       FLG <- FALSE
       message("\nReached the maximum number of iterations.")
       message("Warning: Algorithm may not have converged. Interpret results with caution.")
@@ -522,9 +522,9 @@ LRA.ordinal <- function(U,
   } else {
     itemdf <- (ncat - 1) * (nitems - sum(diag(Fil)))
   }
-  testdf <- sum(itemdf)
+  # testdf <- sum(itemdf)
   null_itemdf <- (ncat - 1) * (nitems - 1)
-  null_testdf <- sum(null_itemdf)
+  # null_testdf <- sum(null_itemdf)
 
   # Observed-data log-likelihood, posterior entropy and ICL (see
   # R/00_VariationalFit.R). The expected log-posterior monitored by the EM

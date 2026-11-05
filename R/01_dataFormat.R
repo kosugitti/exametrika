@@ -105,23 +105,23 @@ dataFormat <- function(data, na = NULL, id = NULL, Z = NULL, w = NULL,
   }
 
   # Helper function to check if data looks like response data (has < 20 unique values)
-  looks_like_response_data <- function(x) {
-    if (all(is.na(x))) {
-      return(FALSE)
-    }
-    x_clean <- x[!is.na(x)]
-    if (length(x_clean) == 0) {
-      return(FALSE)
-    }
+  # looks_like_response_data <- function(x) {
+  #   if (all(is.na(x))) {
+  #     return(FALSE)
+  #   }
+  #   x_clean <- x[!is.na(x)]
+  #   if (length(x_clean) == 0) {
+  #     return(FALSE)
+  #   }
 
-    x_num <- suppressWarnings(as.numeric(x_clean))
-    if (any(is.na(x_num))) {
-      return(FALSE)
-    }
+  #   x_num <- suppressWarnings(as.numeric(x_clean))
+  #   if (any(is.na(x_num))) {
+  #     return(FALSE)
+  #   }
 
-    unique_vals <- unique(x_num)
-    length(unique_vals) < 20 && all(unique_vals >= 0) && all(unique_vals == round(unique_vals))
-  }
+  #   unique_vals <- unique(x_num)
+  #   length(unique_vals) < 20 && all(unique_vals >= 0) && all(unique_vals == round(unique_vals))
+  # }
 
   # Phase 1: ID column identification and response matrix extraction
   if (!is.null(id)) {

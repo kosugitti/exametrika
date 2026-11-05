@@ -182,7 +182,7 @@ LRA.binary <- function(U,
   mixing <- match.arg(mixing)
   tmp <- U
   testlength <- NCOL(tmp$U)
-  samplesize <- NROW(tmp$U)
+  # samplesize <- NROW(tmp$U)
   const <- exp(-testlength)
   ncls <- nrank
 

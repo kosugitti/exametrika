@@ -337,7 +337,7 @@ Biclustering_IRM.binary <- function(U, na = NULL, Z = NULL, w = NULL,
         } else {
           # Student s belongs to a new class
           ncls <- ncls + 1
-          new_class <- which.max(newclass01)
+          # new_class <- which.max(newclass01)
           cls01_left <- cls01[, 1:(ncls - 2)]
           cls01_right <- cls01[, (ncls - 1)]
           zeros <- rep(0, nrow(cls01))
@@ -469,7 +469,7 @@ Biclustering_IRM.binary <- function(U, na = NULL, Z = NULL, w = NULL,
   llm <- sum(Ccf * log(Pcf + const) + Fcf * log(1 - Pcf + const))
   df <- nobs * testlength - ncls * nfld
   bic <- -2 * llm - df * log(nobs)
-  indices <- c(llm, df, bic)
+  # indices <- c(llm, df, bic)
 
   # sort
   ret <- Pcf_sort(Pcf, cls01, fld01, ncls, nfld)
@@ -493,7 +493,7 @@ Biclustering_IRM.binary <- function(U, na = NULL, Z = NULL, w = NULL,
   zero_position <- which(rowSums(tmp$Z * tmp$U, na.rm = TRUE) == 0)
   full_position <- which(rowSums(tmp$Z * tmp$U, na.rm = TRUE) == testlength)
   delt <- 0
-  delrep <- ncls
+  # delrep <- ncls
   EMt <- 0 # stays 0 when no class falls below minSize (2.2.0)
 
   DelRepFLG <- TRUE
@@ -569,12 +569,12 @@ Biclustering_IRM.binary <- function(U, na = NULL, Z = NULL, w = NULL,
       llm <- sum(Ccf * log(Pcf + const) + Fcf * log(1 - Pcf + const))
       df <- nobs * testlength - ncls * nfld
       bic <- -2 * llm - df * log(nobs)
-      indices <- c(llm, df, bic)
+      # indices <- c(llm, df, bic)
       fit <- bic
       if (fit < bestfit) {
         EMt <- EMt + 1
         bestfit <- fit
-        best_index <- indices
+        # best_index <- indices
         bestPcf <- Pcf
         bestcls <- cls
       } else {

@@ -77,7 +77,7 @@ BNM_GA <- function(U, na = NULL, Z = NULL, w = NULL,
     tmp <- U
   }
   testlength <- NCOL(tmp$U)
-  nobs <- NROW(tmp$U)
+  # nobs <- NROW(tmp$U)
 
   # crossover type
   if (crossover < 0 || crossover > 2) {
@@ -221,7 +221,7 @@ BNM_GA <- function(U, na = NULL, Z = NULL, w = NULL,
     }
 
     gene_list <- new_gene_list
-    old_fitness <- fitness
+    # old_fitness <- fitness
   }
   adj_best <- gene_list[1, ]
   adj[upper.tri(adj)] <- adj_best
@@ -325,7 +325,7 @@ BNM_PBIL <- function(U, na = NULL, Z = NULL, w = NULL,
     tmp <- U
   }
   testlength <- NCOL(tmp$U)
-  nobs <- NROW(tmp$U)
+  # nobs <- NROW(tmp$U)
 
   # estimate type
   if (estimate < 1 || estimate > 4) {

@@ -130,7 +130,7 @@ ItemFit <- function(U, Z, ell_A, nparam) {
   # Benchmark model
   total <- rowSums(Z * U)
   totalList <- sort(unique(total))
-  totalDist <- as.vector(table(total))
+  # totalDist <- as.vector(table(total))
   ntotal <- length(totalList)
   ## Group Membership Profile Matrix
   MsG <- matrix(0, ncol = ntotal, nrow = nobs)
@@ -242,7 +242,7 @@ TestFit <- function(U, Z, ell_A, nparam) {
   # Benchmark model
   total <- rowSums(Z * U)
   totalList <- sort(unique(total))
-  totalDist <- as.vector(table(total))
+  # totalDist <- as.vector(table(total))
   ntotal <- length(totalList)
   ## Group Membership Profile Matrix
   MsG <- matrix(0, ncol = nobs, nrow = ntotal)
@@ -279,6 +279,7 @@ TestFit <- function(U, Z, ell_A, nparam) {
     ), indices),
     class = c("exametrika", "ModelFit")
   )
+  return(TestFitIndices)
 }
 
 #' @title Model Fit Functions for saturated model
@@ -343,6 +344,7 @@ TestFitSaturated <- function(U, Z, ell_A, nparam) {
     ), indices),
     class = c("exametrika", "ModelFit")
   )
+  return(TestFitIndices)
 }
 
 #' @title calc Fit Indices

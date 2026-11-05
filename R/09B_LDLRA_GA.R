@@ -105,7 +105,7 @@ LDLRA_PBIL <- function(U, na = NULL, Z = NULL, w = NULL,
     tmp <- U
   }
   testlength <- NCOL(tmp$U)
-  nobs <- NROW(tmp$U)
+  # nobs <- NROW(tmp$U)
 
   if (ncls < 2 || ncls > 20) {
     stop("Please set the number of classes to a number between 2 and less than 20.")

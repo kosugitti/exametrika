@@ -303,20 +303,20 @@ BNM <- function(U, na = NULL, Z = NULL, w = NULL,
   }
 
   ### Adj mat check
-  adjU <- adj + t(adj)
-  simpleFLG <- ifelse(max(adjU) <= 1, 1, 0)
+  # adjU <- adj + t(adj)
+  # simpleFLG <- ifelse(max(adjU) <= 1, 1, 0)
   testlength <- ncol(adj)
   acyclicFLG <- ifelse(is_dag_base(adj), 1, 0)
   connectedFLG <- ifelse(is_connected_base(adj), 1, 0)
-  dag <- simpleFLG * acyclicFLG
-  cdag <- dag * connectedFLG
+  # dag <- simpleFLG * acyclicFLG
+  # cdag <- dag * connectedFLG
 
   # Initialize
   # Parent-response pattern counts: the per-(subject, item) binary encoding
   # and the one-hot PIRP array are replaced by one matrix product and one
   # rowsum() per item inside BNM_pirp_counts() -- same numbers, no S x J loop.
   counts <- BNM_pirp_counts(tmp, adj)
-  npa <- counts$npa
+  # npa <- counts$npa
   item_pattern_max <- counts$item_pattern_max
   n_PIRP_1 <- counts$n1
   n_PIRP_0 <- counts$n0

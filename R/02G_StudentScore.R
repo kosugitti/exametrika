@@ -193,7 +193,7 @@ sscore.binary <- function(U, na = NULL, Z = NULL, w = NULL) {
   S <- nrow(U$U)
 
   # Create unit vector
-  OneS <- rep(1, length = S)
+  # OneS <- rep(1, length = S)
 
   # Calculate passage rates
   passage_rates <- passage(U)

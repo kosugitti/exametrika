@@ -245,7 +245,7 @@ LDB <- function(U, na = NULL, Z = NULL, w = NULL,
   # with missing data the latter counted every missing cell as an incorrect
   # response (2.2.0).
   nsf <- tmp$Z %*% ret.Biclustering$FieldMembership
-  zeroVecS <- rep(0, nobs)
+  # zeroVecS <- rep(0, nobs)
 
   #### SxRxF
   pirp_mat <- array(0, dim = c(nobs, ncls, nfld))
@@ -331,7 +331,7 @@ LDB <- function(U, na = NULL, Z = NULL, w = NULL,
     "Rank-Up Odds", "Rank-Down Odds"
   )
   clsdist <- map_count(clsmemb)
-  clsmembdist <- colSums(clsmemb)
+  # clsmembdist <- colSums(clsmemb)
 
 
   # pifr --------------------------------------------------------------------
@@ -372,7 +372,7 @@ LDB <- function(U, na = NULL, Z = NULL, w = NULL,
 
   FRPIndex <- IRPindex(pifr)
   TRP <- as.vector(t(pifr) %*% flddist)
-  RMD <- clsmembdist
+  # RMD <- clsmembdist
   TRPlag <- TRP[2:ncls]
   TRPmic <- sum(TRPlag[1:(ncls - 1)] - TRP[1:(ncls - 1)] < 0, na.rm = TRUE)
   FRPmic <- sum(abs(FRPIndex$C))

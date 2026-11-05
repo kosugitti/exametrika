@@ -120,7 +120,7 @@ AlphaIfDel <- function(x, delItem = NULL, na = NULL, Z = NULL, w = NULL) {
 
 OmegaCoefficient <- function(x, na = NULL, Z = NULL, w = NULL) {
   calcs <- function(V) {
-    J <- NCOL(V)
+    # J <- NCOL(V)
     offdiagonal <- matrix(1, ncol = ncol(V), nrow = nrow(V)) - diag(nrow = nrow(V))
     # Start from the first principal component: a random start made the value
     # depend on the RNG state and, with three items, hit the iteration limit

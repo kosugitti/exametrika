@@ -164,7 +164,7 @@ BINET <- function(U, na = NULL, Z = NULL, w = NULL,
     stop("Please set the number of classes to a number between 2 and less than 20.")
   }
 
-  ret.TS <- TestStatistics(tmp)
+  # ret.TS <- TestStatistics(tmp)
   # Check the settings ------------------------------------------------------
   # Check the conf
   if (is.vector(conf)) {
@@ -308,7 +308,7 @@ BINET <- function(U, na = NULL, Z = NULL, w = NULL,
   const <- 1e-10
   lls <- 0
 
-  irp <- t(t(clsmemb) %*% (tmp$Z * tmp$U) / colSums(clsmemb))
+  # irp <- t(t(clsmemb) %*% (tmp$Z * tmp$U) / colSums(clsmemb))
   Ccj <- t(clsmemb) %*% (tmp$Z * tmp$U)
   Fcj <- t(clsmemb) %*% (tmp$Z * (1 - tmp$U))
   Ncj <- Ccj + Fcj
@@ -477,8 +477,8 @@ BINET <- function(U, na = NULL, Z = NULL, w = NULL,
     "Next Class", "Membership in Next Class",
     "Class-up odds", paste("Recommmended Field", 1:maxadj)
   )
-  clsdist <- map_count(clsmemb)
-  clsmembdist <- colSums(clsmemb)
+  # clsdist <- map_count(clsmemb)
+  # clsmembdist <- colSums(clsmemb)
 
   ## PSRP matrix
   Dmax <- max(sapply(param, function(x) length(x$pap)))

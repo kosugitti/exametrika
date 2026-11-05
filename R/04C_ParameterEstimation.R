@@ -335,7 +335,7 @@ IRT <- function(U, model = 2, na = NULL, Z = NULL, w = NULL, verbose = FALSE) {
       uppers <- c(Inf, 5, 1 - 1e-10, 1 - 1e-10)[1:model]
       ## optimization
       optim_flg <- FALSE
-      warning_flg <- FALSE
+      # warning_flg <- FALSE
       max_attempt <- 100
       attempt <- 0
       while (!optim_flg && attempt < max_attempt) {

@@ -117,7 +117,7 @@ plot_common_profiles <- function(x, type, value, plotItemID, plotStudentID, test
     } else {
       steps <- x$n_class
     }
-    names.arg <- 1:steps
+    # names.arg <- 1:steps
 
     bp <- call_plot(
       graphics::barplot,

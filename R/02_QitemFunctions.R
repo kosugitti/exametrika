@@ -261,11 +261,11 @@ ScoreReport <- function(U, na = NULL, Z = NULL, w = NULL) {
 
   ##
   zzzTotal <- apply(tmp$Z, 2, sum)
-  zzzMean <- apply(tmp$Z, 2, mean)
+  # zzzMean <- apply(tmp$Z, 2, mean)
   itemMean <- apply(tmp$Z * tmp$Q, 2, sum) / zzzTotal
   itemSD <- sqrt(apply((tmp$Z * tmp$Q^2), 2, sum) / zzzTotal - itemMean^2)
-  zzzScoreMean <- colSums(tmp$Z * score) / colSums(tmp$Z)
-  zzzScoreSD <- sqrt(colSums(tmp$Z * score^2) / colSums(tmp$Z) - zzzScoreMean^2)
+  # zzzScoreMean <- colSums(tmp$Z * score) / colSums(tmp$Z)
+  # zzzScoreSD <- sqrt(colSums(tmp$Z * score^2) / colSums(tmp$Z) - zzzScoreMean^2)
   cronbach01 <- (1 - (sum(itemSD^2) / var(score))) * nitems / (nitems - 1)
 
   ret <-
@@ -343,8 +343,8 @@ ItemReport <- function(U, na = NULL, Z = NULL, w = NULL) {
     dat$Q <- dat$U
   }
   score <- rowSums(dat$Z * dat$Q)
-  maxscore <- sum(apply(dat$Q, 2, max))
-  score.dist <- table(factor(score, levels = 0:maxscore))
+  # maxscore <- sum(apply(dat$Q, 2, max))
+  # score.dist <- table(factor(score, levels = 0:maxscore))
 
   zzzTotal <- apply(dat$Z, 2, sum)
   zzzMean <- apply(dat$Z, 2, mean)

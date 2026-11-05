@@ -40,7 +40,7 @@ emclus <- function(U, Z, ncls, Fil, beta1, beta2, maxiter = 100, mic = FALSE,
   # comparisons are skipped on the first pass instead.
   test_log_lik <- -Inf
   old_test_log_lik <- -Inf
-  item_log_lik <- rep(test_log_lik / testlength, testlength)
+  # item_log_lik <- rep(test_log_lik / testlength, testlength)
   classRefMat <- matrix(rep(1:ncls / (ncls + 1), testlength), ncol = testlength)
 
   # Prepare confirmatory constraints
@@ -92,7 +92,7 @@ emclus <- function(U, Z, ncls, Fil, beta1, beta2, maxiter = 100, mic = FALSE,
       log_w <- log(w)
     }
 
-    item_log_lik <- colSums(correct_cls * log(classRefMat + const) + incorrect_cls * log(1 - classRefMat + const))
+    # item_log_lik <- colSums(correct_cls * log(classRefMat + const) + incorrect_cls * log(1 - classRefMat + const))
     # Convergence is judged on the OBSERVED-data log-likelihood
     #   sum_s log sum_c (1/C) prod_j p_cj^u (1-p_cj)^(1-u),
     # which is the quantity EM is guaranteed to increase. The expected
@@ -246,7 +246,7 @@ somclus <- function(U, Z, ncls, mic = FALSE, maxiter = 100,
       h_count <- maxiter
     }
 
-    loglike <- 0
+    # loglike <- 0
 
     # Presentation order. The original implementation reseeds every epoch with
     # SeedRandom[Total[uuu] + somt]. Adding somt keeps the run reproducible while

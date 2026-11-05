@@ -66,6 +66,12 @@ empirical proportions of the hard assignments with `(C - 1) log n` and
   `"Rank"`. Nothing in the package read the value; ggExametrika decides
   between class and rank plots by it.
 
+* Internal clean-up with no change in results: `1:n` loops use
+  `seq_len()`/`seq_along()`, `T`/`F` are spelled out, `if()` conditions use
+  `||`/`&&`, and assignments that were never read (left over from the
+  Mathematica port) are commented out. A few of them were computed inside EM
+  loops, so those models run marginally faster.
+
 ## Fit indices of the ordinal and rated LRA use the number of respondents
 
 The RMSEA, CAIC and BIC of `LRA()` on ordinal and rated data used, as the

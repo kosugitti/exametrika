@@ -74,6 +74,7 @@ Hastie
 Houghton
 ICBR
 ICCs
+ICL
 ICRP
 IEC
 IFI
@@ -199,6 +200,7 @@ distractor
 dl
 doi
 ebic
+elbo
 elements'
 emclus
 et
@@ -218,12 +220,15 @@ isotonic
 itemset
 jpeg
 jpg
+labelled
 lik
 listwise
 loglik
 ltm
 maxQ
+maximised
 maxiter
+minimised
 mokken
 monotonicity
 multicategory

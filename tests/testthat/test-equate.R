@@ -150,14 +150,13 @@ test_that("equate handles the polytomous biclustering models", {
   fit_nom <- suppressMessages(Biclustering(J21S300, ncls = 3, nfld = 2, verbose = FALSE))
   eq_nom <- equate(fit_nom, XN)
   expect_equal(unname(eq_nom$FieldEstimated), unname(fit_nom$FieldEstimated[20:21]))
+  # a second nominal data set (nominal data have no rank order, so no
+  # Ranklustering here)
   XG <- as_na_matrix(J20S600, binary = FALSE)
   colnames(XG)[19:20] <- c("gA", "gB")
-  fit_gtm <- suppressMessages(Biclustering(J20S600,
-    ncls = 3, nfld = 2, method = "R",
-    estimation = "GTM", nstart = 0, verbose = FALSE
-  ))
-  eq_gtm <- equate(fit_gtm, XG)
-  expect_equal(unname(eq_gtm$FieldEstimated), unname(fit_gtm$FieldEstimated[19:20]))
+  fit_nom2 <- suppressMessages(Biclustering(J20S600, ncls = 3, nfld = 2, verbose = FALSE))
+  eq_nom2 <- equate(fit_nom2, XG)
+  expect_equal(unname(eq_nom2$FieldEstimated), unname(fit_nom2$FieldEstimated[19:20]))
 })
 
 test_that("equate estimates category profiles of new items in nominal LCA and ordinal LRA", {
@@ -186,4 +185,62 @@ test_that("equate estimates category profiles of new items in nominal LCA and or
   X_empty <- X
   X_empty[, "newA"] <- NA
   expect_error(equate(lca, X_empty), "without any response")
+})
+
+test_that("equate handles the rated LCA and LRA, with the correct answers of the new items", {
+  skip_on_cran()
+  X <- J21S300$Q
+  X[J21S300$Z == 0] <- NA
+  colnames(X) <- J21S300$ItemLabel
+  newn <- paste0("new", 1:6)
+  colnames(X)[16:21] <- newn
+  ca_new <- stats::setNames(J21S300$CA[16:21], newn)
+
+  # rated LCA: the ICRP of the new items comes back, and IRP is the row of
+  # the correct answer
+  fit <- LCA(J21S300, ncls = 3, verbose = FALSE)
+  eq <- equate(fit, X, CA = ca_new)
+  expect_true(eq$converge)
+  expect_equal(unname(eq$IRP), unname(fit$IRP[16:21, ]), tolerance = 1e-3)
+  icrp_fit <- fit$ICRP[fit$ICRP$ItemLabel %in% J21S300$ItemLabel[16:21], paste0("class", 1:3)]
+  expect_equal(as.matrix(eq$ICRP[, paste0("class", 1:3)]), unname(as.matrix(icrp_fit)),
+    tolerance = 1e-3, ignore_attr = TRUE
+  )
+  expect_identical(unname(eq$CA), unname(ca_new))
+
+  # CA in the order of the new items, and from an exametrikaData newdata
+  eq_pos <- equate(fit, X, CA = unname(ca_new))
+  expect_equal(eq_pos$IRP, eq$IRP)
+  nd <- J21S300
+  nd$ItemLabel[16:21] <- newn
+  colnames(nd$Q)[16:21] <- newn
+  colnames(nd$U)[16:21] <- newn
+  colnames(nd$Z)[16:21] <- newn
+  eq_nd <- equate(fit, nd)
+  expect_equal(eq_nd$IRP, eq$IRP)
+
+  # without CA only the ICRP is returned, with a message
+  expect_message(eq0 <- equate(fit, X), "correct answers of the new items were not given")
+  expect_null(eq0$IRP)
+  expect_equal(eq0$ICRP, eq$ICRP)
+  expect_error(equate(fit, X, CA = unname(ca_new[1:3])), "one correct answer per new item")
+  expect_error(equate(fit, X, CA = ca_new[-1]), "no entry for the new item")
+  expect_warning(
+    eq_bad <- equate(fit, X, CA = replace(ca_new, 1, 99)),
+    "never chosen in newdata; its IRP is NA"
+  )
+  expect_true(all(is.na(eq_bad$IRP["new1", ])))
+
+  # rated LRA (GTM): the fit is reproduced closely
+  fitr <- LRA(J21S300, nrank = 3, verbose = FALSE)
+  eqr <- equate(fitr, X, CA = ca_new)
+  expect_true(eqr$converge)
+  expect_identical(eqr$msg, "Rank")
+  icrp_r <- fitr$ICRP[fitr$ICRP$ItemLabel %in% J21S300$ItemLabel[16:21], paste0("rank", 1:3)]
+  expect_equal(as.matrix(eqr$ICRP[, paste0("rank", 1:3)]), unname(as.matrix(icrp_r)),
+    tolerance = 0.02, ignore_attr = TRUE
+  )
+  expect_gt(mean(eqr$Estimate == fitr$Students[, "Estimate"]), 0.95)
+  out <- capture.output(print(eqr))
+  expect_true(any(grepl("Correct-response profiles of the new items", out)))
 })

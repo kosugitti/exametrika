@@ -61,10 +61,10 @@
 #' computed for the anchor items of `newdata` (`AnchorLogBF`), and a new
 #' item is read against that range rather than against zero.
 #'
-#' @param fit A fitted model: `LCA()` (binary, nominal), `LRA()` (binary,
-#'   ordinal), `Biclustering()` (binary, nominal, ordinal, rated) or a
-#'   reference object from [as_biclustering()]. The rated LCA and LRA, the
-#'   SOM, the IRM and the network models are not supported.
+#' @param fit A fitted model: `LCA()` (binary, nominal, rated), `LRA()`
+#'   (binary, ordinal, rated), `Biclustering()` (binary, nominal, ordinal,
+#'   rated) or a reference object from [as_biclustering()]. The SOM, the IRM
+#'   and the network models are not supported.
 #' @param newdata New responses: a matrix or data frame with the items in
 #'   columns, or an `exametrikaData` object from [dataFormat()]. Column names
 #'   are required: the items whose names match the fit are the anchor items,
@@ -82,6 +82,12 @@
 #' @param M Number of particles of the Monte Carlo behind the order
 #'   restriction in the diagnostic of an isotonic fit; see `ICL_exact`.
 #' @param seed Seed of that Monte Carlo (the global stream is left untouched).
+#' @param CA Rated LCA / LRA only: the correct answer of each new item, named
+#'   by item or in the order of the new items in `newdata`. Not needed when
+#'   `newdata` is an `exametrikaData` object made with `response.type =
+#'   "rated"`, which carries them. Without it the category profiles (`ICRP`)
+#'   of the new items are still estimated, but not their correct-response
+#'   profiles (`IRP`).
 #' @param ... Not used.
 #' @return An object of class `exametrikaEquate`, a list with
 #' \describe{
@@ -102,9 +108,12 @@
 #'     stands out only when it scores well above the anchor items.}
 #'   \item{NewItems}{Biclustering: the three columns above as a data frame.}
 #'   \item{IRP}{Binary LCA / LRA: the item reference profile of each new
-#'     item (items x classes).}
-#'   \item{ICRP}{Nominal LCA / ordinal LRA: the category reference profile of
-#'     each new item, one row per category, in the layout of the fit.}
+#'     item (items x classes). Rated LCA / LRA with `CA`: the row of `ICRP`
+#'     at the correct answer of each new item.}
+#'   \item{ICRP}{Nominal, rated LCA / ordinal, rated LRA: the category
+#'     reference profile of each new item, one row per category, in the
+#'     layout of the fit.}
+#'   \item{CA}{Rated LCA / LRA: the correct answers used for `IRP`.}
 #'   \item{n_cycle, converge, total_log_lik}{Cycles run, whether `tol` was
 #'     met, and the sum of `log_lik`.}
 #' }
@@ -126,13 +135,13 @@ equate <- function(fit, newdata, ...) {
 #' @rdname equate
 #' @export
 equate.exametrika <- function(fit, newdata, na = NULL, maxiter = 100, tol = 1e-6,
-                              alpha = 1, M = 10000, seed = 1, ...) {
+                              alpha = 1, M = 10000, seed = 1, CA = NULL, ...) {
   model <- class(fit)[2]
   bicl_models <- c(
     "Biclustering", "nominalBiclustering", "ordinalBiclustering",
     "ratedBiclustering", "BiclusteringReference"
   )
-  one_mode <- c("LCA", "nominalLCA", "LRA", "LRAordinal")
+  one_mode <- c("LCA", "nominalLCA", "ratedLCA", "LRA", "LRAordinal", "LRArated")
   if (!model %in% c(bicl_models, one_mode)) {
     stop("equate() is not available for ", model, " objects.", call. = FALSE)
   }
@@ -150,8 +159,10 @@ equate.exametrika <- function(fit, newdata, na = NULL, maxiter = 100, tol = 1e-6
   L_A <- switch(model,
     LCA = ,
     LRA = pred_ll_irp(fit, ndA),
-    nominalLCA = pred_ll_icrp_lca(fit, ndA),
-    LRAordinal = pred_ll_icrp_lra(fit, ndA),
+    nominalLCA = ,
+    ratedLCA = pred_ll_icrp_lca(fit, ndA),
+    LRAordinal = ,
+    LRArated = pred_ll_icrp_lra(fit, ndA),
     Biclustering = pred_ll_bicl_binary(fit, ndA),
     BiclusteringReference = if (binary) pred_ll_bicl_binary(fit, ndA) else pred_ll_bicl_poly(fit, ndA),
     pred_ll_bicl_poly(fit, ndA)
@@ -261,6 +272,20 @@ equate.exametrika <- function(fit, newdata, na = NULL, maxiter = 100, tol = 1e-6
     ret$IRP <- IRP
   } else {
     ret$ICRP <- eq_icrp_frame(profile, items, nd$new_items, msg, ncls)
+    if (model %in% c("ratedLCA", "LRArated")) {
+      # The correct answer of each new item picks its row of the ICRP, as
+      # LCA.rated builds IRP from CA
+      ca <- eq_new_ca(nd, CA)
+      if (is.null(ca)) {
+        message(
+          "The correct answers of the new items were not given (CA), so only ",
+          "their category profiles (ICRP) are returned."
+        )
+      } else {
+        ret$CA <- ca
+        ret$IRP <- eq_correct_profiles(profile, items, nd$new_items, ca, ncls)
+      }
+    }
   }
   ret$n_cycle <- n_cycle
   ret$converge <- converge
@@ -296,15 +321,22 @@ print.exametrikaEquate <- function(x, digits = 3, ...) {
         format(round(stats::median(ab), digits), nsmall = 0)
       ))
     }
-  } else if (!is.null(x$IRP)) {
-    cat("\nReference profiles of the new items:\n")
-    print(round(x$IRP, digits))
-  } else if (!is.null(x$ICRP)) {
-    cat("\nCategory reference profiles of the new items:\n")
-    df <- x$ICRP
-    num <- vapply(df, is.numeric, logical(1))
-    df[num] <- lapply(df[num], round, digits)
-    print(df, row.names = FALSE)
+  } else {
+    if (!is.null(x$ICRP)) {
+      cat("\nCategory reference profiles of the new items:\n")
+      df <- x$ICRP
+      num <- vapply(df, is.numeric, logical(1))
+      df[num] <- lapply(df[num], round, digits)
+      print(df, row.names = FALSE)
+    }
+    if (!is.null(x$IRP)) {
+      cat(if (is.null(x$ICRP)) {
+        "\nReference profiles of the new items:\n"
+      } else {
+        "\nCorrect-response profiles of the new items (the rows of their correct answers):\n"
+      })
+      print(round(x$IRP, digits))
+    }
   }
   return(invisible(x))
 }
@@ -430,7 +462,9 @@ eq_newdata <- function(fit, newdata, na, binary) {
     X[newdata$Z == 0] <- NA
     colnames(X) <- newdata$ItemLabel
     id <- newdata$ID
+    CA_data <- if (is.null(newdata$CA)) NULL else stats::setNames(as.vector(newdata$CA), newdata$ItemLabel)
   } else {
+    CA_data <- NULL
     # as.matrix() keeps a bare matrix bare; as.data.frame() would name its
     # columns V1, V2, ... and defeat the check below
     X <- as.matrix(newdata)
@@ -468,13 +502,78 @@ eq_newdata <- function(fit, newdata, na, binary) {
   }
   return(list(
     XA = XA, XN = XN, ID = as.character(id), items = items,
-    anchors = anchors, new_items = new_items
+    anchors = anchors, new_items = new_items,
+    CA_data = if (is.null(CA_data)) NULL else CA_data[new_items]
   ))
+}
+
+#' The correct answers of the new items of a rated fit
+#'
+#' Taken from the `CA` argument when given (named by item, or in the order
+#' of the new items in `newdata`), else from the `CA` of an `exametrikaData`
+#' newdata; NULL when neither has them.
+#' @noRd
+eq_new_ca <- function(nd, CA) {
+  if (is.null(CA)) {
+    ca <- nd$CA_data
+    if (is.null(ca) || all(is.na(ca))) {
+      return(NULL)
+    }
+    return(ca)
+  }
+  # unlist() keeps the names a list or data frame column carries; as.vector()
+  # would drop them and the match by item with them
+  CA <- unlist(CA)
+  if (!is.null(names(CA)) && all(nzchar(names(CA)))) {
+    miss <- setdiff(nd$new_items, names(CA))
+    if (length(miss) > 0) {
+      stop("CA has no entry for the new item(s): ", paste(miss, collapse = ", "), ".",
+        call. = FALSE
+      )
+    }
+    return(stats::setNames(CA[nd$new_items], nd$new_items))
+  }
+  if (length(CA) != length(nd$new_items)) {
+    stop("CA must have one correct answer per new item (", length(nd$new_items),
+      "), named by item or in the order of the new items in newdata.",
+      call. = FALSE
+    )
+  }
+  return(stats::setNames(CA, nd$new_items))
+}
+
+#' Correct-response profiles of the new items of a rated fit
+#'
+#' The row of each item's category profile at its correct answer, as
+#' `LCA.rated()` builds `IRP` from `CA`. A correct answer that nobody chose
+#' has no row and gives NA, with a warning.
+#' @noRd
+eq_correct_profiles <- function(profile, items, new_items, ca, ncls) {
+  IRP <- matrix(NA_real_, nrow = length(new_items), ncol = ncls)
+  dimnames(IRP) <- list(new_items, paste0("IRP", seq_len(ncls)))
+  unseen <- character()
+  for (j in seq_along(new_items)) {
+    pos <- match(ca[j], items$codes[[j]])
+    if (is.na(pos)) {
+      unseen <- c(unseen, sprintf("%s (CA = %s)", new_items[j], ca[j]))
+    } else {
+      IRP[j, ] <- profile[j, , pos]
+    }
+  }
+  if (length(unseen) > 0) {
+    warning(
+      "The correct answer of ", paste(unseen, collapse = ", "),
+      " was never chosen in newdata; its IRP is NA.",
+      call. = FALSE
+    )
+  }
+  return(IRP)
 }
 
 # "isotonic", "GTM" or "none": what the fit imposes across the classes
 eq_method <- function(fit, model) {
-  if (model %in% c("LRA", "LRAordinal")) {
+  if (model %in% c("LRA", "LRAordinal", "LRArated")) {
+    # LRA.rated is a GTM fit and stores no method
     return(if (is.null(fit$method)) "GTM" else fit$method)
   }
   if (model %in% c("Biclustering", "ordinalBiclustering", "ratedBiclustering")) {

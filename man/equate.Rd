@@ -16,14 +16,15 @@ equate(fit, newdata, ...)
   alpha = 1,
   M = 10000,
   seed = 1,
+  CA = NULL,
   ...
 )
 }
 \arguments{
-\item{fit}{A fitted model: \code{LCA()} (binary, nominal), \code{LRA()} (binary,
-ordinal), \code{Biclustering()} (binary, nominal, ordinal, rated) or a
-reference object from \code{\link[=as_biclustering]{as_biclustering()}}. The rated LCA and LRA, the
-SOM, the IRM and the network models are not supported.}
+\item{fit}{A fitted model: \code{LCA()} (binary, nominal, rated), \code{LRA()}
+(binary, ordinal, rated), \code{Biclustering()} (binary, nominal, ordinal,
+rated) or a reference object from \code{\link[=as_biclustering]{as_biclustering()}}. The SOM, the IRM
+and the network models are not supported.}
 
 \item{newdata}{New responses: a matrix or data frame with the items in
 columns, or an \code{exametrikaData} object from \code{\link[=dataFormat]{dataFormat()}}. Column names
@@ -50,6 +51,12 @@ estimation.}
 restriction in the diagnostic of an isotonic fit; see \code{ICL_exact}.}
 
 \item{seed}{Seed of that Monte Carlo (the global stream is left untouched).}
+
+\item{CA}{Rated LCA / LRA only: the correct answer of each new item, named
+by item or in the order of the new items in \code{newdata}. Not needed when
+\code{newdata} is an \code{exametrikaData} object made with \code{response.type = "rated"}, which carries them. Without it the category profiles (\code{ICRP})
+of the new items are still estimated, but not their correct-response
+profiles (\code{IRP}).}
 }
 \value{
 An object of class \code{exametrikaEquate}, a list with
@@ -71,9 +78,12 @@ every item departs measurably from its field profile, so a new item
 stands out only when it scores well above the anchor items.}
 \item{NewItems}{Biclustering: the three columns above as a data frame.}
 \item{IRP}{Binary LCA / LRA: the item reference profile of each new
-item (items x classes).}
-\item{ICRP}{Nominal LCA / ordinal LRA: the category reference profile of
-each new item, one row per category, in the layout of the fit.}
+item (items x classes). Rated LCA / LRA with \code{CA}: the row of \code{ICRP}
+at the correct answer of each new item.}
+\item{ICRP}{Nominal, rated LCA / ordinal, rated LRA: the category
+reference profile of each new item, one row per category, in the
+layout of the fit.}
+\item{CA}{Rated LCA / LRA: the correct answers used for \code{IRP}.}
 \item{n_cycle, converge, total_log_lik}{Cycles run, whether \code{tol} was
 met, and the sum of \code{log_lik}.}
 }

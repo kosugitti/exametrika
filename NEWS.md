@@ -74,10 +74,12 @@ never seen. The parameters of the fit are held fixed, so the new
 respondents are placed in its classes or ranks through the anchor items,
 and the new items are placed on the same scale: for `Biclustering()` and
 Ranklustering (binary, nominal, ordinal, rated) each new item is assigned
-to one of the existing fields; for `LCA()` (binary, nominal) and `LRA()`
-(binary, ordinal) the reference profile of each new item is estimated,
-under the order restriction of an isotonic fit or with the filter of a GTM
-fit. The two unknowns are updated alternately, starting from the anchor
+to one of the existing fields; for `LCA()` (binary, nominal, rated) and
+`LRA()` (binary, ordinal, rated) the reference profile of each new item is
+estimated, under the order restriction of an isotonic fit or with the
+filter of a GTM fit. For a rated fit the correct answers of the new items
+(`CA`, or those of an `exametrikaData` newdata) pick their correct-response
+profiles out of the category profiles. The two unknowns are updated alternately, starting from the anchor
 items alone, until the membership settles. This is the discrete analogue of
 fixed-parameter calibration; no linking transformation is involved because
 the scale is the rank itself.

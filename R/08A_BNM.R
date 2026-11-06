@@ -217,7 +217,8 @@ beta_posterior_mode <- function(count, total, beta1, beta2) {
 #'  \item{testlength}{Length of the test. The number of items included in the test.}
 #'  \item{crr}{correct response ratio}
 #'  \item{TestFitIndices}{Overall fit index for the test.See also [TestFit]}
-#'  \item{adj}{Adjacency matrix}\
+#'  \item{adj}{Adjacency matrix}
+#'  \item{g}{The same DAG as an igraph object. Will be dropped in 3.0.0; use \code{adj}.}
 #'  \item{param}{Learned Parameters}
 #'  \item{CCRR_table}{Correct Response Rate tables}
 #' }

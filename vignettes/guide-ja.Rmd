@@ -103,7 +103,7 @@ devtools::install_github("kosugitti/exametrika")
 本パッケージには以下が必要です：
 
 + R (>= 4.1.0)
-+ igraph (ネットワーク分析用)
++ igraph (ネットワークモデルの結果に含まれるグラフオブジェクトのため。3.0.0 で外れる予定)
 + その他の依存パッケージは自動的にインストールされます
 
 ## データ形式と使用方法
@@ -365,8 +365,9 @@ plot(result.B.nom, type = "RRV")
 
 ### ベイジアンネットワークモデル
 
-```{r setup-igraph, eval=FALSE}
-library(igraph)
+DAG は隣接行列(行が親・列が子・行名と列名は項目ラベル)か辺の CSV ファイルで渡します。igraph オブジェクトを `g` に渡すこともできますが，その入力と結果の中の igraph オブジェクト(`g`・`g_list`・`all_g`)は 3.0.0 で行列の形に置き換わります。
+
+```{r setup-adj, eval=FALSE}
 DAG <- matrix(
   c(
     "Item01", "Item02", "Item02", "Item03", "Item02", "Item04",
@@ -374,8 +375,9 @@ DAG <- matrix(
   ),
   ncol = 2, byrow = TRUE
 )
-g <- igraph::graph_from_data_frame(DAG)
-adj_mat <- as.matrix(igraph::get.adjacency(g))
+items <- J5S10$ItemLabel
+adj_mat <- matrix(0, length(items), length(items), dimnames = list(items, items))
+adj_mat[DAG] <- 1
 ```
 
 ```{r model-bnm, eval=FALSE}

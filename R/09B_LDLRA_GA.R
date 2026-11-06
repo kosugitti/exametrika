@@ -45,7 +45,7 @@
 #'  \item{testlength}{Length of the test. The number of items included in the test.}
 #'  \item{crr}{correct response ratio}
 #'  \item{adj_list}{adjacency matrix list}
-#'  \item{g_list}{graph list}
+#'  \item{g_list}{The same graphs as igraph objects. Will be dropped in 3.0.0; use \code{adj_list}.}
 #'  \item{referenceMatrix}{Learned Parameters.A three-dimensional array of patterns where
 #'  item x rank x pattern.}
 #'  \item{IRP}{Marginal Item Reference Matrix}

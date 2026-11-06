@@ -33,7 +33,7 @@
 #'  \item{ItemLabel}{Label of Items}
 #'  \item{FieldLabel}{Label of Fields}
 #'  \item{adj_list}{List of Adjacency matrix used in the model}
-#'  \item{g_list}{List of graph object used in the model}
+#'  \item{g_list}{The same graphs as igraph objects. Will be dropped in 3.0.0; use \code{adj_list}.}
 #'  \item{IRP}{List of Estimated Parameters. This object is three-dimensional
 #'  PIRP array, where each dimension represents the number of rank,number
 #'  of field, and Dmax. Dmax denotes the maximum number of correct response

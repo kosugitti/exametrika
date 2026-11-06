@@ -69,8 +69,7 @@ correct response rates. Default is 1.}
 \item{FieldLabel}{Label of Fields}
 \item{all_adj}{Integrated Adjacency matrix used to plot graph.}
 \item{all_edges}{Edge list (From, To, Field) behind \code{all_adj}, used by \code{print()}.}
-\item{all_g}{Integrated graph object used to plot graph.see also
-\link{plot.exametrika}}
+\item{all_g}{The integrated graph as an igraph object. Will be dropped in 3.0.0; use \code{all_edges}.}
 \item{adj_list}{List of Adjacency matrix used in the model}
 \item{params}{A list of the estimated conditional probabilities.
 It indicates which path was obtained from which parent node(class) to

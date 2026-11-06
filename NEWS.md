@@ -68,6 +68,14 @@ empirical proportions of the hard assignments with `(C - 1) log n` and
 
 * Many small internal clean-ups of the code (no change in results).
 
+* Notice for 3.0.0: the igraph objects in the results of the network models
+  (`g` of `BNM()`, `g_list` of `LDLRA()` and `LDB()`, `all_g` of `BINET()`)
+  will be dropped in 3.0.0, and igraph will no longer be required. The same
+  graphs are already returned as adjacency matrices (`adj`, `adj_list`) and,
+  for `BINET()`, as the edge table `all_edges`; `print()` and `plot()` no
+  longer use igraph. Passing an igraph object as `g` or `g_list` will keep
+  working when igraph is installed.
+
 * `GRM()` estimates the item parameters by Bock-Aitkin EM (E-step in C++,
   item-wise M-steps) followed by a short BFGS polish on the marginal
   likelihood, instead of running BFGS on all parameters from the start. The

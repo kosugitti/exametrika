@@ -88,11 +88,12 @@ test_that("binary IRM Gibbs: C++ matches the R reference on a long run", {
   expect_same_gibbs(run_binary_pair(J35S515, seed = 123, maxiter = 30))
 })
 
-test_that("binary Biclustering_IRM() gives the same answer as the R-only version", {
+test_that("binary Biclustering_IRM() reproduces its reference values", {
   skip_on_cran()
-  # reference values recorded with exametrika 2.3.0 before the C++ port
+  # reference values recorded with exametrika 2.3.0 from the R reference
+  # implementation after the new-class fix (NEWS 2.3.0)
   fit <- Biclustering_IRM(J15S500, gamma_c = 1, gamma_f = 1, seed = 123, verbose = FALSE)
-  expect_equal(fit$n_class, 9)
-  expect_equal(fit$n_field, 5)
-  expect_equal(fit$log_lik, -3384.534315, tolerance = 1e-8)
+  expect_equal(fit$n_class, 8)
+  expect_equal(fit$n_field, 3)
+  expect_equal(fit$log_lik, -3484.439882, tolerance = 1e-8)
 })

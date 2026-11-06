@@ -77,8 +77,10 @@ empirical proportions of the hard assignments with `(C - 1) log n` and
 
 * The Gibbs sampler of the binary `Biclustering_IRM()` now runs in C++. The
   random draws are still made by R, so with the same `seed` the result is
-  identical to earlier versions bit for bit; the running time on `J35S515`
-  drops from about half a minute to a quarter of a second.
+  identical to the R loop (kept as the reference implementation and checked
+  in the tests); the running time on `J35S515` drops from about half a
+  minute to a quarter of a second. See the bug fix below for why the result
+  differs from 2.2.0 nonetheless.
 
 ## Fit indices of the ordinal and rated LRA use the number of respondents
 
@@ -220,6 +222,22 @@ a force-directed layout. The drawing is done with base graphics from the
 adjacency matrix; igraph is no longer used for printing (a step of the plan
 to drop that dependency in 3.0.0). `BINET()` returns the edge list behind
 `all_adj` as `all_edges`.
+
+## Bug fix: the binary IRM no longer double-counts a respondent who opens a new class
+
+In the Gibbs sampler of the binary `Biclustering_IRM()`, when a respondent
+opened a new class, the class-by-field count tables were rebuilt with the
+respondent already in the new class and the respondent's counts were then
+added once more. The new class therefore carried one extra copy of its
+founder until the next rebuild, which made it more attractive to the
+respondents sampled after it. The Mathematica original inserts an empty row
+for the new class and adds the founder once, and the R code (since its first
+version in 2023; the polytomous IRM was never affected) now does the same.
+The final profiles and fit indices were always computed from the final
+assignment, so only the path of the sampler was wrong, but that path decides
+where it settles: for a given `seed` the number of classes and fields and
+the assignment can differ from 2.2.0 (on `J15S500` with the default seed, 8
+classes and 3 fields instead of 9 and 5).
 
 ## Bug fix: class, rank and field sizes no longer double-count a tie
 

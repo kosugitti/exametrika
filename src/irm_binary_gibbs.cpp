@@ -9,12 +9,7 @@
 // the `draw` callback, so that with the same set.seed() the two
 // implementations give bit-identical results.
 //
-// Known quirks of the reference that are reproduced on purpose (changing
-// them would change the results):
-//   * when a respondent opens a new class, Ccf/Fcf are rebuilt from scratch
-//     with the respondent already in the new class and then the respondent's
-//     counts are added once more, so that row is double-counted until the
-//     next rebuild;
+// Two features of the Mathematica original are kept as they are:
 //   * the first and last classes (minimum and maximum number-right score)
 //     are never resampled;
 //   * fields can only disappear; there is no "new field" option.
@@ -261,8 +256,22 @@ List irm_binary_gibbs_cpp(NumericMatrix U, NumericMatrix Z,
           if (cls[i] == ncls - 1) cls[i] = ncls;
         }
         cls[target] = ncls - 1;
-        // rebuilt from scratch (quirk: target is already counted here)
-        compute_Ccf();
+        // insert an empty row for the new class just before the last one;
+        // the member's counts are added once below
+        {
+          std::vector<double> Ccf2(static_cast<std::size_t>(ncls) * nfld, 0.0);
+          std::vector<double> Fcf2(static_cast<std::size_t>(ncls) * nfld, 0.0);
+          for (int f = 0; f < nfld; ++f) {
+            for (int r = 0; r < ncls - 2; ++r) {
+              Ccf2[idx2(r, f, ncls)] = Ccf[idx2(r, f, ncls - 1)];
+              Fcf2[idx2(r, f, ncls)] = Fcf[idx2(r, f, ncls - 1)];
+            }
+            Ccf2[idx2(ncls - 1, f, ncls)] = Ccf[idx2(ncls - 2, f, ncls - 1)];
+            Fcf2[idx2(ncls - 1, f, ncls)] = Fcf[idx2(ncls - 2, f, ncls - 1)];
+          }
+          Ccf.swap(Ccf2);
+          Fcf.swap(Fcf2);
+        }
       }
       Nc.assign(ncls, 0.0);
       for (int i = 0; i < nobs; ++i) if (cls[i] >= 1) Nc[cls[i] - 1] += 1;

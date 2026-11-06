@@ -215,8 +215,14 @@ irm_binary_gibbs_r <- function(tmp, cls01, fld01, cls, fld, Nc, Nf, Ccf, Fcf, Nc
           cls01 <- cbind(cls01_left, zeros, cls01_right)
           cls01[target, ] <- newclass01
           cls <- cls01 %*% (1:ncls)
-          Ccf <- t(cls01) %*% tmp$U %*% fld01
-          Fcf <- t(cls01) %*% (tmp$Z * (1 - tmp$U)) %*% fld01
+          # insert an empty row for the new class, as the Mathematica original
+          # does; the member's counts are added once below. (Until 2.3.0 the
+          # tables were rebuilt with the member already in, so the row was
+          # double-counted.)
+          # Ccf <- t(cls01) %*% tmp$U %*% fld01
+          # Fcf <- t(cls01) %*% (tmp$Z * (1 - tmp$U)) %*% fld01
+          Ccf <- rbind(Ccf[seq_len(ncls - 2), , drop = FALSE], 0, Ccf[ncls - 1, , drop = FALSE])
+          Fcf <- rbind(Fcf[seq_len(ncls - 2), , drop = FALSE], 0, Fcf[ncls - 1, , drop = FALSE])
           Ncf <- Ccf + Fcf
         }
         # Update Number of Correct/Incorrect response

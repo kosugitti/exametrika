@@ -70,6 +70,258 @@ Biclustering_IRM.default <- function(U, na = NULL, Z = NULL, w = NULL, ...) {
   Biclustering_IRM(U, ...)
 }
 
+#' Gibbs phase of the binary IRM (R reference implementation)
+#'
+#' This is the original R loop of `Biclustering_IRM.binary()`, kept as the
+#' reference for `irm_binary_gibbs_cpp()`. Both consume the RNG in the same
+#' order, so with the same `set.seed()` they give bit-identical results.
+#' The C++ version is what `Biclustering_IRM.binary()` runs; this one is
+#' only called from the tests.
+#'
+#' @param tmp exametrika data object with `U` already masked by `Z`
+#' @param cls01,fld01 initial membership matrices
+#' @param cls,fld initial assignment vectors
+#' @param Nc,Nf class and field sizes
+#' @param Ccf,Fcf,Ncf initial correct / incorrect / total counts (class x field)
+#' @param gamma_c,gamma_f CRP concentration parameters
+#' @param gamp beta prior parameter
+#' @param const small constant added inside the logs
+#' @param maxiter,stable_limit stopping rule
+#' @param verbose print progress
+#' @return list with `cls01`, `fld01`, `ncls`, `nfld`, `iter`
+#' @noRd
+irm_binary_gibbs_r <- function(tmp, cls01, fld01, cls, fld, Nc, Nf, Ccf, Fcf, Ncf,
+                               gamma_c, gamma_f, gamp, const,
+                               maxiter, stable_limit, verbose) {
+  nobs <- NROW(tmp$U)
+  testlength <- NCOL(tmp$U)
+  ncls <- NCOL(cls01)
+  nfld <- NCOL(fld01)
+  limit_count <- 0
+  iter <- 1
+  # IRM Iteration ------------------------------------------------------
+  IRM_FLG <- TRUE
+  while (IRM_FLG) {
+    ### Gibbs sampler i
+    Cif <- tmp$U %*% fld01 # SxF. number of correct response Studet S in Field f
+    Fif <- (tmp$Z * (1 - tmp$U)) %*% fld01 # SxF. number of incorrect response Studet S in Field f
+    iRand <- sample(1:nobs, nobs, replace = FALSE)
+    for (loop in 1:nobs) {
+      target <- iRand[loop]
+      if (cls[target] >= 2 && cls[target] <= ncls - 1) {
+        # delete selected member
+        Nc[cls[target]] <- Nc[cls[target]] - 1
+        Ncf[cls[target], ] <- Ncf[cls[target], ] - Nf
+        Ccf[cls[target], ] <- Ccf[cls[target], ] - Cif[target, ]
+        Fcf[cls[target], ] <- Fcf[cls[target], ] - Fif[target, ]
+        CcfPlus <- Ccf + matrix(rep(Cif[target, ], ncls), nrow = ncls, byrow = TRUE)
+        FcfPlus <- Fcf + matrix(rep(Fif[target, ], ncls), nrow = ncls, byrow = TRUE)
+        if (Nc[cls[target]] == 0) {
+          ## if the class disappeared...
+          ncls <- ncls - 1
+          delCls <- cls[target]
+          cls01 <- cls01[, -delCls]
+          cls <- cls01 %*% (1:ncls)
+          Nc <- Nc[-delCls]
+          Ncf <- Ncf[-delCls, ]
+          Ccf <- Ccf[-delCls, ]
+          Fcf <- Fcf[-delCls, ]
+          CcfPlus <- CcfPlus[-delCls, ]
+          FcfPlus <- FcfPlus[-delCls, ]
+        }
+        # Table Choice!
+        ## Likelihood for Existing Table
+        Nc_tmp <- Nc[-1]
+        Nc_tmp <- Nc_tmp[-(length(Nc_tmp))]
+        exist_tab_tmp <- log((Nc_tmp / (nobs - 1 + gamma_c)) + const)
+        vec1 <- numeric(ncls - 2)
+        vec2 <- numeric(ncls - 2)
+        vec3 <- numeric(ncls - 2)
+        for (i in 2:(ncls - 1)) {
+          Ctmp <- 0
+          Ftmp <- 0
+          den <- 0
+          for (j in 1:nfld) {
+            ct1 <- (CcfPlus[i, j] - Ccf[i, j] - 1)
+            if (ct1 >= 0) {
+              for (s in 0:ct1) {
+                Ctmp <- Ctmp + log(CcfPlus[i, j] + gamp - 1 - s + const)
+              }
+            }
+            ct2 <- (FcfPlus[i, j] - Fcf[i, j] - 1)
+            if (ct2 >= 0) {
+              for (s in 0:ct2) {
+                Ftmp <- Ftmp + log(FcfPlus[i, j] + gamp - 1 - s + const)
+              }
+            }
+            ct3 <- CcfPlus[i, j] + FcfPlus[i, j] - Ccf[i, j] - Fcf[i, j] - 1
+            if (ct3 >= 0) {
+              for (s in 0:ct3) {
+                den <- den +
+                  (log(CcfPlus[i, j] + FcfPlus[i, j] + 2 * gamp - 1 - s + const))
+              }
+            }
+          }
+          vec1[i - 1] <- Ctmp
+          vec2[i - 1] <- Ftmp
+          vec3[i - 1] <- den
+        }
+        exist_tab <- exist_tab_tmp + vec1 + vec2 - vec3
+        ## Likelihood for New Table
+        new_tab_tmp <- log((gamma_c / (nobs - 1 + gamma_c)) + const)
+        num <- 0
+        den <- 0
+        for (j in 1:nfld) {
+          maxS <- Cif[target, j] - 1
+          if (maxS >= 0) {
+            for (s in 0:maxS) {
+              num <- num + log(Cif[target, j] + gamp - 1 - s + const)
+            }
+          }
+          maxS <- Nf[j] - Cif[target, j] - 1
+          if (maxS >= 0) {
+            for (s in 0:maxS) {
+              num <- num + log(Nf[j] - Cif[target, j] + gamp - 1 - s + const)
+            }
+          }
+          maxS <- Nf[j] - 1
+          if (maxS >= 0) {
+            for (s in 0:maxS) {
+              den <- den + log(Nf[j] + 2 * gamp - 1 - s + const)
+            }
+          }
+        }
+        new_tab <- num - den + new_tab_tmp
+        # Likelihood to Probability
+        ptab <- c(exist_tab, new_tab)
+        maxtab <- max(ptab)
+        exptab <- exp(ptab - maxtab)
+        ptab <- exptab / sum(exptab)
+        ptab <- round(ptab + const, digits = -log10(const))
+        sampled_value <- rmultinom(1, 1, ptab)
+        newclass01 <- c(0, sampled_value, 0)
+        delpos <- length(newclass01) - 1
+        if (newclass01[delpos] == 0) {
+          # Student s belongs an other class
+          cls01[target, ] <- newclass01[-delpos]
+          cls[target] <- which.max(cls01[target, ])
+        } else {
+          # Student s belongs to a new class
+          ncls <- ncls + 1
+          # new_class <- which.max(newclass01)
+          cls01_left <- cls01[, 1:(ncls - 2)]
+          cls01_right <- cls01[, (ncls - 1)]
+          zeros <- rep(0, nrow(cls01))
+          cls01 <- cbind(cls01_left, zeros, cls01_right)
+          cls01[target, ] <- newclass01
+          cls <- cls01 %*% (1:ncls)
+          Ccf <- t(cls01) %*% tmp$U %*% fld01
+          Fcf <- t(cls01) %*% (tmp$Z * (1 - tmp$U)) %*% fld01
+          Ncf <- Ccf + Fcf
+        }
+        # Update Number of Correct/Incorrect response
+        Nc <- colSums(cls01)
+        Ccf[cls[target], ] <- Ccf[cls[target], ] + Cif[target, ]
+        Fcf[cls[target], ] <- Fcf[cls[target], ] + Fif[target, ]
+        Ncf[cls[target], ] <- Ccf[cls[target], ] + Fcf[cls[target], ]
+      }
+    }
+    # Gibbs sampler j
+    oldField <- fld # J x C
+    Cjc <- t(tmp$U) %*% cls01
+    Fjc <- t(tmp$Z * (1 - tmp$U)) %*% cls01
+    jRand <- sample(1:testlength, testlength, replace = FALSE)
+    for (loop in 1:testlength) {
+      target <- jRand[loop]
+      # delete selected item
+      Nf[fld[target]] <- Nf[fld[target]] - 1
+      Ccf[, fld[target]] <- Ccf[, fld[target]] - t(Cjc[target, ])
+      Fcf[, fld[target]] <- Fcf[, fld[target]] - t(Fjc[target, ])
+      Ncf <- Ccf + Fcf
+      CcfPlus <- Ccf + matrix(rep(Cjc[target, ], nfld), nrow = ncls, byrow = FALSE)
+      FcfPlus <- Fcf + matrix(rep(Fjc[target, ], nfld), nrow = ncls, byrow = FALSE)
+      ## ## if the field disappeared...
+      if (Nf[fld[target]] == 0) {
+        nfld <- nfld - 1
+        delFld <- fld[target]
+        fld01 <- fld01[, -delFld]
+        fld <- fld01 %*% (1:nfld)
+        Nf <- Nf[-delFld]
+        Ncf <- Ncf[, -delFld]
+        Ccf <- Ccf[, -delFld]
+        Fcf <- Fcf[, -delFld]
+        CcfPlus <- CcfPlus[, -delFld]
+        FcfPlus <- FcfPlus[, -delFld]
+      }
+      # Table Choice!
+      ## Likelihood for each field
+      log_tab_tmp <- log((Nf / (testlength - 1 + gamma_f)) + const)
+      vec1 <- rep(0, nfld)
+      vec2 <- rep(0, nfld)
+      vec3 <- rep(0, nfld)
+      for (j in 1:nfld) {
+        Ctmp <- 0
+        Ftmp <- 0
+        den <- 0
+        for (i in 1:ncls) {
+          ct1 <- CcfPlus[i, j] - Ccf[i, j] - 1
+          if (ct1 >= 0) {
+            for (s in 0:ct1) {
+              Ctmp <- Ctmp + log(CcfPlus[i, j] + gamp - 1 - s + const)
+            }
+          }
+          ct2 <- FcfPlus[i, j] - Fcf[i, j] - 1
+          if (ct2 >= 0) {
+            for (s in 0:ct2) {
+              Ftmp <- Ftmp + log(FcfPlus[i, j] + gamp - 1 - s + const)
+            }
+          }
+          ct3 <- CcfPlus[i, j] + FcfPlus[i, j] - Ccf[i, j] - Fcf[i, j] - 1
+          if (ct3 >= 0) {
+            for (s in 0:ct3) {
+              den <- den + (log(CcfPlus[i, j] + FcfPlus[i, j] + 2 * gamp - 1 - s + const))
+            }
+          }
+        }
+        vec1[j] <- Ctmp
+        vec2[j] <- Ftmp
+        vec3[j] <- den
+      }
+      log_tab <- log_tab_tmp + vec1 + vec2 - vec3
+      maxtab <- max(log_tab)
+      exptab <- exp(log_tab - maxtab)
+      ptab <- exptab / sum(exptab)
+      ptab <- round(ptab + const, digits = -log10(const))
+      selected_fld <- rmultinom(1, 1, ptab)
+      fld01[target, ] <- selected_fld
+      fld[target] <- which.max(selected_fld)
+      Nf[fld[target]] <- Nf[fld[target]] + 1
+      Ccf[, fld[target]] <- Ccf[, fld[target]] + t(Cjc[target, ])
+      Fcf[, fld[target]] <- Fcf[, fld[target]] + t(Fjc[target, ])
+      Ncf[, fld[target]] <- Ccf[, fld[target]] + Fcf[, fld[target]]
+    }
+    limit_count <- if (sum(abs(oldField - fld)) == 0) {
+      limit_count <- limit_count + 1
+    } else {
+      limit_count <- 0
+    }
+    if (verbose) {
+      message(
+        sprintf(
+          "iter %d: match=%d nfld=%d ncls=%d",
+          iter, limit_count, nfld, ncls
+        )
+      )
+    }
+    if (limit_count == stable_limit || iter == maxiter) {
+      IRM_FLG <- FALSE
+    } else {
+      iter <- iter + 1
+    }
+  }
+  return(list(cls01 = cls01, fld01 = fld01, ncls = ncls, nfld = nfld, iter = iter))
+}
+
 #' @rdname Biclustering_IRM
 #' @param gamma_c \eqn{\gamma_C} is the hyperparameter of the CRP and represents the
 #' attractiveness of a new Class. As \eqn{\gamma_C} increases, the student is more likely
@@ -151,8 +403,8 @@ Biclustering_IRM.binary <- function(U, na = NULL, Z = NULL, w = NULL,
   if (!is.null(seed)) {
     set.seed(seed)
   }
-  limit_count <- 0
-  iter <- 1
+  # limit_count <- 0  # now kept inside irm_binary_gibbs_cpp()
+  # iter <- 1
   pattern <- sort(unique(nrs(tmp)))
   zeroG <- ifelse(pattern[1] == 0, 1, 0)
   fullG <- ifelse(pattern[length(pattern)] == testlength, 1, 0)
@@ -182,7 +434,7 @@ Biclustering_IRM.binary <- function(U, na = NULL, Z = NULL, w = NULL,
   }
   colnames(fld01) <- paste("Field", 1:nfld)
   rownames(fld01) <- tmp$ItemLabel
-  Nf <- colSums(fld01)
+  # Nf <- colSums(fld01)  # now kept inside irm_binary_gibbs_cpp()
 
   ## Inner Function for Ccf/Fcf/Ncf/Pcf
   Ccf_Fcf_Pcf <- function(U, Z, cls01, fld01, gamp, zeroG, fullG, type = 1) {
@@ -218,251 +470,35 @@ Biclustering_IRM.binary <- function(U, na = NULL, Z = NULL, w = NULL,
   ret <- Ccf_Fcf_Pcf(tmp$U, tmp$Z, cls01, fld01, gamp, zeroG, fullG, type = 1)
   Ccf <- ret$Ccf
   Fcf <- ret$Fcf
-  Ncf <- ret$Ncf
+  # Ncf <- ret$Ncf  # now kept inside irm_binary_gibbs_cpp()
   Pcf <- ret$Pcf
 
   # IRM Iteration ------------------------------------------------------
-  IRM_FLG <- TRUE
-  while (IRM_FLG) {
-    ### Gibbs sampler i
-    Cif <- tmp$U %*% fld01 # SxF. number of correct response Studet S in Field f
-    Fif <- (tmp$Z * (1 - tmp$U)) %*% fld01 # SxF. number of incorrect response Studet S in Field f
-    iRand <- sample(1:nobs, nobs, replace = FALSE)
-
-    for (loop in 1:nobs) {
-      target <- iRand[loop]
-
-      if (cls[target] >= 2 && cls[target] <= ncls - 1) {
-        # delete selected member
-        Nc[cls[target]] <- Nc[cls[target]] - 1
-        Ncf[cls[target], ] <- Ncf[cls[target], ] - Nf
-        Ccf[cls[target], ] <- Ccf[cls[target], ] - Cif[target, ]
-        Fcf[cls[target], ] <- Fcf[cls[target], ] - Fif[target, ]
-        CcfPlus <- Ccf + matrix(rep(Cif[target, ], ncls), nrow = ncls, byrow = TRUE)
-        FcfPlus <- Fcf + matrix(rep(Fif[target, ], ncls), nrow = ncls, byrow = TRUE)
-
-        if (Nc[cls[target]] == 0) {
-          ## if the class disappeared...
-          ncls <- ncls - 1
-          delCls <- cls[target]
-          cls01 <- cls01[, -delCls]
-          cls <- cls01 %*% (1:ncls)
-          Nc <- Nc[-delCls]
-          Ncf <- Ncf[-delCls, ]
-          Ccf <- Ccf[-delCls, ]
-          Fcf <- Fcf[-delCls, ]
-          CcfPlus <- CcfPlus[-delCls, ]
-          FcfPlus <- FcfPlus[-delCls, ]
-        }
-
-        # Table Choice!
-        ## Likelihood for Existing Table
-        Nc_tmp <- Nc[-1]
-        Nc_tmp <- Nc_tmp[-(length(Nc_tmp))]
-        exist_tab_tmp <- log((Nc_tmp / (nobs - 1 + gamma_c)) + const)
-        vec1 <- numeric(ncls - 2)
-        vec2 <- numeric(ncls - 2)
-        vec3 <- numeric(ncls - 2)
-        for (i in 2:(ncls - 1)) {
-          Ctmp <- 0
-          Ftmp <- 0
-          den <- 0
-          for (j in 1:nfld) {
-            ct1 <- (CcfPlus[i, j] - Ccf[i, j] - 1)
-            if (ct1 >= 0) {
-              for (s in 0:ct1) {
-                Ctmp <- Ctmp + log(CcfPlus[i, j] + gamp - 1 - s + const)
-              }
-            }
-            ct2 <- (FcfPlus[i, j] - Fcf[i, j] - 1)
-            if (ct2 >= 0) {
-              for (s in 0:ct2) {
-                Ftmp <- Ftmp + log(FcfPlus[i, j] + gamp - 1 - s + const)
-              }
-            }
-            ct3 <- CcfPlus[i, j] + FcfPlus[i, j] - Ccf[i, j] - Fcf[i, j] - 1
-            if (ct3 >= 0) {
-              for (s in 0:ct3) {
-                den <- den +
-                  (log(CcfPlus[i, j] + FcfPlus[i, j] + 2 * gamp - 1 - s + const))
-              }
-            }
-          }
-          vec1[i - 1] <- Ctmp
-          vec2[i - 1] <- Ftmp
-          vec3[i - 1] <- den
-        }
-        exist_tab <- exist_tab_tmp + vec1 + vec2 - vec3
-
-        ## Likelihood for New Table
-        new_tab_tmp <- log((gamma_c / (nobs - 1 + gamma_c)) + const)
-        num <- 0
-        den <- 0
-        for (j in 1:nfld) {
-          maxS <- Cif[target, j] - 1
-          if (maxS >= 0) {
-            for (s in 0:maxS) {
-              num <- num + log(Cif[target, j] + gamp - 1 - s + const)
-            }
-          }
-          maxS <- Nf[j] - Cif[target, j] - 1
-          if (maxS >= 0) {
-            for (s in 0:maxS) {
-              num <- num + log(Nf[j] - Cif[target, j] + gamp - 1 - s + const)
-            }
-          }
-          maxS <- Nf[j] - 1
-          if (maxS >= 0) {
-            for (s in 0:maxS) {
-              den <- den + log(Nf[j] + 2 * gamp - 1 - s + const)
-            }
-          }
-        }
-        new_tab <- num - den + new_tab_tmp
-
-        # Likelihood to Probability
-        ptab <- c(exist_tab, new_tab)
-        maxtab <- max(ptab)
-        exptab <- exp(ptab - maxtab)
-        ptab <- exptab / sum(exptab)
-        ptab <- round(ptab + const, digits = -log10(const))
-
-        sampled_value <- rmultinom(1, 1, ptab)
-        newclass01 <- c(0, sampled_value, 0)
-        delpos <- length(newclass01) - 1
-        if (newclass01[delpos] == 0) {
-          # Student s belongs an other class
-          cls01[target, ] <- newclass01[-delpos]
-          cls[target] <- which.max(cls01[target, ])
-        } else {
-          # Student s belongs to a new class
-          ncls <- ncls + 1
-          # new_class <- which.max(newclass01)
-          cls01_left <- cls01[, 1:(ncls - 2)]
-          cls01_right <- cls01[, (ncls - 1)]
-          zeros <- rep(0, nrow(cls01))
-          cls01 <- cbind(cls01_left, zeros, cls01_right)
-          cls01[target, ] <- newclass01
-
-          cls <- cls01 %*% (1:ncls)
-          Ccf <- t(cls01) %*% tmp$U %*% fld01
-          Fcf <- t(cls01) %*% (tmp$Z * (1 - tmp$U)) %*% fld01
-          Ncf <- Ccf + Fcf
-        }
-
-        # Update Number of Correct/Incorrect response
-        Nc <- colSums(cls01)
-        Ccf[cls[target], ] <- Ccf[cls[target], ] + Cif[target, ]
-        Fcf[cls[target], ] <- Fcf[cls[target], ] + Fif[target, ]
-        Ncf[cls[target], ] <- Ccf[cls[target], ] + Fcf[cls[target], ]
-      }
-    }
-
-    # Gibbs sampler j
-    oldField <- fld # J x C
-    Cjc <- t(tmp$U) %*% cls01
-    Fjc <- t(tmp$Z * (1 - tmp$U)) %*% cls01
-    jRand <- sample(1:testlength, testlength, replace = FALSE)
-
-    for (loop in 1:testlength) {
-      target <- jRand[loop]
-
-      # delete selected item
-      Nf[fld[target]] <- Nf[fld[target]] - 1
-      Ccf[, fld[target]] <- Ccf[, fld[target]] - t(Cjc[target, ])
-      Fcf[, fld[target]] <- Fcf[, fld[target]] - t(Fjc[target, ])
-      Ncf <- Ccf + Fcf
-      CcfPlus <- Ccf + matrix(rep(Cjc[target, ], nfld), nrow = ncls, byrow = FALSE)
-      FcfPlus <- Fcf + matrix(rep(Fjc[target, ], nfld), nrow = ncls, byrow = FALSE)
-
-      ## ## if the field disappeared...
-      if (Nf[fld[target]] == 0) {
-        nfld <- nfld - 1
-        delFld <- fld[target]
-        fld01 <- fld01[, -delFld]
-        fld <- fld01 %*% (1:nfld)
-        Nf <- Nf[-delFld]
-        Ncf <- Ncf[, -delFld]
-        Ccf <- Ccf[, -delFld]
-        Fcf <- Fcf[, -delFld]
-        CcfPlus <- CcfPlus[, -delFld]
-        FcfPlus <- FcfPlus[, -delFld]
-      }
-
-      # Table Choice!
-      ## Likelihood for each field
-      log_tab_tmp <- log((Nf / (testlength - 1 + gamma_f)) + const)
-      vec1 <- rep(0, nfld)
-      vec2 <- rep(0, nfld)
-      vec3 <- rep(0, nfld)
-      for (j in 1:nfld) {
-        Ctmp <- 0
-        Ftmp <- 0
-        den <- 0
-        for (i in 1:ncls) {
-          ct1 <- CcfPlus[i, j] - Ccf[i, j] - 1
-          if (ct1 >= 0) {
-            for (s in 0:ct1) {
-              Ctmp <- Ctmp + log(CcfPlus[i, j] + gamp - 1 - s + const)
-            }
-          }
-          ct2 <- FcfPlus[i, j] - Fcf[i, j] - 1
-          if (ct2 >= 0) {
-            for (s in 0:ct2) {
-              Ftmp <- Ftmp + log(FcfPlus[i, j] + gamp - 1 - s + const)
-            }
-          }
-          ct3 <- CcfPlus[i, j] + FcfPlus[i, j] - Ccf[i, j] - Fcf[i, j] - 1
-          if (ct3 >= 0) {
-            for (s in 0:ct3) {
-              den <- den + (log(CcfPlus[i, j] + FcfPlus[i, j] + 2 * gamp - 1 - s + const))
-            }
-          }
-        }
-        vec1[j] <- Ctmp
-        vec2[j] <- Ftmp
-        vec3[j] <- den
-      }
-      log_tab <- log_tab_tmp + vec1 + vec2 - vec3
-      maxtab <- max(log_tab)
-      exptab <- exp(log_tab - maxtab)
-      ptab <- exptab / sum(exptab)
-      ptab <- round(ptab + const, digits = -log10(const))
-
-      selected_fld <- rmultinom(1, 1, ptab)
-      fld01[target, ] <- selected_fld
-      fld[target] <- which.max(selected_fld)
-      Nf[fld[target]] <- Nf[fld[target]] + 1
-      Ccf[, fld[target]] <- Ccf[, fld[target]] + t(Cjc[target, ])
-      Fcf[, fld[target]] <- Fcf[, fld[target]] + t(Fjc[target, ])
-      Ncf[, fld[target]] <- Ccf[, fld[target]] + Fcf[, fld[target]]
-    }
-
-    limit_count <- if (sum(abs(oldField - fld)) == 0) {
-      limit_count <- limit_count + 1
-    } else {
-      limit_count <- 0
-    }
-    if (verbose) {
-      message(
-        sprintf(
-          "iter %d: match=%d nfld=%d ncls=%d",
-          iter, limit_count, nfld, ncls
-        )
-      )
-    }
-    if (limit_count == stable_limit || iter == maxiter) {
-      IRM_FLG <- FALSE
-    } else {
-      iter <- iter + 1
-    }
+  # The Gibbs phase runs in C++ (src/irm_binary_gibbs.cpp); the random draws
+  # are delegated to R so the results are identical to the R reference
+  # irm_binary_gibbs_r() for the same seed.
+  draw_one <- function(ptab) {
+    ptab <- round(ptab + const, digits = -log10(const))
+    return(which(rmultinom(1, 1, ptab) == 1))
   }
+  gibbs <- irm_binary_gibbs_cpp(
+    U = tmp$U, Z = tmp$Z, cls01_init = cls01, fld01_init = fld01,
+    gamma_c = gamma_c, gamma_f = gamma_f, gamp = gamp, konst = const,
+    maxiter = maxiter, stable_limit = stable_limit, verbose = verbose,
+    draw = draw_one, sample_int = sample.int
+  )
+  cls01 <- gibbs$cls01
+  rownames(cls01) <- tmp$ID
+  fld01 <- gibbs$fld01
+  rownames(fld01) <- tmp$ItemLabel
+  ncls <- gibbs$ncls
+  nfld <- gibbs$nfld
 
   # Pcf update
   ret <- Ccf_Fcf_Pcf(tmp$U, tmp$Z, cls01, fld01, gamp, zeroG, fullG, type = 1)
   Ccf <- ret$Ccf
   Fcf <- ret$Fcf
-  Ncf <- ret$Ncf
+  # Ncf <- ret$Ncf
   Pcf <- ret$Pcf
 
   # model Fit
@@ -485,7 +521,7 @@ Biclustering_IRM.binary <- function(U, na = NULL, Z = NULL, w = NULL,
   ret <- Ccf_Fcf_Pcf(tmp$U, tmp$Z, cls01, fld01, gamp, zeroG, fullG, type = 0)
   Ccf <- ret$Ccf
   Fcf <- ret$Fcf
-  Ncf <- ret$Ncf
+  # Ncf <- ret$Ncf
   Pcf <- ret$Pcf
 
 
@@ -563,7 +599,7 @@ Biclustering_IRM.binary <- function(U, na = NULL, Z = NULL, w = NULL,
       ret <- Ccf_Fcf_Pcf(tmp$U, tmp$Z, cls01, fld01, gamp, zeroG, fullG, type = 0)
       Ccf <- ret$Ccf
       Fcf <- ret$Fcf
-      Ncf <- ret$Ncf
+      # Ncf <- ret$Ncf
       Pcf <- ret$Pcf
 
       llm <- sum(Ccf * log(Pcf + const) + Fcf * log(1 - Pcf + const))
@@ -610,7 +646,7 @@ Biclustering_IRM.binary <- function(U, na = NULL, Z = NULL, w = NULL,
   ret <- Ccf_Fcf_Pcf(tmp$U, tmp$Z, cls01, fld01, gamp, zeroG, fullG, type = 1)
   Ccf <- ret$Ccf
   Fcf <- ret$Fcf
-  Ncf <- ret$Ncf
+  # Ncf <- ret$Ncf
   Pcf <- ret$Pcf
 
   llm <- sum(Ccf * log(Pcf + const) + Fcf * log(1 - Pcf + const))

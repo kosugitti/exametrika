@@ -75,6 +75,11 @@ empirical proportions of the hard assignments with `(C - 1) log n` and
   `J15S3810` drops from about four minutes to a few seconds. `iterations`
   now reports the EM cycles followed by the polish counts.
 
+* The Gibbs sampler of the binary `Biclustering_IRM()` now runs in C++. The
+  random draws are still made by R, so with the same `seed` the result is
+  identical to earlier versions bit for bit; the running time on `J35S515`
+  drops from about half a minute to a quarter of a second.
+
 ## Fit indices of the ordinal and rated LRA use the number of respondents
 
 The RMSEA, CAIC and BIC of `LRA()` on ordinal and rated data used, as the

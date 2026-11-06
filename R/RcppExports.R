@@ -61,6 +61,27 @@ grm_item_grad_cpp <- function(target, counts, nodes) {
     .Call(`_exametrika_grm_item_grad_cpp`, target, counts, nodes)
 }
 
+#' Gibbs phase of the binary IRM
+#'
+#' @param U response matrix with missing cells already zeroed (U * Z)
+#' @param Z missing indicator matrix
+#' @param cls01_init initial class membership (nobs x ncls)
+#' @param fld01_init initial field membership (nitems x nfld)
+#' @param gamma_c,gamma_f CRP concentration parameters
+#' @param gamp beta prior parameter (1 in the caller)
+#' @param konst the small constant added inside the logs (1e-100)
+#' @param maxiter,stable_limit stopping rule
+#' @param verbose print progress
+#' @param draw R closure: given a probability vector returns the 1-based
+#'   index drawn by rmultinom() after the caller's rounding
+#' @param sample_int base::sample.int
+#' @return list(cls01, fld01, ncls, nfld, iter)
+#' @keywords internal
+#' @noRd
+irm_binary_gibbs_cpp <- function(U, Z, cls01_init, fld01_init, gamma_c, gamma_f, gamp, konst, maxiter, stable_limit, verbose, draw, sample_int) {
+    .Call(`_exametrika_irm_binary_gibbs_cpp`, U, Z, cls01_init, fld01_init, gamma_c, gamma_f, gamp, konst, maxiter, stable_limit, verbose, draw, sample_int)
+}
+
 irm_gibbs_core_cpp <- function(Uq_vec, Uq_dim, Z, cls01_init, fld01_init, gamma_c, gamma_f, alpha_vec_R, max_iter, stable_limit, verbose) {
     .Call(`_exametrika_irm_gibbs_core_cpp`, Uq_vec, Uq_dim, Z, cls01_init, fld01_init, gamma_c, gamma_f, alpha_vec_R, max_iter, stable_limit, verbose)
 }

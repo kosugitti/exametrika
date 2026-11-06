@@ -105,7 +105,8 @@ LDLRA(
 
 - g_list:
 
-  graph list
+  The same graphs as igraph objects. Will be dropped in 3.0.0; use
+  `adj_list`.
 
 - referenceMatrix:
 

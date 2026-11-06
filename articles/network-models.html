@@ -67,18 +67,22 @@ rendered output, see the <a href="https://kosugitti.github.io/exametrika/article
 site</a>.</p>
 </blockquote>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://kosugitti.github.io/exametrika/">exametrika</a></span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r.igraph.org/" class="external-link">igraph</a></span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://kosugitti.github.io/exametrika/">exametrika</a></span><span class="op">)</span></span></code></pre></div>
 <div class="section level2">
 <h2 id="bayesian-network-model-bnm">Bayesian Network Model (BNM)<a class="anchor" aria-label="anchor" href="#bayesian-network-model-bnm"></a>
 </h2>
 <p>BNM represents conditional probabilities between items in a network
 format. A Directed Acyclic Graph (DAG) must be provided via
-<code>adj_matrix</code>, <code>adj_file</code>, or <code>g</code>
-(igraph object).</p>
+<code>adj_matrix</code> (an adjacency matrix with item labels as row and
+column names) or <code>adj_file</code> (a CSV of edges). An igraph
+object can also be passed as <code>g</code>; that input, and the igraph
+objects in the result (<code>g</code>, <code>g_list</code>,
+<code>all_g</code>), will be replaced by the matrix form in 3.0.0.</p>
 <div class="section level3">
 <h3 id="creating-the-graph">Creating the Graph<a class="anchor" aria-label="anchor" href="#creating-the-graph"></a>
 </h3>
+<p>The DAG is written as a list of edges and turned into an adjacency
+matrix:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">DAG</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
@@ -91,16 +95,10 @@ format. A Directed Acyclic Graph (DAG) must be provided via
 <span>  ncol <span class="op">=</span> <span class="fl">2</span>, byrow <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Graph object</span></span>
-<span><span class="va">g</span> <span class="op">&lt;-</span> <span class="fu">igraph</span><span class="fu">::</span><span class="fu"><a href="https://r.igraph.org/reference/graph_from_data_frame.html" class="external-link">graph_from_data_frame</a></span><span class="op">(</span><span class="va">DAG</span><span class="op">)</span></span>
-<span><span class="va">g</span></span>
-<span><span class="co">#&gt; IGRAPH aca4fda DN-- 5 5 -- </span></span>
-<span><span class="co">#&gt; + attr: name (v/c)</span></span>
-<span><span class="co">#&gt; + edges from aca4fda (vertex names):</span></span>
-<span><span class="co">#&gt; [1] Item01-&gt;Item02 Item02-&gt;Item03 Item02-&gt;Item04 Item03-&gt;Item05 Item04-&gt;Item05</span></span>
-<span></span>
-<span><span class="co"># Adjacency matrix</span></span>
-<span><span class="va">adj_mat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">as.matrix</a></span><span class="op">(</span><span class="fu">igraph</span><span class="fu">::</span><span class="fu"><a href="https://r.igraph.org/reference/get.adjacency.html" class="external-link">get.adjacency</a></span><span class="op">(</span><span class="va">g</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co"># Adjacency matrix: a 1 in row "parent", column "child"</span></span>
+<span><span class="va">items</span> <span class="op">&lt;-</span> <span class="va">J5S10</span><span class="op">$</span><span class="va">ItemLabel</span></span>
+<span><span class="va">adj_mat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">items</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">items</span><span class="op">)</span>, dimnames <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">items</span>, <span class="va">items</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">adj_mat</span><span class="op">[</span><span class="va">DAG</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">1</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">adj_mat</span><span class="op">)</span></span>
 <span><span class="co">#&gt;        Item01 Item02 Item03 Item04 Item05</span></span>
 <span><span class="co">#&gt; Item01      0      1      0      0      0</span></span>
@@ -196,8 +194,8 @@ change across latent ranks. A graph must be specified for each rank.</p>
 <div class="section level3">
 <h3 id="setting-up-rank-specific-graphs">Setting Up Rank-Specific Graphs<a class="anchor" aria-label="anchor" href="#setting-up-rank-specific-graphs"></a>
 </h3>
-<p>Graphs can be provided via CSV file, adjacency matrix list, or igraph
-object list:</p>
+<p>Graphs can be provided via CSV file (<code>adj_file</code>) or a list
+of adjacency matrices (<code>adj_list</code>), one per rank:</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">DAG_dat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
 <span>  <span class="st">"From"</span>, <span class="st">"To"</span>, <span class="st">"Rank"</span>,</span>

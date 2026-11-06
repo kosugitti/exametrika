@@ -142,8 +142,8 @@ BINET(
 
 - all_g:
 
-  Integrated graph object used to plot graph.see also
-  [plot.exametrika](https://kosugitti.github.io/exametrika/reference/plot.exametrika.md)
+  The integrated graph as an igraph object. Will be dropped in 3.0.0;
+  use `all_edges`.
 
 - adj_list:
 

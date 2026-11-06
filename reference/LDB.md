@@ -129,7 +129,8 @@ LDB(
 
 - g_list:
 
-  List of graph object used in the model
+  The same graphs as igraph objects. Will be dropped in 3.0.0; use
+  `adj_list`.
 
 - IRP:
 

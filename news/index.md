@@ -84,6 +84,25 @@ models usually does not.
 
 - Many small internal clean-ups of the code (no change in results).
 
+- Notice for 3.0.0: the igraph objects in the results of the network
+  models (`g` of
+  [`BNM()`](https://kosugitti.github.io/exametrika/reference/BNM.md),
+  `g_list` of
+  [`LDLRA()`](https://kosugitti.github.io/exametrika/reference/LDLRA.md)
+  and
+  [`LDB()`](https://kosugitti.github.io/exametrika/reference/LDB.md),
+  `all_g` of
+  [`BINET()`](https://kosugitti.github.io/exametrika/reference/BINET.md))
+  will be dropped in 3.0.0, and igraph will no longer be required. The
+  same graphs are already returned as adjacency matrices (`adj`,
+  `adj_list`) and, for
+  [`BINET()`](https://kosugitti.github.io/exametrika/reference/BINET.md),
+  as the edge table `all_edges`;
+  [`print()`](https://rdrr.io/r/base/print.html) and
+  [`plot()`](https://rdrr.io/r/graphics/plot.default.html) no longer use
+  igraph. Passing an igraph object as `g` or `g_list` will keep working
+  when igraph is installed.
+
 - [`GRM()`](https://kosugitti.github.io/exametrika/reference/GRM.md)
   estimates the item parameters by Bock-Aitkin EM (E-step in C++,
   item-wise M-steps) followed by a short BFGS polish on the marginal

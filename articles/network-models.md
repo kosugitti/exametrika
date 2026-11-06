@@ -8,16 +8,21 @@
 ``` r
 
 library(exametrika)
-library(igraph)
 ```
 
 ## Bayesian Network Model (BNM)
 
 BNM represents conditional probabilities between items in a network
-format. A Directed Acyclic Graph (DAG) must be provided via
-`adj_matrix`, `adj_file`, or `g` (igraph object).
+format. A Directed Acyclic Graph (DAG) must be provided via `adj_matrix`
+(an adjacency matrix with item labels as row and column names) or
+`adj_file` (a CSV of edges). An igraph object can also be passed as `g`;
+that input, and the igraph objects in the result (`g`, `g_list`,
+`all_g`), will be replaced by the matrix form in 3.0.0.
 
 ### Creating the Graph
+
+The DAG is written as a list of edges and turned into an adjacency
+matrix:
 
 ``` r
 
@@ -32,16 +37,10 @@ DAG <- matrix(
   ncol = 2, byrow = TRUE
 )
 
-# Graph object
-g <- igraph::graph_from_data_frame(DAG)
-g
-#> IGRAPH aca4fda DN-- 5 5 -- 
-#> + attr: name (v/c)
-#> + edges from aca4fda (vertex names):
-#> [1] Item01->Item02 Item02->Item03 Item02->Item04 Item03->Item05 Item04->Item05
-
-# Adjacency matrix
-adj_mat <- as.matrix(igraph::get.adjacency(g))
+# Adjacency matrix: a 1 in row "parent", column "child"
+items <- J5S10$ItemLabel
+adj_mat <- matrix(0, length(items), length(items), dimnames = list(items, items))
+adj_mat[DAG] <- 1
 print(adj_mat)
 #>        Item01 Item02 Item03 Item04 Item05
 #> Item01      0      1      0      0      0
@@ -142,8 +141,8 @@ change across latent ranks. A graph must be specified for each rank.
 
 ### Setting Up Rank-Specific Graphs
 
-Graphs can be provided via CSV file, adjacency matrix list, or igraph
-object list:
+Graphs can be provided via CSV file (`adj_file`) or a list of adjacency
+matrices (`adj_list`), one per rank:
 
 ``` r
 

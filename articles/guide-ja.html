@@ -218,7 +218,9 @@ CRANビルド時間短縮のため、計算負荷の高いコード例は
 <p>本パッケージには以下が必要です：</p>
 <ul>
 <li>R (&gt;= 4.1.0)</li>
-<li>igraph (ネットワーク分析用)</li>
+<li>igraph
+(ネットワークモデルの結果に含まれるグラフオブジェクトのため。3.0.0
+で外れる予定)</li>
 <li>その他の依存パッケージは自動的にインストールされます</li>
 </ul>
 </div>
@@ -637,17 +639,22 @@ Model（Samejima,1969）はIRTを多値反応モデルに展開したもので�
 <div class="section level3">
 <h3 id="ベイジアンネットワークモデル">ベイジアンネットワークモデル<a class="anchor" aria-label="anchor" href="#%E3%83%99%E3%82%A4%E3%82%B8%E3%82%A2%E3%83%B3%E3%83%8D%E3%83%83%E3%83%88%E3%83%AF%E3%83%BC%E3%82%AF%E3%83%A2%E3%83%87%E3%83%AB"></a>
 </h3>
+<p>DAG は隣接行列(行が親・列が子・行名と列名は項目ラベル)か辺の CSV
+ファイルで渡します。igraph オブジェクトを <code>g</code>
+に渡すこともできますが，その入力と結果の中の igraph
+オブジェクト(<code>g</code>・<code>g_list</code>・<code>all_g</code>)は
+3.0.0 で行列の形に置き換わります。</p>
 <div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r.igraph.org/" class="external-link">igraph</a></span><span class="op">)</span></span>
-<span><span class="va">DAG</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span></span>
+<code class="sourceCode R"><span><span class="va">DAG</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
 <span>    <span class="st">"Item01"</span>, <span class="st">"Item02"</span>, <span class="st">"Item02"</span>, <span class="st">"Item03"</span>, <span class="st">"Item02"</span>, <span class="st">"Item04"</span>,</span>
 <span>    <span class="st">"Item03"</span>, <span class="st">"Item05"</span>, <span class="st">"Item04"</span>, <span class="st">"Item05"</span></span>
 <span>  <span class="op">)</span>,</span>
 <span>  ncol <span class="op">=</span> <span class="fl">2</span>, byrow <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span>
-<span><span class="va">g</span> <span class="op">&lt;-</span> <span class="fu">igraph</span><span class="fu">::</span><span class="fu"><a href="https://r.igraph.org/reference/graph_from_data_frame.html" class="external-link">graph_from_data_frame</a></span><span class="op">(</span><span class="va">DAG</span><span class="op">)</span></span>
-<span><span class="va">adj_mat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">as.matrix</a></span><span class="op">(</span><span class="fu">igraph</span><span class="fu">::</span><span class="fu"><a href="https://r.igraph.org/reference/get.adjacency.html" class="external-link">get.adjacency</a></span><span class="op">(</span><span class="va">g</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">items</span> <span class="op">&lt;-</span> <span class="va">J5S10</span><span class="op">$</span><span class="va">ItemLabel</span></span>
+<span><span class="va">adj_mat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">items</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">items</span><span class="op">)</span>, dimnames <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">items</span>, <span class="va">items</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">adj_mat</span><span class="op">[</span><span class="va">DAG</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">1</span></span></code></pre></div>
 <div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">result.BNM</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/BNM.html">BNM</a></span><span class="op">(</span><span class="va">J5S10</span>, adj_matrix <span class="op">=</span> <span class="va">adj_mat</span><span class="op">)</span></span>
 <span><span class="va">result.BNM</span></span></code></pre></div>

@@ -58,7 +58,8 @@ elements:
 
 - iterations:
 
-  Number of iterations and function evaluations from optimization
+  Number of EM cycles, followed by the function and gradient evaluations
+  of the final BFGS polish
 
 - params:
 

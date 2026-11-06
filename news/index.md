@@ -84,6 +84,14 @@ models usually does not.
 
 - Many small internal clean-ups of the code (no change in results).
 
+- [`GRM()`](https://kosugitti.github.io/exametrika/reference/GRM.md)
+  estimates the item parameters by Bock-Aitkin EM (E-step in C++,
+  item-wise M-steps) followed by a short BFGS polish on the marginal
+  likelihood, instead of running BFGS on all parameters from the start.
+  The optimum is the same (estimates agree to 1e-4); the running time on
+  `J15S3810` drops from about four minutes to a few seconds.
+  `iterations` now reports the EM cycles followed by the polish counts.
+
 ### Fit indices of the ordinal and rated LRA use the number of respondents
 
 The RMSEA, CAIC and BIC of

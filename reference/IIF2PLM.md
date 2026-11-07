@@ -27,3 +27,10 @@ IIF2PLM(a, b, theta)
 Returns a numeric vector representing the item information at each
 ability level theta. The information is calculated as: \\I(\theta) =
 a^2P(\theta)(1-P(\theta))\\
+
+## Note
+
+This function will be removed in exametrika 3.0.0. It is a special case
+of
+[ItemInformationFunc](https://kosugitti.github.io/exametrika/reference/ItemInformationFunc.md),
+which covers the 1PL to 4PL models; use that instead.

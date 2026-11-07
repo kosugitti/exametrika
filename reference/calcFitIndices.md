@@ -70,3 +70,12 @@ calcFitIndices(chi_A, chi_B, df_A, df_B, nobs)
 - BIC:
 
   Bayesian Information Criterion. A lower value indicates a better fit.
+
+## Note
+
+This is an internal helper that turns the chi-square statistics of the
+analysis and benchmark models into fit indices. It will no longer be
+exported in exametrika 3.0.0; use the `TestFitIndices` element of a
+fitted model, or
+[`M2()`](https://kosugitti.github.io/exametrika/reference/M2.md),
+instead.

@@ -103,6 +103,31 @@ models usually does not.
   igraph. Passing an igraph object as `g` or `g_list` will keep working
   when igraph is installed.
 
+- Notice for 3.0.0: nine exported functions that are internal helpers
+  will leave the export list in 3.0.0.
+  [`calcFitIndices()`](https://kosugitti.github.io/exametrika/reference/calcFitIndices.md),
+  [`TestFit()`](https://kosugitti.github.io/exametrika/reference/TestFit.md),
+  [`ItemFit()`](https://kosugitti.github.io/exametrika/reference/ItemFit.md)
+  and
+  [`TestFitSaturated()`](https://kosugitti.github.io/exametrika/reference/TestFitSaturated.md)
+  take a model’s own log-likelihood and parameter count and are only
+  called by the model functions; the fit indices of a fitted model are
+  already in its `TestFitIndices` and `ItemFitIndices` elements (or from
+  [`M2()`](https://kosugitti.github.io/exametrika/reference/M2.md)).
+  [`RaschModel()`](https://kosugitti.github.io/exametrika/reference/RaschModel.md),
+  [`TwoPLM()`](https://kosugitti.github.io/exametrika/reference/TwoPLM.md),
+  [`ThreePLM()`](https://kosugitti.github.io/exametrika/reference/ThreePLM.md),
+  [`IIF2PLM()`](https://kosugitti.github.io/exametrika/reference/IIF2PLM.md)
+  and
+  [`IIF3PLM()`](https://kosugitti.github.io/exametrika/reference/IIF3PLM.md)
+  are special cases of
+  [`LogisticModel()`](https://kosugitti.github.io/exametrika/reference/LogisticModel.md)
+  and
+  [`ItemInformationFunc()`](https://kosugitti.github.io/exametrika/reference/ItemInformationFunc.md)
+  and will be removed; use those two. The nine are now listed under
+  “Internal” in the reference index and carry a note in their help
+  pages.
+
 - [`GRM()`](https://kosugitti.github.io/exametrika/reference/GRM.md)
   estimates the item parameters by Bock-Aitkin EM (E-step in C++,
   item-wise M-steps) followed by a short BFGS polish on the marginal

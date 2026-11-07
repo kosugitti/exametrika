@@ -1114,8 +1114,6 @@ Unidimensionality and monotonicity checks (Mokken-type scalability)
 
 Item-level analysis functions
 
-- [`ItemFit()`](https://kosugitti.github.io/exametrika/reference/ItemFit.md)
-  : Model Fit Functions for Items
 - [`ItemTotalCorr()`](https://kosugitti.github.io/exametrika/reference/ItemTotalCorr.md)
   : Item-Total Correlation
 - [`ItemEntropy()`](https://kosugitti.github.io/exametrika/reference/ItemEntropy.md)
@@ -1135,10 +1133,6 @@ Item-level analysis functions
 
 Test-level fit and response functions
 
-- [`TestFit()`](https://kosugitti.github.io/exametrika/reference/TestFit.md)
-  : Model Fit Functions for test whole
-- [`TestFitSaturated()`](https://kosugitti.github.io/exametrika/reference/TestFitSaturated.md)
-  : Model Fit Functions for saturated model
 - [`TestResponseFunc()`](https://kosugitti.github.io/exametrika/reference/TestResponseFunc.md)
   : TRF for IRT
 - [`TestInformationFunc()`](https://kosugitti.github.io/exametrika/reference/TestInformationFunc.md)
@@ -1186,18 +1180,8 @@ IRT models for binary and polytomous data
   Estimating Item parameters using EM algorithm
 - [`GRM()`](https://kosugitti.github.io/exametrika/reference/GRM.md) :
   Graded Response Model (GRM)
-- [`RaschModel()`](https://kosugitti.github.io/exametrika/reference/RaschModel.md)
-  : Rasch Model
-- [`TwoPLM()`](https://kosugitti.github.io/exametrika/reference/TwoPLM.md)
-  : Two-Parameter Logistic Model
-- [`ThreePLM()`](https://kosugitti.github.io/exametrika/reference/ThreePLM.md)
-  : Three-Parameter Logistic Model
 - [`LogisticModel()`](https://kosugitti.github.io/exametrika/reference/LogisticModel.md)
   : Four-Parameter Logistic Model
-- [`IIF2PLM()`](https://kosugitti.github.io/exametrika/reference/IIF2PLM.md)
-  : IIF for 2PLM
-- [`IIF3PLM()`](https://kosugitti.github.io/exametrika/reference/IIF3PLM.md)
-  : IIF for 3PLM
 - [`ItemInformationFunc()`](https://kosugitti.github.io/exametrika/reference/ItemInformationFunc.md)
   : IIF for 4PLM
 - [`grm_prob()`](https://kosugitti.github.io/exametrika/reference/grm_prob.md)
@@ -1284,8 +1268,6 @@ Scoring and scaling functions
 
 Model fit index computation
 
-- [`calcFitIndices()`](https://kosugitti.github.io/exametrika/reference/calcFitIndices.md)
-  : calc Fit Indices
 - [`M2()`](https://kosugitti.github.io/exametrika/reference/M2.md) :
   Limited-information goodness-of-fit statistic (M2)
 - [`add_M2()`](https://kosugitti.github.io/exametrika/reference/add_M2.md)
@@ -1310,6 +1292,24 @@ Plot, print and predict methods for exametrika objects
 
 Internal helper functions (not intended for direct use)
 
+- [`calcFitIndices()`](https://kosugitti.github.io/exametrika/reference/calcFitIndices.md)
+  : calc Fit Indices
+- [`TestFit()`](https://kosugitti.github.io/exametrika/reference/TestFit.md)
+  : Model Fit Functions for test whole
+- [`ItemFit()`](https://kosugitti.github.io/exametrika/reference/ItemFit.md)
+  : Model Fit Functions for Items
+- [`TestFitSaturated()`](https://kosugitti.github.io/exametrika/reference/TestFitSaturated.md)
+  : Model Fit Functions for saturated model
+- [`RaschModel()`](https://kosugitti.github.io/exametrika/reference/RaschModel.md)
+  : Rasch Model
+- [`TwoPLM()`](https://kosugitti.github.io/exametrika/reference/TwoPLM.md)
+  : Two-Parameter Logistic Model
+- [`ThreePLM()`](https://kosugitti.github.io/exametrika/reference/ThreePLM.md)
+  : Three-Parameter Logistic Model
+- [`IIF2PLM()`](https://kosugitti.github.io/exametrika/reference/IIF2PLM.md)
+  : IIF for 2PLM
+- [`IIF3PLM()`](https://kosugitti.github.io/exametrika/reference/IIF3PLM.md)
+  : IIF for 3PLM
 - [`AlphaIfDel()`](https://kosugitti.github.io/exametrika/reference/AlphaIfDel.md)
   : Alpha Coefficient if Item removed
 - [`BitRespPtn()`](https://kosugitti.github.io/exametrika/reference/BitRespPtn.md)

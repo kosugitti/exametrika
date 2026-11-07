@@ -33,3 +33,10 @@ Returns a numeric vector of probabilities between c and 1, representing
 the probability of a correct response given the ability level theta. The
 probability is calculated using the formula: \\P(\theta) = c +
 \frac{1-c}{1 + e^{-a(\theta-b)}}\\
+
+## Note
+
+This function will be removed in exametrika 3.0.0. It is a special case
+of
+[LogisticModel](https://kosugitti.github.io/exametrika/reference/LogisticModel.md),
+which covers the 1PL to 4PL models; use that instead.

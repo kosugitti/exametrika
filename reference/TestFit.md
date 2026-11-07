@@ -97,3 +97,10 @@ TestFit(U, Z, ell_A, nparam)
 - BIC:
 
   Bayesian Information Criterion. A lower value indicates a better fit.
+
+## Note
+
+This is an internal helper that the model functions call with their own
+log-likelihood and parameter count. It will no longer be exported in
+exametrika 3.0.0; the fit indices of a fitted model are available in its
+`TestFitIndices` and `ItemFitIndices` elements.

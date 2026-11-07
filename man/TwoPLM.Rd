@@ -24,3 +24,7 @@ the probability of a student with ability theta successfully
 answering item j, using both a slope parameter and a
 location parameter.
 }
+\note{
+This function will be removed in exametrika 3.0.0. It is a special
+case of \link{LogisticModel}, which covers the 1PL to 4PL models; use that instead.
+}

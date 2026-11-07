@@ -24,3 +24,7 @@ is calculated using the formula: \eqn{P(\theta) = c + \frac{1-c}{1 + e^{-a(\thet
 The three-parameter logistic model is a model where the lower
 asymptote parameter c is added to the 2PLM
 }
+\note{
+This function will be removed in exametrika 3.0.0. It is a special
+case of \link{LogisticModel}, which covers the 1PL to 4PL models; use that instead.
+}

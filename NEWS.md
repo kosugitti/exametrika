@@ -76,6 +76,17 @@ empirical proportions of the hard assignments with `(C - 1) log n` and
   longer use igraph. Passing an igraph object as `g` or `g_list` will keep
   working when igraph is installed.
 
+* Notice for 3.0.0: nine exported functions that are internal helpers will
+  leave the export list in 3.0.0. `calcFitIndices()`, `TestFit()`,
+  `ItemFit()` and `TestFitSaturated()` take a model's own log-likelihood and
+  parameter count and are only called by the model functions; the fit
+  indices of a fitted model are already in its `TestFitIndices` and
+  `ItemFitIndices` elements (or from `M2()`). `RaschModel()`, `TwoPLM()`,
+  `ThreePLM()`, `IIF2PLM()` and `IIF3PLM()` are special cases of
+  `LogisticModel()` and `ItemInformationFunc()` and will be removed; use
+  those two. The nine are now listed under "Internal" in the reference index
+  and carry a note in their help pages.
+
 * `GRM()` estimates the item parameters by Bock-Aitkin EM (E-step in C++,
   item-wise M-steps) followed by a short BFGS polish on the marginal
   likelihood, instead of running BFGS on all parameters from the start. The

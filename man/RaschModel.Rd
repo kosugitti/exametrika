@@ -21,3 +21,7 @@ The one-parameter logistic model is a model with only one parameter b.
 This model is a 2PLM model in which a is constrained to 1.
 This model is also called the Rasch model.
 }
+\note{
+This function will be removed in exametrika 3.0.0. It is a special
+case of \link{LogisticModel}, which covers the 1PL to 4PL models; use that instead.
+}

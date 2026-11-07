@@ -64,7 +64,6 @@ reference:
   - title: Item Analysis
     desc: Item-level analysis functions
     contents:
-    - ItemFit
     - ItemTotalCorr
     - ItemEntropy
     - ItemThreshold
@@ -76,8 +75,6 @@ reference:
   - title: Test-level Analysis
     desc: Test-level fit and response functions
     contents:
-    - TestFit
-    - TestFitSaturated
     - TestResponseFunc
     - TestInformationFunc
 
@@ -106,12 +103,7 @@ reference:
     contents:
     - IRT
     - GRM
-    - RaschModel
-    - TwoPLM
-    - ThreePLM
     - LogisticModel
-    - IIF2PLM
-    - IIF3PLM
     - ItemInformationFunc
     - grm_prob
     - grm_iif
@@ -163,7 +155,6 @@ reference:
   - title: Model Fit
     desc: Model fit index computation
     contents:
-    - calcFitIndices
     - M2
     - add_M2
 
@@ -179,6 +170,15 @@ reference:
   - title: Internal
     desc: Internal helper functions (not intended for direct use)
     contents:
+    - calcFitIndices
+    - TestFit
+    - ItemFit
+    - TestFitSaturated
+    - RaschModel
+    - TwoPLM
+    - ThreePLM
+    - IIF2PLM
+    - IIF3PLM
     - AlphaIfDel
     - BitRespPtn
     - LD_param_est

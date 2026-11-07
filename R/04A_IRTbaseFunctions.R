@@ -10,6 +10,8 @@
 #' @return Returns a numeric vector of probabilities between 0 and 1, representing
 #'   the probability of a correct response given the ability level theta. The probability
 #'   is calculated using the formula: \eqn{P(\theta) = \frac{1}{1 + e^{-a(\theta-b)}}}
+#' @note This function will be removed in exametrika 3.0.0. It is a special
+#' case of [LogisticModel], which covers the 1PL to 4PL models; use that instead.
 #' @export
 
 TwoPLM <- function(a, b, theta) {
@@ -28,6 +30,8 @@ TwoPLM <- function(a, b, theta) {
 #' @return Returns a numeric vector of probabilities between c and 1, representing
 #'   the probability of a correct response given the ability level theta. The probability
 #'   is calculated using the formula: \eqn{P(\theta) = c + \frac{1-c}{1 + e^{-a(\theta-b)}}}
+#' @note This function will be removed in exametrika 3.0.0. It is a special
+#' case of [LogisticModel], which covers the 1PL to 4PL models; use that instead.
 #' @export
 
 ThreePLM <- function(a, b, c, theta) {
@@ -65,6 +69,8 @@ LogisticModel <- function(a = 1, b, c = 0, d = 1, theta) {
 #' @return Returns a numeric vector of probabilities between 0 and 1, representing
 #'   the probability of a correct response given the ability level theta. The probability
 #'   is calculated using the formula: \eqn{P(\theta) = \frac{1}{1 + e^{-(\theta-b)}}}
+#' @note This function will be removed in exametrika 3.0.0. It is a special
+#' case of [LogisticModel], which covers the 1PL to 4PL models; use that instead.
 #' @export
 
 RaschModel <- function(b, theta) {
@@ -81,6 +87,8 @@ RaschModel <- function(b, theta) {
 #' @return Returns a numeric vector representing the item information at each ability
 #'   level theta. The information is calculated as:
 #'   \eqn{I(\theta) = a^2P(\theta)(1-P(\theta))}
+#' @note This function will be removed in exametrika 3.0.0. It is a special
+#' case of [ItemInformationFunc], which covers the 1PL to 4PL models; use that instead.
 #' @export
 
 IIF2PLM <- function(a, b, theta) {
@@ -97,6 +105,8 @@ IIF2PLM <- function(a, b, theta) {
 #' @return Returns a numeric vector representing the item information at each ability
 #'   level theta. The information is calculated as:
 #'   \eqn{I(\theta) = \frac{a^2(1-P(\theta))(P(\theta)-c)^2}{(1-c)^2P(\theta)}}
+#' @note This function will be removed in exametrika 3.0.0. It is a special
+#' case of [ItemInformationFunc], which covers the 1PL to 4PL models; use that instead.
 #' @export
 
 IIF3PLM <- function(a, b, c, theta) {

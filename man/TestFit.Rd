@@ -39,3 +39,10 @@ it is converted to the exametrika class with the \link{dataFormat} function.}
 \description{
 A general function that returns the model fit indices.
 }
+\note{
+This is an internal helper that the model functions call with their
+own log-likelihood and parameter count. It will no longer be exported in
+exametrika 3.0.0; the fit indices of a fitted model are available in its
+\code{TestFitIndices} and \code{ItemFitIndices} elements.
+}
+\keyword{internal}

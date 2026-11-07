@@ -33,3 +33,10 @@ calcFitIndices(chi_A, chi_B, df_A, df_B, nobs)
 \description{
 A general function that returns the model fit indices.
 }
+\note{
+This is an internal helper that turns the chi-square statistics of
+the analysis and benchmark models into fit indices. It will no longer be
+exported in exametrika 3.0.0; use the \code{TestFitIndices} element of a fitted
+model, or \code{M2()}, instead.
+}
+\keyword{internal}

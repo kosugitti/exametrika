@@ -23,3 +23,7 @@ level theta. The information is calculated as:
 \description{
 Item Information Function for 3PLM
 }
+\note{
+This function will be removed in exametrika 3.0.0. It is a special
+case of \link{ItemInformationFunc}, which covers the 1PL to 4PL models; use that instead.
+}

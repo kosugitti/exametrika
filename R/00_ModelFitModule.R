@@ -116,6 +116,11 @@ charge_test_params <- function(test, extra, nobs) {
 #' \item{CAIC}{Consistent AIC.A lower value indicates a better fit.}
 #' \item{BIC}{Bayesian Information Criterion. A lower value indicates a better fit.}
 #' }
+#' @note This is an internal helper that the model functions call with their
+#' own log-likelihood and parameter count. It will no longer be exported in
+#' exametrika 3.0.0; the fit indices of a fitted model are available in its
+#' `TestFitIndices` and `ItemFitIndices` elements.
+#' @keywords internal
 #' @export
 ItemFit <- function(U, Z, ell_A, nparam) {
   ## Item Fit Indices
@@ -231,6 +236,11 @@ ItemFit <- function(U, Z, ell_A, nparam) {
 #' \item{CAIC}{Consistent AIC.A lower value indicates a better fit.}
 #' \item{BIC}{Bayesian Information Criterion. A lower value indicates a better fit.}
 #' }
+#' @note This is an internal helper that the model functions call with their
+#' own log-likelihood and parameter count. It will no longer be exported in
+#' exametrika 3.0.0; the fit indices of a fitted model are available in its
+#' `TestFitIndices` and `ItemFitIndices` elements.
+#' @keywords internal
 #' @export
 
 TestFit <- function(U, Z, ell_A, nparam) {
@@ -309,6 +319,11 @@ TestFit <- function(U, Z, ell_A, nparam) {
 #' \item{CAIC}{Consistent AIC.A lower value indicates a better fit.}
 #' \item{BIC}{Bayesian Information Criterion. A lower value indicates a better fit.}
 #' }
+#' @note This is an internal helper that the model functions call with their
+#' own log-likelihood and parameter count. It will no longer be exported in
+#' exametrika 3.0.0; the fit indices of a fitted model are available in its
+#' `TestFitIndices` and `ItemFitIndices` elements.
+#' @keywords internal
 #' @export
 
 TestFitSaturated <- function(U, Z, ell_A, nparam) {
@@ -367,6 +382,11 @@ TestFitSaturated <- function(U, Z, ell_A, nparam) {
 #' \item{CAIC}{Consistent AIC.A lower value indicates a better fit.}
 #' \item{BIC}{Bayesian Information Criterion. A lower value indicates a better fit.}
 #' }
+#' @note This is an internal helper that turns the chi-square statistics of
+#' the analysis and benchmark models into fit indices. It will no longer be
+#' exported in exametrika 3.0.0; use the `TestFitIndices` element of a fitted
+#' model, or `M2()`, instead.
+#' @keywords internal
 #' @export
 #'
 

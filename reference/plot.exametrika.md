@@ -15,7 +15,8 @@ plot(
   x,
   type = c("IRF", "TRF", "IIF", "TIF", "IIC", "ICC", "TIC", "IRP", "TRP", "LCD", "CMP",
     "FRP", "RMP", "LRD", "Array", "CRV", "RRV", "FCRP", "FCBR", "ScoreField",
-    "FieldPIRP", "LDPSR", "ScoreFreq", "ScoreRank", "ICRP", "ICBR", "Fit"),
+    "FieldPIRP", "LDPSR", "ScoreFreq", "ScoreRank", "ICRP", "ICBR", "Fit", "RankUpShift",
+    "RankOdds"),
   items = NULL,
   students = NULL,
   nc = 1,
@@ -156,6 +157,23 @@ plot(
 
   :   Heatmap of expected scores across fields and latent classes/ranks
       for polytomous Biclustering.
+
+  RankUpShift
+
+  :   Heatmap of `RankUpShift`, one panel per field: rows are the steps
+      from one rank to the next (top to bottom), columns the category
+      boundaries, and a cell is the increase of the probability of
+      answering that category or above. Shows which boundary of which
+      field moves when a respondent goes up one rank. A decrease (an
+      order violation, possible under GTM) is shaded blue. `colors` may
+      give the colours for increases and decreases. Ordinal
+      Ranklustering only.
+
+  RankOdds
+
+  :   Box plots of the rank-up and rank-down odds in `Students` by
+      estimated rank, on a log axis with a dashed line at 1. Ordinal
+      Ranklustering only.
 
   Fit
 
@@ -320,7 +338,8 @@ Each model class supports specific plot types:
 - ordinalBiclustering:
 
   Supports "FRP", "FCRP", "FCBR", "LCD", "LRD", "CMP", "RMP", "Array",
-  "ScoreField", "RRV"
+  "ScoreField", "RRV", and for Ranklustering (`method = "R"`)
+  "RankUpShift" and "RankOdds"
 
 - nominalBiclustering:
 

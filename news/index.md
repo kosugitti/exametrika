@@ -2,6 +2,33 @@
 
 ## exametrika 2.3.0 (development)
 
+### New: rank-up odds and `RankUpShift` for the ordinal Ranklustering
+
+The ordinal `Biclustering(method = "R")` (isotonic and GTM) now returns
+in `Students` the rank-up and rank-down odds that the binary and rated
+Ranklustering and
+[`LRA()`](https://kosugitti.github.io/exametrika/reference/LRA.md)
+already gave: the membership of the next rank up (down) over that of the
+estimated rank, `NA` at the top (bottom) rank. The columns are appended
+after `Estimate`, with the same names as in the binary fit; plain
+Biclustering (`method = "B"`) is unchanged.
+
+`RankUpShift` is new: for each step from rank c to c + 1, each field and
+each category boundary b, the increase of P(X \>= b) in the field
+reference profile. It shows which boundary of which field moves when a
+respondent goes up one rank. Under the isotonic estimation it is
+non-negative (values within the solver’s tolerance of 1e-6 below zero
+are set to 0); under GTM a negative entry is an order violation and is
+kept. The boundaries are named by the raw response codes.
+
+[`plot()`](https://rdrr.io/r/graphics/plot.default.html) gains two types
+for the ordinal Ranklustering, drawn with base graphics:
+`"RankUpShift"`, one heatmap panel per field (rows are the rank steps
+from top to bottom, columns the boundaries, values of 0.05 and more
+written in the cells, decreases shaded blue), and `"RankOdds"`, box
+plots of the two odds by estimated rank on a log axis with a dashed line
+at 1.
+
 ### New: `BIC_elbo`, a BIC on the observed-data log-likelihood
 
 Every model that reports `elbo` now also reports
@@ -219,7 +246,7 @@ and the field of each item, the minimal object that
 and [`predict()`](https://rdrr.io/r/stats/predict.html) accept, so that
 a form can be equated from published values alone.
 
-### New: `mixing = "estimate"` lets `LCA()`, `LRA()` and binary `Biclustering()` estimate the class weights
+### New: `mixing = "estimate"` lets `LCA()`, `LRA()` and `Biclustering()` estimate the class weights
 
 Binary
 [`LCA()`](https://kosugitti.github.io/exametrika/reference/LCA.md),
@@ -251,9 +278,27 @@ all-zero patterns), `"equal"` spends three of five classes on the
 all-zero profile and its BIC keeps falling with `ncls`, while
 `"estimate"` gives four or five distinct profiles with weights
 0.90/0.05/0.03/0.02 and a `BIC_elbo` that turns up after five classes.
-Polytomous LCA, ordinal and rated LRA, polytomous Biclustering and
-[`M2()`](https://kosugitti.github.io/exametrika/reference/M2.md) keep
-the fixed weights for now.
+
+The polytomous
+[`Biclustering()`](https://kosugitti.github.io/exametrika/reference/Biclustering.md)
+– ordinal (Biclustering and Ranklustering, isotonic and GTM, with or
+without `mic`), nominal and rated – takes the same argument, on the
+class side only. The default `"equal"` leaves those fits unchanged to
+the bit (every element checked with
+[`identical()`](https://rdrr.io/r/base/identical.html) against the
+previous code on ordinal, nominal and rated fits, including
+`conf_class`, `mic` and `init = "legacy"`). With `"estimate"` the
+weights enter the E-step, the ELBO the EM monitors, `BIC_elbo`, the
+BIC-type `ICL`, the assignment term of `ICL_exact` (`sum n_c log w_c`)
+and [`predict()`](https://rdrr.io/r/stats/predict.html); `C - 1`
+parameters are charged to the test fit indices (ordinal) or to
+AIC/CAIC/BIC (nominal); `mic` and the rated fit’s sorting by correct
+rate carry the weights along with the classes.
+[`M2()`](https://kosugitti.github.io/exametrika/reference/M2.md) and
+[`add_M2()`](https://kosugitti.github.io/exametrika/reference/add_M2.md)
+stop with a message on such a fit: their margins are formulated for
+weights fixed at 1/C (left for 2.4.0). Polytomous LCA and ordinal and
+rated LRA keep the fixed weights for now.
 
 ### `GridSearch()` no longer picks a setting that left a class empty
 

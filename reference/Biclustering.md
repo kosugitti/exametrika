@@ -45,6 +45,7 @@ Biclustering(
   maxiter = 1000,
   verbose = FALSE,
   alpha = 1,
+  mixing = c("equal", "estimate"),
   ...
 )
 
@@ -64,6 +65,7 @@ Biclustering(
   init = c("auto", "quantile", "ward", "legacy"),
   nstart = 10,
   seed = 1,
+  mixing = c("equal", "estimate"),
   ...
 )
 
@@ -78,6 +80,7 @@ Biclustering(
   maxiter = 1000,
   verbose = FALSE,
   alpha = 1,
+  mixing = c("equal", "estimate"),
   ...
 )
 ```
@@ -199,13 +202,16 @@ Biclustering(
 
 - mixing:
 
-  Binary data only. How the class (rank) weights are treated. `"equal"`
-  (default) fixes every class at \\1/C\\, the model of Shojima (2022).
+  How the class (rank) weights are treated, for binary, ordinal, nominal
+  and rated data (the polytomous fits since 2.3.0). `"equal"` (default)
+  fixes every class at \\1/C\\, the model of Shojima (2022).
   `"estimate"` updates the weights in the M-step as the mean class
   membership, adds \\C - 1\\ parameters to the test fit indices, and
   returns them in `ClassWeight`. The field weights stay at \\1/F\\. See
   [`LCA`](https://kosugitti.github.io/exametrika/reference/LCA.md) for
   when this matters.
+  [`M2()`](https://kosugitti.github.io/exametrika/reference/M2.md) is
+  not yet available for a polytomous fit with estimated weights.
 
 - alpha:
 
@@ -364,6 +370,18 @@ An object of class "exametrika" and "Biclustering" containing:
   departure from `TRP` shows how far the model is from the data. Since
   2.2.0.
 
+- RankUpShift:
+
+  Ordinal Ranklustering only (since 2.3.0). An array of rank step x
+  field x category boundary: for the step from rank c to rank c + 1, the
+  increase of the probability of answering category b or above in the
+  field, \\P_f(X \ge b \mid c + 1) - P_f(X \ge b \mid c)\\. It shows
+  which boundary of which field moves when a respondent goes up one
+  rank. The boundaries are named by the raw response codes. Non-negative
+  under the isotonic estimation (values within the solver's tolerance of
+  1e-6 below zero are set to 0); a negative entry under GTM is an order
+  violation. Drawn by `plot(type = "RankUpShift")`.
+
 - CMD/RMD:
 
   Class/Rank Membership Distribution - sum of membership probabilities
@@ -380,12 +398,12 @@ An object of class "exametrika" and "Biclustering" containing:
 
 - mixing:
 
-  Binary data only. `"equal"` or `"estimate"`.
+  `"equal"` or `"estimate"`.
 
 - ClassWeight:
 
-  Binary data only. The class weights used in the fit: \\1/C\\ each, or
-  the estimated mixing proportions.
+  The class weights used in the fit: \\1/C\\ each, or the estimated
+  mixing proportions.
 
 - SmoothedMembership:
 
@@ -402,7 +420,10 @@ An object of class "exametrika" and "Biclustering" containing:
 - Students:
 
   Data frame containing membership probabilities and classification
-  information for each examinee
+  information for each examinee. For Ranklustering (binary, rated, and
+  ordinal since 2.3.0) it also holds the rank-up odds (membership of the
+  next rank up over that of the estimated rank) and the rank-down odds;
+  `plot(type = "RankOdds")` draws them for ordinal data.
 
 - FieldAnalysis:
 

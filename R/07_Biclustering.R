@@ -142,6 +142,15 @@ build_conf_mat <- function(conf, nitems) {
 #'    mean observed score of the members of each class/rank, summed over fields.
 #'    Its departure from \code{TRP} shows how far the model is from the data.
 #'    Since 2.2.0.}
+#'  \item{RankUpShift}{Ordinal Ranklustering only (since 2.3.0). An array of
+#'    rank step x field x category boundary: for the step from rank c to rank
+#'    c + 1, the increase of the probability of answering category b or above
+#'    in the field, \eqn{P_f(X \ge b \mid c + 1) - P_f(X \ge b \mid c)}. It shows
+#'    which boundary of which field moves when a respondent goes up one rank.
+#'    The boundaries are named by the raw response codes. Non-negative under
+#'    the isotonic estimation (values within the solver's tolerance of 1e-6
+#'    below zero are set to 0); a negative entry under GTM is an order
+#'    violation. Drawn by \code{plot(type = "RankUpShift")}.}
 #'  \item{CMD/RMD}{Class/Rank Membership Distribution - sum of membership probabilities across examinees}
 #'  \item{FieldMembership}{Matrix showing the probabilities of each item belonging to each field}
 #'  \item{ClassMembership}{Matrix showing the probabilities of each examinee belonging to each class/rank}
@@ -150,7 +159,10 @@ build_conf_mat <- function(conf, nitems) {
 #'  \item{SmoothedMembership}{Matrix of smoothed class membership probabilities after filtering}
 #'  \item{FieldEstimated}{Vector of the most likely field assignments for each item}
 #'  \item{ClassEstimated}{Vector of the most likely class/rank assignments for each examinee}
-#'  \item{Students}{Data frame containing membership probabilities and classification information for each examinee}
+#'  \item{Students}{Data frame containing membership probabilities and classification information for each examinee.
+#'    For Ranklustering (binary, rated, and ordinal since 2.3.0) it also holds the
+#'    rank-up odds (membership of the next rank up over that of the estimated rank)
+#'    and the rank-down odds; \code{plot(type = "RankOdds")} draws them for ordinal data.}
 #'  \item{FieldAnalysis}{Matrix showing field analysis results with item-level information}
 #'  \item{TestFitIndices}{Model fit indices for evaluating the quality of the clustering solution}
 #'  \item{log_lik}{Log-likelihood the fit indices are built on. For binary data this is

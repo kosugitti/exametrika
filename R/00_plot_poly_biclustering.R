@@ -287,3 +287,124 @@ plot_poly_rrv <- function(x, stat, dots = list()) {
     ncol = min(ncls, 5), bty = "n"
   )
 }
+
+#' Heatmap of RankUpShift: which boundary moves at each rank step
+#'
+#' One panel per field: rows are the steps rank 1 -> 2, ..., (C - 1) -> C from
+#' top to bottom, columns the category boundaries (answering b or above). A
+#' cell is the increase of P(X >= b) when the rank goes up by one; values of
+#' 0.05 and more are written in the cell. Increases are shaded white to orange;
+#' a decrease (an order violation, possible under GTM) is shaded blue. A colour
+#' key is drawn to the right. Ordinal Ranklustering only.
+#' @noRd
+plot_rank_up_shift <- function(x, colors = NULL, dots = list()) {
+  D <- x$RankUpShift
+  if (is.null(D)) {
+    stop("RankUpShift is available for an ordinal Ranklustering (method = \"R\") only.",
+      call. = FALSE
+    )
+  }
+  nstep <- dim(D)[1]
+  nfld <- dim(D)[2]
+  nb <- dim(D)[3]
+  hi <- max(D, 0)
+  lo <- min(D, 0)
+  pos_col <- if (!is.null(colors) && length(colors) >= 1) colors[1] else "darkorange3"
+  neg_col <- if (!is.null(colors) && length(colors) >= 2) colors[2] else "steelblue"
+  pos_ramp <- grDevices::colorRampPalette(c("white", pos_col))(101)
+  neg_ramp <- grDevices::colorRampPalette(c("white", neg_col))(101)
+  shade <- function(v) {
+    out <- rep("white", length(v))
+    p <- v > 0 & hi > 0
+    n <- v < 0 & lo < 0
+    out[p] <- pos_ramp[1 + round(100 * v[p] / hi)]
+    out[n] <- neg_ramp[1 + round(100 * v[n] / lo)]
+    return(out)
+  }
+  step_lab <- sub("^Rank([0-9]+)->Rank([0-9]+)$", "\\1\u2192\\2", dimnames(D)[[1]])
+  bound_lab <- sub("^>=", "\u2265", dimnames(D)[[3]])
+
+  # Shrink text and margins together on a small device (the default png of
+  # plot() is 800 x 600 pixels at 300 dpi, under 3 x 2 inches)
+  din <- graphics::par("din")
+  sc <- max(0.4, min(1, din[1] / (2.2 * nfld + 1), din[2] / 4))
+  layout(matrix(seq_len(nfld + 1), nrow = 1), widths = c(rep(1, nfld), 0.35))
+  graphics::par(cex = sc, mex = sc)
+  for (f in seq_len(nfld)) {
+    M <- matrix(D[, f, ], nrow = nstep, ncol = nb)
+    graphics::par(mar = c(4, if (f == 1) 4.5 else 1, 3, 0.5))
+    graphics::plot.new()
+    graphics::plot.window(xlim = c(0.5, nb + 0.5), ylim = c(nstep + 0.5, 0.5), xaxs = "i", yaxs = "i")
+    for (s in seq_len(nstep)) {
+      graphics::rect(seq_len(nb) - 0.5, s - 0.5, seq_len(nb) + 0.5, s + 0.5,
+        col = shade(M[s, ]), border = "white", lwd = 1
+      )
+      big <- abs(M[s, ]) >= 0.05
+      if (any(big)) {
+        graphics::text(which(big), s, sprintf("%.2f", M[s, big]), cex = 0.8)
+      }
+    }
+    call_plot(graphics::axis, list(side = 1, at = seq_len(nb), labels = bound_lab, tick = FALSE), dots)
+    if (f == 1) {
+      call_plot(graphics::axis, list(side = 2, at = seq_len(nstep), labels = step_lab, las = 1, tick = FALSE), dots)
+      graphics::mtext("Rank step", side = 2, line = 3.2, cex = 0.8)
+    }
+    graphics::mtext("Category boundary (answering this or above)", side = 1, line = 2.5, cex = 0.7)
+    call_plot(graphics::title, list(main = dimnames(D)[[2]][f]), dots)
+  }
+  # Colour key
+  graphics::par(mar = c(4, 0.5, 3, 3))
+  graphics::plot.new()
+  graphics::plot.window(xlim = c(0, 1), ylim = c(lo, max(hi, 1e-12)), yaxs = "i")
+  key <- seq(lo, max(hi, 1e-12), length.out = 101)
+  graphics::rect(0, key[-101], 0.6, key[-1], col = shade((key[-101] + key[-1]) / 2), border = NA)
+  graphics::axis(4, las = 1, cex.axis = 0.8)
+  graphics::mtext("Increase", side = 3, line = 0.5, cex = 0.8)
+  return(invisible(NULL))
+}
+
+#' Box plots of the rank-up and rank-down odds by estimated rank
+#'
+#' Two panels: the rank-up odds (membership of the next rank up over that of
+#' the estimated rank) and the rank-down odds, each by estimated rank, on a log
+#' axis. Odds near 1 mark respondents on the border with the neighbouring
+#' rank; a dashed line is drawn at 1. Odds below 1e-4 are drawn at 1e-4.
+#' Ordinal Ranklustering only.
+#' @noRd
+plot_rank_odds <- function(x, dots = list()) {
+  S <- x$Students
+  if (!all(c("Rank-Up Odds", "Rank-Down Odds") %in% colnames(S))) {
+    stop("The rank-up and rank-down odds are available for an ordinal Ranklustering ",
+      "(method = \"R\") only.",
+      call. = FALSE
+    )
+  }
+  ncls <- x$n_class
+  rank <- factor(S[, "Estimate"], levels = seq_len(ncls))
+  floor_at <- 1e-4
+  din <- graphics::par("din")
+  sc <- max(0.4, min(1, din[1] / 6, din[2] / 6))
+  layout(matrix(1:2, nrow = 2))
+  graphics::par(mar = c(4, 6, 2.5, 1), cex = sc, mex = sc)
+  for (nm in c("Rank-Up Odds", "Rank-Down Odds")) {
+    v <- pmax(S[, nm], floor_at)
+    # lower end: the power of ten below the smallest odds (never below 1e-4)
+    lo <- 10^floor(log10(min(v, 1, na.rm = TRUE)))
+    call_plot(
+      graphics::boxplot,
+      list(
+        x = split(v, rank), log = "y", ylim = c(lo, max(1, v, na.rm = TRUE)),
+        col = "grey85", outcex = 0.5, yaxt = "n",
+        xlab = "Estimated rank", ylab = "", main = nm
+      ),
+      dots
+    )
+    ticks <- 10^seq(log10(lo), 0)
+    labs <- format(ticks, scientific = FALSE, drop0trailing = TRUE)
+    if (lo <= floor_at) labs[1] <- paste0("\u2264", format(floor_at, scientific = FALSE))
+    call_plot(graphics::axis, list(side = 2, at = ticks, labels = labs, las = 1), dots)
+    graphics::mtext("Odds (log scale)", side = 2, line = 4.5)
+    graphics::abline(h = 1, lty = 2, col = "firebrick")
+  }
+  return(invisible(NULL))
+}

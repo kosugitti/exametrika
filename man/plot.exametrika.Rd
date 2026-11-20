@@ -8,7 +8,8 @@
   x,
   type = c("IRF", "TRF", "IIF", "TIF", "IIC", "ICC", "TIC", "IRP", "TRP", "LCD", "CMP",
     "FRP", "RMP", "LRD", "Array", "CRV", "RRV", "FCRP", "FCBR", "ScoreField",
-    "FieldPIRP", "LDPSR", "ScoreFreq", "ScoreRank", "ICRP", "ICBR", "Fit"),
+    "FieldPIRP", "LDPSR", "ScoreFreq", "ScoreRank", "ICRP", "ICBR", "Fit", "RankUpShift",
+    "RankOdds"),
   items = NULL,
   students = NULL,
   nc = 1,
@@ -62,6 +63,14 @@ Use \code{style} parameter to choose between "line" and "bar" display.}
 (ordinal Biclustering only).}
 \item{ScoreField}{Heatmap of expected scores across fields and latent classes/ranks
 for polytomous Biclustering.}
+\item{RankUpShift}{Heatmap of \code{RankUpShift}, one panel per field: rows are the
+steps from one rank to the next (top to bottom), columns the category boundaries, and a
+cell is the increase of the probability of answering that category or above. Shows which
+boundary of which field moves when a respondent goes up one rank. A decrease (an order
+violation, possible under GTM) is shaded blue. \code{colors} may give the colours for
+increases and decreases. Ordinal Ranklustering only.}
+\item{RankOdds}{Box plots of the rank-up and rank-down odds in \code{Students} by estimated
+rank, on a log axis with a dashed line at 1. Ordinal Ranklustering only.}
 \item{Fit}{Fit index against the number of classes/ranks for a \code{\link{GridSearch}}
 result (the default, and only, type for that object). For Biclustering one line
 is drawn per number of fields, or a surface with \code{style = "persp"}.
@@ -145,7 +154,8 @@ Each model class supports specific plot types:
 \item{LRAordinal}{Supports "ScoreFreq", "ScoreRank", "ICRP", "ICBR", "RMP"}
 \item{LRArated}{Supports "ScoreFreq", "ScoreRank", "ICRP", "RMP"}
 \item{Biclustering}{Supports "FRP", "TRP", "LCD", "LRD", "CMP", "RMP", "CRV", "RRV", "Array"}
-\item{ordinalBiclustering}{Supports "FRP", "FCRP", "FCBR", "LCD", "LRD", "CMP", "RMP", "Array", "ScoreField", "RRV"}
+\item{ordinalBiclustering}{Supports "FRP", "FCRP", "FCBR", "LCD", "LRD", "CMP", "RMP", "Array", "ScoreField", "RRV",
+and for Ranklustering (\code{method = "R"}) "RankUpShift" and "RankOdds"}
 \item{nominalBiclustering}{Supports "FRP", "FCRP", "LCD", "LRD", "CMP", "Array", "ScoreField", "RRV"}
 \item{Biclustering_IRM}{Supports "FRP", "TRP", "Array"}
 \item{LDLRA}{Supports "IRP", "TRP", "LRD", "RMP"}

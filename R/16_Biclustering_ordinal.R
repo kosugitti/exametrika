@@ -647,6 +647,20 @@ Biclustering.ordinal <- function(U,
   StudentRank <- cbind(clsmemb, Estimate = cls)
   rownames(StudentRank) <- tmp$ID
   colnames(StudentRank) <- c(paste("Membership", 1:ncls), "Estimate")
+  if (model == 2) {
+    # Rank-up / rank-down odds, as in the binary Ranklustering and LRA:
+    # membership of the next rank up (down) over that of the estimated rank;
+    # NA at the top (bottom) rank (2.3.0)
+    RU <- ifelse(cls + 1 > ncls, NA, cls + 1)
+    RD <- ifelse(cls - 1 < 1, NA, cls - 1)
+    RUO <- clsmemb[cbind(1:nobs, RU)] / clsmemb[cbind(1:nobs, cls)]
+    RDO <- clsmemb[cbind(1:nobs, RD)] / clsmemb[cbind(1:nobs, cls)]
+    StudentRank <- cbind(StudentRank, RUO, RDO)
+    colnames(StudentRank) <- c(
+      paste("Membership", 1:ncls), "Estimate",
+      "Rank-Up Odds", "Rank-Down Odds"
+    )
+  }
   ## Expected score
   BFRP1 <- BFRP2 <- matrix(0, nrow = nfld, ncol = ncls)
   weights <- matrix(0, nrow = nfld, ncol = ncls)
@@ -708,6 +722,9 @@ Biclustering.ordinal <- function(U,
   msg <- ifelse(model == 1, "Class", "Rank")
   # Field x class/rank x category, named as the rated fits name theirs
   dimnames(BCRM) <- list(paste0("Field", 1:nfld), paste0(msg, 1:ncls), paste0("Cat", 1:maxQ))
+  # How the upper-cumulative probabilities move from one rank to the next
+  # (Ranklustering only; plain Biclustering classes have no order)
+  rank_up <- if (model == 2) rank_up_shift(BCRM, cat_shift, use_isotonic) else NULL
   ret <- structure(list(
     Q = tmp$Q,
     Z = tmp$Z,
@@ -729,6 +746,7 @@ Biclustering.ordinal <- function(U,
     FRPIndex = FRPIndex,
     TRP = TRP,
     TRP_empirical = TRP_empirical,
+    RankUpShift = rank_up,
     CMD = colSums(clsmemb),
     RMD = colSums(clsmemb),
     FieldMembership = fldmemb,
@@ -762,3 +780,42 @@ Biclustering.ordinal <- function(U,
   return(ret)
 }
 
+#' Change of the upper-cumulative probabilities from one rank to the next
+#'
+#' For every step from rank c to rank c + 1, every field and every category
+#' boundary b (the probability of answering b or above), the increase
+#' P_f(X >= b | c + 1) - P_f(X >= b | c). It shows which boundary of which
+#' field moves when a respondent goes up one rank -- the polytomous
+#' counterpart of reading the binary field reference profile rank by rank.
+#' Under the isotonic estimation every entry is non-negative; the solver stops
+#' at a feasibility tolerance of 1e-6, so values between -1e-6 and 0 on its
+#' flat stretches are set to 0. Under GTM the order is not imposed and negative
+#' entries are kept: they are order violations.
+#' @param BCRM field x rank x category probabilities (with dimnames)
+#' @param cat_shift offset added to the raw codes before the fit
+#'   (\code{category_shift()}), so that the boundaries carry the raw codes
+#' @param isotonic TRUE for the order-restricted fit
+#' @return (ncls - 1) x nfld x (maxQ - 1) array with dimnames
+#'   \code{Rank1->Rank2}, \code{Field1}, \code{>=2} (raw codes)
+#' @noRd
+rank_up_shift <- function(BCRM, cat_shift, isotonic) {
+  nfld <- dim(BCRM)[1]
+  ncls <- dim(BCRM)[2]
+  maxQ <- dim(BCRM)[3]
+  out <- array(0, dim = c(ncls - 1, nfld, maxQ - 1))
+  for (f in seq_len(nfld)) {
+    P <- matrix(BCRM[f, , ], nrow = ncls, ncol = maxQ)
+    # upper[c, b - 1] = P(X >= b | rank c), b = 2..maxQ
+    upper <- t(apply(P, 1, function(p) rev(cumsum(rev(p)))))[, -1, drop = FALSE]
+    out[, f, ] <- upper[-1, , drop = FALSE] - upper[-ncls, , drop = FALSE]
+  }
+  if (isotonic) {
+    out[out < 0 & out > -1e-6] <- 0
+  }
+  dimnames(out) <- list(
+    paste0("Rank", seq_len(ncls - 1), "->Rank", seq_len(ncls - 1) + 1),
+    paste0("Field", seq_len(nfld)),
+    paste0(">=", seq(2, maxQ) - cat_shift)
+  )
+  return(out)
+}

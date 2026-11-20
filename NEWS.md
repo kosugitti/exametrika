@@ -1,5 +1,28 @@
 # exametrika 2.3.0 (development)
 
+## New: rank-up odds and `RankUpShift` for the ordinal Ranklustering
+
+The ordinal `Biclustering(method = "R")` (isotonic and GTM) now returns in
+`Students` the rank-up and rank-down odds that the binary and rated
+Ranklustering and `LRA()` already gave: the membership of the next rank up
+(down) over that of the estimated rank, `NA` at the top (bottom) rank. The
+columns are appended after `Estimate`, with the same names as in the binary
+fit; plain Biclustering (`method = "B"`) is unchanged.
+
+`RankUpShift` is new: for each step from rank c to c + 1, each field and each
+category boundary b, the increase of P(X >= b) in the field reference profile.
+It shows which boundary of which field moves when a respondent goes up one
+rank. Under the isotonic estimation it is non-negative (values within the
+solver's tolerance of 1e-6 below zero are set to 0); under GTM a negative
+entry is an order violation and is kept. The boundaries are named by the raw
+response codes.
+
+`plot()` gains two types for the ordinal Ranklustering, drawn with base
+graphics: `"RankUpShift"`, one heatmap panel per field (rows are the rank
+steps from top to bottom, columns the boundaries, values of 0.05 and more
+written in the cells, decreases shaded blue), and `"RankOdds"`, box plots of
+the two odds by estimated rank on a log axis with a dashed line at 1.
+
 ## New: `BIC_elbo`, a BIC on the observed-data log-likelihood
 
 Every model that reports `elbo` now also reports `BIC_elbo = -2 elbo + k

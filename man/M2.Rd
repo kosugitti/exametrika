@@ -56,7 +56,7 @@ category of another.}
 (for a Biclustering, one set per field instead of per item). The class
 proportions are fixed at 1/C and not counted, except for a Biclustering
 fitted with \code{mixing = "estimate"}, where the \code{ncls - 1} free
-weights are added (since 2.4.0).}
+weights are added (since 2.3.0).}
 \item{rank_delta}{Rank of the Jacobian. For \code{ncls >= 3} it falls short
 of \code{n_param} by \code{(ncls - 1)(ncls - 2) / 2} in an LCA, because the
 second-order margins determine the class deviations only through their

@@ -120,7 +120,7 @@ m2_mix_data <- function() {
   return(suppressMessages(dataFormat(U, response.type = "ordinal")))
 }
 
-test_that("M2() counts the estimated class weights (2.4.0)", {
+test_that("M2() counts the estimated class weights", {
   es <- qfit(m2_mix_data(), ncls = 3, nfld = 2, method = "B", init = "quantile", mixing = "estimate")
   m_es <- M2(es, verbose = FALSE)
   # 2 fields x 2 free categories x 3 classes, plus 2 free weights

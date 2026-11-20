@@ -14,7 +14,7 @@
 #   pi_jj'(q,q') = (1/C) sum_c rho_{jq|c} rho_{j'q'|c}
 # and the parameters are the category profiles alone, t = C * sum_j (Q_j - 1).
 #
-# A Biclustering fitted with mixing = "estimate" (2.4.0) replaces 1/C by the
+# A Biclustering fitted with mixing = "estimate" (2.3.0) replaces 1/C by the
 # estimated weights w_c in both sums, and the C - 1 free weights join the
 # parameters: d pi / d w_c = (class product of class c) - (that of class C),
 # with w_C = 1 - sum of the others. With fixed weights nothing below changes.
@@ -200,7 +200,11 @@ m2_missing_note <- function(caveat, Z) {
     return(caveat)
   }
   note <- sprintf(
-    "%.1f%% of the cells are missing: the margins use available cases and M2 is approximate.",
+    paste0(
+      "%.1f%% of the cells are missing: the margins use available cases and their ",
+      "covariance is scaled to the available counts, which assumes the responses are ",
+      "missing completely at random."
+    ),
     100 * mean(Z == 0)
   )
   if (is.null(caveat) || is.na(caveat)) note else paste(caveat, note)
@@ -315,14 +319,58 @@ m2_core <- function(profile, ncat, nobs, Q = NULL, Z = NULL, p_vec = NULL) {
     p_vec <- m2_p_obs(Q, Z, idx)
   }
   e <- p_vec - pi_vec
-  Xi <- m2_xi(profile, A, idx)
   Delta <- m2_delta(profile, idx, ncat)
+  # Xi is built inside the call so that only m2_finish() holds it and can drop it
+  return(m2_finish(m2_xi(profile, A, idx), e, Delta, nobs, Z, idx))
+}
 
+#' @title Shared tail of the M2 computation: whiten, project, sum
+#' @description
+#' Drops the margins without variance, moves to the coordinates where the
+#' margin residual is white, removes the component in the column space of the
+#' Jacobian and sums the squares.
+#'
+#' Missing responses (2.3.0): the observed margins are available-case
+#' proportions, each over the respondents who answered its item or item pair
+#' (\code{m2_p_obs()}). Their covariance is then not \eqn{\Xi / N}: under
+#' missingness completely at random, the covariance of the proportions for
+#' margins a and b is \eqn{\Xi_{ab} n_{ab} / (n_a n_b)}, where \eqn{n_a} is
+#' the number who answered the items of a and \eqn{n_{ab}} the number who
+#' answered the items of both. Dividing by N instead understated the variance
+#' and inflated the statistic (with 10 percent of the cells missing, a mean of
+#' about 180 against 117 degrees of freedom). With no missing cell the scaling
+#' is skipped and the computation is the one used before, to the bit.
+#' @param Xi margin covariance under the model (m x m), per respondent
+#' @param e observed minus model margins
+#' @param Delta Jacobian (m x t)
+#' @param nobs number of respondents
+#' @param Z missing indicator (1 = observed), or NULL
+#' @param idx output of \code{m2_margin_index()}
+#' @noRd
+m2_finish <- function(Xi, e, Delta, nobs, Z, idx) {
   keep <- m2_usable_margins(Xi)
   if (!all(keep)) {
     Xi <- Xi[keep, keep, drop = FALSE]
     e <- e[keep]
     Delta <- Delta[keep, , drop = FALSE]
+  }
+  missing <- !is.null(Z) && any(Z != 1)
+  if (missing) {
+    Zm <- (Z == 1) * 1
+    # O[i, a] = 1 if respondent i answered every item of margin a
+    O <- cbind(
+      Zm[, idx$single[, "item"], drop = FALSE],
+      Zm[, idx$pair[, "item1"], drop = FALSE] * Zm[, idx$pair[, "item2"], drop = FALSE]
+    )[, keep, drop = FALSE]
+    n_ab <- crossprod(O)
+    rm(O)
+    n_a <- pmax(diag(n_ab), 1)
+    # Column by column and in place, as in m2_xi(), to keep the peak at two
+    # m x m matrices
+    for (k in seq_len(ncol(Xi))) {
+      Xi[, k] <- Xi[, k] * n_ab[, k] / (n_a * n_a[k])
+    }
+    rm(n_ab)
   }
 
   # Xi is the largest object here, so it is dropped as soon as the whitener
@@ -338,7 +386,8 @@ m2_core <- function(profile, ncat, nobs, Q = NULL, Z = NULL, p_vec = NULL) {
   U_r <- sv$u[, seq_len(rank_delta), drop = FALSE]
   resid <- e_tilde - U_r %*% crossprod(U_r, e_tilde)
 
-  stat <- nobs * sum(resid^2)
+  # With missing cells the covariance already carries the sample sizes
+  stat <- if (missing) sum(resid^2) else nobs * sum(resid^2)
   df <- W$dim - rank_delta
   return(list(
     M2 = stat, df = df, p = stats::pchisq(stat, df, lower.tail = FALSE),
@@ -379,7 +428,7 @@ m2_core <- function(profile, ncat, nobs, Q = NULL, Z = NULL, p_vec = NULL) {
 #'    (for a Biclustering, one set per field instead of per item). The class
 #'    proportions are fixed at 1/C and not counted, except for a Biclustering
 #'    fitted with \code{mixing = "estimate"}, where the \code{ncls - 1} free
-#'    weights are added (since 2.4.0).}
+#'    weights are added (since 2.3.0).}
 #'  \item{rank_delta}{Rank of the Jacobian. For \code{ncls >= 3} it falls short
 #'    of \code{n_param} by \code{(ncls - 1)(ncls - 2) / 2} in an LCA, because the
 #'    second-order margins determine the class deviations only through their
@@ -787,36 +836,12 @@ m2_core_general <- function(profile, ncat, nobs, Q, Z, field = NULL, w = NULL) {
   A <- m2_class_products(profile, idx)
   pi_vec <- m2_pi(A, w)
   e <- m2_p_obs(Q, Z, idx) - pi_vec
-  Xi <- m2_xi(profile, A, idx, w)
   Delta <- if (is.null(field)) {
     m2_delta(profile, idx, ncat)
   } else {
     m2_delta_shared(profile, idx, ncat, field, w = w, A = A)
   }
-
-  keep <- m2_usable_margins(Xi)
-  if (!all(keep)) {
-    Xi <- Xi[keep, keep, drop = FALSE]
-    e <- e[keep]
-    Delta <- Delta[keep, , drop = FALSE]
-  }
-
-  W <- m2_whitener(Xi)
-  rm(Xi)
-  e_tilde <- W$apply(e)
-  B <- W$apply(Delta)
-  sv <- svd(B)
-  rank_delta <- sum(sv$d > max(dim(B)) * .Machine$double.eps * sv$d[1])
-  U_r <- sv$u[, seq_len(rank_delta), drop = FALSE]
-  resid <- e_tilde - U_r %*% crossprod(U_r, e_tilde)
-
-  stat <- nobs * sum(resid^2)
-  df <- W$dim - rank_delta
-  return(list(
-    M2 = stat, df = df, p = stats::pchisq(stat, df, lower.tail = FALSE),
-    m = W$dim, m_dropped = idx$m - W$dim,
-    n_param = ncol(Delta), rank_delta = rank_delta
-  ))
+  return(m2_finish(m2_xi(profile, A, idx, w), e, Delta, nobs, Z, idx))
 }
 
 #' @title Recover the item x class x category profile from an ICRP data frame
@@ -1002,7 +1027,7 @@ m2_from_biclustering <- function(x, verbose = TRUE, gc = TRUE) {
     stop("The fitted object does not carry the response data needed by M2().")
   }
   ncls <- x$n_class
-  # Estimated class weights (mixing = "estimate", 2.4.0) enter the margins and
+  # Estimated class weights (mixing = "estimate", 2.3.0) enter the margins and
   # add C - 1 columns to the Jacobian; with fixed weights the path is unchanged.
   w <- if (identical(x$mixing, "estimate")) as.vector(x$ClassWeight) else NULL
   field <- as.vector(x$FieldEstimated)

@@ -287,7 +287,7 @@ Biclustering.default <- function(U, na = NULL, Z = NULL, w = NULL, ...) {
 #'   the mean class membership, adds \eqn{C - 1} parameters to the test fit
 #'   indices, and returns them in \code{ClassWeight}. The field weights stay
 #'   at \eqn{1/F}. See \code{\link{LCA}} for when this matters. \code{M2()}
-#'   is not yet available for a polytomous fit with estimated weights.
+#'   counts the estimated weights as parameters (since 2.4.0).
 #' @param beta1 Beta distribution parameter 1 for prior density of field reference matrix. Default is 1.
 #' @param beta2 Beta distribution parameter 2 for prior density of field reference matrix. Default is 1.
 #' @param ... Additional arguments passed to specific methods.

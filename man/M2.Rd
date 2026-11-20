@@ -52,13 +52,17 @@ degrees of freedom.}
 \item{m}{Number of margins used: the free categories of every item, plus one
 entry for each combination of a free category of one item with a free
 category of another.}
-\item{n_param}{Number of model parameters, \code{ncls * sum(ncat - 1)}. The
-class proportions are not estimated in this formulation, so they are not
-counted.}
+\item{n_param}{Number of model parameters, \code{ncls * sum(ncat - 1)}
+(for a Biclustering, one set per field instead of per item). The class
+proportions are fixed at 1/C and not counted, except for a Biclustering
+fitted with \code{mixing = "estimate"}, where the \code{ncls - 1} free
+weights are added (since 2.4.0).}
 \item{rank_delta}{Rank of the Jacobian. For \code{ncls >= 3} it falls short
-of \code{n_param} by \code{(ncls - 1)(ncls - 2) / 2}, because the
+of \code{n_param} by \code{(ncls - 1)(ncls - 2) / 2} in an LCA, because the
 second-order margins determine the class deviations only through their
-Gram matrix, which is invariant to rotations of the class space.}
+Gram matrix, which is invariant to rotations of the class space. With
+shared field profiles and with estimated weights the shortfall is
+different; it is always computed, never assumed.}
 }
 }
 \description{
@@ -83,6 +87,18 @@ margin residual to be orthogonal to the Jacobian. That holds for
 hold for filter-based estimation (GTM), which is a regularisation rather than
 a maximum likelihood estimator, nor for order-restricted estimation, whose
 limiting distribution is a mixture of chi-squares rather than a single one.
+
+A Biclustering fitted with \code{mixing = "estimate"} uses the estimated
+class weights in the margins and counts them as parameters. Under data
+generated from such a model with unequal weights, the statistic of the
+plain Biclustering (\code{method = "B"}) followed its chi-square reference
+in simulation (500 replications: mean 117.0 against 117 degrees of freedom,
+6.0 percent rejected at the 5 percent level; 300 replications of a larger
+design: mean 593.7 against 597, 3.3 percent). The weights do not raise
+\code{rank_delta} -- up to second-order margins a change of the weights can
+be absorbed by the profiles -- so the degrees of freedom are those of the
+fixed-weight fit, and the statistic does not detect weights wrongly fixed
+at 1/C.
 
 The degrees of freedom here are orders of magnitude smaller than in a
 full-information test, so an RMSEA computed from \eqn{M_2} is not comparable

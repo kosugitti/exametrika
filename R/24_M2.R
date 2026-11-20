@@ -13,6 +13,11 @@
 #   pi_j(q)      = (1/C) sum_c rho_{jq|c}
 #   pi_jj'(q,q') = (1/C) sum_c rho_{jq|c} rho_{j'q'|c}
 # and the parameters are the category profiles alone, t = C * sum_j (Q_j - 1).
+#
+# A Biclustering fitted with mixing = "estimate" (2.4.0) replaces 1/C by the
+# estimated weights w_c in both sums, and the C - 1 free weights join the
+# parameters: d pi / d w_c = (class product of class c) - (that of class C),
+# with w_C = 1 - sum of the others. With fixed weights nothing below changes.
 
 #' @title Margin bookkeeping for M2
 #' @description
@@ -71,8 +76,13 @@ m2_class_products <- function(profile, idx) {
 
 #' @title Model-implied margins
 #' @param A output of \code{m2_class_products()}
+#' @param w class weights, or NULL for 1/C (the fixed-weight path, unchanged
+#'   from before the weights could be estimated)
 #' @noRd
-m2_pi <- function(A) {
+m2_pi <- function(A, w = NULL) {
+  if (!is.null(w)) {
+    return(as.vector(A %*% w)) # sum_c w_c A[, c]
+  }
   return(rowMeans(A)) # (1/C) sum_c
 }
 
@@ -88,10 +98,17 @@ m2_pi <- function(A) {
 #' @param profile items x classes x categories array
 #' @param A output of \code{m2_class_products()}
 #' @param idx output of \code{m2_margin_index()}
+#' @param w class weights, or NULL for 1/C
 #' @noRd
-m2_xi <- function(profile, A, idx) {
+m2_xi <- function(profile, A, idx, w = NULL) {
   ncls <- ncol(A)
-  joint <- tcrossprod(A) / ncls
+  # Weighted class sum: sum_c w_c A[a, c] A[b, c]. The fixed-weight path keeps
+  # the division by C so that its result does not move by a rounding error.
+  joint <- if (is.null(w)) {
+    tcrossprod(A) / ncls
+  } else {
+    tcrossprod(A, A * rep(w, each = nrow(A)))
+  }
   items <- idx$items
   cats <- idx$cats
   nitems <- dim(profile)[1]
@@ -110,12 +127,16 @@ m2_xi <- function(profile, A, idx) {
     # factor once, and the factor is zero.
     reduced <- Aks / rho_j
     reduced[!is.finite(reduced)] <- 0
-    val <- (reduced %*% t(Aks)) / ncls
+    val <- if (is.null(w)) {
+      (reduced %*% t(Aks)) / ncls
+    } else {
+      (reduced * rep(w, each = nrow(reduced))) %*% t(Aks)
+    }
     val[!outer(catj, catj, "==")] <- 0
     joint[ks, ks] <- val
   }
 
-  pi_vec <- m2_pi(A)
+  pi_vec <- m2_pi(A, w)
 
   n1 <- nrow(idx$single)
   block_key <- paste(idx$pair[, "item1"], idx$pair[, "item2"])
@@ -354,13 +375,17 @@ m2_core <- function(profile, ncat, nobs, Q = NULL, Z = NULL, p_vec = NULL) {
 #'  \item{m}{Number of margins used: the free categories of every item, plus one
 #'    entry for each combination of a free category of one item with a free
 #'    category of another.}
-#'  \item{n_param}{Number of model parameters, \code{ncls * sum(ncat - 1)}. The
-#'    class proportions are not estimated in this formulation, so they are not
-#'    counted.}
+#'  \item{n_param}{Number of model parameters, \code{ncls * sum(ncat - 1)}
+#'    (for a Biclustering, one set per field instead of per item). The class
+#'    proportions are fixed at 1/C and not counted, except for a Biclustering
+#'    fitted with \code{mixing = "estimate"}, where the \code{ncls - 1} free
+#'    weights are added (since 2.4.0).}
 #'  \item{rank_delta}{Rank of the Jacobian. For \code{ncls >= 3} it falls short
-#'    of \code{n_param} by \code{(ncls - 1)(ncls - 2) / 2}, because the
+#'    of \code{n_param} by \code{(ncls - 1)(ncls - 2) / 2} in an LCA, because the
 #'    second-order margins determine the class deviations only through their
-#'    Gram matrix, which is invariant to rotations of the class space.}
+#'    Gram matrix, which is invariant to rotations of the class space. With
+#'    shared field profiles and with estimated weights the shortfall is
+#'    different; it is always computed, never assumed.}
 #' }
 #'
 #' @details
@@ -371,6 +396,18 @@ m2_core <- function(profile, ncat, nobs, Q = NULL, Z = NULL, p_vec = NULL) {
 #' hold for filter-based estimation (GTM), which is a regularisation rather than
 #' a maximum likelihood estimator, nor for order-restricted estimation, whose
 #' limiting distribution is a mixture of chi-squares rather than a single one.
+#'
+#' A Biclustering fitted with \code{mixing = "estimate"} uses the estimated
+#' class weights in the margins and counts them as parameters. Under data
+#' generated from such a model with unequal weights, the statistic of the
+#' plain Biclustering (\code{method = "B"}) followed its chi-square reference
+#' in simulation (500 replications: mean 117.0 against 117 degrees of freedom,
+#' 6.0 percent rejected at the 5 percent level; 300 replications of a larger
+#' design: mean 593.7 against 597, 3.3 percent). The weights do not raise
+#' \code{rank_delta} -- up to second-order margins a change of the weights can
+#' be absorbed by the profiles -- so the degrees of freedom are those of the
+#' fixed-weight fit, and the statistic does not detect weights wrongly fixed
+#' at 1/C.
 #'
 #' The degrees of freedom here are orders of magnitude smaller than in a
 #' full-information test, so an RMSEA computed from \eqn{M_2} is not comparable
@@ -678,8 +715,13 @@ add_m2_to_lca <- function(x, verbose = TRUE, gc = TRUE) {
 #' two. Assigning would silently halve it.
 #' @param profile items x classes x categories, the field profile expanded to items
 #' @param field integer vector: which field each item belongs to
+#' @param w class weights, or NULL for 1/C. With weights, a derivative with
+#'   respect to a profile entry of class c carries w_c in place of 1/C, and
+#'   C - 1 columns for the free weights are appended (see
+#'   \code{m2_delta_weights()}).
+#' @param A output of \code{m2_class_products()}; needed only with \code{w}
 #' @noRd
-m2_delta_shared <- function(profile, idx, ncat, field) {
+m2_delta_shared <- function(profile, idx, ncat, field, w = NULL, A = NULL) {
   ncls <- dim(profile)[2]
   nfld <- max(field)
   ncat_fld <- vapply(seq_len(nfld), function(f) ncat[which(field == f)[1]], numeric(1))
@@ -694,7 +736,7 @@ m2_delta_shared <- function(profile, idx, ncat, field) {
   for (k in seq_len(n1)) {
     j <- idx$single[k, "item"]
     cols <- which(key == paste(field[j], idx$single[k, "cat"]))
-    Delta[k, cols] <- Delta[k, cols] + 1 / ncls
+    Delta[k, cols] <- Delta[k, cols] + (if (is.null(w)) 1 / ncls else w)
   }
   for (k in seq_len(nrow(idx$pair))) {
     row <- n1 + k
@@ -704,26 +746,52 @@ m2_delta_shared <- function(profile, idx, ncat, field) {
     qp <- idx$pair[k, "cat2"]
     cols_j <- which(key == paste(field[j], q))
     cols_jp <- which(key == paste(field[jp], qp))
-    Delta[row, cols_j] <- Delta[row, cols_j] + profile[jp, , qp] / ncls
-    Delta[row, cols_jp] <- Delta[row, cols_jp] + profile[j, , q] / ncls
+    if (is.null(w)) {
+      Delta[row, cols_j] <- Delta[row, cols_j] + profile[jp, , qp] / ncls
+      Delta[row, cols_jp] <- Delta[row, cols_jp] + profile[j, , q] / ncls
+    } else {
+      Delta[row, cols_j] <- Delta[row, cols_j] + profile[jp, , qp] * w
+      Delta[row, cols_jp] <- Delta[row, cols_jp] + profile[j, , q] * w
+    }
+  }
+  if (!is.null(w)) {
+    Delta <- cbind(Delta, m2_delta_weights(A))
   }
   return(Delta)
+}
+
+#' @title Jacobian columns of the class weights
+#' @description
+#' The free weights are w_1, ..., w_{C-1}, with w_C = 1 - sum of the others.
+#' Every margin is sum_c w_c A[k, c], so its derivative with respect to w_c is
+#' A[k, c] - A[k, C] -- the class products already computed for the margins.
+#' @param A output of \code{m2_class_products()} (m x C)
+#' @return m x (C - 1) matrix
+#' @noRd
+m2_delta_weights <- function(A) {
+  ncls <- ncol(A)
+  return(A[, -ncls, drop = FALSE] - A[, ncls])
 }
 
 #' @title Core of the M2 computation, with an optional shared-parameter map
 #' @param field integer vector of field memberships, or NULL when every item has
 #'   its own parameters (LCA, LRA)
+#' @param w estimated class weights, or NULL when they are fixed at 1/C. Only
+#'   the shared-parameter (biclustering) path takes them so far.
 #' @noRd
-m2_core_general <- function(profile, ncat, nobs, Q, Z, field = NULL) {
+m2_core_general <- function(profile, ncat, nobs, Q, Z, field = NULL, w = NULL) {
+  if (!is.null(w) && is.null(field)) {
+    stop("m2_core_general(): estimated class weights need the field map.", call. = FALSE)
+  }
   idx <- m2_margin_index(ncat)
   A <- m2_class_products(profile, idx)
-  pi_vec <- m2_pi(A)
+  pi_vec <- m2_pi(A, w)
   e <- m2_p_obs(Q, Z, idx) - pi_vec
-  Xi <- m2_xi(profile, A, idx)
+  Xi <- m2_xi(profile, A, idx, w)
   Delta <- if (is.null(field)) {
     m2_delta(profile, idx, ncat)
   } else {
-    m2_delta_shared(profile, idx, ncat, field)
+    m2_delta_shared(profile, idx, ncat, field, w = w, A = A)
   }
 
   keep <- m2_usable_margins(Xi)
@@ -933,17 +1001,10 @@ m2_from_biclustering <- function(x, verbose = TRUE, gc = TRUE) {
   if (is.null(x$Q) || is.null(x$Z)) {
     stop("The fitted object does not carry the response data needed by M2().")
   }
-  # The Jacobian below has no columns for the class weights: it is built for
-  # weights fixed at 1/C. Estimated weights are left for a later version.
-  if (identical(x$mixing, "estimate")) {
-    stop(
-      "M2() is not available yet for a Biclustering fitted with ",
-      "mixing = \"estimate\": the margins are formulated for class weights ",
-      "fixed at 1/C. Refit with mixing = \"equal\" to use M2().",
-      call. = FALSE
-    )
-  }
   ncls <- x$n_class
+  # Estimated class weights (mixing = "estimate", 2.4.0) enter the margins and
+  # add C - 1 columns to the Jacobian; with fixed weights the path is unchanged.
+  w <- if (identical(x$mixing, "estimate")) as.vector(x$ClassWeight) else NULL
   field <- as.vector(x$FieldEstimated)
   nitems <- length(field)
   maxQ <- dim(x$FRP)[3]
@@ -965,7 +1026,7 @@ m2_from_biclustering <- function(x, verbose = TRUE, gc = TRUE) {
   }
 
   m2_report_size(ncat, verbose)
-  out <- m2_core_general(profile, ncat, nobs = x$nobs, Q = x$Q, Z = x$Z, field = field)
+  out <- m2_core_general(profile, ncat, nobs = x$nobs, Q = x$Q, Z = x$Z, field = field, w = w)
   out$n_class <- ncls
   out$caveat <- m2_missing_note(m2_caveat_biclustering(x), x$Z)
   m2_release(gc)

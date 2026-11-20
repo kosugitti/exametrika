@@ -157,7 +157,7 @@ Shojima (2022). \code{"estimate"} updates the weights in the M-step as
 the mean class membership, adds \eqn{C - 1} parameters to the test fit
 indices, and returns them in \code{ClassWeight}. The field weights stay
 at \eqn{1/F}. See \code{\link{LCA}} for when this matters. \code{M2()}
-is not yet available for a polytomous fit with estimated weights.}
+counts the estimated weights as parameters (since 2.4.0).}
 
 \item{alpha}{Dirichlet distribution concentration parameter for prior density of field reference probabilities. Default is 1.}
 

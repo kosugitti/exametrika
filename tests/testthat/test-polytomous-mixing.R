@@ -107,9 +107,64 @@ test_that("rated Biclustering sorts the weights with the classes", {
   expect_output(print(es), "Rank Weight \\(estimated\\)")
 })
 
-test_that("M2() refuses a polytomous Biclustering with estimated weights", {
-  dat <- mix_data()
-  es <- qfit(dat, ncls = 3, nfld = 2, method = "R", nstart = 0, mixing = "estimate")
-  expect_error(M2(es), "not available yet")
-  expect_error(add_M2(es), "not available yet")
+# equal categories on every item, as M2() on a biclustering requires
+m2_mix_data <- function() {
+  set.seed(3)
+  field <- rep(1:2, length.out = 6)
+  cls <- sample.int(3, 400, TRUE, prob = c(0.6, 0.3, 0.1))
+  U <- sapply(1:6, function(j) {
+    loc <- (cls - 2) * ifelse(field[j] == 1, 1.2, -1.2)
+    return(as.integer(cut(loc + rlogis(400), c(-Inf, -0.6, 0.6, Inf))))
+  })
+  colnames(U) <- paste0("Item", 1:6)
+  return(suppressMessages(dataFormat(U, response.type = "ordinal")))
+}
+
+test_that("M2() counts the estimated class weights (2.4.0)", {
+  es <- qfit(m2_mix_data(), ncls = 3, nfld = 2, method = "B", init = "quantile", mixing = "estimate")
+  m_es <- M2(es, verbose = FALSE)
+  # 2 fields x 2 free categories x 3 classes, plus 2 free weights
+  expect_equal(m_es$n_param, 14)
+  expect_true(is.finite(m_es$M2) && m_es$df > 0)
+  # analytic Jacobian (profiles and weights) against a numerical one
+  field_hat <- as.vector(es$FieldEstimated)
+  ncat <- rep(3, 6)
+  idx <- m2_margin_index(ncat)
+  FRP <- unclass(es$FRP)
+  expand <- function(F) {
+    P <- array(0, c(6, 3, 3))
+    for (j in 1:6) P[j, , ] <- F[field_hat[j], , ]
+    return(P)
+  }
+  w <- as.vector(es$ClassWeight)
+  marg <- function(F, ww) m2_pi(m2_class_products(expand(F), idx), ww)
+  A <- m2_class_products(expand(FRP), idx)
+  D <- m2_delta_shared(expand(FRP), idx, ncat, field_hat, w = w, A = A)
+  h <- 1e-6
+  num <- NULL
+  for (f in 1:2) for (qq in 1:2) for (cc in 1:3) {
+    Fp <- FRP
+    Fp[f, cc, qq] <- Fp[f, cc, qq] + h
+    Fm <- FRP
+    Fm[f, cc, qq] <- Fm[f, cc, qq] - h
+    num <- cbind(num, (marg(Fp, w) - marg(Fm, w)) / (2 * h))
+  }
+  for (cc in 1:2) {
+    wp <- w
+    wp[c(cc, 3)] <- wp[c(cc, 3)] + c(h, -h)
+    wm <- w
+    wm[c(cc, 3)] <- wm[c(cc, 3)] - c(h, -h)
+    num <- cbind(num, (marg(FRP, wp) - marg(FRP, wm)) / (2 * h))
+  }
+  expect_equal(unname(D), unname(num), tolerance = 1e-7)
+})
+
+test_that("add_M2() works on an estimated-weight fit and equal M2 is unchanged in form", {
+  skip_on_cran()
+  dat <- m2_mix_data()
+  eq <- qfit(dat, ncls = 3, nfld = 2, method = "B", nstart = 0)
+  es <- qfit(dat, ncls = 3, nfld = 2, method = "B", nstart = 0, mixing = "estimate")
+  expect_equal(M2(es, verbose = FALSE)$n_param, M2(eq, verbose = FALSE)$n_param + 2)
+  fit <- add_M2(es, verbose = FALSE)
+  expect_false(is.null(fit$TestFitIndicesM2))
 })

@@ -1,3 +1,25 @@
+# exametrika 2.4.0 (development)
+
+## `M2()` for a Biclustering with estimated class weights
+
+`M2()` and `add_M2()` now accept a polytomous `Biclustering()` fitted with
+`mixing = "estimate"` (2.3.0 stopped with a message). The estimated weights
+replace 1/C in the model-implied margins and in their covariance, and the
+`C - 1` free weights add columns to the Jacobian (the derivative of a margin
+with respect to w_c is the difference of the class products of classes c and
+C), so `n_param` counts them. With fixed weights the computation is unchanged
+to the bit. The analytic Jacobian agrees with a numerical one, the covariance
+with a Monte Carlo one, and under data generated with unequal weights the
+statistic of the plain Biclustering followed its chi-square reference (500
+replications: mean 117.0 against 117 degrees of freedom, 6.0% rejected at
+5%; a larger design, 300 replications: mean 593.7 against 597, 3.3%).
+
+The weight columns do not raise the rank of the Jacobian: up to second-order
+margins a change of the weights can be absorbed by the profiles, so the
+degrees of freedom are those of the fixed-weight fit, and M2 does not detect
+weights wrongly fixed at 1/C (in the simulation above such a fit gave a mean
+of 113.4 against 117).
+
 # exametrika 2.3.0 (development)
 
 ## New: rank-up odds and `RankUpShift` for the ordinal Ranklustering

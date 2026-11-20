@@ -157,7 +157,7 @@ Estimating the profile of a new field is left to a later version.
 the field of each item, the minimal object that `equate()` and `predict()`
 accept, so that a form can be equated from published values alone.
 
-## New: `mixing = "estimate"` lets `LCA()`, `LRA()` and binary `Biclustering()` estimate the class weights
+## New: `mixing = "estimate"` lets `LCA()`, `LRA()` and `Biclustering()` estimate the class weights
 
 Binary `LCA()`, `LRA()` (isotonic and GTM methods) and binary
 `Biclustering()` (Biclustering and Ranklustering, isotonic and GTM) gain
@@ -182,8 +182,21 @@ patterns), `"equal"` spends
 three of five classes on the all-zero profile and its BIC keeps falling with
 `ncls`, while `"estimate"` gives four or five distinct profiles with weights
 0.90/0.05/0.03/0.02 and a `BIC_elbo` that turns up after five classes.
-Polytomous LCA, ordinal and rated LRA, polytomous Biclustering and `M2()`
-keep the fixed weights for now.
+
+The polytomous `Biclustering()` -- ordinal (Biclustering and Ranklustering,
+isotonic and GTM, with or without `mic`), nominal and rated -- takes the same
+argument, on the class side only. The default `"equal"` leaves those fits
+unchanged to the bit (every element checked with `identical()` against the
+previous code on ordinal, nominal and rated fits, including `conf_class`,
+`mic` and `init = "legacy"`). With `"estimate"` the weights
+enter the E-step, the ELBO the EM monitors, `BIC_elbo`, the BIC-type `ICL`,
+the assignment term of `ICL_exact` (`sum n_c log w_c`) and `predict()`;
+`C - 1` parameters are charged to the test fit indices (ordinal) or to
+AIC/CAIC/BIC (nominal); `mic` and the rated fit's sorting by correct rate
+carry the weights along with the classes. `M2()` and `add_M2()` stop with a
+message on such a fit: their margins are formulated for weights fixed at 1/C
+(left for 2.4.0). Polytomous LCA and ordinal and rated LRA keep the fixed
+weights for now.
 
 ## `GridSearch()` no longer picks a setting that left a class empty
 

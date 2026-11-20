@@ -342,5 +342,11 @@ pred_ll_bicl_poly <- function(object, nd) {
     lp <- log(pmax(matrix(FRP[, , q], nrow = nfld, ncol = ncls), 0) + const)
     L <- L + A[, , q] %*% fldmemb %*% lp
   }
+  # Class weights (2.3.0, mixing = "estimate"), relative to the uniform prior
+  # the caller subtracts; see pred_ll_irp(). Equal-weight fits are left as
+  # they were, to the bit.
+  if (identical(object$mixing, "estimate")) {
+    L <- sweep(L, 2, object$LogPrior + log(ncls), "+")
+  }
   return(L)
 }

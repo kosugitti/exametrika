@@ -34,7 +34,9 @@ Biclustering.rated <- function(U,
                                conf_class = NULL,
                                maxiter = 1000,
                                verbose = FALSE,
-                               alpha = 1, ...) {
+                               alpha = 1,
+                               mixing = c("equal", "estimate"), ...) {
+  mixing <- match.arg(mixing)
   tmp <- U
   nobs <- NROW(tmp$Q)
   nitems <- NCOL(tmp$Q)
@@ -54,6 +56,7 @@ Biclustering.rated <- function(U,
     maxiter = maxiter,
     verbose = verbose,
     alpha = alpha,
+    mixing = mixing,
     ...
   )
 
@@ -82,6 +85,8 @@ Biclustering.rated <- function(U,
   ord <- order(colSums(t(tmp$U * tmp$Z) %*% clsmemb) / colSums(t(tmp$Z) %*% clsmemb))
   clsmemb <- clsmemb[, ord]
   BCRM <- BCRM[, ord, ]
+  # The class weights follow the classes
+  class_weight <- ret_nom$ClassWeight[ord]
   cls <- apply(clsmemb, 1, which.max)
   clsdist <- map_count(clsmemb)
 
@@ -232,6 +237,10 @@ Biclustering.rated <- function(U,
     RMD = colSums(clsmemb),
     FieldMembership = fldmemb,
     ClassMembership = clsmemb,
+    mixing = mixing,
+    ClassWeight = class_weight,
+    # log class weights, read by predict() (see pred_ll_bicl_poly)
+    LogPrior = log(class_weight),
     FieldEstimated = fld,
     ClassEstimated = cls,
     Students = StudentRank,

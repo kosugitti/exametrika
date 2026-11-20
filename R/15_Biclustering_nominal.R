@@ -31,8 +31,11 @@ Biclustering.nominal <- function(U,
                                  mic = FALSE,
                                  maxiter = 1000,
                                  verbose = FALSE,
-                                 alpha = 1, ...) {
+                                 alpha = 1,
+                                 mixing = c("equal", "estimate"), ...) {
   warn_unused_dots(list(...), "Biclustering")
+  mixing <- match.arg(mixing)
+  estimate_w <- mixing == "estimate"
   # Nominal categories have no order, so there is no Ranklustering: accept
   # the spelling of the other methods and refuse "R" by name
   if (!method %in% c("B", "Biclustering")) {
@@ -151,6 +154,12 @@ Biclustering.nominal <- function(U,
     as.vector(tmp$Q)[valid]
   )] <- 1
 
+  # Class weights: 1/C (Shojima, 2022), or estimated in the M-step as the mean
+  # class membership (mixing = "estimate", 2.3.0), as in the binary
+  # Biclustering. The field prior stays 1/F. With equal weights none of the
+  # lines that touch log_w runs, so the fit is unchanged to the bit.
+  log_w <- rep(-log(ncls), ncls)
+
   # iteration -------------------------------------------------------
   converge <- TRUE
   FLG <- TRUE
@@ -173,16 +182,25 @@ Biclustering.nominal <- function(U,
     old_test_log_lik <- test_log_lik
     old_clsmemb <- clsmemb
     old_fldmemb <- fldmemb
+    old_log_w <- log_w
 
     tmpL <- matrix(0, nrow = nobs, ncol = ncls)
     for (q in 1:maxQ) {
       tmpL <- tmpL + (tmp$Z * Uq[, , q]) %*% fldmemb %*% log(BCRM[, , q] + const)
+    }
+    if (estimate_w) {
+      tmpL <- sweep(tmpL, 2, log_w, "+")
     }
 
     clsmemb <- row_softmax(tmpL)
 
     if (!is.null(conf_class_mat)) {
       clsmemb <- conf_class_mat
+    }
+    if (estimate_w) {
+      # Floored at const so that log(w) stays finite
+      w_new <- pmax(colMeans(clsmemb), const)
+      log_w <- log(w_new / sum(w_new))
     }
 
     tmpH <- matrix(0, nrow = nitems, ncol = nfld)
@@ -221,9 +239,16 @@ Biclustering.nominal <- function(U,
     # classification-type quantity, inflated with the number of blocks.
     # See R/00_VariationalFit.R.
     logP <- log(BCRM + const)
+    # The class prior term: -n log C with equal weights (kept in this form so
+    # that the stopping rule is unchanged), sum_c n_c log w_c otherwise
+    cls_prior_term <- if (estimate_w) {
+      sum(sweep(clsmemb, 2, log_w, "*"))
+    } else {
+      -nobs * log(ncls)
+    }
     test_log_lik <- sum(Ufcq * logP) +
-      membership_entropy(clsmemb) + membership_entropy(fldmemb) -
-      nobs * log(ncls) - nitems * log(nfld) +
+      membership_entropy(clsmemb) + membership_entropy(fldmemb) +
+      cls_prior_term - nitems * log(nfld) +
       (alpha - 1) * sum(logP)
 
     if (verbose) {
@@ -243,6 +268,7 @@ Biclustering.nominal <- function(U,
       BCRM <- oldBCRM
       clsmemb <- old_clsmemb
       fldmemb <- old_fldmemb
+      log_w <- old_log_w
       if (!is.finite(test_log_lik)) converge <- FALSE
       break
     }
@@ -256,8 +282,14 @@ Biclustering.nominal <- function(U,
     for (q in 1:maxQ) {
       tmpL <- tmpL + (tmp$Z * Uq[, , q]) %*% fldmemb %*% log(BCRM[, , q] + const)
     }
+    if (estimate_w) {
+      tmpL <- sweep(tmpL, 2, log_w, "+")
+    }
     clsmemb <- row_softmax(tmpL)
   }
+  w <- if (estimate_w) exp(log_w) else rep(1 / ncls, ncls)
+  # Estimated class weights are C - 1 parameters of the test
+  n_weight_params <- if (estimate_w) ncls - 1 else 0
 
 
   # output ----------------------------------------------------------
@@ -279,12 +311,15 @@ Biclustering.nominal <- function(U,
   # Zrep * Uq = Z * Uq[,,q] elementwise; compute via column-major recycling
   # (Uq * as.vector(Z)) which avoids the replicate() allocation.
   ZU <- Uq * as.vector(tmp$Z)
-  vb <- vb_fit_block(ZU, clsmemb, fldmemb, log(BCRM + const), nparam)
+  vb <- vb_fit_block(ZU, clsmemb, fldmemb, log(BCRM + const), nparam,
+    log_prior = if (estimate_w) log_w else NULL, n_weight_params = n_weight_params
+  )
   testell <- vb$elbo
   # Exact ICL from the hard assignments (see R/00_ExactICL.R); every block
   # holds a maxQ-category Dirichlet(alpha), as in the estimation.
   icl_ex <- icl_exact(ZU, clsmemb, fldmemb,
-    alpha = alpha, ncat = rep(maxQ, nfld), log_prior_cls = rep(-log(ncls), ncls)
+    alpha = alpha, ncat = rep(maxQ, nfld),
+    log_prior_cls = if (estimate_w) log_w else rep(-log(ncls), ncls)
   )
 
   # Null model.
@@ -296,9 +331,11 @@ Biclustering.nominal <- function(U,
   # Fit indices: For nominal data, no meaningful benchmark (saturated) model exists
   # because response patterns are almost always unique with many items and categories.
   # Only information criteria (AIC, BIC, CAIC) are reported.
-  AIC <- -2 * testell + 2 * nparam
-  CAIC <- -2 * testell + nparam * (log(nobs) + 1)
-  BIC <- -2 * testell + nparam * log(nobs)
+  # The estimated class weights count as C - 1 further parameters
+  k_all <- nparam + n_weight_params
+  AIC <- -2 * testell + 2 * k_all
+  CAIC <- -2 * testell + k_all * (log(nobs) + 1)
+  BIC <- -2 * testell + k_all * log(nobs)
 
   FitIndices <- structure(
     list(
@@ -344,6 +381,10 @@ Biclustering.nominal <- function(U,
     RMD = colSums(clsmemb),
     FieldMembership = fldmemb,
     ClassMembership = clsmemb,
+    mixing = mixing,
+    ClassWeight = w,
+    # log class weights, read by predict() (see pred_ll_bicl_poly)
+    LogPrior = log(w),
     FieldEstimated = fld,
     ClassEstimated = cls,
     Students = StudentRank,

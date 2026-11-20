@@ -933,6 +933,16 @@ m2_from_biclustering <- function(x, verbose = TRUE, gc = TRUE) {
   if (is.null(x$Q) || is.null(x$Z)) {
     stop("The fitted object does not carry the response data needed by M2().")
   }
+  # The Jacobian below has no columns for the class weights: it is built for
+  # weights fixed at 1/C. Estimated weights are left for a later version.
+  if (identical(x$mixing, "estimate")) {
+    stop(
+      "M2() is not available yet for a Biclustering fitted with ",
+      "mixing = \"estimate\": the margins are formulated for class weights ",
+      "fixed at 1/C. Refit with mixing = \"equal\" to use M2().",
+      call. = FALSE
+    )
+  }
   ncls <- x$n_class
   field <- as.vector(x$FieldEstimated)
   nitems <- length(field)

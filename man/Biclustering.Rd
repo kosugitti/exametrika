@@ -43,6 +43,7 @@ Biclustering(U, ...)
   maxiter = 1000,
   verbose = FALSE,
   alpha = 1,
+  mixing = c("equal", "estimate"),
   ...
 )
 
@@ -61,6 +62,7 @@ Biclustering(U, ...)
   init = c("auto", "quantile", "ward", "legacy"),
   nstart = 10,
   seed = 1,
+  mixing = c("equal", "estimate"),
   ...
 )
 
@@ -74,6 +76,7 @@ Biclustering(U, ...)
   maxiter = 1000,
   verbose = FALSE,
   alpha = 1,
+  mixing = c("equal", "estimate"),
   ...
 )
 }
@@ -147,12 +150,14 @@ increasing. Default is FALSE.}
 
 \item{beta2}{Beta distribution parameter 2 for prior density of field reference matrix. Default is 1.}
 
-\item{mixing}{Binary data only. How the class (rank) weights are treated.
+\item{mixing}{How the class (rank) weights are treated, for binary,
+ordinal, nominal and rated data (the polytomous fits since 2.3.0).
 \code{"equal"} (default) fixes every class at \eqn{1/C}, the model of
 Shojima (2022). \code{"estimate"} updates the weights in the M-step as
 the mean class membership, adds \eqn{C - 1} parameters to the test fit
 indices, and returns them in \code{ClassWeight}. The field weights stay
-at \eqn{1/F}. See \code{\link{LCA}} for when this matters.}
+at \eqn{1/F}. See \code{\link{LCA}} for when this matters. \code{M2()}
+is not yet available for a polytomous fit with estimated weights.}
 
 \item{alpha}{Dirichlet distribution concentration parameter for prior density of field reference probabilities. Default is 1.}
 
@@ -228,8 +233,8 @@ Since 2.2.0.}
 \item{CMD/RMD}{Class/Rank Membership Distribution - sum of membership probabilities across examinees}
 \item{FieldMembership}{Matrix showing the probabilities of each item belonging to each field}
 \item{ClassMembership}{Matrix showing the probabilities of each examinee belonging to each class/rank}
-\item{mixing}{Binary data only. \code{"equal"} or \code{"estimate"}.}
-\item{ClassWeight}{Binary data only. The class weights used in the fit: \eqn{1/C} each, or the estimated mixing proportions.}
+\item{mixing}{\code{"equal"} or \code{"estimate"}.}
+\item{ClassWeight}{The class weights used in the fit: \eqn{1/C} each, or the estimated mixing proportions.}
 \item{SmoothedMembership}{Matrix of smoothed class membership probabilities after filtering}
 \item{FieldEstimated}{Vector of the most likely field assignments for each item}
 \item{ClassEstimated}{Vector of the most likely class/rank assignments for each examinee}

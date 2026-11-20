@@ -83,9 +83,12 @@ hard_membership <- function(M) {
 #' @param logP log category probabilities per block (nfld x ncls x maxQ),
 #'   already clamped away from zero the same way the E-step clamps them
 #' @param nparam number of free parameters counted for the block probabilities
+#' @param log_prior log class weights (length ncls), or NULL for 1/C
+#' @param n_weight_params number of estimated class weights (C - 1, or 0)
 #' @return list(elbo, log_lik_marginal, entropy, ICL, completed_log_lik)
 #' @noRd
-vb_fit_block <- function(ZU, clsmemb, fldmemb, logP, nparam) {
+vb_fit_block <- function(ZU, clsmemb, fldmemb, logP, nparam,
+                         log_prior = NULL, n_weight_params = 0) {
   nobs <- dim(ZU)[1]
   nitems <- dim(ZU)[2]
   maxQ <- dim(ZU)[3]
@@ -99,7 +102,9 @@ vb_fit_block <- function(ZU, clsmemb, fldmemb, logP, nparam) {
     L_soft <- L_soft + ZU[, , q] %*% fldmemb %*% lp
     L_hard <- L_hard + ZU[, , q] %*% fld01 %*% lp
   }
-  return(vb_fit_from_loglik(L_soft, L_hard, clsmemb, fldmemb, fld01, nparam, nitems))
+  return(vb_fit_from_loglik(L_soft, L_hard, clsmemb, fldmemb, fld01, nparam, nitems,
+    log_prior = log_prior, n_weight_params = n_weight_params
+  ))
 }
 
 #' Variational fit quantities for a binary bicluster model

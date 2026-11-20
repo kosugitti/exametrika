@@ -57,8 +57,11 @@ Biclustering.ordinal <- function(U,
                                  init = c("auto", "quantile", "ward", "legacy"),
                                  nstart = 10,
                                  seed = 1,
+                                 mixing = c("equal", "estimate"),
                                  ...) {
   warn_unused_dots(list(...), "Biclustering")
+  mixing <- match.arg(mixing)
+  estimate_w <- mixing == "estimate"
   tmp <- U
   # Codes are shifted, not renumbered per item: a field's items share the
   # block probabilities, so category q must mean the same on every item.
@@ -210,7 +213,12 @@ Biclustering.ordinal <- function(U,
 
   # The EM from one set of starting values (field membership and block
   # probabilities); run once per start requested by `init`.
-  run_em <- function(fldmemb, BCRM, BBRM, maxit = maxemt, quiet = FALSE) {
+  # Class weights: 1/C (Shojima, 2022), or estimated in the M-step as the mean
+  # class membership (mixing = "estimate", 2.3.0), as in the binary
+  # Biclustering. The field prior stays 1/F. With equal weights none of the
+  # lines below that touch log_w runs, so the fit is unchanged to the bit.
+  run_em <- function(fldmemb, BCRM, BBRM, maxit = maxemt, quiet = FALSE,
+                     log_w = rep(-log(ncls), ncls)) {
     # -Inf, not -1/const = -exp(J): the old sentinel sits above the real
     # log-likelihood on short tests with many respondents, which ended the
     # loop after one cycle while reporting convergence. The first pass skips
@@ -247,6 +255,7 @@ Biclustering.ordinal <- function(U,
       old_clsmemb <- clsmemb
       old_fldmemb <- fldmemb
       old_smoothed <- smoothed_memb
+      old_log_w <- log_w
 
       # Precompute log(BBRM[,,q] - BBRM[,,q+1] + const) once per EM iteration.
       # Both E-steps (class and field) use the same values across all q; the old
@@ -277,7 +286,17 @@ Biclustering.ordinal <- function(U,
         log_probs <- matrix(log_delta[, , q], nrow = nfld, ncol = ncls)
         tmpL <- tmpL + ZU[, , q] %*% fldmemb %*% log_probs
       }
+      if (estimate_w) {
+        tmpL <- sweep(tmpL, 2, log_w, "+")
+      }
       clsmemb <- row_softmax(tmpL)
+
+      if (estimate_w) {
+        # Weight update from the new class posterior (with conf_class, from
+        # the given classes). Floored at const so that log(w) stays finite.
+        w_new <- pmax(colMeans(if (is.null(conf_class_mat)) clsmemb else conf_class_mat), const)
+        log_w <- log(w_new / sum(w_new))
+      }
 
       if (!is.null(conf_class_mat)) {
         clsmemb <- conf_class_mat
@@ -383,6 +402,7 @@ Biclustering.ordinal <- function(U,
           BBRM <- BBRM[, overall_order, , drop = FALSE]
           clsmemb <- clsmemb[, overall_order, drop = FALSE]
           smoothed_memb <- smoothed_memb[, overall_order, drop = FALSE]
+          log_w <- log_w[overall_order]
         }
         for (q in 1:maxQ) {
           BCRM[, , q] <- BBRM[, , q] - BBRM[, , q + 1]
@@ -407,9 +427,16 @@ Biclustering.ordinal <- function(U,
       } else {
         Ufcq_post <- Ufcq
       }
+      # The class prior term: -n log C with equal weights (kept in this form so
+      # that the stopping rule is unchanged), sum_c n_c log w_c otherwise
+      cls_prior_term <- if (estimate_w) {
+        sum(sweep(clsmemb, 2, log_w, "*"))
+      } else {
+        -nobs * log(ncls)
+      }
       test_log_lik <- sum(Ufcq_post * logP) +
-        membership_entropy(clsmemb) + membership_entropy(fldmemb) -
-        nobs * log(ncls) - nitems * log(nfld) +
+        membership_entropy(clsmemb) + membership_entropy(fldmemb) +
+        cls_prior_term - nitems * log(nfld) +
         (alpha - 1) * sum(logP)
 
       if (verbose) {
@@ -431,6 +458,7 @@ Biclustering.ordinal <- function(U,
         clsmemb <- old_clsmemb
         fldmemb <- old_fldmemb
         smoothed_memb <- old_smoothed
+        log_w <- old_log_w
         if (!is.finite(test_log_lik)) converge <- FALSE
         break
       }
@@ -447,12 +475,15 @@ Biclustering.ordinal <- function(U,
       for (q in 1:maxQ) {
         tmpL <- tmpL + ZU[, , q] %*% fldmemb %*% matrix(log_delta[, , q], nrow = nfld, ncol = ncls)
       }
+      if (estimate_w) {
+        tmpL <- sweep(tmpL, 2, log_w, "+")
+      }
       clsmemb <- row_softmax(tmpL)
       smoothed_memb <- if (use_isotonic) clsmemb else clsmemb %*% Fil
     }
     return(list(
       clsmemb = clsmemb, fldmemb = fldmemb, smoothed_memb = smoothed_memb,
-      BCRM = BCRM, BBRM = BBRM, emt = emt, converge = converge
+      BCRM = BCRM, BBRM = BBRM, emt = emt, converge = converge, log_w = log_w
     ))
   }
 
@@ -469,7 +500,9 @@ Biclustering.ordinal <- function(U,
     ))
   }
   fit_elbo <- function(f) {
-    e <- vb_fit_block(ZU, f$clsmemb, f$fldmemb, log(pmax(f$BCRM, 0) + const), 0)$elbo
+    e <- vb_fit_block(ZU, f$clsmemb, f$fldmemb, log(pmax(f$BCRM, 0) + const), 0,
+      log_prior = if (estimate_w) f$log_w else NULL
+    )$elbo
     return(if (is.finite(e)) e else -Inf)
   }
   # The data-based starts always run to convergence, so adding random starts
@@ -492,7 +525,7 @@ Biclustering.ordinal <- function(U,
     top <- order(-vapply(short, fit_elbo, numeric(1)))[seq_len(min(nkeep, length(ri)))]
     for (k in top) {
       f <- short[[k]]
-      g <- run_em(f$fldmemb, f$BCRM, f$BBRM, maxit = max(maxemt - f$emt, 1))
+      g <- run_em(f$fldmemb, f$BCRM, f$BBRM, maxit = max(maxemt - f$emt, 1), log_w = f$log_w)
       g$emt <- g$emt + f$emt
       fits[[ri[k]]] <- g
     }
@@ -508,6 +541,10 @@ Biclustering.ordinal <- function(U,
   BBRM <- best$BBRM
   emt <- best$emt
   converge <- best$converge
+  log_w <- best$log_w
+  w <- if (estimate_w) exp(log_w) else rep(1 / ncls, ncls)
+  # Estimated class weights are C - 1 parameters of the test
+  n_weight_params <- if (estimate_w) ncls - 1 else 0
 
 
   cls <- max.col(clsmemb, ties.method = "first")
@@ -532,13 +569,17 @@ Biclustering.ordinal <- function(U,
   # The reported log-likelihood is the evidence lower bound at the final state
   # (see the EM loop and R/00_VariationalFit.R); the same helper also returns
   # the respondent-side marginal, the posterior entropies and ICL.
-  vb <- vb_fit_block(ZU, clsmemb, fldmemb, log(pmax(BCRM, 0) + const), nparam)
+  vb <- vb_fit_block(ZU, clsmemb, fldmemb, log(pmax(BCRM, 0) + const), nparam,
+    log_prior = if (estimate_w) log_w else NULL, n_weight_params = n_weight_params
+  )
   testell <- vb$elbo
   # Exact ICL (see R/00_ExactICL.R): Biclustering blocks are unordered;
   # isotonic Ranklustering carries the rank order as its prior; GTM has none.
+  # The assignment term uses the model's weights (-n log C, or sum n_c log w_c).
   if (model == 1 || use_isotonic) {
     icl_ex <- icl_exact(ZU, clsmemb, fldmemb,
-      alpha = alpha, ncat = rep(maxQ, nfld), log_prior_cls = rep(-log(ncls), ncls),
+      alpha = alpha, ncat = rep(maxQ, nfld),
+      log_prior_cls = if (estimate_w) log_w else rep(-log(ncls), ncls),
       ordered = use_isotonic, seed = seed
     )
   } else {
@@ -595,6 +636,7 @@ Biclustering.ordinal <- function(U,
     ), calcFitIndices(chi_A, chi_B, df_A, df_B, nobs)),
     class = c("exametrika", "ModelFit")
   )
+  FitIndices <- charge_test_params(FitIndices, n_weight_params, nobs)
 
   # output ----------------------------------------------------------
   cls <- max.col(clsmemb, ties.method = "first")
@@ -692,6 +734,10 @@ Biclustering.ordinal <- function(U,
     FieldMembership = fldmemb,
     ClassMembership = clsmemb,
     SmoothedMembership = smoothed_memb,
+    mixing = mixing,
+    ClassWeight = w,
+    # log class weights, read by predict() (see pred_ll_bicl_poly)
+    LogPrior = log(w),
     FieldEstimated = fld,
     ClassEstimated = cls,
     Students = StudentRank,
@@ -715,3 +761,4 @@ Biclustering.ordinal <- function(U,
   ret <- label_result(ret, id = tmp$ID, item = tmp$ItemLabel, class_prefix = msg)
   return(ret)
 }
+

@@ -583,7 +583,7 @@ Biclustering.ordinal <- function(U,
       ordered = use_isotonic, seed = seed
     )
   } else {
-    icl_ex <- list(ICL_exact = NA_real_, ICL_exact_se = NA_real_)
+    icl_ex <- list(ICL_exact = NA_real_, ICL_exact_se = NA_real_, ICL_exact_status = NA_character_)
   }
 
   ptn <- apply(tmp$Q, 1, function(x) paste(x, collapse = ""))
@@ -769,6 +769,7 @@ Biclustering.ordinal <- function(U,
     BIC_elbo = vb$BIC_elbo,
     ICL_exact = icl_ex$ICL_exact,
     ICL_exact_se = icl_ex$ICL_exact_se,
+    ICL_exact_status = icl_ex$ICL_exact_status,
     init = init,
     init_selected = names(starts)[which.max(init_elbo)],
     init_elbo = init_elbo,

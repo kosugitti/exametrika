@@ -133,7 +133,7 @@ complete-data log-likelihood.}
 \item{ICL}{Integrated completed likelihood criterion (Biernacki, Celeux and
 Govaert, 2000) in its BIC-type approximation, on the same scale as AIC and
 BIC (-2 log scale, smaller is better).}
-\item{ICL_exact, ICL_exact_se}{The exact ICL (since 2.3.0): the item
+\item{ICL_exact, ICL_exact_se, ICL_exact_status}{The exact ICL (since 2.3.0): the item
 parameters integrated out under their prior and the memberships at the
 hard (MAP) assignment, -2 log scale. Nothing is counted, so it is the
 criterion of choice for the isotonic models, whose effective number of
@@ -146,8 +146,12 @@ since 2.3.0: importance sampling in 20 batches of 10,000 draws, raised to
 \code{ICL_exact_se} is its standard error on the -2 log scale (0 for an
 unordered model; \code{NA} with a warning when the order probability of
 some field fell below the Monte Carlo resolution, in which case
-\code{ICL_exact} is a lower bound). \code{NA} for GTM and SOM fits,
-which have no prior model.}
+\code{ICL_exact} is a lower bound). \code{ICL_exact_status} says which
+case applies: \code{"ok"} (converged, or exact for an unordered model),
+\code{"thin"} (some importance-sampling batches were empty: the value is
+usable but its standard error may be optimistic) or \code{"bound"} (not
+converged: a lower bound, \code{ICL_exact_se} is \code{NA}).
+\code{NA} for GTM and SOM fits, which have no prior model.}
 }
 }
 \description{

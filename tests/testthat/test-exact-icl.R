@@ -212,6 +212,7 @@ test_that("a fully reversed item is no longer capped", {
     alpha = 1, ncat = 3, log_prior_cls = rep(-log(3), 3), ordered = TRUE
   ))
   expect_true(is.finite(res$ICL_exact_se))
+  expect_identical(res$ICL_exact_status, "ok")
   expect_lt(abs(res$log_p_order_post - (-321.0)), 3)
 })
 
@@ -232,6 +233,12 @@ test_that("a bound names the rows whose counts run against the order", {
   )
   expect_true(is.na(res$ICL_exact_se))
   expect_true(is.finite(res$ICL_exact))
+  expect_identical(res$ICL_exact_status, "bound")
+  # GridSearch reads the status; a fit from before the field existed is still
+  # recognised by the NA standard error
+  expect_true(exametrika:::grid_cell_is_bound(res))
+  expect_true(exametrika:::grid_cell_is_bound(res[c("ICL_exact", "ICL_exact_se")]))
+  expect_false(exametrika:::grid_cell_is_bound(list(ICL_exact = 1, ICL_exact_se = NA_real_, ICL_exact_status = "ok")))
 })
 
 test_that("empty batches are reported without making a bound", {
@@ -249,4 +256,17 @@ test_that("empty batches are reported without making a bound", {
   )
   expect_equal(res$log_p_order_post, -300)
   expect_true(is.finite(res$ICL_exact_se))
+  expect_identical(res$ICL_exact_status, "thin")
+  expect_false(exametrika:::grid_cell_is_bound(res))
+})
+
+test_that("models carry ICL_exact_status and print a note when it is not ok", {
+  lca <- LCA(J15S500, ncls = 3, verbose = FALSE)
+  expect_identical(lca$ICL_exact_status, "ok")
+  gtm <- LRA(J15S500, nrank = 3, method = "GTM", verbose = FALSE)
+  expect_true(is.na(gtm$ICL_exact_status))
+  lca$ICL_exact_status <- "bound"
+  expect_output(print(lca), "ICL_exact did not converge: it is a lower bound")
+  lca$ICL_exact_status <- "thin"
+  expect_output(print(lca), "some importance-sampling batches were empty")
 })

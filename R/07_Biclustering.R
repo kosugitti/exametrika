@@ -183,7 +183,7 @@ build_conf_mat <- function(conf, nitems) {
 #'  \item{ICL}{Integrated completed likelihood criterion (Biernacki, Celeux and
 #'    Govaert, 2000) in its BIC-type approximation, on the same scale as AIC and
 #'    BIC (-2 log scale, smaller is better).}
-#'  \item{ICL_exact, ICL_exact_se}{The exact ICL (since 2.3.0), see
+#'  \item{ICL_exact, ICL_exact_se, ICL_exact_status}{The exact ICL (since 2.3.0), see
 #'    \code{\link{LCA}}: block parameters integrated out under the
 #'    Dirichlet (Beta) prior, memberships at the hard assignment, class
 #'    weights of the model and field weights 1/F. For isotonic Ranklustering
@@ -723,7 +723,7 @@ Biclustering.binary <- function(U,
       ordered = use_isotonic
     )
   } else {
-    icl_ex <- list(ICL_exact = NA_real_, ICL_exact_se = NA_real_)
+    icl_ex <- list(ICL_exact = NA_real_, ICL_exact_se = NA_real_, ICL_exact_status = NA_character_)
   }
 
   ### Field Analysis
@@ -779,6 +779,7 @@ Biclustering.binary <- function(U,
     BIC_elbo = vb$BIC_elbo,
     ICL_exact = icl_ex$ICL_exact,
     ICL_exact_se = icl_ex$ICL_exact_se,
+    ICL_exact_status = icl_ex$ICL_exact_status,
     SOACflg = SOACflg,
     WOACflg = WOACflg
   ), class = c("exametrika", "Biclustering"))

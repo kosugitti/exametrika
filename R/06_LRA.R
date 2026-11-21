@@ -48,7 +48,7 @@
 #'  \item{ICL}{Integrated completed likelihood criterion (Biernacki, Celeux and
 #'    Govaert, 2000) in its BIC-type approximation, on the same scale as AIC and
 #'    BIC (-2 log scale, smaller is better).}
-#'  \item{ICL_exact, ICL_exact_se}{The exact ICL (since 2.3.0), see
+#'  \item{ICL_exact, ICL_exact_se, ICL_exact_status}{The exact ICL (since 2.3.0), see
 #'    \code{\link{LCA}}. For the isotonic method the order restriction enters
 #'    as the posterior-to-prior probability ratio of the rank order (Monte
 #'    Carlo, \code{seed} if given); \code{NA} for GTM and SOM.}
@@ -291,7 +291,7 @@ LRA.binary <- function(U,
       seed = if (is.null(seed)) 1 else seed
     )
   } else {
-    icl_ex <- list(ICL_exact = NA_real_, ICL_exact_se = NA_real_)
+    icl_ex <- list(ICL_exact = NA_real_, ICL_exact_se = NA_real_, ICL_exact_status = NA_character_)
   }
 
   ret <- structure(list(
@@ -322,7 +322,8 @@ LRA.binary <- function(U,
     ICL = vb$ICL,
     BIC_elbo = vb$BIC_elbo,
     ICL_exact = icl_ex$ICL_exact,
-    ICL_exact_se = icl_ex$ICL_exact_se
+    ICL_exact_se = icl_ex$ICL_exact_se,
+    ICL_exact_status = icl_ex$ICL_exact_status
   ), class = c("exametrika", "LRA"))
   ret <- label_result(ret, id = tmp$ID, item = tmp$ItemLabel, class_prefix = "Rank")
   return(ret)

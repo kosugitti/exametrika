@@ -428,8 +428,10 @@ with_private_seed <- function(seed, expr) {
 #'   \code{log_order_posterior}).
 #' @param batches number of importance-sampling batches (polytomous data).
 #' @param seed seed of the private stream used for the Monte Carlo.
-#' @return list(ICL_exact, ICL_exact_se, log_p_blocks, log_p_assign,
-#'   log_p_order_post, log_p_order_prior). The standard error is the Monte
+#' @return list(ICL_exact, ICL_exact_se, ICL_exact_status, log_p_blocks,
+#'   log_p_assign, log_p_order_post, log_p_order_prior). The status is "ok",
+#'   "thin" (some importance-sampling batches empty) or "bound" (not
+#'   converged: ICL_exact is a lower bound and ICL_exact_se is NA). The standard error is the Monte
 #'   Carlo error of the order term (zero for an unordered model), on the -2
 #'   log scale.
 #' @noRd
@@ -452,6 +454,7 @@ icl_exact <- function(ZU, clsmemb, fldmemb = NULL, alpha = 1, ncat,
   log_prior <- 0
   var_sum <- 0
   capped <- FALSE
+  thin <- FALSE
   if (ordered && C > 1) {
     res <- with_private_seed(seed, {
       lp <- 0
@@ -495,7 +498,8 @@ icl_exact <- function(ZU, clsmemb, fldmemb = NULL, alpha = 1, ncat,
     log_prior <- res$lq
     var_sum <- res$vs
     capped <- res$cp
-    if (length(res$thin_rows) > 0) {
+    thin <- length(res$thin_rows) > 0
+    if (thin) {
       # Some batches had no ordered draw even with 10 M particles: the
       # estimate is still unbiased, but it rests on fewer batches and its
       # standard error is less reliable.
@@ -534,6 +538,10 @@ icl_exact <- function(ZU, clsmemb, fldmemb = NULL, alpha = 1, ncat,
     ICL_exact = -2 * total,
     # NA marks a bound: a field's order probability fell below the resolution
     ICL_exact_se = if (capped) NA_real_ else 2 * sqrt(var_sum),
+    # "ok": converged (or exact, for an unordered model); "thin": some
+    # importance-sampling batches were empty, the value is usable but its
+    # standard error may be optimistic; "bound": not converged, a lower bound
+    ICL_exact_status = if (capped) "bound" else if (thin) "thin" else "ok",
     log_p_blocks = log_p_blocks,
     log_p_assign = log_p_assign,
     log_p_order_post = log_post,

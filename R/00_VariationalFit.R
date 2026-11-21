@@ -229,5 +229,11 @@ print_variational_block <- function(x, digits = 3, suffix = "") {
   }
   y <- matrix(v, ncol = 1, dimnames = list(names(v), "value"))
   print(round(y, digits))
+  status <- g("ICL_exact_status")
+  if (identical(status, "bound")) {
+    cat("ICL_exact did not converge: it is a lower bound (the order probability of some field fell below the Monte Carlo resolution).\n")
+  } else if (identical(status, "thin")) {
+    cat("ICL_exact: some importance-sampling batches were empty; ICL_exact_se may understate the Monte Carlo error.\n")
+  }
   return(invisible(NULL))
 }

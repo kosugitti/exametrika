@@ -396,7 +396,8 @@ Biclustering.nominal <- function(U,
     ICL = vb$ICL,
     BIC_elbo = vb$BIC_elbo,
     ICL_exact = icl_ex$ICL_exact,
-    ICL_exact_se = icl_ex$ICL_exact_se
+    ICL_exact_se = icl_ex$ICL_exact_se,
+    ICL_exact_status = icl_ex$ICL_exact_status
   ), class = c("exametrika", "nominalBiclustering"))
 
   ret <- label_result(ret, id = tmp$ID, item = tmp$ItemLabel, class_prefix = msg)

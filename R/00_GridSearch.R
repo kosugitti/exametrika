@@ -36,12 +36,17 @@ report_failed_grid_settings <- function(failed_settings) {
 }
 
 #' @title Did ICL_exact of a fit stop at a bound?
-#' @description `ICL_exact_se` is `NA` exactly when the order probability of
-#' some field fell below the Monte Carlo resolution (see `icl_exact()`), in
-#' which case `ICL_exact` is a lower bound.
+#' @description `ICL_exact_status` is `"bound"` exactly when the order
+#' probability of some field fell below the Monte Carlo resolution (see
+#' `icl_exact()`), in which case `ICL_exact` is a lower bound. A fit without
+#' the status (the field arrived in 2.3.0) is recognised by `ICL_exact_se`
+#' being `NA`, which marks the same case.
 #' @param result A fitted model (one grid cell).
 #' @noRd
 grid_cell_is_bound <- function(result) {
+  if (!is.null(result$ICL_exact_status)) {
+    return(identical(result$ICL_exact_status, "bound"))
+  }
   return(
     !is.null(result$ICL_exact) && !is.na(result$ICL_exact) &&
       !is.null(result$ICL_exact_se) && is.na(result$ICL_exact_se)

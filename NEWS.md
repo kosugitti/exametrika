@@ -101,7 +101,12 @@ with the particle method in all 258 datasets.
 When every batch is empty even at 100,000 draws, the particle method takes
 over, a warning is given, `ICL_exact_se` is `NA` and `ICL_exact` is a lower
 bound; when only some batches are empty, a separate warning says the
-standard error may understate the error. With a non-flat prior the prior
+standard error may understate the error. `ICL_exact_status` records which
+case applies -- `"ok"` (converged, or exact for an unordered model),
+`"thin"` (some batches empty) or `"bound"` (not converged, a lower bound) --
+so a value is always returned and its standing can be read off the fit;
+`print()` adds a line when it is not `"ok"`, and `GridSearch()` collects the
+`"bound"` cells. With a non-flat prior the prior
 probability is estimated by the particle method. GTM and SOM fits have no prior
 model and return `NA`. `GridSearch()` accepts `index = "ICL_exact"`.
 

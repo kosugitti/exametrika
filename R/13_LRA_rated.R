@@ -43,7 +43,7 @@
 #' \item{ICL}{Integrated completed likelihood criterion (Biernacki, Celeux and
 #'   Govaert, 2000) in its BIC-type approximation, on the same scale as AIC and
 #'   BIC (-2 log scale, smaller is better).}
-#' \item{ICL_exact, ICL_exact_se}{\code{NA}: the rated LRA is a GTM fit,
+#' \item{ICL_exact, ICL_exact_se, ICL_exact_status}{\code{NA}: the rated LRA is a GTM fit,
 #'   which has no prior model (see \code{\link{LCA}}).}
 #' }
 #'
@@ -703,7 +703,8 @@ LRA.rated <- function(U,
     BIC_elbo = vb$BIC_elbo,
     # The rated LRA is a GTM fit, which has no prior model (see R/00_ExactICL.R)
     ICL_exact = NA_real_,
-    ICL_exact_se = NA_real_
+    ICL_exact_se = NA_real_,
+    ICL_exact_status = NA_character_
   ), class = c("exametrika", "LRArated"))
   ret <- label_result(ret, id = U$ID, item = U$ItemLabel, class_prefix = "Rank")
   return(ret)

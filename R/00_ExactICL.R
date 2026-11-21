@@ -30,11 +30,16 @@
 #               non-decreasing across ranks. By the encompassing-prior
 #               identity (Klugkist, Laudy and Hoijtink, 2005) the restricted
 #               marginal equals the unrestricted one times
-#               P(R | data) / P(R). P(R | data) is estimated by a sequential
-#               particle method from the independent Dirichlet posteriors of
-#               the ranks (log_order_chain_mc); P(R) is exact under the flat
-#               prior (see log_order_prior_uniform) and estimated by the same
-#               particle method otherwise.
+#               P(R | data) / P(R). P(R | data) is computed from the
+#               independent Dirichlet posteriors of the ranks: for binary data
+#               by a Rao-Blackwellised Beta chain (log_order_chain_beta), for
+#               polytomous data by importance sampling with proposals centred
+#               on the order-restricted estimate (log_order_is, since 2.3.0;
+#               the plain particle method log_order_chain_mc used before
+#               collapsed when the counts ran against the order and stayed
+#               biased for many ranks). P(R) is exact under the flat prior
+#               (see log_order_prior_uniform) and estimated by the particle
+#               method otherwise.
 #
 # A GTM or SOM fit is a smoothed estimate with no prior model, so ICL_exact is
 # NA there.
@@ -194,6 +199,92 @@ log_order_chain_beta <- function(a, M) {
   return(list(log_p = log_p, se = sqrt(var_sum), capped = FALSE))
 }
 
+#' Log density of Dirichlet rows, safe at zero components
+#' @param P M x Q matrix of probability vectors.
+#' @param b concentration vector (length Q).
+#' @return length-M vector of log densities.
+#' @noRd
+log_ddirichlet_rows <- function(P, b) {
+  # A gamma draw with a small shape can underflow to 0; flooring the log at
+  # the smallest double keeps (b - 1) * log(p) finite (0 when b = 1).
+  lP <- log(pmax(P, .Machine$double.xmin))
+  return(lgamma(sum(b)) - sum(lgamma(b)) + as.vector(lP %*% (b - 1)))
+}
+
+#' One importance-sampling estimate of the stochastic-order probability
+#'
+#' The ranks are independent with Dirichlet(a_r) posteriors. The sequential
+#' particle method of \code{log_order_chain_mc} draws from these posteriors,
+#' which rarely satisfy the order when the block counts run against it, so
+#' its estimate collapses (and is capped) exactly where the probability is
+#' small. Here the draws come instead from Dirichlet proposals centred on the
+#' order-restricted estimate (\code{iso_dual_map} of a, a point of R) with
+#' the same concentration as the posterior of each rank, so a fair share of
+#' them is ordered. The order is still imposed one constraint at a time as in
+#' the particle method -- the acceptance fractions multiply -- and the path
+#' weights p(draw) / q(draw) of the surviving particles, carried through the
+#' resampling, correct for the proposal at the end. The estimate of P is
+#' unbiased; its log is biased downwards, so of two estimates the larger one
+#' is the more trustworthy.
+#' @param a C x Q matrix of Dirichlet parameters (Q >= 3), one row per rank.
+#' @param M number of particles.
+#' @param b C x Q matrix of proposal parameters.
+#' @return log of the estimate; -Inf when no draw survived some step.
+#' @noRd
+log_order_is_once <- function(a, M, b) {
+  C <- nrow(a)
+  Q <- ncol(a)
+  P <- rdirichlet_rows(M, b[1, ])
+  logw <- log_ddirichlet_rows(P, a[1, ]) - log_ddirichlet_rows(P, b[1, ])
+  S_top <- upper_cum_rows(P)
+  log_acc <- 0
+  for (k in seq_len(C - 1)) {
+    P <- rdirichlet_rows(M, b[k + 1, ])
+    ok <- rowSums(upper_cum_rows(P) >= S_top) == (Q - 1)
+    n_ok <- sum(ok)
+    if (n_ok == 0) {
+      return(-Inf)
+    }
+    log_acc <- log_acc + log(n_ok / M)
+    idx <- which(ok)[sample.int(n_ok, M, replace = TRUE)]
+    P <- P[idx, , drop = FALSE]
+    logw <- logw[idx] + log_ddirichlet_rows(P, a[k + 1, ]) -
+      log_ddirichlet_rows(P, b[k + 1, ])
+    S_top <- upper_cum_rows(P)
+  }
+  mx <- max(logw)
+  return(log_acc + mx + log(mean(exp(logw - mx))))
+}
+
+#' Importance-sampling estimate of the order probability in batches
+#'
+#' Runs \code{batches} independent estimates of \code{log_order_is_once}
+#' with M particles each and averages them on the probability scale. The
+#' standard error comes from the spread of the batches (delta method, log
+#' scale). A batch with no surviving draw counts as a zero, which is what
+#' keeps the average unbiased; \code{n_zero} reports how many there were.
+#' @param a C x Q matrix of Dirichlet parameters.
+#' @param M particles per batch.
+#' @param batches number of batches.
+#' @return list(log_p, se, capped = FALSE, n_zero). log_p is -Inf when every
+#'   batch was zero.
+#' @noRd
+log_order_is <- function(a, M, batches = 20) {
+  b <- iso_dual_map(a, tol = 1e-10) * rowSums(a)
+  lp <- vapply(seq_len(batches), function(i) log_order_is_once(a, M, b), numeric(1))
+  n_zero <- sum(!is.finite(lp))
+  if (n_zero == batches) {
+    return(list(log_p = -Inf, se = NA_real_, capped = FALSE, n_zero = n_zero))
+  }
+  mx <- max(lp)
+  w <- exp(lp - mx)
+  m <- mx + log(mean(w))
+  return(list(
+    log_p = m, se = sqrt(stats::var(exp(lp - m)) / batches),
+    capped = FALSE, n_zero = n_zero
+  ))
+}
+
 #' Prior probability of the stochastic order, exact when the prior is flat
 #' @param C number of ranks.
 #' @param alpha concentration vector of the prior (length Q).
@@ -217,15 +308,37 @@ log_order_prior <- function(C, alpha, M) {
 #' Posterior probability that the ranks of one field are stochastically ordered
 #'
 #' The ranks are independent given the hard assignments, each with a
-#' Dirichlet(alpha + counts) posterior, so the chain estimate applies.
+#' Dirichlet(alpha + counts) posterior. Binary data (Q = 2) use the
+#' Rao-Blackwellised Beta chain, which rejects nothing. Polytomous data use
+#' importance sampling (\code{log_order_is}): first \code{batches} batches of
+#' M particles, and, when a batch came back empty or the standard error on
+#' the log scale exceeds \code{se_tol}, again with 10 M particles per batch.
+#' Only when every batch of the second round is empty does it fall back to
+#' the particle method of \code{log_order_chain_mc}, whose capped value is a
+#' bound.
 #' @param counts C x Q matrix of block counts for the field.
 #' @param alpha concentration vector of the prior (length Q).
-#' @param M number of particles.
-#' @return list(log_p, se, capped).
+#' @param M number of particles (per batch for Q >= 3).
+#' @param batches number of importance-sampling batches.
+#' @param se_tol standard error (log scale) above which the second round runs.
+#' @return list(log_p, se, capped, n_zero).
 #' @noRd
-log_order_posterior <- function(counts, alpha, M) {
+log_order_posterior <- function(counts, alpha, M, batches = 20, se_tol = 0.25) {
   a <- sweep(counts, 2, alpha, "+")
-  return(log_order_chain_mc(a, M))
+  if (nrow(a) < 2 || ncol(a) < 3) {
+    res <- log_order_chain_mc(a, M)
+    res$n_zero <- 0L
+    return(res)
+  }
+  res <- log_order_is(a, M, batches)
+  if (res$n_zero > 0 || is.na(res$se) || res$se > se_tol) {
+    res <- log_order_is(a, 10 * M, batches)
+  }
+  if (res$n_zero == batches) {
+    res <- log_order_chain_mc(a, M)
+    res$n_zero <- batches
+  }
+  return(res)
 }
 
 #' Log Dirichlet-multinomial marginal of block counts
@@ -309,7 +422,11 @@ with_private_seed <- function(seed, expr) {
 #' @param log_prior_cls length-C log mixing weights of the classes.
 #' @param ordered TRUE for an order-restricted (isotonic) model: the order
 #'   correction is applied to every field (or item).
-#' @param M Monte Carlo draws for the posterior order probability.
+#' @param M Monte Carlo draws for the posterior order probability: particles
+#'   of the Beta chain for binary data, particles per importance-sampling
+#'   batch for polytomous data (raised tenfold where needed, see
+#'   \code{log_order_posterior}).
+#' @param batches number of importance-sampling batches (polytomous data).
 #' @param seed seed of the private stream used for the Monte Carlo.
 #' @return list(ICL_exact, ICL_exact_se, log_p_blocks, log_p_assign,
 #'   log_p_order_post, log_p_order_prior). The standard error is the Monte
@@ -317,7 +434,8 @@ with_private_seed <- function(seed, expr) {
 #'   log scale.
 #' @noRd
 icl_exact <- function(ZU, clsmemb, fldmemb = NULL, alpha = 1, ncat,
-                      log_prior_cls, ordered = FALSE, M = 10000, seed = 1) {
+                      log_prior_cls, ordered = FALSE, M = 10000, batches = 20,
+                      seed = 1) {
   cls01 <- hard_membership(clsmemb)
   fld01 <- if (is.null(fldmemb)) NULL else hard_membership(fldmemb)
   counts <- icl_exact_counts(ZU, cls01, fld01)
@@ -342,6 +460,8 @@ icl_exact <- function(ZU, clsmemb, fldmemb = NULL, alpha = 1, ncat,
       cp <- FALSE
       cap_rows <- integer()
       cap_logp <- numeric()
+      thin_rows <- integer()
+      thin_zero <- integer()
       prior_cache <- list()
       for (f in seq_len(dim(counts)[1])) {
         Qf <- ncat[f]
@@ -353,7 +473,7 @@ icl_exact <- function(ZU, clsmemb, fldmemb = NULL, alpha = 1, ncat,
         pr <- prior_cache[[key]]
         n_f <- counts[f, , seq_len(Qf), drop = FALSE]
         dim(n_f) <- c(C, Qf)
-        po <- log_order_posterior(n_f, a, M)
+        po <- log_order_posterior(n_f, a, M, batches = batches)
         lp <- lp + po$log_p
         lq <- lq + pr$log_p
         vs <- vs + po$se^2 + pr$se^2
@@ -361,14 +481,35 @@ icl_exact <- function(ZU, clsmemb, fldmemb = NULL, alpha = 1, ncat,
           cp <- TRUE
           cap_rows <- c(cap_rows, f)
           cap_logp <- c(cap_logp, po$log_p)
+        } else if (isTRUE(po$n_zero > 0)) {
+          thin_rows <- c(thin_rows, f)
+          thin_zero <- c(thin_zero, po$n_zero)
         }
       }
-      list(lp = lp, lq = lq, vs = vs, cp = cp, cap_rows = cap_rows, cap_logp = cap_logp)
+      list(
+        lp = lp, lq = lq, vs = vs, cp = cp, cap_rows = cap_rows, cap_logp = cap_logp,
+        thin_rows = thin_rows, thin_zero = thin_zero
+      )
     })
     log_post <- res$lp
     log_prior <- res$lq
     var_sum <- res$vs
     capped <- res$cp
+    if (length(res$thin_rows) > 0) {
+      # Some batches had no ordered draw even with 10 M particles: the
+      # estimate is still unbiased, but it rests on fewer batches and its
+      # standard error is less reliable.
+      what <- if (is.null(fld01)) "item" else "field"
+      where <- paste0(what, " ", res$thin_rows, " (", res$thin_zero, " of ", batches, ")")
+      warning(
+        "ICL_exact: the posterior probability of the rank order was estimated ",
+        "from fewer importance-sampling batches than requested in ",
+        paste(where, collapse = ", "),
+        ": some batches drew no ordered sample. ICL_exact_se may understate ",
+        "the Monte Carlo error there.",
+        call. = FALSE
+      )
+    }
     if (capped) {
       # Name the rows: a field of a biclustering, an item of a one-mode model.
       # The block counts of the hard assignment run against the rank order

@@ -137,6 +137,14 @@ test_that("GridSearch accepts index = 'BIC_elbo' and the fits carry it", {
 ### ICL_exact bounds are collected once instead of warned per cell
 test_that("GridSearch records the settings where ICL_exact is a bound and stays quiet", {
   skip_on_cran()
+  # Since 2.3.0 the importance sampler resolves every cell of this grid, so a
+  # bound is forced: every batch comes back empty and the particle method,
+  # which caps, takes over
+  local_mocked_bindings(
+    log_order_is = function(a, M, batches = 20) {
+      return(list(log_p = -Inf, se = NA_real_, capped = FALSE, n_zero = batches))
+    }
+  )
   expect_no_warning(
     gs <- GridSearch(J5S1000,
       fun = "Biclustering", method = "R", max_ncls = 4, max_nfld = 2,
@@ -146,12 +154,23 @@ test_that("GridSearch records the settings where ICL_exact is a bound and stays 
   expect_true(is.matrix(gs$bound_matrix))
   expect_equal(dim(gs$bound_matrix), dim(gs$index_matrix))
   expect_equal(length(gs$bound_settings), sum(gs$bound_matrix))
-  # Biclustering(J5S1000, ncls = 4, nfld = 2, method = "R") warns on its own,
-  # so that cell is a bound and the grid reports it instead
+  # With the particle method, Biclustering(J5S1000, ncls = 4, nfld = 2,
+  # method = "R") warns on its own, so that cell is a bound and the grid
+  # reports it instead
   expect_true(gs$bound_matrix["ncls 4", "nfld 2"])
   out <- capture.output(print(gs))
   expect_true(any(grepl("ICL_exact is a lower bound at [0-9]+ setting", out)))
   expect_true(any(grepl("ncls=4,nfld=2", out)))
+})
+
+test_that("the importance sampler leaves no bound on the same grid", {
+  skip_on_cran()
+  gs <- GridSearch(J5S1000,
+    fun = "Biclustering", method = "R", max_ncls = 4, max_nfld = 2,
+    index = "ICL_exact", verbose = FALSE
+  )
+  expect_false(any(gs$bound_matrix))
+  expect_true(all(is.finite(gs$index_matrix)))
 })
 
 test_that("a grid without bounds carries empty bound fields", {

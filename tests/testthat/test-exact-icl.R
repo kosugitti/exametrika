@@ -175,23 +175,78 @@ test_that("the BIC-type ICL uses the model's mixing weights and log n", {
   expect_equal(vb2$ICL, -2 * (sum(cls01 * L) + sum(colSums(cls01) * log(w))) + 8 * log(20))
 })
 
-test_that("a bound names the rows whose counts run against the order", {
-  # One item, three ranks, every respondent of rank 1 in the top category and
-  # of rank 3 in the bottom one: the posterior order probability is far below
-  # any Monte Carlo resolution
+# A fully reversed item: rank 1 answers the top category, rank 3 the bottom
+# one, so the posterior order probability is about exp(-321)
+reversed_item <- function() {
   N <- 300
   ZU <- array(0, dim = c(N, 1, 3))
   rank <- rep(1:3, each = 100)
-  cat_of <- c(3, 2, 1)[rank]
-  ZU[cbind(seq_len(N), 1, cat_of)] <- 1
+  ZU[cbind(seq_len(N), 1, c(3, 2, 1)[rank])] <- 1
   clsmemb <- matrix(0, N, 3)
   clsmemb[cbind(seq_len(N), rank)] <- 1
+  return(list(ZU = ZU, clsmemb = clsmemb))
+}
+
+test_that("importance sampling matches the lattice value of the order probability", {
+  # Reference values: P(S_1 <= ... <= S_C) of independent Dirichlet ranks by
+  # numerical integration on a 2000 x 2000 lattice (Q = 3), stable to 1e-5
+  # between lattice sizes 1000 and 2000
+  a_mild <- rbind(c(30, 40, 30), c(35, 35, 30), c(25, 40, 35), c(20, 40, 40))
+  a_small <- rbind(c(3, 5, 2), c(6, 2, 2), c(2, 3, 5))
+  r1 <- exametrika:::with_private_seed(1, exametrika:::log_order_posterior(a_mild - 1, 1, 10000))
+  r2 <- exametrika:::with_private_seed(1, exametrika:::log_order_posterior(a_small - 1, 1, 10000))
+  expect_lt(abs(r1$log_p - (-3.010895)), 0.02)
+  expect_lt(abs(r2$log_p - (-3.064148)), 0.02)
+  expect_lt(r1$se, 0.05)
+  expect_false(r1$capped)
+})
+
+test_that("a fully reversed item is no longer capped", {
+  # The particle method used before 2.3.0 accepted no draw here and returned
+  # a bound near log(1 / M) per step. Importance sampling reaches the region;
+  # the lattice value is -321.0 (lattices of 1000, 2000, 4000: -320.88,
+  # -320.95, -320.97). The log of the estimate is biased downwards in so
+  # extreme a case, by about 1.5 even with 10^6 draws per batch.
+  d <- reversed_item()
+  res <- expect_silent(exametrika:::icl_exact(d$ZU, d$clsmemb,
+    alpha = 1, ncat = 3, log_prior_cls = rep(-log(3), 3), ordered = TRUE
+  ))
+  expect_true(is.finite(res$ICL_exact_se))
+  expect_lt(abs(res$log_p_order_post - (-321.0)), 3)
+})
+
+test_that("a bound names the rows whose counts run against the order", {
+  # When every importance-sampling batch comes back empty the particle method
+  # takes over, and its capped value is a bound
+  d <- reversed_item()
+  local_mocked_bindings(
+    log_order_is = function(a, M, batches = 20) {
+      return(list(log_p = -Inf, se = NA_real_, capped = FALSE, n_zero = batches))
+    }
+  )
   expect_warning(
-    res <- exametrika:::icl_exact(ZU, clsmemb,
+    res <- exametrika:::icl_exact(d$ZU, d$clsmemb,
       alpha = 1, ncat = 3, log_prior_cls = rep(-log(3), 3), ordered = TRUE, M = 2000
     ),
     "item 1 \\(log10 P <= -[0-9.]+\\): the block counts of the hard assignment run against the order"
   )
   expect_true(is.na(res$ICL_exact_se))
   expect_true(is.finite(res$ICL_exact))
+})
+
+test_that("empty batches are reported without making a bound", {
+  d <- reversed_item()
+  local_mocked_bindings(
+    log_order_is = function(a, M, batches = 20) {
+      return(list(log_p = -300, se = 0.1, capped = FALSE, n_zero = 3L))
+    }
+  )
+  expect_warning(
+    res <- exametrika:::icl_exact(d$ZU, d$clsmemb,
+      alpha = 1, ncat = 3, log_prior_cls = rep(-log(3), 3), ordered = TRUE
+    ),
+    "fewer importance-sampling batches than requested in item 1 \\(3 of 20\\)"
+  )
+  expect_equal(res$log_p_order_post, -300)
+  expect_true(is.finite(res$ICL_exact_se))
 })

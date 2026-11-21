@@ -76,16 +76,33 @@ unrestricted one times the posterior-to-prior probability ratio of that
 order. The prior probability is exact under the flat prior: the region is
 the order polytope of a product of two chains, whose volume follows from the
 hook-length formula (for binary data it is `1/C!`). The posterior
-probability is a Monte Carlo estimate (10,000 draws on a private random
-stream that leaves the global one untouched, seeded by `seed` where the
-model has one); `ICL_exact_se` is its standard error on the -2 log scale,
-0 for an unordered model. The estimate is a sequential particle method
-that adds the rank constraints one at a time, so probabilities far below
-one draw in ten thousand are still resolved (for binary data the steps are
-exact in the Beta distribution); when a field's counts contradict the order
-so strongly that even this fails, a warning is given, `ICL_exact_se` is
-`NA` and `ICL_exact` is a lower bound. With a non-flat prior the prior
-probability is estimated by the same particle method. GTM and SOM fits have no prior
+probability is a Monte Carlo estimate on a private random stream that
+leaves the global one untouched (seeded by `seed` where the model has one);
+`ICL_exact_se` is its standard error on the -2 log scale, 0 for an
+unordered model. For binary data it is a particle chain that adds the rank
+constraints one at a time with each step exact in the Beta distribution
+(10,000 particles, nothing rejected). For polytomous data it is importance
+sampling: the draws come from Dirichlet proposals centred on the
+order-restricted estimate, with the posterior's concentration, the
+constraints are again added one at a time, and the path weights correct for
+the proposal; 20 batches of 10,000 draws, rerun with 100,000 per batch where
+a batch came back empty or the standard error exceeded 0.25 on the log
+scale. A plain particle method drawing from the posteriors -- the first
+implementation -- collapses exactly where it matters: when the block counts
+run against the order, no draw satisfies it and the result is capped, and
+even uncapped it overstated ICL_exact by 2 to 12 at the median and up to
+70 to 140 on the -2 log scale for 8 to 10 ranks. The importance sampler was
+checked against numerical integration (40 settings, log P from -0.7 to
+-42), a direct count (20 settings), and a 258-dataset simulation grid of
+ordinal Ranklusterings (C and F from 2 to 10, 20,322 fits, 100,000 draws per
+batch): every batch came back empty in 3 fits and some batches in 25, all
+far from the selected settings, and the selected (C, F) was the same as
+with the particle method in all 258 datasets.
+When every batch is empty even at 100,000 draws, the particle method takes
+over, a warning is given, `ICL_exact_se` is `NA` and `ICL_exact` is a lower
+bound; when only some batches are empty, a separate warning says the
+standard error may understate the error. With a non-flat prior the prior
+probability is estimated by the particle method. GTM and SOM fits have no prior
 model and return `NA`. `GridSearch()` accepts `index = "ICL_exact"`.
 
 When a bound occurs the warning names the fields (or items) and the order

@@ -229,7 +229,7 @@ Shojima (2022). <code>"estimate"</code> updates the weights in the M-step as
 the mean class membership, adds \(C - 1\) parameters to the test fit
 indices, and returns them in <code>ClassWeight</code>. The field weights stay
 at \(1/F\). See <code><a href="LCA.html">LCA</a></code> for when this matters. <code><a href="M2.html">M2()</a></code>
-is not yet available for a polytomous fit with estimated weights.</p></dd>
+counts the estimated weights as parameters.</p></dd>
 
 
 <dt id="arg-alpha">alpha<a class="anchor" aria-label="anchor" href="#arg-alpha"></a></dt>
@@ -423,7 +423,7 @@ complete-data log-likelihood.</p></dd>
 Govaert, 2000) in its BIC-type approximation, on the same scale as AIC and
 BIC (-2 log scale, smaller is better).</p></dd>
 
-<dt>ICL_exact, ICL_exact_se</dt>
+<dt>ICL_exact, ICL_exact_se, ICL_exact_status</dt>
 <dd><p>The exact ICL (since 2.3.0), see
 <code><a href="LCA.html">LCA</a></code>: block parameters integrated out under the
 Dirichlet (Beta) prior, memberships at the hard assignment, class

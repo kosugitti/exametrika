@@ -29,6 +29,31 @@ written in the cells, decreases shaded blue), and `"RankOdds"`, box
 plots of the two odds by estimated rank on a log axis with a dashed line
 at 1.
 
+### Bug fix: `M2()` with missing responses
+
+[`M2()`](https://kosugitti.github.io/exametrika/reference/M2.md) (LCA,
+LRA, Biclustering, and the independence baseline that
+[`add_M2()`](https://kosugitti.github.io/exametrika/reference/add_M2.md)
+compares against) computes the observed margins over the respondents who
+answered the item or item pair, but scaled their covariance by the total
+number of respondents. With missing cells that understated the variance
+and inflated the statistic: with 10% of the cells missing at random a
+correct nominal LCA gave a mean of 146.7 against 81 degrees of freedom
+and was rejected at 5% in 97% of 200 replications. The covariance of
+margins a and b is now scaled by `n_ab / (n_a n_b)` – the number who
+answered the items of both over the product of the numbers who answered
+each – which assumes the responses are missing completely at random.
+After the fix the same simulation gives 82.0 against 81 and 6.5%
+(Biclustering with estimated weights: 118.2 against 117 and 7.5%).
+Adding respondents whose every response is missing no longer changes the
+statistic (before, 100 empty rows added to 300 inflated it by exactly
+400/300). With no missing cell the computation is unchanged to the bit.
+[`M2()`](https://kosugitti.github.io/exametrika/reference/M2.md) values,
+and the margin-based fit indices of
+[`add_M2()`](https://kosugitti.github.io/exametrika/reference/add_M2.md),
+change for every fit with missing data, including the bundled `J20S600`
+and `J5S1000` (60 and 26 missing cells).
+
 ### New: `BIC_elbo`, a BIC on the observed-data log-likelihood
 
 Every model that reports `elbo` now also reports
@@ -68,17 +93,41 @@ probability ratio of that order. The prior probability is exact under
 the flat prior: the region is the order polytope of a product of two
 chains, whose volume follows from the hook-length formula (for binary
 data it is `1/C!`). The posterior probability is a Monte Carlo estimate
-(10,000 draws on a private random stream that leaves the global one
-untouched, seeded by `seed` where the model has one); `ICL_exact_se` is
-its standard error on the -2 log scale, 0 for an unordered model. The
-estimate is a sequential particle method that adds the rank constraints
-one at a time, so probabilities far below one draw in ten thousand are
-still resolved (for binary data the steps are exact in the Beta
-distribution); when a field’s counts contradict the order so strongly
-that even this fails, a warning is given, `ICL_exact_se` is `NA` and
-`ICL_exact` is a lower bound. With a non-flat prior the prior
-probability is estimated by the same particle method. GTM and SOM fits
-have no prior model and return `NA`.
+on a private random stream that leaves the global one untouched (seeded
+by `seed` where the model has one); `ICL_exact_se` is its standard error
+on the -2 log scale, 0 for an unordered model. For binary data it is a
+particle chain that adds the rank constraints one at a time with each
+step exact in the Beta distribution (10,000 particles, nothing
+rejected). For polytomous data it is importance sampling: the draws come
+from Dirichlet proposals centred on the order-restricted estimate, with
+the posterior’s concentration, the constraints are again added one at a
+time, and the path weights correct for the proposal; 20 batches of
+10,000 draws, rerun with 100,000 per batch where a batch came back empty
+or the standard error exceeded 0.25 on the log scale. A plain particle
+method drawing from the posteriors – the first implementation –
+collapses exactly where it matters: when the block counts run against
+the order, no draw satisfies it and the result is capped, and even
+uncapped it overstated ICL_exact by 2 to 12 at the median and up to 70
+to 140 on the -2 log scale for 8 to 10 ranks. The importance sampler was
+checked against numerical integration (40 settings, log P from -0.7 to
+-42), a direct count (20 settings), and a 258-dataset simulation grid of
+ordinal Ranklusterings (C and F from 2 to 10, 20,322 fits, 100,000 draws
+per batch): every batch came back empty in 3 fits and some batches in
+25, all far from the selected settings, and the selected (C, F) was the
+same as with the particle method in all 258 datasets. When every batch
+is empty even at 100,000 draws, the particle method takes over, a
+warning is given, `ICL_exact_se` is `NA` and `ICL_exact` is a lower
+bound; when only some batches are empty, a separate warning says the
+standard error may understate the error. `ICL_exact_status` records
+which case applies – `"ok"` (converged, or exact for an unordered
+model), `"thin"` (some batches empty) or `"bound"` (not converged, a
+lower bound) – so a value is always returned and its standing can be
+read off the fit; [`print()`](https://rdrr.io/r/base/print.html) adds a
+line when it is not `"ok"`, and
+[`GridSearch()`](https://kosugitti.github.io/exametrika/reference/GridSearch.md)
+collects the `"bound"` cells. With a non-flat prior the prior
+probability is estimated by the particle method. GTM and SOM fits have
+no prior model and return `NA`.
 [`GridSearch()`](https://kosugitti.github.io/exametrika/reference/GridSearch.md)
 accepts `index = "ICL_exact"`.
 
@@ -293,12 +342,27 @@ BIC-type `ICL`, the assignment term of `ICL_exact` (`sum n_c log w_c`)
 and [`predict()`](https://rdrr.io/r/stats/predict.html); `C - 1`
 parameters are charged to the test fit indices (ordinal) or to
 AIC/CAIC/BIC (nominal); `mic` and the rated fit’s sorting by correct
-rate carry the weights along with the classes.
+rate carry the weights along with the classes. Polytomous LCA and
+ordinal and rated LRA keep the fixed weights for now.
+
 [`M2()`](https://kosugitti.github.io/exametrika/reference/M2.md) and
 [`add_M2()`](https://kosugitti.github.io/exametrika/reference/add_M2.md)
-stop with a message on such a fit: their margins are formulated for
-weights fixed at 1/C (left for 2.4.0). Polytomous LCA and ordinal and
-rated LRA keep the fixed weights for now.
+accept such a fit. The estimated weights replace 1/C in the
+model-implied margins and in their covariance, and the `C - 1` free
+weights add columns to the Jacobian (the derivative of a margin with
+respect to w_c is the difference of the class products of classes c and
+C), so `n_param` counts them; with fixed weights the computation is
+unchanged to the bit. The analytic Jacobian agrees with a numerical one,
+the covariance with a Monte Carlo one, and under data generated with
+unequal weights the statistic of the plain Biclustering followed its
+chi-square reference (500 replications: mean 117.0 against 117 degrees
+of freedom, 6.0% rejected at 5%; a larger design, 300 replications: mean
+593.7 against 597, 3.3%; the nominal fit, 300 replications: 117.5 and
+4.3%). The weight columns do not raise the rank of the Jacobian: up to
+second-order margins a change of the weights can be absorbed by the
+profiles, so the degrees of freedom are those of the fixed-weight fit,
+and M2 does not detect weights wrongly fixed at 1/C (in the simulation
+above such a fit gave a mean of 113.4 against 117).
 
 ### `GridSearch()` no longer picks a setting that left a class empty
 

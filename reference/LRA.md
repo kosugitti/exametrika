@@ -276,7 +276,7 @@ A list of class "exametrika" and the specific subclass (e.g., "LRA",
   Govaert, 2000) in its BIC-type approximation, on the same scale as AIC
   and BIC (-2 log scale, smaller is better).
 
-- ICL_exact, ICL_exact_se:
+- ICL_exact, ICL_exact_se, ICL_exact_status:
 
   The exact ICL (since 2.3.0), see
   [`LCA`](https://kosugitti.github.io/exametrika/reference/LCA.md). For
@@ -398,7 +398,7 @@ includes:
   Govaert, 2000) in its BIC-type approximation, on the same scale as AIC
   and BIC (-2 log scale, smaller is better).
 
-- ICL_exact, ICL_exact_se:
+- ICL_exact, ICL_exact_se, ICL_exact_status:
 
   The exact ICL (since 2.3.0), see
   [`LCA`](https://kosugitti.github.io/exametrika/reference/LCA.md). For
@@ -503,7 +503,7 @@ For rated data (`LRA.rated`), the returned list additionally includes:
   Govaert, 2000) in its BIC-type approximation, on the same scale as AIC
   and BIC (-2 log scale, smaller is better).
 
-- ICL_exact, ICL_exact_se:
+- ICL_exact, ICL_exact_se, ICL_exact_status:
 
   `NA`: the rated LRA is a GTM fit, which has no prior model (see
   [`LCA`](https://kosugitti.github.io/exametrika/reference/LCA.md)).

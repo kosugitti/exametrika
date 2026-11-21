@@ -138,15 +138,19 @@ entry for each combination of a free category of one item with a free
 category of another.</p></dd>
 
 <dt>n_param</dt>
-<dd><p>Number of model parameters, <code>ncls * sum(ncat - 1)</code>. The
-class proportions are not estimated in this formulation, so they are not
-counted.</p></dd>
+<dd><p>Number of model parameters, <code>ncls * sum(ncat - 1)</code>
+(for a Biclustering, one set per field instead of per item). The class
+proportions are fixed at 1/C and not counted, except for a Biclustering
+fitted with <code>mixing = "estimate"</code>, where the <code>ncls - 1</code> free
+weights are added (since 2.3.0).</p></dd>
 
 <dt>rank_delta</dt>
 <dd><p>Rank of the Jacobian. For <code>ncls &gt;= 3</code> it falls short
-of <code>n_param</code> by <code>(ncls - 1)(ncls - 2) / 2</code>, because the
+of <code>n_param</code> by <code>(ncls - 1)(ncls - 2) / 2</code> in an LCA, because the
 second-order margins determine the class deviations only through their
-Gram matrix, which is invariant to rotations of the class space.</p></dd>
+Gram matrix, which is invariant to rotations of the class space. With
+shared field profiles and with estimated weights the shortfall is
+different; it is always computed, never assumed.</p></dd>
 
 
 </dl></div>
@@ -159,6 +163,17 @@ margin residual to be orthogonal to the Jacobian. That holds for
 hold for filter-based estimation (GTM), which is a regularisation rather than
 a maximum likelihood estimator, nor for order-restricted estimation, whose
 limiting distribution is a mixture of chi-squares rather than a single one.</p>
+<p>A Biclustering fitted with <code>mixing = "estimate"</code> uses the estimated
+class weights in the margins and counts them as parameters. Under data
+generated from such a model with unequal weights, the statistic of the
+plain Biclustering (<code>method = "B"</code>) followed its chi-square reference
+in simulation (500 replications: mean 117.0 against 117 degrees of freedom,
+6.0 percent rejected at the 5 percent level; 300 replications of a larger
+design: mean 593.7 against 597, 3.3 percent). The weights do not raise
+<code>rank_delta</code> – up to second-order margins a change of the weights can
+be absorbed by the profiles – so the degrees of freedom are those of the
+fixed-weight fit, and the statistic does not detect weights wrongly fixed
+at 1/C.</p>
 <p>The degrees of freedom here are orders of magnitude smaller than in a
 full-information test, so an RMSEA computed from \(M_2\) is not comparable
 with a full-information RMSEA and the conventional cutoffs do not carry over.</p>
@@ -188,7 +203,7 @@ testing for latent class models. Multivariate Behavioral Research, 28(3), 375-38
 <span class="r-in"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="LCA.html">LCA</a></span><span class="op">(</span><span class="va">dat</span>, ncls <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">M2</span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Limited-information goodness-of-fit (M2)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> M2 = 3582.212, df = 1591, p = 0.0000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> M2 = 3506.201, df = 1591, p = 0.0000</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> margins = 1770, parameters = 180, rank of Jacobian = 179</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   (the Jacobian is 1 short of the parameter count: the class space can be rotated</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    without changing the margins, so df counts the rank, not the parameters)</span>

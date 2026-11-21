@@ -190,19 +190,19 @@ fit
 #> 
 #> Margin based (M2)
 #>             value
-#> M2       3582.212
+#> M2       3506.201
 #> df       1591.000
 #> p           0.000
-#> M2_null  9469.241
+#> M2_null  9282.229
 #> df_null  1710.000
 #> n_margin 1770.000
 #> NFI         0.622
-#> RFI         0.593
-#> IFI         0.747
-#> TLI         0.724
-#> CFI         0.743
-#> RMSEA       0.046
-#>   0.5% of the cells are missing: the margins use available cases and M2 is approximate.
+#> RFI         0.594
+#> IFI         0.751
+#> TLI         0.728
+#> CFI         0.747
+#> RMSEA       0.045
+#>   0.5% of the cells are missing: the margins use available cases and their covariance is scaled to the available counts, which assumes the responses are missing completely at random.
 print(fit, fit_indices = "margin")
 #> 
 #> Item Category Reference Profile
@@ -299,18 +299,18 @@ print(fit, fit_indices = "margin")
 #> 
 #> Margin based (M2)
 #>             value
-#> M2       3582.212
+#> M2       3506.201
 #> df       1591.000
 #> p           0.000
-#> M2_null  9469.241
+#> M2_null  9282.229
 #> df_null  1710.000
 #> n_margin 1770.000
 #> NFI         0.622
-#> RFI         0.593
-#> IFI         0.747
-#> TLI         0.724
-#> CFI         0.743
-#> RMSEA       0.046
-#>   0.5% of the cells are missing: the margins use available cases and M2 is approximate.
+#> RFI         0.594
+#> IFI         0.751
+#> TLI         0.728
+#> CFI         0.747
+#> RMSEA       0.045
+#>   0.5% of the cells are missing: the margins use available cases and their covariance is scaled to the available counts, which assumes the responses are missing completely at random.
 # }
 ```

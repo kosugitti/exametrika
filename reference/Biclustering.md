@@ -210,8 +210,8 @@ Biclustering(
   returns them in `ClassWeight`. The field weights stay at \\1/F\\. See
   [`LCA`](https://kosugitti.github.io/exametrika/reference/LCA.md) for
   when this matters.
-  [`M2()`](https://kosugitti.github.io/exametrika/reference/M2.md) is
-  not yet available for a polytomous fit with estimated weights.
+  [`M2()`](https://kosugitti.github.io/exametrika/reference/M2.md)
+  counts the estimated weights as parameters.
 
 - alpha:
 
@@ -468,7 +468,7 @@ An object of class "exametrika" and "Biclustering" containing:
   Govaert, 2000) in its BIC-type approximation, on the same scale as AIC
   and BIC (-2 log scale, smaller is better).
 
-- ICL_exact, ICL_exact_se:
+- ICL_exact, ICL_exact_se, ICL_exact_status:
 
   The exact ICL (since 2.3.0), see
   [`LCA`](https://kosugitti.github.io/exametrika/reference/LCA.md):

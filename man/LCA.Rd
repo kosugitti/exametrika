@@ -141,8 +141,9 @@ parameters is data-dependent. For an isotonic fit the order restriction
 enters as the ratio of posterior to prior probability of the rank order;
 the posterior probability is a Monte Carlo estimate on a private random
 stream (binary data: a Beta chain with 10,000 particles; polytomous data,
-since 2.3.0: importance sampling in 20 batches of 10,000 draws, raised to
-100,000 where a batch came back empty or the error was large) and
+since 2.3.0: importance sampling in 20 batches of 2,000 draws, raised to
+10,000 and then 100,000 where a batch came back empty or the error was
+large) and
 \code{ICL_exact_se} is its standard error on the -2 log scale (0 for an
 unordered model; \code{NA} with a warning when the order probability of
 some field fell below the Monte Carlo resolution, in which case

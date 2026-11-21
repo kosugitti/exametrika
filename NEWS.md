@@ -85,9 +85,12 @@ constraints one at a time with each step exact in the Beta distribution
 sampling: the draws come from Dirichlet proposals centred on the
 order-restricted estimate, with the posterior's concentration, the
 constraints are again added one at a time, and the path weights correct for
-the proposal; 20 batches of 10,000 draws, rerun with 100,000 per batch where
-a batch came back empty or the standard error exceeded 0.25 on the log
-scale. A plain particle method drawing from the posteriors -- the first
+the proposal; 20 batches of 2,000 draws, rerun with 10,000 and then
+100,000 per batch where a batch came back empty or the standard error
+exceeded 0.25 on the log scale. The cheap first round settles a clearly
+ordered field (most items of a well-fitting model) at a fifth of the cost;
+a field that does not settle there goes through the same 10,000 and 100,000
+rounds as before. A plain particle method drawing from the posteriors -- the first
 implementation -- collapses exactly where it matters: when the block counts
 run against the order, no draw satisfies it and the result is capped, and
 even uncapped it overstated ICL_exact by 2 to 12 at the median and up to

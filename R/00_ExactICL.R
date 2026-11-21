@@ -310,9 +310,11 @@ log_order_prior <- function(C, alpha, M) {
 #' The ranks are independent given the hard assignments, each with a
 #' Dirichlet(alpha + counts) posterior. Binary data (Q = 2) use the
 #' Rao-Blackwellised Beta chain, which rejects nothing. Polytomous data use
-#' importance sampling (\code{log_order_is}): first \code{batches} batches of
-#' M particles, and, when a batch came back empty or the standard error on
-#' the log scale exceeds \code{se_tol}, again with 10 M particles per batch.
+#' importance sampling (\code{log_order_is}) in \code{batches} batches, with
+#' \code{first * M}, then M, then 10 M particles per batch: the next round runs
+#' only when a batch came back empty or the standard error on the log scale
+#' exceeds \code{se_tol}. A clearly ordered field settles in the first, cheap
+#' round; a field that does not is treated exactly as with M and 10 M alone.
 #' Only when every batch of the second round is empty does it fall back to
 #' the particle method of \code{log_order_chain_mc}, whose capped value is a
 #' bound.
@@ -321,18 +323,21 @@ log_order_prior <- function(C, alpha, M) {
 #' @param M number of particles (per batch for Q >= 3).
 #' @param batches number of importance-sampling batches.
 #' @param se_tol standard error (log scale) above which the second round runs.
+#' @param first fraction of M used per batch in the first round.
 #' @return list(log_p, se, capped, n_zero).
 #' @noRd
-log_order_posterior <- function(counts, alpha, M, batches = 20, se_tol = 0.25) {
+log_order_posterior <- function(counts, alpha, M, batches = 20, se_tol = 0.25,
+                                first = 0.2) {
   a <- sweep(counts, 2, alpha, "+")
   if (nrow(a) < 2 || ncol(a) < 3) {
     res <- log_order_chain_mc(a, M)
     res$n_zero <- 0L
     return(res)
   }
-  res <- log_order_is(a, M, batches)
-  if (res$n_zero > 0 || is.na(res$se) || res$se > se_tol) {
-    res <- log_order_is(a, 10 * M, batches)
+  sizes <- c(max(1L, round(first * M)), M, 10 * M)
+  for (m in sizes) {
+    res <- log_order_is(a, m, batches)
+    if (res$n_zero == 0 && !is.na(res$se) && res$se <= se_tol) break
   }
   if (res$n_zero == batches) {
     res <- log_order_chain_mc(a, M)

@@ -250,17 +250,17 @@ An object of class "exametrika" and "LCA" containing:
   the ratio of posterior to prior probability of the rank order; the
   posterior probability is a Monte Carlo estimate on a private random
   stream (binary data: a Beta chain with 10,000 particles; polytomous
-  data, since 2.3.0: importance sampling in 20 batches of 10,000 draws,
-  raised to 100,000 where a batch came back empty or the error was
-  large) and `ICL_exact_se` is its standard error on the -2 log scale (0
-  for an unordered model; `NA` with a warning when the order probability
-  of some field fell below the Monte Carlo resolution, in which case
-  `ICL_exact` is a lower bound). `ICL_exact_status` says which case
-  applies: `"ok"` (converged, or exact for an unordered model), `"thin"`
-  (some importance-sampling batches were empty: the value is usable but
-  its standard error may be optimistic) or `"bound"` (not converged: a
-  lower bound, `ICL_exact_se` is `NA`). `NA` for GTM and SOM fits, which
-  have no prior model.
+  data, since 2.3.0: importance sampling in 20 batches of 2,000 draws,
+  raised to 10,000 and then 100,000 where a batch came back empty or the
+  error was large) and `ICL_exact_se` is its standard error on the -2
+  log scale (0 for an unordered model; `NA` with a warning when the
+  order probability of some field fell below the Monte Carlo resolution,
+  in which case `ICL_exact` is a lower bound). `ICL_exact_status` says
+  which case applies: `"ok"` (converged, or exact for an unordered
+  model), `"thin"` (some importance-sampling batches were empty: the
+  value is usable but its standard error may be optimistic) or `"bound"`
+  (not converged: a lower bound, `ICL_exact_se` is `NA`). `NA` for GTM
+  and SOM fits, which have no prior model.
 
 ## Details
 

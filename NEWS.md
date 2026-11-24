@@ -1,4 +1,4 @@
-# exametrika 2.3.0 (development)
+# exametrika 2.3.0
 
 ## New: rank-up odds and `RankUpShift` for the ordinal Ranklustering
 

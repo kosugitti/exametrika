@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">exametrika</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.3.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.3.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -30,11 +30,18 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.png" class="logo" alt=""><h1>Changelog</h1>
-      <small>Source: <a href="https://github.com/kosugitti/exametrika/blob/v2.3.0/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
+      <small>Source: <a href="https://github.com/kosugitti/exametrika/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="2.3.0" id="exametrika-230">exametrika 2.3.0<a class="anchor" aria-label="anchor" href="#exametrika-230"></a></h2>
+<h2 class="pkg-version" data-toc-text="2.3.1" id="exametrika-231">exametrika 2.3.1<a class="anchor" aria-label="anchor" href="#exametrika-231"></a></h2>
+<div class="section level3">
+<h3 id="tests-2-3-1">Tests<a class="anchor" aria-label="anchor" href="#tests-2-3-1"></a></h3>
+<ul><li>The three tests in <code>test-irm-binary-cpp.R</code> that require the C++ binary IRM Gibbs sampler to agree bit for bit with the R reference implementation are now skipped on an R built with long double disabled (<code>.Machine$sizeof.longdouble == 0</code>). The C++ code accumulates sums in long double to reproduce R’s <code><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum()</a></code>; without long double R sums in double, the rounding differs and the two chains diverge (CRAN’s noLD check). Estimation itself is unchanged.</li>
+</ul></div>
+</div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="2.3.0" id="exametrika-230">exametrika 2.3.0<a class="anchor" aria-label="anchor" href="#exametrika-230"></a></h2><p class="text-muted">CRAN release: 2026-11-24</p>
 <div class="section level3">
 <h3 id="new-rank-up-odds-and-rankupshift-for-the-ordinal-ranklustering-2-3-0">New: rank-up odds and <code>RankUpShift</code> for the ordinal Ranklustering<a class="anchor" aria-label="anchor" href="#new-rank-up-odds-and-rankupshift-for-the-ordinal-ranklustering-2-3-0"></a></h3>
 <p>The ordinal <code>Biclustering(method = "R")</code> (isotonic and GTM) now returns in <code>Students</code> the rank-up and rank-down odds that the binary and rated Ranklustering and <code><a href="../reference/LRA.html">LRA()</a></code> already gave: the membership of the next rank up (down) over that of the estimated rank, <code>NA</code> at the top (bottom) rank. The columns are appended after <code>Estimate</code>, with the same names as in the binary fit; plain Biclustering (<code>method = "B"</code>) is unchanged.</p>

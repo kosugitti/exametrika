@@ -9,6 +9,18 @@ library(exametrika)
 # R (sample.int / rmultinom), so with the same seed the two must agree
 # bit for bit: same class and field assignments, same number of
 # iterations.
+#
+# The C++ side accumulates sums in long double to reproduce R's sum().
+# On an R built without long double (CRAN's noLD check) R's sum() works
+# in double, so the two drift apart by rounding and the chains diverge;
+# bit-identity is only checked where R has long double.
+# capabilities("long.double") is not the right test: it is FALSE on arm64
+# macOS, where long double is simply as wide as double and the two still
+# agree. .Machine$sizeof.longdouble is 0 only when R was built with long
+# double disabled.
+r_has_long_double <- function() {
+  return(isTRUE(.Machine$sizeof.longdouble > 0))
+}
 
 binary_initial_state <- function(U) {
   tmp <- dataFormat(U)
@@ -71,10 +83,12 @@ expect_same_gibbs <- function(pair) {
 }
 
 test_that("binary IRM Gibbs: C++ matches the R reference on J15S500", {
+  skip_if_not(r_has_long_double(), "R built without long double")
   expect_same_gibbs(run_binary_pair(J15S500, seed = 2, maxiter = 10))
 })
 
 test_that("binary IRM Gibbs: C++ matches the R reference with missing data", {
+  skip_if_not(r_has_long_double(), "R built without long double")
   skip_on_cran()
   set.seed(20260527)
   U <- matrix(rbinom(300 * 20, 1, 0.55), 300, 20)
@@ -84,6 +98,7 @@ test_that("binary IRM Gibbs: C++ matches the R reference with missing data", {
 })
 
 test_that("binary IRM Gibbs: C++ matches the R reference on a long run", {
+  skip_if_not(r_has_long_double(), "R built without long double")
   skip_on_cran()
   expect_same_gibbs(run_binary_pair(J35S515, seed = 123, maxiter = 30))
 })

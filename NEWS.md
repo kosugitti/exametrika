@@ -1,3 +1,15 @@
+# exametrika 2.3.1
+
+## Tests
+
+* The three tests in `test-irm-binary-cpp.R` that require the C++ binary IRM
+  Gibbs sampler to agree bit for bit with the R reference implementation are
+  now skipped on an R built with long double disabled
+  (`.Machine$sizeof.longdouble == 0`). The C++ code accumulates
+  sums in long double to reproduce R's `sum()`; without long double R sums in
+  double, the rounding differs and the two chains diverge (CRAN's noLD
+  check). Estimation itself is unchanged.
+
 # exametrika 2.3.0
 
 ## New: rank-up odds and `RankUpShift` for the ordinal Ranklustering
